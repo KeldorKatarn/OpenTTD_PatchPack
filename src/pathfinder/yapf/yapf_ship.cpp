@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: yapf_ship.cpp 26117 2013-11-26 10:00:15Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

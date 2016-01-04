@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: station_map.h 25221 2013-05-06 13:05:04Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

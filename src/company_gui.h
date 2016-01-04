@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: company_gui.h 23410 2011-12-03 23:40:08Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

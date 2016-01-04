@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: control_codes.h 26244 2014-01-12 18:01:33Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

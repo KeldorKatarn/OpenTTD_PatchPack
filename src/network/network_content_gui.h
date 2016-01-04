@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: network_content_gui.h 25287 2013-05-26 19:23:42Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

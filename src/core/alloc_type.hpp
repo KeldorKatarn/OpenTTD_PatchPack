@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: alloc_type.hpp 23880 2012-02-04 13:28:35Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

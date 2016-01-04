@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: game_info.cpp 26406 2014-03-17 20:02:30Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

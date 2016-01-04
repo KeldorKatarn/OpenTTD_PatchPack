@@ -28,12 +28,14 @@ const SaveLoad *GetBaseStationDescription();
 
 void AfterLoadVehicles(bool part_of_load);
 void FixupTrainLengths();
+void AfterLoadTemplateVehicles();
 void AfterLoadStations();
 void AfterLoadRoadStops();
 void AfterLoadLabelMaps();
 void AfterLoadStoryBook();
 void AfterLoadLinkGraphs();
 void AfterLoadCompanyStats();
+void AfterLoadTraceRestrict();
 void UpdateHousesAndTowns();
 
 void UpdateOldAircraft();

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: news_type.h 24843 2012-12-23 21:07:12Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

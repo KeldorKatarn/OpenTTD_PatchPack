@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: game.h 17699 2009-10-04 20:00:56Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: fios_gui.cpp 26428 2014-03-25 21:47:07Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

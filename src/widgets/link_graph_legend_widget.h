@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: link_graph_legend_widget.h 25331 2013-06-08 12:37:36Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: elrail_func.h 21845 2011-01-18 22:31:06Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

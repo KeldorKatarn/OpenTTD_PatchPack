@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: economy_base.h 25011 2013-02-17 14:50:54Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.
@@ -39,7 +39,7 @@ struct CargoPayment : CargoPaymentPool::PoolItem<&_cargo_payment_pool> {
 	CargoPayment(Vehicle *front);
 	~CargoPayment();
 
-	Money PayTransfer(const CargoPacket *cp, uint count);
+	Money PayTransfer(CargoPacket *cp, uint count);
 	void PayFinalDelivery(const CargoPacket *cp, uint count);
 
 	/**

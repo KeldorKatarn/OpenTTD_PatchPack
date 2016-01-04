@@ -10,7 +10,7 @@
 ##grflangid 0x08
 
 
-# $Id$
+# $Id: irish.txt 26192 2013-12-31 23:08:55Z rubidium $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

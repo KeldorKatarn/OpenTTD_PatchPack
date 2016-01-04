@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: tile_cmd.h 26277 2014-01-26 13:50:10Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

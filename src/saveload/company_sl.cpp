@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: company_sl.cpp 24619 2012-10-20 22:05:26Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

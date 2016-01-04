@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: subsidy.cpp 25882 2013-10-19 11:17:29Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: strgen_tables.h 26050 2013-11-22 21:43:47Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

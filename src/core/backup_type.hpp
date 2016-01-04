@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: backup_type.hpp 19931 2010-06-05 12:16:12Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

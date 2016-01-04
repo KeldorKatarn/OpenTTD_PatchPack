@@ -44,6 +44,7 @@ enum DisplayOptions {
 	DO_SHOW_STATION_NAMES  = 1, ///< Display station names.
 	DO_SHOW_SIGNS          = 2, ///< Display signs.
 	DO_FULL_ANIMATION      = 3, ///< Perform palette animation.
+	DO_RAIL_FENCES         = 4, ///< Draw rail fences.
 	DO_FULL_DETAIL         = 5, ///< Also draw details of track and roads.
 	DO_SHOW_WAYPOINT_NAMES = 6, ///< Display waypoint names.
 	DO_SHOW_COMPETITOR_SIGNS = 7, ///< Display signs, station names and waypoint names of opponent companies. Buoys and oilrig-stations are always shown, even if this option is turned off.

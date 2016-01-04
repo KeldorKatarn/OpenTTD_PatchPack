@@ -432,6 +432,54 @@
 			Name="Source Files"
 			>
 			<File
+				RelativePath=".\..\src\tbtr_template_gui_main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_create.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_create_virtualtrain.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_replaceall.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle_func.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_main.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_create.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_create_virtualtrain.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_replaceall.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle_func.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\airport.cpp"
 				>
 			</File>
@@ -636,6 +684,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\logic_signal_program.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\logic_signals.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\map.cpp"
 				>
 			</File>
@@ -797,6 +853,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\townname.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\triphistory_cmd.cpp"
 				>
 			</File>
 			<File
@@ -1264,6 +1324,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\logic_signals.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\map_func.h"
 				>
 			</File>
@@ -1273,6 +1337,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\mixer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\triphistory.h"
 				>
 			</File>
 			<File
@@ -1468,6 +1536,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\triphistory_gui.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\object_base.h"
 				>
 			</File>
@@ -1617,6 +1689,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\slope_type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\smallmap_colours.h"
 				>
 			</File>
 			<File
@@ -2124,6 +2200,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\logic_signals_gui.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\main_gui.cpp"
 				>
 			</File>
@@ -2524,6 +2604,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\logic_signals_cmd.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\misc_cmd.cpp"
 				>
 			</File>
@@ -2680,6 +2764,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\saveload\logic_signals_sl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\saveload\map_sl.cpp"
 				>
 			</File>
@@ -2765,6 +2853,14 @@
 			</File>
 			<File
 				RelativePath=".\..\src\saveload\waypoint_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\tbtr_template_replacement_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\tbtr_template_veh_sl.cpp"
 				>
 			</File>
 		</Filter>
@@ -4477,6 +4573,22 @@
 			</File>
 			<File
 				RelativePath=".\..\src\thread\thread_win32.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tracerestrict.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tracerestrict.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tracerestrict_gui.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\tracerestrict_sl.cpp"
 				>
 			</File>
 		</Filter>

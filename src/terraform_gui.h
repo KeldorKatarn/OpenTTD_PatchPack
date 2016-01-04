@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: terraform_gui.h 21608 2010-12-23 14:24:34Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

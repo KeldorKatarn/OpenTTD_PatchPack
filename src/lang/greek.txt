@@ -12,7 +12,7 @@
 ##case subs date geniki
 
 
-# $Id$
+# $Id: greek.txt 26383 2014-02-28 18:45:11Z translators $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

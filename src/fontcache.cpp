@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: fontcache.cpp 26389 2014-03-03 21:34:36Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

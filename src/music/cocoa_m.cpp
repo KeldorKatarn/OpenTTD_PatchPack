@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cocoa_m.cpp 17710 2009-10-04 21:24:09Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

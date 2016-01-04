@@ -6,6 +6,10 @@ bin/ai/*
 !bin/data
 bin/baseset/*
 !bin/baseset/openttd.grf
+!bin/baseset/innerhighlight.grf
+!bin/baseset/oldtracks.grf
+!bin/baseset/route_step.grf
+!bin/baseset/tracerestrict.grf
 !bin/baseset/opntitle.dat
 !bin/baseset/orig_*.obg
 !bin/baseset/orig_*.obs
@@ -42,3 +46,4 @@ src/os/windows/ottdres.rc
 !/config.lib
 !*.in
 *.tmp
+*.swp

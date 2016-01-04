@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: game.hpp 25114 2013-03-22 21:21:45Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

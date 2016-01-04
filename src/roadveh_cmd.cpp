@@ -563,18 +563,18 @@ static void RoadVehCrash(RoadVehicle *v)
 
 static bool RoadVehCheckTrainCrash(RoadVehicle *v)
 {
-	for (RoadVehicle *u = v; u != NULL; u = u->Next()) {
-		if (u->state == RVSB_WORMHOLE) continue;
+	//for (RoadVehicle *u = v; u != NULL; u = u->Next()) {
+	//	if (u->state == RVSB_WORMHOLE) continue;
 
-		TileIndex tile = u->tile;
+	//	TileIndex tile = u->tile;
 
-		if (!IsLevelCrossingTile(tile)) continue;
+	//	if (!IsLevelCrossingTile(tile)) continue;
 
-		if (HasVehicleOnPosXY(v->x_pos, v->y_pos, u, EnumCheckRoadVehCrashTrain)) {
-			RoadVehCrash(v);
-			return true;
-		}
-	}
+	//	if (HasVehicleOnPosXY(v->x_pos, v->y_pos, u, EnumCheckRoadVehCrashTrain)) {
+	//		RoadVehCrash(v);
+	//		return true;
+	//	}
+	//}
 
 	return false;
 }
@@ -774,6 +774,37 @@ static Vehicle *EnumFindVehBlockingOvertake(Vehicle *v, void *data)
 	return (v->type == VEH_ROAD && v->First() == v && v != od->u && v != od->v) ? v : NULL;
 }
 
+static Vehicle *EnumFindVehPreventingOvertake(Vehicle *v, void *data)
+{
+	const OvertakeData *od = (OvertakeData*)data;
+
+	Vehicle* blocking_v = EnumFindVehBlockingOvertake(v, data);
+
+	if (blocking_v == NULL)
+		return NULL;
+
+	if (blocking_v->type != VEH_ROAD)
+		return blocking_v;
+
+	RoadVehicle* blocking_road_v = RoadVehicle::From(blocking_v);
+
+	bool is_overtaking = (blocking_road_v->overtaking != 0);
+	bool is_driving_in_same_direction = (od->v->direction == blocking_road_v->direction);
+	bool has_lower_max_speed = (od->v->vcache.cached_max_speed > blocking_road_v->vcache.cached_max_speed);
+	bool has_been_stopped = (blocking_road_v->vehstatus & VS_STOPPED) != 0;
+	bool is_at_zero_speed = (blocking_road_v->cur_speed == 0);
+	bool is_straight_road_trackdir = IsStraightRoadTrackdir((Trackdir)(blocking_road_v->state & RVSB_TRACKDIR_MASK));
+	bool is_in_road_stop_or_station = (blocking_road_v->state >= RVSB_IN_ROAD_STOP) || IsTileType(blocking_road_v->tile, MP_STATION);
+
+	bool is_preventing = !is_driving_in_same_direction ||
+		                 is_overtaking ||
+						 (!has_lower_max_speed && !(has_been_stopped || is_at_zero_speed)) ||
+						 !is_straight_road_trackdir ||
+						 is_in_road_stop_or_station;
+
+	return is_preventing ? blocking_v : NULL;
+}
+
 /**
  * Check if overtaking is possible on a piece of track
  *
@@ -787,11 +818,14 @@ static bool CheckRoadBlockedForOvertaking(OvertakeData *od)
 	TrackdirBits red_signals = TrackStatusToRedSignals(ts); // barred level crossing
 	TrackBits trackbits = TrackdirBitsToTrackBits(trackdirbits);
 
-	/* Track does not continue along overtaking direction || track has junction || levelcrossing is barred */
-	if (!HasBit(trackdirbits, od->trackdir) || (trackbits & ~TRACK_BIT_CROSS) || (red_signals != TRACKDIR_BIT_NONE)) return true;
+	/* Track does not continue along overtaking direction || track has junction || level crossing is barred */
+	bool track_does_continue = HasBit(trackdirbits, od->trackdir);
+	bool track_has_junction = (trackbits & ~TRACK_BIT_CROSS) != 0;
+	bool level_crossing_is_barred = (red_signals != TRACKDIR_BIT_NONE);
 
-	/* Are there more vehicles on the tile except the two vehicles involved in overtaking */
-	return HasVehicleOnPos(od->tile, od, EnumFindVehBlockingOvertake);
+	if (!track_does_continue || track_has_junction || level_crossing_is_barred) return true;
+
+	return HasVehicleOnPos(od->tile, od, EnumFindVehPreventingOvertake);
 }
 
 static void RoadVehCheckOvertake(RoadVehicle *v, RoadVehicle *u)
@@ -800,6 +834,14 @@ static void RoadVehCheckOvertake(RoadVehicle *v, RoadVehicle *u)
 
 	od.v = v;
 	od.u = u;
+
+	bool has_lower_max_speed = (v->vcache.cached_max_speed > u->vcache.cached_max_speed);
+	bool has_been_stopped = (u->vehstatus & VS_STOPPED) != 0;
+	bool is_at_zero_speed = (u->cur_speed == 0);
+
+	if (!has_been_stopped && !is_at_zero_speed && !has_lower_max_speed) {
+		return;
+	}
 
 	/* Trams can't overtake other trams */
 	if (v->roadtype == ROADTYPE_TRAM) return;
@@ -811,10 +853,15 @@ static void RoadVehCheckOvertake(RoadVehicle *v, RoadVehicle *u)
 	if (v->HasArticulatedPart()) return;
 
 	/* Vehicles are not driving in same direction || direction is not a diagonal direction */
-	if (v->direction != u->direction || !(v->direction & 1)) return;
+	bool driving_in_same_direction = (v->direction == u->direction);
+	bool diagonal_direction = (v->direction & 1);
+
+	if (!driving_in_same_direction || !diagonal_direction) return;
 
 	/* Check if vehicle is in a road stop, depot, tunnel or bridge or not on a straight road */
-	if (v->state >= RVSB_IN_ROAD_STOP || !IsStraightRoadTrackdir((Trackdir)(v->state & RVSB_TRACKDIR_MASK))) return;
+	bool is_straight_road_trackdir = IsStraightRoadTrackdir((Trackdir)(v->state & RVSB_TRACKDIR_MASK));
+
+	if (v->state >= RVSB_IN_ROAD_STOP || !is_straight_road_trackdir) return;
 
 	/* Can't overtake a vehicle that is moving faster than us. If the vehicle in front is
 	 * accelerating, take the maximum speed for the comparison, else the current speed.
@@ -831,18 +878,20 @@ static void RoadVehCheckOvertake(RoadVehicle *v, RoadVehicle *u)
 	/* Are the current and the next tile suitable for overtaking?
 	 *  - Does the track continue along od.trackdir
 	 *  - No junctions
-	 *  - No barred levelcrossing
+	 *  - No barred level crossing
 	 *  - No other vehicles in the way
 	 */
-	od.tile = v->tile;
+	od.tile = u->tile;
 	if (CheckRoadBlockedForOvertaking(&od)) return;
 
-	od.tile = v->tile + TileOffsByDiagDir(DirToDiagDir(v->direction));
+	od.tile = u->tile + TileOffsByDiagDir(DirToDiagDir(u->direction));
 	if (CheckRoadBlockedForOvertaking(&od)) return;
 
 	/* When the vehicle in front of us is stopped we may only take
 	 * half the time to pass it than when the vehicle is moving. */
-	v->overtaking_ctr = (od.u->cur_speed == 0 || (od.u->vehstatus & VS_STOPPED)) ? RV_OVERTAKE_TIMEOUT / 2 : 0;
+	v->overtaking_ctr = ((od.u->cur_speed == 0) || (od.u->vehstatus & VS_STOPPED)) ?
+		(RV_OVERTAKE_TIMEOUT / 2) :
+		0;
 	v->overtaking = RVSB_DRIVE_SIDE;
 }
 

@@ -17,4 +17,10 @@
 void DrawHillyLandTile(const TileInfo *ti);
 void DrawClearLandTile(const TileInfo *ti, byte set);
 
+SpriteID GetSpriteIDForClearLand(const Slope slope, byte set);
+SpriteID GetSpriteIDForHillyLand(const Slope slope, const uint rough_index);
+SpriteID GetSpriteIDForRocks(const Slope slope);
+SpriteID GetSpriteIDForFields(const uint field_type, const Slope slope);
+SpriteID GetSpriteIDForSnowDesert(const uint density, const Slope slope);
+
 #endif /* CLEAR_FUNC_H */

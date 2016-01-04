@@ -1534,7 +1534,7 @@ static void TileLoop_Road(TileIndex tile)
 						TileY(tile) * TILE_SIZE + 7,
 						0,
 						EV_BULLDOZER);
-					MarkTileDirtyByTile(tile);
+					MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 					return;
 				}
 			}
@@ -1559,7 +1559,7 @@ static void TileLoop_Road(TileIndex tile)
 				cur_rs = ROADSIDE_BARREN;
 			}
 			SetRoadside(tile, cur_rs);
-			MarkTileDirtyByTile(tile);
+			MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 		}
 	} else if (IncreaseRoadWorksCounter(tile)) {
 		TerminateRoadWorks(tile);
@@ -1574,7 +1574,7 @@ static void TileLoop_Road(TileIndex tile)
 			}
 		}
 
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 	}
 }
 
@@ -1638,6 +1638,14 @@ static TrackStatus GetTileTrackStatus_Road(TileIndex tile, TransportType mode, u
 
 					trackdirbits = TrackBitsToTrackdirBits(AxisToTrackBits(axis));
 					if (IsCrossingBarred(tile)) red_signals = trackdirbits;
+					if (IsLevelCrossingTile(TileAddByDiagDir(tile, AxisToDiagDir(axis))) &&
+							IsCrossingBarred(TileAddByDiagDir(tile, AxisToDiagDir(axis)))) {
+						red_signals &= (TrackdirBits)0x0102; // magic value. I think TRACKBIT_X_SW and TRACKBIT_X_NE should be swapped
+					}
+					if (IsLevelCrossingTile(TileAddByDiagDir(tile, ReverseDiagDir(AxisToDiagDir(axis)))) &&
+							IsCrossingBarred(TileAddByDiagDir(tile, ReverseDiagDir(AxisToDiagDir(axis))))) {
+						red_signals &= (TrackdirBits)0x0201; // inverse of above magic value
+					}
 					break;
 				}
 

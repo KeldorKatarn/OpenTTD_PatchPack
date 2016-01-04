@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gamelog.cpp 23901 2012-02-05 15:51:13Z smatz $ */
 
 /*
  * This file is part of OpenTTD.

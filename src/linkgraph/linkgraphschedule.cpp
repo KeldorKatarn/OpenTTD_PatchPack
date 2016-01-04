@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraphschedule.cpp 26347 2014-02-16 18:42:59Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -18,7 +18,7 @@
 
 #include "../safeguards.h"
 
-/**
+ /**
  * Static instance of LinkGraphSchedule.
  * Note: This instance is created on task start.
  *       Lazy creation on first usage results in a data race between the CDist threads.
@@ -146,13 +146,25 @@ LinkGraphSchedule::~LinkGraphSchedule()
  */
 void OnTick_LinkGraph()
 {
-	if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK) return;
-	Date offset = _date % _settings_game.linkgraph.recalc_interval;
-	if (offset == 0) {
+	if (_settings_game.economy.daylength == 1)
+	{
+		if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK) return;
+		Date offset = _date % _settings_game.linkgraph.recalc_interval;
+		if (offset == 0) {
 		LinkGraphSchedule::instance.SpawnNext();
-	} else if (offset == _settings_game.linkgraph.recalc_interval / 2) {
+		} else if (offset == _settings_game.linkgraph.recalc_interval / 2) {
 		LinkGraphSchedule::instance.JoinNext();
+		}
+	}
+	else
+	{
+		uint16 interval_in_ticks = _settings_game.linkgraph.recalc_interval * DEFAULT_DAY_TICKS;
+		Date offset = _date_fract % interval_in_ticks;
+
+		if (offset == 0) {
+			LinkGraphSchedule::instance.SpawnNext();
+		} else if (offset == interval_in_ticks / 2) {
+			LinkGraphSchedule::instance.JoinNext();
+		}
 	}
 }
-
-

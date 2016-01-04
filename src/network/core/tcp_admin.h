@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: tcp_admin.h 25588 2013-07-11 20:31:39Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_info_dummy.cpp 24776 2012-12-01 13:12:39Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

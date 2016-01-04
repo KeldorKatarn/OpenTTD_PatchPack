@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ini_load.cpp 26206 2014-01-02 17:55:57Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

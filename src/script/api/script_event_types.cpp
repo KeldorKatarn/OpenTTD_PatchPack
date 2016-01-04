@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_event_types.cpp 25809 2013-10-03 16:47:24Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

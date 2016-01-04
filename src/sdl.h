@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sdl.h 24993 2013-02-14 11:06:12Z matthijs $ */
 
 /*
  * This file is part of OpenTTD.

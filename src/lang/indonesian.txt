@@ -10,7 +10,7 @@
 ##grflangid 0x5a
 
 
-# $Id$
+# $Id: indonesian.txt 26391 2014-03-05 18:45:14Z translators $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

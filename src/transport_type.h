@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: transport_type.h 22405 2011-05-01 19:14:12Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

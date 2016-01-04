@@ -90,10 +90,22 @@ enum SLRefType {
 	REF_STORAGE        =  9, ///< Load/save a reference to a persistent storage.
 	REF_LINK_GRAPH     = 10, ///< Load/save a reference to a link graph.
 	REF_LINK_GRAPH_JOB = 11, ///< Load/save a reference to a link graph job.
+	REF_TEMPLATE_VEHICLE = 12, ///< Load/save a reference to a template vehicle
 };
 
 /** Highest possible savegame version. */
 #define SL_MAX_VERSION UINT16_MAX
+#define SL_PATCH_PACK 255
+#define SL_PATCH_PACK_DAYLENGTH 256
+#define SL_PATCH_PACK_TOWN_BUILDINGS 257
+#define SL_PATCH_PACK_MAP_FEATURES 258
+#define SL_PATCH_PACK_SAFE_WAITING_LOCATION 259
+#define SL_PATCH_PACK_1_2 260
+#define SL_PATCH_PACK_1_3 261
+#define SL_PATCH_PACK_1_4 262
+#define SL_PATCH_PACK_1_5 263
+#define SL_PATCH_PACK_1_6 264
+#define SL_PATCH_PACK_1_7 265
 
 /** Flags of a chunk. */
 enum ChunkType {

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: railtypes.h 24368 2012-07-02 15:55:13Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

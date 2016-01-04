@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: water_map.h 23512 2011-12-13 23:01:36Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.
@@ -76,6 +76,9 @@ enum LockPart {
  */
 static inline WaterTileType GetWaterTileType(TileIndex t)
 {
+	if (IsTileType(t, MP_TUNNELBRIDGE))
+		return WATER_TILE_CLEAR;
+
 	assert(IsTileType(t, MP_WATER));
 
 	switch (GB(_m[t].m5, WBL_TYPE_BEGIN, WBL_TYPE_COUNT)) {

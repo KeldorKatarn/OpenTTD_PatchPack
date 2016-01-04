@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: tilearea.cpp 26289 2014-02-02 14:53:26Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

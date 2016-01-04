@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: textbuf_gui.h 24323 2012-06-04 15:29:37Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

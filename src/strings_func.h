@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: strings_func.h 26238 2014-01-12 17:59:43Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

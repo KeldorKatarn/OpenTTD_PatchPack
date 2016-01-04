@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: bitmath_func.hpp 25685 2013-08-05 20:37:29Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

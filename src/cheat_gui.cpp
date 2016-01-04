@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cheat_gui.cpp 25867 2013-10-15 17:32:31Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

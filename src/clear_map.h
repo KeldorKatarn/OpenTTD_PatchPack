@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: clear_map.h 25852 2013-10-12 22:23:43Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

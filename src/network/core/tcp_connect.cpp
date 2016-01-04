@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: tcp_connect.cpp 21886 2011-01-22 09:53:15Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

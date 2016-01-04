@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_industrylist.hpp 23614 2011-12-19 20:57:23Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

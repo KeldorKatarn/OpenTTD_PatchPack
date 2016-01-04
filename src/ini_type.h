@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ini_type.h 22824 2011-08-24 13:38:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

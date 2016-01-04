@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: townname.h 25775 2013-09-15 15:48:38Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

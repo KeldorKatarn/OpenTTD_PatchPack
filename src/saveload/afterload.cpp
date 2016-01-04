@@ -694,6 +694,14 @@ bool AfterLoadGame()
 	/* The value of _date_fract got divided, so make sure that old games are converted correctly. */
 	if (IsSavegameVersionBefore(11, 1) || (IsSavegameVersionBefore(147) && _date_fract > DAY_TICKS)) _date_fract /= 885;
 
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_DAYLENGTH))
+	{
+		if (!IsSavegameVersionBefore(SL_PATCH_PACK))
+			_settings_game.economy.daylength = 4;
+		else
+			_settings_game.economy.daylength = 1;
+	}
+
 	/* Update current year
 	 * must be done before loading sprites as some newgrfs check it */
 	SetDate(_date, _date_fract);
@@ -776,6 +784,9 @@ bool AfterLoadGame()
 
 	/* Update all vehicles */
 	AfterLoadVehicles(true);
+
+	/* Update template vehicles */
+	AfterLoadTemplateVehicles();
 
 	/* Make sure there is an AI attached to an AI company */
 	{
@@ -2990,6 +3001,8 @@ bool AfterLoadGame()
 	ResetSignalHandlers();
 
 	AfterLoadLinkGraphs();
+
+	AfterLoadTraceRestrict();
 	return true;
 }
 

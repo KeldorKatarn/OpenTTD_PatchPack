@@ -1,0 +1,9 @@
+The used versions for the libaries in this archive:
+freetype 2.4.11
+icu4c 51.2
+liblzma 5.0.4
+libpng 1.5.14
+lzo 2.06
+zlib 1.2.7
+
+For the actual sources we redirect you to the sources archive that is located next to this archive.

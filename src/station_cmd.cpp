@@ -340,14 +340,14 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 				// End of get town name
 
 				// Add space :P
-				strcat(buf, " ");
+				strecat(buf, " ", lastof(buf));
 
 				// Add industry name
 				GetString(buf+strlen(buf), (GetIndustrySpec(ind->type))->name, lastof(buf));
 
 				if (IsUniqueStationName(buf)) {
 					free(st->name);
-					st->name = strdup(buf);
+					st->name = stredup(buf);
 					return true;
 				}
 			}

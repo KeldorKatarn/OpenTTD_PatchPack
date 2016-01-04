@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gfx_layout.h 26029 2013-11-17 17:08:20Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

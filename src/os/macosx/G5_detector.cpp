@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: G5_detector.cpp 24524 2012-09-13 18:42:33Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

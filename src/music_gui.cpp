@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: music_gui.cpp 25776 2013-09-15 15:56:46Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

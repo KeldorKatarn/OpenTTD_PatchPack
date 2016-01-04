@@ -46,6 +46,8 @@
 #include "game/game.hpp"
 #include "goal_base.h"
 #include "story_base.h"
+#include "plans_func.h"
+#include "zoning.h"
 
 #include "widgets/toolbar_widget.h"
 
@@ -285,6 +287,7 @@ enum OptionMenuEntries {
 	OME_SETTINGS,
 	OME_SCRIPT_SETTINGS,
 	OME_NEWGRFSETTINGS,
+	OME_ZONING,
 	OME_TRANSPARENCIES,
 	OME_SHOW_TOWNNAMES,
 	OME_SHOW_STATIONNAMES,
@@ -292,6 +295,7 @@ enum OptionMenuEntries {
 	OME_SHOW_SIGNS,
 	OME_SHOW_COMPETITOR_SIGNS,
 	OME_FULL_ANIMATION,
+	OME_RAIL_FENCES,
 	OME_FULL_DETAILS,
 	OME_TRANSPARENTBUILDINGS,
 	OME_SHOW_STATIONSIGNS,
@@ -313,6 +317,7 @@ static CallBackFunction ToolbarOptionsClick(Window *w)
 	 * to network clients. */
 	if (!_networking || _network_server) *list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_SCRIPT_SETTINGS, OME_SCRIPT_SETTINGS, false);
 	*list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_NEWGRF_SETTINGS,          OME_NEWGRFSETTINGS, false);
+	*list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_ZONING, OME_ZONING, false);
 	*list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_TRANSPARENCY_OPTIONS,     OME_TRANSPARENCIES, false);
 	*list->Append() = new DropDownListItem(-1, false);
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_TOWN_NAMES_DISPLAYED,    OME_SHOW_TOWNNAMES, false, HasBit(_display_opt, DO_SHOW_TOWN_NAMES));
@@ -321,6 +326,7 @@ static CallBackFunction ToolbarOptionsClick(Window *w)
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_SIGNS_DISPLAYED,         OME_SHOW_SIGNS, false, HasBit(_display_opt, DO_SHOW_SIGNS));
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_SHOW_COMPETITOR_SIGNS,   OME_SHOW_COMPETITOR_SIGNS, false, HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS));
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_FULL_ANIMATION,          OME_FULL_ANIMATION, false, HasBit(_display_opt, DO_FULL_ANIMATION));
+	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_RAIL_FENCES,          OME_RAIL_FENCES, false, HasBit(_display_opt, DO_RAIL_FENCES));
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_FULL_DETAIL,             OME_FULL_DETAILS, false, HasBit(_display_opt, DO_FULL_DETAIL));
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_TRANSPARENT_BUILDINGS,   OME_TRANSPARENTBUILDINGS, false, IsTransparencySet(TO_HOUSES));
 	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_TRANSPARENT_SIGNS,       OME_SHOW_STATIONSIGNS, false, IsTransparencySet(TO_SIGNS));
@@ -343,6 +349,7 @@ static CallBackFunction MenuClickSettings(int index)
 		case OME_SETTINGS:             ShowGameSettings();                              return CBF_NONE;
 		case OME_SCRIPT_SETTINGS:      ShowAIConfigWindow();                            return CBF_NONE;
 		case OME_NEWGRFSETTINGS:       ShowNewGRFSettings(!_networking && _settings_client.gui.UserIsAllowedToChangeNewGRFs(), true, true, &_grfconfig); return CBF_NONE;
+		case OME_ZONING:               ShowZoningToolbar();                             break;
 		case OME_TRANSPARENCIES:       ShowTransparencyToolbar();                       break;
 
 		case OME_SHOW_TOWNNAMES:       ToggleBit(_display_opt, DO_SHOW_TOWN_NAMES);     break;
@@ -354,6 +361,7 @@ static CallBackFunction MenuClickSettings(int index)
 			InvalidateWindowClassesData(WC_SIGN_LIST, -1);
 			break;
 		case OME_FULL_ANIMATION:       ToggleBit(_display_opt, DO_FULL_ANIMATION); CheckBlitter(); break;
+		case OME_RAIL_FENCES:          ToggleBit(_display_opt, DO_RAIL_FENCES);         break;
 		case OME_FULL_DETAILS:         ToggleBit(_display_opt, DO_FULL_DETAIL);         break;
 		case OME_TRANSPARENTBUILDINGS: ToggleTransparency(TO_HOUSES);                   break;
 		case OME_SHOW_STATIONSIGNS:    ToggleTransparency(TO_SIGNS);                    break;
@@ -447,6 +455,7 @@ enum MapMenuEntries {
 	MME_SHOW_SIGNLISTS,
 	MME_SHOW_TOWNDIRECTORY,
 	MME_SHOW_INDUSTRYDIRECTORY,
+	MME_SHOW_PLANS,
 };
 
 static CallBackFunction ToolbarMapClick(Window *w)
@@ -456,6 +465,7 @@ static CallBackFunction ToolbarMapClick(Window *w)
 	*list->Append() = new DropDownListStringItem(STR_MAP_MENU_EXTRA_VIEW_PORT,         MME_SHOW_EXTRAVIEWPORTS,    false);
 	*list->Append() = new DropDownListStringItem(STR_MAP_MENU_LINGRAPH_LEGEND,         MME_SHOW_LINKGRAPH,         false);
 	*list->Append() = new DropDownListStringItem(STR_MAP_MENU_SIGN_LIST,               MME_SHOW_SIGNLISTS,         false);
+	*list->Append() = new DropDownListStringItem(STR_MAP_MENU_PLAN_LIST,               MME_SHOW_PLANS,             false);
 	PopupMainToolbMenu(w, WID_TN_SMALL_MAP, list, 0);
 	return CBF_NONE;
 }
@@ -487,6 +497,7 @@ static CallBackFunction MenuClickMap(int index)
 		case MME_SHOW_SIGNLISTS:      ShowSignList();            break;
 		case MME_SHOW_TOWNDIRECTORY:  ShowTownDirectory();       break;
 		case MME_SHOW_INDUSTRYDIRECTORY: ShowIndustryDirectory(); break;
+		case MME_SHOW_PLANS:          ShowPlansWindow();         break;
 	}
 	return CBF_NONE;
 }
@@ -605,7 +616,7 @@ static CallBackFunction MenuClickCompany(int index)
 				if (_network_server) {
 					DoCommandP(0, 0, _network_own_client_id, CMD_COMPANY_CTRL);
 				} else {
-					NetworkSendCommand(0, 0, 0, CMD_COMPANY_CTRL, NULL, NULL, _local_company);
+					NetworkSendCommand(0, 0, 0, CMD_COMPANY_CTRL, NULL, NULL, _local_company, 0);
 				}
 				return CBF_NONE;
 
@@ -1121,7 +1132,7 @@ void SetStartingYear(Year year)
 	_settings_game.game_creation.starting_year = Clamp(year, MIN_YEAR, MAX_YEAR);
 	Date new_date = ConvertYMDToDate(_settings_game.game_creation.starting_year, 0, 1);
 	/* If you open a savegame as scenario there may already be link graphs.*/
-	LinkGraphSchedule::Instance()->ShiftDates(new_date - _date);
+	LinkGraphSchedule::instance.ShiftDates(new_date - _date);
 	SetDate(new_date, 0);
 }
 
@@ -1648,6 +1659,7 @@ enum MainToolbarHotkeys {
 	MTHK_EXTRA_VIEWPORT,
 	MTHK_CLIENT_LIST,
 	MTHK_SIGN_LIST,
+	MTHK_PLAN_LIST,
 };
 
 /** Main toolbar. */
@@ -1738,6 +1750,7 @@ struct MainToolbarWindow : Window {
 			case MTHK_CLIENT_LIST: if (_networking) ShowClientList(); break;
 #endif
 			case MTHK_SIGN_LIST: ShowSignList(); break;
+			case MTHK_PLAN_LIST: ShowPlansWindow(); break;
 			default: return ES_NOT_HANDLED;
 		}
 		return ES_HANDLED;
@@ -1843,6 +1856,7 @@ static Hotkey maintoolbar_hotkeys[] = {
 	Hotkey((uint16)0, "client_list", MTHK_CLIENT_LIST),
 #endif
 	Hotkey((uint16)0, "sign_list", MTHK_SIGN_LIST),
+	Hotkey('P', "plan_list", MTHK_PLAN_LIST),
 	HOTKEY_LIST_END
 };
 HotkeyList MainToolbarWindow::hotkeys("maintoolbar", maintoolbar_hotkeys);

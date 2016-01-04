@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: road_gui.h 21887 2011-01-22 10:10:03Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

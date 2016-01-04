@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_cargomonitor.hpp 24986 2013-02-10 19:49:04Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

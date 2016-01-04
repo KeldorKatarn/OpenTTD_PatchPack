@@ -78,6 +78,7 @@ struct GUISettings {
 	uint8  order_review_system;              ///< perform order reviews on vehicles
 	bool   vehicle_income_warn;              ///< if a vehicle isn't generating income, show a warning
 	bool   show_finances;                    ///< show finances at end of year
+	uint8  specific_group_name;              ///< use station or town names for specific group names
 	bool   sg_new_nonstop;                   ///< ttdpatch compatible nonstop handling read from pre v93 savegames
 	bool   new_nonstop;                      ///< ttdpatch compatible nonstop handling
 	uint8  stop_location;                    ///< what is the default stop location of trains?
@@ -91,6 +92,7 @@ struct GUISettings {
 	bool   measure_tooltip;                  ///< show a permanent tooltip when dragging tools
 	byte   liveries;                         ///< options for displaying company liveries, 0=none, 1=self, 2=all
 	bool   prefer_teamchat;                  ///< choose the chat message target with <ENTER>, true=all clients, false=your team
+	bool   advanced_train_purchase_window;   ///< use the advanced train purchase window
 	uint8  advanced_vehicle_list;            ///< use the "advanced" vehicle list
 	uint8  loading_indicators;               ///< show loading indicators
 	uint8  default_rail_type;                ///< the default rail type for the rail GUI
@@ -111,6 +113,16 @@ struct GUISettings {
 	uint8  right_mouse_btn_emulation;        ///< should we emulate right mouse clicking?
 	uint8  scrollwheel_scrolling;            ///< scrolling using the scroll wheel?
 	uint8  scrollwheel_multiplier;           ///< how much 'wheel' per incoming event from the OS?
+	bool   viewport_map_scan_surroundings;   ///< look for the most important tile in surroundings
+	bool   show_slopes_on_viewport_map;      ///< use slope orientation to render the ground
+	uint32 default_viewport_map_mode;        ///< the mode to use by default when a viewport is in map mode, 0=owner, 1=industry, 2=vegetation
+	uint32 action_when_viewport_map_is_dblclicked; ///< what to do when a doubleclick occurs on the viewport map
+	uint32 show_scrolling_viewport_on_map;   ///< when a no map viewport is scrolled, its location is marked on the other map viewports
+	bool   show_bridges_on_map;              ///< bridges are rendered on a viewport in map mode
+	bool   show_tunnels_on_map;              ///< tunnels are rendered on a viewport in map mode
+	uint32 show_vehicle_route;               ///< show a vehicle's route when its orders/timetable window is focused
+	uint32 dash_level_of_route_lines;        ///< the dash level passed to GfxDrawLine() (plain if 0)
+	bool   use_owner_colour_for_tunnelbridge;///< bridges and tunnels are rendered with their owner's colour
 	bool   timetable_arrival_departure;      ///< show arrivals and departures in vehicle timetables
 	bool   left_mouse_btn_scrolling;         ///< left mouse button scroll
 	bool   pause_on_newgame;                 ///< whether to start new games paused or not
@@ -136,6 +148,7 @@ struct GUISettings {
 	byte   missing_strings_threshold;        ///< the number of missing strings before showing the warning
 	uint8  graph_line_thickness;             ///< the thickness of the lines in the various graph guis
 	uint8  osk_activation;                   ///< Mouse gesture to trigger the OSK.
+	bool   show_vehicle_route_steps;         ///< when a window related to a specific vehicle is focused, show route steps
 
 	uint16 console_backlog_timeout;          ///< the minimum amount of time items should be in the console backlog before they will be removed in ~3 seconds granularity.
 	uint16 console_backlog_length;           ///< the minimum amount of items in the console backlog before items will be removed.
@@ -279,6 +292,7 @@ struct GameCreationSettings {
 	byte   land_generator;                   ///< the landscape generator
 	byte   oil_refinery_limit;               ///< distance oil refineries allowed from map edge
 	byte   snow_line_height;                 ///< a number 0-15 that configured snow line height
+	byte   desert_amount;                    ///< A number 0-15 that configured amount of desert.
 	byte   tgen_smoothness;                  ///< how rough is the terrain from 0-3
 	byte   tree_placer;                      ///< the tree placer algorithm
 	byte   heightmap_rotation;               ///< rotation director for the heightmap
@@ -308,7 +322,12 @@ struct ConstructionSettings {
 	uint8  industry_platform;                ///< the amount of flat land around an industry
 	bool   freeform_edges;                   ///< allow terraforming the tiles at the map edges
 	uint8  extra_tree_placement;             ///< (dis)allow building extra trees in-game
+	uint8  tree_growth_rate;                 ///< tree growth rate
+	uint8  trees_around_snow_line_range;     ///< range around snowline for mixed and arctic forest.
+	uint32 no_trees_on_this_level;           ///< (Outdated)
+	bool   trees_around_snow_line_enabled;   ///< enable mixed and arctic forest around snowline, and no trees above snowline
 	uint8  command_pause_level;              ///< level/amount of commands that can't be executed while paused
+	byte   simulated_wormhole_signals;       ///< simulate signals in tunnel
 
 	uint32 terraform_per_64k_frames;         ///< how many tile heights may, over a long period, be terraformed per 65536 frames?
 	uint16 terraform_frame_burst;            ///< how many tile heights may, over a short period, be terraformed?
@@ -428,6 +447,8 @@ struct PathfinderSettings {
 	OPFSettings  opf;                        ///< pathfinder settings for the old pathfinder
 	NPFSettings  npf;                        ///< pathfinder settings for the new pathfinder
 	YAPFSettings yapf;                       ///< pathfinder settings for the yet another pathfinder
+
+	bool back_of_one_way_pbs_waiting_point;  ///< whether the back of a one way signal a safe waiting point
 };
 
 /** Settings related to orders. */
@@ -436,6 +457,9 @@ struct OrderSettings {
 	bool   gradual_loading;                  ///< load vehicles gradually
 	bool   selectgoods;                      ///< only send the goods to station if a train has been there
 	bool   no_servicing_if_no_breakdowns;    ///< don't send vehicles to depot when breakdowns are disabled
+	bool   timetable_automated;              ///< (outdated. Only for backwards compatibility)
+	bool   timetable_separation;             ///< (outdated. Only for backwards compatibility)
+	bool   automatic_timetable_separation;   ///< Enable automatic separation of vehicles in the timetable.
 	bool   serviceathelipad;                 ///< service helicopters at helipads automatically (no need to send to depot)
 };
 
@@ -464,6 +488,7 @@ struct VehicleSettings {
 
 /** Settings related to the economy. */
 struct EconomySettings {
+	uint8  daylength;                        ///< factor by which the daylength is multiplied (74 default ticks * setting)
 	bool   inflation;                        ///< disable inflation
 	bool   bribe;                            ///< enable bribing the local authority
 	bool   smooth_economy;                   ///< smooth economy
@@ -485,6 +510,7 @@ struct EconomySettings {
 	bool   station_noise_level;              ///< build new airports when the town noise level is still within accepted limits
 	uint16 town_noise_population[3];         ///< population to base decision on noise evaluation (@see town_council_tolerance)
 	bool   allow_town_level_crossings;       ///< towns are allowed to build level crossings
+	int8   town_cargo_factor;                ///< power-of-two multiplier for town (passenger, mail) generation. May be negative.
 	bool   infrastructure_maintenance;       ///< enable monthly maintenance fee for owner infrastructure
 };
 
@@ -574,6 +600,9 @@ extern GameSettings _settings_newgame;
 
 /** Old vehicle settings, which were game settings before, and are company settings now. (Needed for savegame conversion) */
 extern VehicleDefaultSettings _old_vds;
+
+#define DAY_TICKS (DEFAULT_DAY_TICKS * max(_settings_game.economy.daylength, (uint8)1))
+#define TOWN_GROWTH_TICKS (DEFAULT_TOWN_GROWTH_TICKS * max(_settings_game.economy.daylength, (uint8)1))
 
 /**
  * Get the settings-object applicable for the current situation: the newgame settings

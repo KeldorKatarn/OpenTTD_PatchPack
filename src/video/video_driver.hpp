@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: video_driver.hpp 26108 2013-11-25 14:30:22Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

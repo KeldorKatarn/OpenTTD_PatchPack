@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraph_sl.cpp 25898 2013-10-22 16:13:28Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -220,7 +220,7 @@ static void Load_LGRJ()
  */
 static void Load_LGRS()
 {
-	SlObject(LinkGraphSchedule::Instance(), GetLinkGraphScheduleDesc());
+	SlObject(&LinkGraphSchedule::instance, GetLinkGraphScheduleDesc());
 }
 
 /**
@@ -229,7 +229,7 @@ static void Load_LGRS()
  */
 void AfterLoadLinkGraphs()
 {
-	if (IsSavegameVersionBefore(191)) {
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 		LinkGraph *lg;
 		FOR_ALL_LINK_GRAPHS(lg) {
 			for (NodeID node_id = 0; node_id < lg->Size(); ++node_id) {
@@ -278,7 +278,7 @@ static void Save_LGRJ()
  */
 static void Save_LGRS()
 {
-	SlObject(LinkGraphSchedule::Instance(), GetLinkGraphScheduleDesc());
+	SlObject(&LinkGraphSchedule::instance, GetLinkGraphScheduleDesc());
 }
 
 /**
@@ -286,7 +286,7 @@ static void Save_LGRS()
  */
 static void Ptrs_LGRS()
 {
-	SlObject(LinkGraphSchedule::Instance(), GetLinkGraphScheduleDesc());
+	SlObject(&LinkGraphSchedule::instance, GetLinkGraphScheduleDesc());
 }
 
 extern const ChunkHandler _linkgraph_chunk_handlers[] = {

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: engine_func.h 25553 2013-07-02 18:57:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

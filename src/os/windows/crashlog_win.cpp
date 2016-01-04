@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: crashlog_win.cpp 25677 2013-08-05 20:36:58Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.
@@ -498,9 +498,12 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *ep)
 	if (GamelogTestEmergency()) {
 		static const TCHAR _emergency_crash[] =
 			_T("A serious fault condition occurred in the game. The game will shut down.\n")
-			_T("As you loaded an emergency savegame no crash information will be generated.\n");
-		MessageBox(NULL, _emergency_crash, _T("Fatal Application Failure"), MB_ICONERROR);
-		ExitProcess(3);
+			_T("You loaded an emergency savegame.\n")
+			_T("Therefore the crash information might not be useful if the crash occured immediately after loading.\n")
+			_T("Should the crash information be generated anyway?\n");
+		if (IDYES != MessageBox(NULL, _emergency_crash, _T("Fatal Application Failure"), MB_ICONERROR | MB_YESNO)) {
+			ExitProcess(3);
+		}
 	}
 
 	if (SaveloadCrashWithMissingNewGRFs()) {

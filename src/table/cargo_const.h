@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cargo_const.h 23862 2012-01-28 14:12:42Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

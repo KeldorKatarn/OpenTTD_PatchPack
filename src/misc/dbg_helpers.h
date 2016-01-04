@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: dbg_helpers.h 20603 2010-08-23 22:03:36Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

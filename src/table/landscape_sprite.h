@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: landscape_sprite.h 24877 2013-01-01 10:52:32Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

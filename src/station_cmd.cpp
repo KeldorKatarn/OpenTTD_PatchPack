@@ -55,11 +55,19 @@
 #include "widgets/station_widget.h"
 
 #include "table/strings.h"
+#include "newgrf_townname.h"
 
 #include "safeguards.h"
 
 /**
- * Check whether the given tile is a hangar.
+ * Static instance of FlowStat::SharesMap.
+ * Note: This instance is created on task start.
+ *       Lazy creation on first usage results in a data race between the CDist threads.
+ */
+/* static */ const FlowStat::SharesMap FlowStat::empty_sharesmap;
+
+/**
+ * Check whether the given tile is a hangar.///
  * @param t the tile to of whether it is a hangar.
  * @pre IsTileType(t, MP_STATION)
  * @return true if and only if the tile is a hangar.
@@ -122,15 +130,18 @@ typedef bool (*CMSAMatcher)(TileIndex tile);
 /**
  * Counts the numbers of tiles matching a specific type in the area around
  * @param tile the center tile of the 'count area'
+ * @param width the x size of area around
+ * @param height the y size of area around
+ * @param rad the radius to count around area
  * @param cmp the comparator/matcher (@see CMSAMatcher)
  * @return the number of matching tiles around
  */
-static int CountMapSquareAround(TileIndex tile, CMSAMatcher cmp)
+static int CountMapSquareAround(TileIndex tile, int width, int height, int rad, CMSAMatcher cmp)
 {
 	int num = 0;
 
-	for (int dx = -3; dx <= 3; dx++) {
-		for (int dy = -3; dy <= 3; dy++) {
+	for (int dx = -rad; dx <= (width-1) + rad; dx++) {
+		for (int dy = -rad; dy <= (height-1) + rad; dy++) {
 			TileIndex t = TileAddWrap(tile, dx, dy);
 			if (t != INVALID_TILE && cmp(t)) num++;
 		}
@@ -186,6 +197,11 @@ static bool CMSATree(TileIndex tile)
 	return IsTileType(tile, MP_TREES);
 }
 
+static bool CMSAIndustry(TileIndex tile)
+{
+	return IsTileType(tile, MP_INDUSTRY);
+}
+
 #define M(x) ((x) - STR_SV_STNAME)
 
 enum StationNaming {
@@ -227,7 +243,9 @@ static bool FindNearIndustryName(TileIndex tile, void *user_data)
 	return !sni->indtypes[indtype];
 }
 
-static StringID GenerateStationName(Station *st, TileIndex tile, StationNaming name_class)
+static bool IsUniqueStationName(const char*);
+
+static StringID GenerateStationName(Station *st, TileIndex tile, int width, int height, StationNaming name_class)
 {
 	static const uint32 _gen_station_name_bits[] = {
 		0,                                       // STATIONNAMING_RAIL
@@ -271,16 +289,16 @@ static StringID GenerateStationName(Station *st, TileIndex tile, StationNaming n
 
 	TileIndex indtile = tile;
 	StationNameInformation sni = { free_names, indtypes };
-	if (CircularTileSearch(&indtile, 7, FindNearIndustryName, &sni)) {
-		/* An industry has been found nearby */
-		IndustryType indtype = GetIndustryType(indtile);
-		const IndustrySpec *indsp = GetIndustrySpec(indtype);
-		/* STR_NULL means it only disables oil rig/mines */
-		if (indsp->station_name != STR_NULL) {
-			st->indtype = indtype;
-			return STR_SV_STNAME_FALLBACK;
-		}
-	}
+	//if (CircularTileSearch(&indtile, 7, FindNearIndustryName, &sni)) {
+	//	/* An industry has been found nearby */
+	//	IndustryType indtype = GetIndustryType(indtile);
+	//	const IndustrySpec *indsp = GetIndustrySpec(indtype);
+	//	/* STR_NULL means it only disables oil rig/mines */
+	//	if (indsp->station_name != STR_NULL) {
+	//		st->indtype = indtype;
+	//		return STR_SV_STNAME_FALLBACK;
+	//	}
+	//}
 
 	/* Oil rigs/mines name could be marked not free by looking for a near by industry. */
 	free_names = sni.free_names;
@@ -288,13 +306,60 @@ static StringID GenerateStationName(Station *st, TileIndex tile, StationNaming n
 	/* check default names */
 	uint32 tmp = free_names & _gen_station_name_bits[name_class];
 	if (tmp != 0) return STR_SV_STNAME + FindFirstBit(tmp);
+	
+	/* check industry >>variable names<< */
+	for (int dx = -4; dx <= (width-1) + 4; dx++) {
+		for (int dy = -4; dy <= (height-1) + 4; dy++) {
+			if (CMSAIndustry(TILE_MASK(tile + TileDiffXY(dx, dy)))) {
+				char buf[512];
 
-	/* check mine? */
-	if (HasBit(free_names, M(STR_SV_STNAME_MINES))) {
-		if (CountMapSquareAround(tile, CMSAMine) >= 2) {
-			return STR_SV_STNAME_MINES;
+				// Get town name (code mostly stolen from FormatString)
+				const Industry *ind = Industry::GetByTile(tile + TileDiffXY(dx, dy));
+				const Town *ind_t = ind->town;
+				int64 temp[1];
+
+				temp[0] = ind_t->townnameparts;
+				StringParameters tmp_params(temp);
+				uint32 grfid = ind_t->townnamegrfid;
+
+				if (ind_t->name != NULL) {
+					strecpy(buf, ind_t->name, lastof(buf));
+				} else if (grfid == 0) {
+					/* Original town name */
+					GetStringWithArgs(buf, ind_t->townnametype, &tmp_params, lastof(buf));
+				} else {
+					/* Newgrf town name */
+					if (GetGRFTownName(grfid) != NULL) {
+						/* The grf is loaded */
+						GRFTownNameGenerate(buf, ind_t->townnamegrfid, ind_t->townnametype, ind_t->townnameparts, lastof(buf));
+					} else {
+						/* Fallback to english original */
+						GetStringWithArgs(buf, SPECSTR_TOWNNAME_ENGLISH, &tmp_params, lastof(buf));
+					}
+				}
+				// End of get town name
+
+				// Add space :P
+				strcat(buf, " ");
+
+				// Add industry name
+				GetString(buf+strlen(buf), (GetIndustrySpec(ind->type))->name, lastof(buf));
+
+				if (IsUniqueStationName(buf)) {
+					free(st->name);
+					st->name = strdup(buf);
+					return true;
+				}
+			}
 		}
 	}
+
+	/* check mine? */
+	//if (HasBit(free_names, M(STR_SV_STNAME_MINES))) {
+	//	if (CountMapSquareAround(tile, width, height, 3, CMSAMine) >= 2) {
+	//		return STR_SV_STNAME_MINES;
+	//	}
+	//}
 
 	/* check close enough to town to get central as name? */
 	if (DistanceMax(tile, t->xy) < 8) {
@@ -306,14 +371,14 @@ static StringID GenerateStationName(Station *st, TileIndex tile, StationNaming n
 	/* Check lakeside */
 	if (HasBit(free_names, M(STR_SV_STNAME_LAKESIDE)) &&
 			DistanceFromEdge(tile) < 20 &&
-			CountMapSquareAround(tile, CMSAWater) >= 5) {
+			CountMapSquareAround(tile, width, height, 3, CMSAWater) >= 5) {
 		return STR_SV_STNAME_LAKESIDE;
 	}
 
 	/* Check woods */
 	if (HasBit(free_names, M(STR_SV_STNAME_WOODS)) && (
-				CountMapSquareAround(tile, CMSATree) >= 8 ||
-				CountMapSquareAround(tile, IsTileForestIndustry) >= 2)
+				CountMapSquareAround(tile, width, height, 3, CMSATree) >= 8 ||
+				CountMapSquareAround(tile, width, height, 3, IsTileForestIndustry) >= 2)
 			) {
 		return _settings_game.game_creation.landscape == LT_TROPIC ? STR_SV_STNAME_FOREST : STR_SV_STNAME_WOODS;
 	}
@@ -682,7 +747,7 @@ static CommandCost BuildStationPart(Station **st, DoCommandFlag flags, bool reus
 			*st = new Station(area.tile);
 
 			(*st)->town = ClosestTownFromTile(area.tile, UINT_MAX);
-			(*st)->string_id = GenerateStationName(*st, area.tile, name_class);
+			(*st)->string_id = GenerateStationName(*st, area.tile, area.w, area.h, name_class);
 
 			if (Company::IsValidID(_current_company)) {
 				SetBit((*st)->town->have_ratings, _current_company);
@@ -979,6 +1044,47 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 	return cost;
 }
 
+/** /// Checks if an airport can be built at the given area.
+ * @param tile_area Area to check.
+ * @param flags Operation to perform.
+ * @param station StationID of airport allowed in search area.
+ * @return The cost in case of success, or an error code if it failed.
+ */
+static CommandCost CheckFlatLandAirport(TileArea tile_area, DoCommandFlag flags, StationID *station)
+{
+	CommandCost cost(EXPENSES_CONSTRUCTION);
+	int allowed_z = -1;
+
+	TILE_AREA_LOOP(tile_cur, tile_area) {
+		CommandCost ret = CheckBuildableTile(tile_cur, 0, allowed_z, true);
+		if (ret.Failed()) return ret;
+		cost.AddCost(ret);
+
+		/* if station is set, then allow building on top of an already
+		 * existing airport, either the one in *station if it is not
+		 * INVALID_STATION, or anyone otherwise and store which one
+		 * in *station */
+		if (station != NULL && IsTileType(tile_cur, MP_STATION)) {
+			if (!IsAirport(tile_cur)) {
+				return ClearTile_Station(tile_cur, DC_AUTO); // get error message
+			} else {
+				StationID st = GetStationIndex(tile_cur);
+				if (*station == INVALID_STATION) {
+					*station = st;
+				} else if (*station != st) {
+					return_cmd_error(STR_ERROR_ADJOINS_MORE_THAN_ONE_EXISTING);
+				}
+			}
+		} else {
+			ret = DoCommand(tile_cur, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
+			if (ret.Failed()) return ret;
+			cost.AddCost(ret);
+		}
+	}
+
+	return cost;
+}
+
 /**
  * Check whether we can expand the rail part of the given station.
  * @param st the station to expand
@@ -1057,17 +1163,17 @@ void GetStationLayout(byte *layout, int numtracks, int plat_len, const StationSp
 
 /**
  * Find a nearby station that joins this station.
- * @tparam T the class to find a station for
- * @tparam error_message the error message when building a station on top of others
+ * /// @tparam T the class to find a station for
  * @param existing_station an existing station we build over
  * @param station_to_join the station to join to
  * @param adjacent whether adjacent stations are allowed
  * @param ta the area of the newly build station
  * @param st 'return' pointer for the found station
+ * @param error_message the error message when building a station on top of others
  * @return command cost with the error or 'okay'
  */
-template <class T, StringID error_message>
-CommandCost FindJoiningBaseStation(StationID existing_station, StationID station_to_join, bool adjacent, TileArea ta, T **st)
+template <class T>
+CommandCost FindJoiningBaseStation(StationID existing_station, StationID station_to_join, bool adjacent, TileArea ta, T **st, StringID error_message)
 {
 	assert(*st == NULL);
 	bool check_surrounding = true;
@@ -1110,11 +1216,12 @@ CommandCost FindJoiningBaseStation(StationID existing_station, StationID station
  * @param adjacent whether adjacent stations are allowed
  * @param ta the area of the newly build station
  * @param st 'return' pointer for the found station
+ * @param error_message the error message when building a station on top of others
  * @return command cost with the error or 'okay'
  */
-static CommandCost FindJoiningStation(StationID existing_station, StationID station_to_join, bool adjacent, TileArea ta, Station **st)
+static CommandCost FindJoiningStation(StationID existing_station, StationID station_to_join, bool adjacent, TileArea ta, Station **st, StringID error_message = STR_ERROR_MUST_REMOVE_RAILWAY_STATION_FIRST)
 {
-	return FindJoiningBaseStation<Station, STR_ERROR_MUST_REMOVE_RAILWAY_STATION_FIRST>(existing_station, station_to_join, adjacent, ta, st);
+	return FindJoiningBaseStation<Station>(existing_station, station_to_join, adjacent, ta, st, error_message);
 }
 
 /**
@@ -1128,7 +1235,7 @@ static CommandCost FindJoiningStation(StationID existing_station, StationID stat
  */
 CommandCost FindJoiningWaypoint(StationID existing_waypoint, StationID waypoint_to_join, bool adjacent, TileArea ta, Waypoint **wp)
 {
-	return FindJoiningBaseStation<Waypoint, STR_ERROR_MUST_REMOVE_RAILWAYPOINT_FIRST>(existing_waypoint, waypoint_to_join, adjacent, ta, wp);
+	return FindJoiningBaseStation<Waypoint>(existing_waypoint, waypoint_to_join, adjacent, ta, wp, STR_ERROR_MUST_REMOVE_RAILWAYPOINT_FIRST);
 }
 
 /**
@@ -1754,7 +1861,7 @@ static CommandCost RemoveRoadStop(TileIndex tile, DoCommandFlag flags);
  */
 static CommandCost FindJoiningRoadStop(StationID existing_stop, StationID station_to_join, bool adjacent, TileArea ta, Station **st)
 {
-	return FindJoiningBaseStation<Station, STR_ERROR_MUST_REMOVE_ROAD_STOP_FIRST>(existing_stop, station_to_join, adjacent, ta, st);
+	return FindJoiningBaseStation<Station>(existing_stop, station_to_join, adjacent, ta, st, STR_ERROR_MUST_REMOVE_ROAD_STOP_FIRST);
 }
 
 /**
@@ -2178,6 +2285,37 @@ void UpdateAirportsNoise()
 	}
 }
 
+
+/**
+ * /// Checks if an airport can be removed (no aircraft on it or landing)
+ * @param st Station whose airport is to be removed
+ * @param flags Operation to perform
+ * @return Cost or failure of operation
+ */
+static CommandCost CanRemoveAirport(Station *st, DoCommandFlag flags)
+{
+	const Aircraft *a;
+	FOR_ALL_AIRCRAFT(a) {
+		if (!a->IsNormalAircraft()) continue;
+		if (a->targetairport == st->index && a->state != FLYING)
+			return_cmd_error(STR_ERROR_AIRCRAFT_IN_THE_WAY);
+	}
+
+	CommandCost cost(EXPENSES_CONSTRUCTION);
+
+	TILE_AREA_LOOP(tile_cur, st->airport) {
+		if (!st->TileBelongsToAirport(tile_cur)) continue;
+
+		CommandCost ret = EnsureNoVehicleOnGround(tile_cur);
+		if (ret.Failed()) return ret;
+
+		cost.AddCost(_price[PR_CLEAR_STATION_AIRPORT]);
+	}
+
+	return cost;
+}
+
+
 /**
  * Place an Airport.
  * @param tile tile where airport will be built
@@ -2221,13 +2359,46 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 		return_cmd_error(STR_ERROR_STATION_TOO_SPREAD_OUT);
 	}
 
-	CommandCost cost = CheckFlatLand(airport_area, flags);
+	StationID est = INVALID_STATION;
+	CommandCost cost = CheckFlatLandAirport(airport_area, flags, &est);
 	if (cost.Failed()) return cost;
+
+	Station *st = NULL;
+	ret = FindJoiningStation(est, station_to_join, HasBit(p2, 0), airport_area, &st, STR_ERROR_MUST_DEMOLISH_AIRPORT_FIRST);
+	if (ret.Failed()) return ret;
+
+	/* Distant join */
+	if (st == NULL && distant_join) st = Station::GetIfValid(station_to_join);
+
+	ret = BuildStationPart(&st, flags, reuse, airport_area, (GetAirport(airport_type)->flags & AirportFTAClass::AIRPLANES) ? STATIONNAMING_AIRPORT : STATIONNAMING_HELIPORT);
+	if (ret.Failed()) return ret;
+
+	/* action to be performed */
+	enum {
+		AIRPORT_NEW,      // airport is a new station
+		AIRPORT_ADD,      // add an airport to an existing station
+		AIRPORT_UPGRADE,  // upgrade the airport in a station
+	} action =
+		(est != INVALID_STATION) ? AIRPORT_UPGRADE :
+		(st != NULL) ? AIRPORT_ADD : AIRPORT_NEW;
+
+	if (action == AIRPORT_ADD && st->airport.tile != INVALID_TILE) {
+		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_ANOTHER_AIRPORT);
+	}
 
 	/* The noise level is the noise from the airport and reduce it to account for the distance to the town center. */
 	AirportTileTableIterator iter(as->table[layout], tile);
 	Town *nearest = AirportGetNearestTown(as, iter);
-	uint newnoise_level = GetAirportNoiseLevelForTown(as, iter, nearest->xy);
+	uint newnoise_level = nearest->noise_reached + GetAirportNoiseLevelForTown(as, iter, nearest->xy);
+
+	if (action == AIRPORT_UPGRADE) {
+		const AirportSpec *old_as = st->airport.GetSpec();
+		AirportTileTableIterator old_iter(old_as->table[st->airport.layout], st->airport.tile);
+		Town *old_nearest = AirportGetNearestTown(old_as, old_iter);
+		if (old_nearest == nearest) {
+			newnoise_level -= GetAirportNoiseLevelForTown(old_as, old_iter, nearest->xy);
+		}
+	}
 
 	/* Check if local auth would allow a new airport */
 	StringID authority_refuse_message = STR_NULL;
@@ -2235,11 +2406,11 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 
 	if (_settings_game.economy.station_noise_level) {
 		/* do not allow to build a new airport if this raise the town noise over the maximum allowed by town */
-		if ((nearest->noise_reached + newnoise_level) > nearest->MaxTownNoise()) {
+		if (newnoise_level > nearest->MaxTownNoise()) {
 			authority_refuse_message = STR_ERROR_LOCAL_AUTHORITY_REFUSES_NOISE;
 			authority_refuse_town = nearest;
 		}
-	} else {
+	} else if (action != AIRPORT_UPGRADE) {
 		Town *t = ClosestTownFromTile(tile, UINT_MAX);
 		uint num = 0;
 		const Station *st;
@@ -2257,18 +2428,11 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 		return_cmd_error(authority_refuse_message);
 	}
 
-	Station *st = NULL;
-	ret = FindJoiningStation(INVALID_STATION, station_to_join, HasBit(p2, 0), airport_area, &st);
-	if (ret.Failed()) return ret;
-
-	/* Distant join */
-	if (st == NULL && distant_join) st = Station::GetIfValid(station_to_join);
-
-	ret = BuildStationPart(&st, flags, reuse, airport_area, (GetAirport(airport_type)->flags & AirportFTAClass::AIRPLANES) ? STATIONNAMING_AIRPORT : STATIONNAMING_HELIPORT);
-	if (ret.Failed()) return ret;
-
-	if (st != NULL && st->airport.tile != INVALID_TILE) {
-		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_ANOTHER_AIRPORT);
+	if (action == AIRPORT_UPGRADE) {
+		/* check that the old airport can be removed */
+		CommandCost r = CanRemoveAirport(st, flags);
+		if (r.Failed()) return r;
+		cost.AddCost(r);
 	}
 
 	for (AirportTileTableIterator iter(as->table[layout], tile); iter != INVALID_TILE; ++iter) {
@@ -2276,8 +2440,38 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 	}
 
 	if (flags & DC_EXEC) {
+		if (action == AIRPORT_UPGRADE) {
+			/* delete old airport if upgrading */
+			const AirportSpec *old_as = st->airport.GetSpec();
+			AirportTileTableIterator old_iter(old_as->table[st->airport.layout], st->airport.tile);
+			Town *old_nearest = AirportGetNearestTown(old_as, old_iter);
+
+			if (old_nearest != nearest) {
+				old_nearest->noise_reached -= GetAirportNoiseLevelForTown(old_as, old_iter, old_nearest->xy);
+				if (_settings_game.economy.station_noise_level) {
+					SetWindowDirty(WC_TOWN_VIEW, st->town->index);
+				}
+			}
+
+			TILE_AREA_LOOP(tile_cur, st->airport) {
+				if (IsHangarTile(tile_cur)) OrderBackup::Reset(tile_cur, false);
+				DeleteAnimatedTile(tile_cur);
+				DoClearSquare(tile_cur);
+				DeleteNewGRFInspectWindow(GSF_AIRPORTTILES, tile_cur);
+			}
+
+			for (uint i = 0; i < st->airport.GetNumHangars(); ++i) {
+				DeleteWindowById(
+					WC_VEHICLE_DEPOT, st->airport.GetHangarTile(i)
+				);
+			}
+
+			st->rect.AfterRemoveRect(st, st->airport);
+			st->airport.Clear();
+		}
+
 		/* Always add the noise, so there will be no need to recalculate when option toggles */
-		nearest->noise_reached += newnoise_level;
+		nearest->noise_reached = newnoise_level;
 
 		st->AddFacility(FACIL_AIRPORT, tile);
 		st->airport.type = airport_type;
@@ -2300,12 +2494,16 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 			AirportTileAnimationTrigger(st, iter, AAT_BUILT);
 		}
 
-		UpdateAirplanesOnNewStation(st);
+		if (action != AIRPORT_NEW) UpdateAirplanesOnNewStation(st);
 
-		Company::Get(st->owner)->infrastructure.airport++;
-		DirtyCompanyInfrastructureWindows(st->owner);
+		if (action == AIRPORT_UPGRADE) {
+			UpdateStationSignCoord(st);
+		} else {
+			Company::Get(st->owner)->infrastructure.airport++;
+			DirtyCompanyInfrastructureWindows(st->owner);
+			st->UpdateVirtCoord();
+		}
 
-		st->UpdateVirtCoord();
 		UpdateStationAcceptance(st, false);
 		st->RecomputeIndustriesNear();
 		InvalidateWindowData(WC_SELECT_STATION, 0, 0);
@@ -2335,15 +2533,8 @@ static CommandCost RemoveAirport(TileIndex tile, DoCommandFlag flags)
 		if (ret.Failed()) return ret;
 	}
 
-	tile = st->airport.tile;
-
-	CommandCost cost(EXPENSES_CONSTRUCTION);
-
-	const Aircraft *a;
-	FOR_ALL_AIRCRAFT(a) {
-		if (!a->IsNormalAircraft()) continue;
-		if (a->targetairport == st->index && a->state != FLYING) return CMD_ERROR;
-	}
+	CommandCost cost = CanRemoveAirport(st, flags);
+	if (cost.Failed()) return cost;
 
 	if (flags & DC_EXEC) {
 		const AirportSpec *as = st->airport.GetSpec();
@@ -2353,25 +2544,14 @@ static CommandCost RemoveAirport(TileIndex tile, DoCommandFlag flags)
 		AirportTileIterator it(st);
 		Town *nearest = AirportGetNearestTown(as, it);
 		nearest->noise_reached -= GetAirportNoiseLevelForTown(as, it, nearest->xy);
-	}
 
-	TILE_AREA_LOOP(tile_cur, st->airport) {
-		if (!st->TileBelongsToAirport(tile_cur)) continue;
-
-		CommandCost ret = EnsureNoVehicleOnGround(tile_cur);
-		if (ret.Failed()) return ret;
-
-		cost.AddCost(_price[PR_CLEAR_STATION_AIRPORT]);
-
-		if (flags & DC_EXEC) {
+		TILE_AREA_LOOP(tile_cur, st->airport) {
 			if (IsHangarTile(tile_cur)) OrderBackup::Reset(tile_cur, false);
 			DeleteAnimatedTile(tile_cur);
 			DoClearSquare(tile_cur);
 			DeleteNewGRFInspectWindow(GSF_AIRPORTTILES, tile_cur);
 		}
-	}
 
-	if (flags & DC_EXEC) {
 		/* Clear the persistent storage. */
 		delete st->airport.psa;
 
@@ -3328,7 +3508,7 @@ static void UpdateStationRating(Station *st)
 			}
 
 			if (!skip) {
-				int b = ge->last_speed - 85;
+				int b = ge->last_speed - 15;
 				if (b >= 0) rating += b >> 2;
 
 				byte waittime = ge->time_since_pickup;
@@ -3350,9 +3530,9 @@ static void UpdateStationRating(Station *st)
 			if (Company::IsValidID(st->owner) && HasBit(st->town->statues, st->owner)) rating += 26;
 
 			byte age = ge->last_age;
-			(age >= 3) ||
-			(rating += 10, age >= 2) ||
-			(rating += 10, age >= 1) ||
+			(age >= 30) ||
+			(rating += 10, age >= 20) ||
+			(rating += 10, age >= 10) ||
 			(rating += 13, true);
 
 			{
@@ -3536,7 +3716,7 @@ void IncreaseStats(Station *st, CargoID cargo, StationID next_station_id, uint c
 		if (ge2.link_graph == INVALID_LINK_GRAPH) {
 			if (LinkGraph::CanAllocateItem()) {
 				lg = new LinkGraph(cargo);
-				LinkGraphSchedule::Instance()->Queue(lg);
+				LinkGraphSchedule::instance.Queue(lg);
 				ge2.link_graph = lg->index;
 				ge2.node = lg->AddNode(st2);
 			} else {
@@ -3558,11 +3738,11 @@ void IncreaseStats(Station *st, CargoID cargo, StationID next_station_id, uint c
 		if (ge1.link_graph != ge2.link_graph) {
 			LinkGraph *lg2 = LinkGraph::Get(ge2.link_graph);
 			if (lg->Size() < lg2->Size()) {
-				LinkGraphSchedule::Instance()->Unqueue(lg);
+				LinkGraphSchedule::instance.Unqueue(lg);
 				lg2->Merge(lg); // Updates GoodsEntries of lg
 				lg = lg2;
 			} else {
-				LinkGraphSchedule::Instance()->Unqueue(lg2);
+				LinkGraphSchedule::instance.Unqueue(lg2);
 				lg->Merge(lg2); // Updates GoodsEntries of lg2
 			}
 		}
@@ -3684,7 +3864,7 @@ static uint UpdateStationWaiting(Station *st, CargoID type, uint amount, SourceT
 	if (ge.link_graph == INVALID_LINK_GRAPH) {
 		if (LinkGraph::CanAllocateItem()) {
 			lg = new LinkGraph(type);
-			LinkGraphSchedule::Instance()->Queue(lg);
+			LinkGraphSchedule::instance.Queue(lg);
 			ge.link_graph = lg->index;
 			ge.node = lg->AddNode(st);
 		} else {
@@ -3894,7 +4074,7 @@ void BuildOilRig(TileIndex tile)
 	Station *st = new Station(tile);
 	st->town = ClosestTownFromTile(tile, UINT_MAX);
 
-	st->string_id = GenerateStationName(st, tile, STATIONNAMING_OILRIG);
+	st->string_id = GenerateStationName(st, tile, 1, 1, STATIONNAMING_OILRIG);
 
 	assert(IsTileType(tile, MP_INDUSTRY));
 	DeleteAnimatedTile(tile);

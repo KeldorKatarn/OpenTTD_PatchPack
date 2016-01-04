@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: win32_s.cpp 22877 2011-09-03 10:31:28Z terkhen $ */
 
 /*
  * This file is part of OpenTTD.

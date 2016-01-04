@@ -40,6 +40,7 @@
 #include "subsidy_func.h"
 #include "station_base.h"
 #include "waypoint_base.h"
+#include "triphistory.h"
 #include "economy_base.h"
 #include "core/pool_func.hpp"
 #include "core/backup_type.hpp"
@@ -666,6 +667,28 @@ static void CompaniesGenStatistics()
 		CompanyCheckBankrupt(c);
 	}
 
+	Backup<CompanyByte> cur_company_2(_current_company, FILE_LINE);
+ 
+	FOR_ALL_COMPANIES(c) {
+		cur_company_2.Change(c->index);
+
+		if (c->inaugurated_year + 2 > _cur_year) continue;
+
+		CommandCost cost(EXPENSES_OTHER, 0);
+
+		if (c->old_economy[0].company_value > 1500000) {
+			cost.AddCost(c->old_economy[0].company_value >> 6); //~20% company value tax per year
+		}else if (c->old_economy[0].company_value > 200000 ) {
+			cost.AddCost(c->old_economy[0].company_value >> 7); //~10% company value tax per year
+		}
+
+		if (cost.GetCost() > 0) {
+			_economy.industry_helper += cost.GetCost();
+			SubtractMoneyFromCompany(cost);
+		}
+	}
+	cur_company_2.Restore();
+
 	/* Only run the economic statics and update company stats every 3rd month (1st of quarter). */
 	if (!HasBit(1 << 0 | 1 << 3 | 1 << 6 | 1 << 9, _cur_month)) return;
 
@@ -970,27 +993,45 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 		}
 	}
 
-	static const int MIN_TIME_FACTOR = 31;
-	static const int MAX_TIME_FACTOR = 255;
+	static const int DECAY1 = 10;
+	static const int DECAY2 = 40;
+	static const float INV_VA = 1/330.0f;
+	static const int EXP2_AMPL = 80;
+	static const int INCOME_DIVIDER = 900;
+	static const int LOW_SPEED_DIVIDER = 200;
+	static const int LOW_SPEED_OFFSET = 50;
+	static const float TILE2KM = 28.66f;
+	const float d = dist;
+	float transitdays = transit_days;
+	transitdays = 2.5f * max<float>(transitdays, 1.0f);
+	const int cargo_payment = cs->current_payment;
 
 	const int days1 = cs->transit_days[0];
 	const int days2 = cs->transit_days[1];
-	const int days_over_days1 = max(   transit_days - days1, 0);
-	const int days_over_days2 = max(days_over_days1 - days2, 0);
+
+	const float inv_vt1 =days1/(200*TILE2KM);  // reciprocal of first threshold velocity
+	const float inv_vt2 =days2/(200*TILE2KM);  // reciprocal of second threshold velocity
+	const float v_avg = d*TILE2KM/(transitdays); //average transit velocity
+	const float inv_v_avg = 1/max<float>(v_avg, 0.1f); //reciprocal of average transit velocity
+	const float max_1v_1vt1 = max<float>(inv_v_avg,inv_vt1); //threshold 1 
+	const float max_1v_1vt2 = max<float>(inv_v_avg,inv_vt2); //threshold 2 
 
 	/*
-	 * The time factor is calculated based on the time it took
-	 * (transit_days) compared two cargo-depending values. The
-	 * range is divided into three parts:
+	 * The income factor is calculated based on the average velocity
+	 * compared to two cargo-depending threshold velocities. 
+	 * Formula is divided into three parts:
 	 *
-	 *  - constant for fast transits
-	 *  - linear decreasing with time with a slope of -1 for medium transports
-	 *  - linear decreasing with time with a slope of -2 for slow transports
+	 *  - fast exponential growth limited by 1st threshold velocity
+	 *  - slow exponential growth which can be negative or positive, depending on 2nd threshold
+	 *  - residual correction for very slow local transit
 	 *
 	 */
-	const int time_factor = max(MAX_TIME_FACTOR - days_over_days1 - days_over_days2, MIN_TIME_FACTOR);
-
-	return BigMulS(dist * time_factor * num_pieces, cs->current_payment, 21);
+	const float exp1 = (1-exp(d*(-max_1v_1vt1-INV_VA)/DECAY1))/(max_1v_1vt2);
+	const float exp2 = (inv_vt2-inv_v_avg)*EXP2_AMPL*(1-exp(d*(-max_1v_1vt2-INV_VA)/DECAY2))/max_1v_1vt2;
+	
+	const Money test1 = static_cast<Money>(cargo_payment * num_pieces * max<float>(exp1+exp2, min(d/LOW_SPEED_DIVIDER,v_avg/LOW_SPEED_OFFSET))/ INCOME_DIVIDER);
+	
+	return test1;  
 }
 
 /** The industries we've currently brought cargo to. */
@@ -1082,7 +1123,7 @@ static Money DeliverGoods(int num_pieces, CargoID cargo_type, StationID dest, Ti
 	st->town->received[cs->town_effect].new_act += accepted;
 
 	/* Determine profit */
-	Money profit = GetTransportedGoodsIncome(accepted, DistanceManhattan(source_tile, st->xy), days_in_transit, cargo_type);
+	Money profit = GetTransportedGoodsIncome(accepted, DistanceOpenTTD(source_tile, st->xy), days_in_transit, cargo_type);
 
 	/* Update the cargo monitor. */
 	AddCargoDelivery(cargo_type, company->index, accepted, src_type, src, st);
@@ -1170,6 +1211,8 @@ CargoPayment::~CargoPayment()
 				this->front->z_pos, -this->visual_profit);
 	}
 
+	this->front->trip_history.AddValue(this->route_profit, _date);
+	InvalidateWindowData(WC_VEHICLE_TRIP_HISTORY, this->front->index);
 	cur_company.Restore();
 }
 
@@ -1184,12 +1227,22 @@ void CargoPayment::PayFinalDelivery(const CargoPacket *cp, uint count)
 		this->owner = Company::Get(this->front->owner);
 	}
 
-	/* Handle end of route payment */
-	Money profit = DeliverGoods(count, this->ct, this->current_station, cp->SourceStationXY(), cp->DaysInTransit(), this->owner, cp->SourceSubsidyType(), cp->SourceSubsidyID());
-	this->route_profit += profit;
+	DeliverGoods(count, this->ct, this->current_station, cp->SourceStationXY(), cp->DaysInTransit(), this->owner, cp->SourceSubsidyType(), cp->SourceSubsidyID());
+	
+	// Pay vehicle for only the part of total route it has done: ie. cargo_loaded_at_xy to here
+	uint distance;
+	
+	if ((this->front != nullptr) && (this->front->type == VEH_ROAD)) {
+		distance = DistanceManhattan(cp->LoadedAtXY(), Station::Get(this->current_station)->xy);
+	} else {
+		distance = DistanceOpenTTD(cp->LoadedAtXY(), Station::Get(this->current_station)->xy);
+	}
 
-	/* The vehicle's profit is whatever route profit there is minus feeder shares. */
-	this->visual_profit += profit - cp->FeederShare(count);
+	// Allows the actual profits for only the last part of the trip to be calculated and, consequently, paid.
+	Money profit = GetTransportedGoodsIncome(count, distance, cp->DaysInTransit(), this->ct);
+
+	this->route_profit += profit;
+	this->visual_profit += profit;
 }
 
 /**
@@ -1198,19 +1251,26 @@ void CargoPayment::PayFinalDelivery(const CargoPacket *cp, uint count)
  * @param count The number of packets to pay for.
  * @return The amount of money paid for the transfer.
  */
-Money CargoPayment::PayTransfer(const CargoPacket *cp, uint count)
+Money CargoPayment::PayTransfer(CargoPacket *cp, uint count)
 {
-	Money profit = GetTransportedGoodsIncome(
-			count,
-			/* pay transfer vehicle for only the part of transfer it has done: ie. cargo_loaded_at_xy to here */
-			DistanceManhattan(cp->LoadedAtXY(), Station::Get(this->current_station)->xy),
-			cp->DaysInTransit(),
-			this->ct);
+	// Pay vehicle for only the part of total route it has done: ie. cargo_loaded_at_xy to here
+	uint distance;
+	
+	if ((this->front != nullptr) && (this->front->type == VEH_ROAD)) {
+		distance = DistanceManhattan(cp->LoadedAtXY(), Station::Get(this->current_station)->xy);
+	} else {
+		distance = DistanceOpenTTD(cp->LoadedAtXY(), Station::Get(this->current_station)->xy);
+	}
 
-	profit = profit * _settings_game.economy.feeder_payment_share / 100;
+	Money profit = GetTransportedGoodsIncome(count, distance, cp->DaysInTransit(), this->ct);
 
-	this->visual_transfer += profit; // accumulate transfer profits for whole vehicle
-	return profit; // account for the (virtual) profit already made for the cargo packet
+	// Reset the amount of days this package has been in transit, important for the next leg
+	cp->ResetTransitDays();
+
+	this->visual_transfer += profit;
+	this->route_profit += profit;
+
+	return profit;
 }
 
 /**
@@ -1633,7 +1693,7 @@ static void LoadUnloadVehicle(Vehicle *front)
 					/* ... say we unloaded something, otherwise we'll think we didn't unload
 					 * something and we didn't load something, so we must be finished
 					 * at this station. Setting the unloaded means that we will get a
-					 * retry for loading in the next cycle. */
+					 * retry for loading in the next cycle. *////
 					anything_unloaded = true;
 				}
 			}
@@ -1687,16 +1747,19 @@ static void LoadUnloadVehicle(Vehicle *front)
 		int t;
 		switch (front->type) {
 			case VEH_TRAIN: /* FALL THROUGH */
-			case VEH_SHIP:
 				t = front->vcache.cached_max_speed;
 				break;
 
+			case VEH_SHIP:
+				t = front->vcache.cached_max_speed * 4;
+				break;
+
 			case VEH_ROAD:
-				t = front->vcache.cached_max_speed / 2;
+				t = front->vcache.cached_max_speed * 2;
 				break;
 
 			case VEH_AIRCRAFT:
-				t = Aircraft::From(front)->GetSpeedOldUnits(); // Convert to old units.
+				t = Aircraft::From(front)->GetSpeedOldUnits() * 2; // Convert to old units.
 				break;
 
 			default: NOT_REACHED();

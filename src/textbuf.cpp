@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: textbuf.cpp 25708 2013-08-10 12:47:11Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

@@ -373,6 +373,8 @@ void AfterLoadVehicles(bool part_of_load)
 	FOR_ALL_VEHICLES(v) {
 		assert(v->first != NULL);
 
+		v->trip_occupancy = -1;
+
 		switch (v->type) {
 			case VEH_TRAIN: {
 				Train *t = Train::From(v);
@@ -409,7 +411,8 @@ void AfterLoadVehicles(bool part_of_load)
 			if (v->type == VEH_TRAIN) {
 				Train *t = Train::From(v);
 				if (!t->IsFrontEngine()) {
-					if (t->IsEngine()) t->vehstatus |= VS_STOPPED;
+					if (t->IsEngine())
+						t->vehstatus |= VS_STOPPED;
 					/* cur_speed is now relevant for non-front parts - nonzero breaks
 					 * moving-wagons-inside-depot- and autoreplace- code */
 					t->cur_speed = 0;
@@ -690,6 +693,9 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		 SLE_CONDVAR(Vehicle, random_bits,           SLE_UINT8,                    2, SL_MAX_VERSION),
 		 SLE_CONDVAR(Vehicle, waiting_triggers,      SLE_UINT8,                    2, SL_MAX_VERSION),
 
+		 SLE_CONDREF(Vehicle, ahead_separation,      REF_VEHICLE,      SL_PATCH_PACK, SL_PATCH_PACK_1_5),
+		 SLE_CONDREF(Vehicle, behind_separation,     REF_VEHICLE,      SL_PATCH_PACK, SL_PATCH_PACK_1_5),
+
 		 SLE_CONDREF(Vehicle, next_shared,           REF_VEHICLE,                  2, SL_MAX_VERSION),
 		SLE_CONDNULL(2,                                                            2,  68),
 		SLE_CONDNULL(4,                                                           69, 100),
@@ -697,10 +703,32 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		 SLE_CONDVAR(Vehicle, group_id,              SLE_UINT16,                  60, SL_MAX_VERSION),
 
 		 SLE_CONDVAR(Vehicle, current_order_time,    SLE_UINT32,                  67, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, current_loading_time,  SLE_UINT32,       SL_PATCH_PACK, SL_PATCH_PACK_1_5),
 		 SLE_CONDVAR(Vehicle, lateness_counter,      SLE_INT32,                   67, SL_MAX_VERSION),
 
 		SLE_CONDNULL(10,                                                           2, 143), // old reserved space
 
+		// Trip History Arrays
+		SLE_CONDVAR(Vehicle, trip_history.t[0].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[1].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[2].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[3].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[4].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[5].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[6].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[7].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[8].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[9].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[0].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[1].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[2].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[3].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[4].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[5].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[6].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[7].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[8].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[9].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
 		     SLE_END()
 	};
 

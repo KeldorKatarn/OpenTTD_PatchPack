@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -87,6 +87,12 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\lib\win32\library;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\lib\win64\library;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\lib\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -101,8 +107,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WIN32_ENABLE_DIRECTMUSIC_SUPPORT;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;..\lib\shared\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -291,6 +297,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
+    <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
+    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp" />
+    <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp" />
+    <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
+    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
+    <ClInclude Include="..\src\tbtr_template_gui_main.h" />
+    <ClInclude Include="..\src\tbtr_template_gui_create.h" />
+    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h" />
+    <ClInclude Include="..\src\tbtr_template_gui_replaceall.h" />
+    <ClInclude Include="..\src\tbtr_template_vehicle.h" />
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h" />
     <ClCompile Include="..\src\airport.cpp" />
     <ClCompile Include="..\src\animated_tile.cpp" />
     <ClCompile Include="..\src\articulated_vehicles.cpp" />
@@ -340,6 +358,8 @@
     <ClCompile Include="..\src\linkgraph\linkgraphjob.cpp" />
     <ClCompile Include="..\src\linkgraph\linkgraphschedule.cpp" />
     <ClCompile Include="..\src\linkgraph\mcf.cpp" />
+    <ClCompile Include="..\src\logic_signal_program.cpp" />
+    <ClCompile Include="..\src\logic_signals.cpp" />
     <ClCompile Include="..\src\linkgraph\refresh.cpp" />
     <ClCompile Include="..\src\map.cpp" />
     <ClCompile Include="..\src\misc.cpp" />
@@ -356,11 +376,15 @@
     <ClCompile Include="..\src\openttd.cpp" />
     <ClCompile Include="..\src\order_backup.cpp" />
     <ClCompile Include="..\src\pbs.cpp" />
+    <ClCompile Include="..\src\plans.cpp" />
+    <ClCompile Include="..\src\plans_cmd.cpp" />
+    <ClCompile Include="..\src\plans_gui.cpp" />
     <ClCompile Include="..\src\progress.cpp" />
     <ClCompile Include="..\src\rail.cpp" />
     <ClCompile Include="..\src\rev.cpp" />
     <ClCompile Include="..\src\road.cpp" />
     <ClCompile Include="..\src\roadstop.cpp" />
+    <ClCompile Include="..\src\saveload\plans_sl.cpp" />
     <ClCompile Include="..\src\screenshot.cpp" />
     <ClCompile Include="..\src\sdl.cpp" />
     <ClCompile Include="..\src\settings.cpp" />
@@ -382,6 +406,7 @@
     <ClCompile Include="..\src\tile_map.cpp" />
     <ClCompile Include="..\src\tilearea.cpp" />
     <ClCompile Include="..\src\townname.cpp" />
+    <ClCompile Include="..\src\triphistory_cmd.cpp" />
     <ClCompile Include="..\src\vehicle.cpp" />
     <ClCompile Include="..\src\vehiclelist.cpp" />
     <ClCompile Include="..\src\viewport.cpp" />
@@ -430,6 +455,9 @@
     <ClInclude Include="..\src\date_gui.h" />
     <ClInclude Include="..\src\date_type.h" />
     <ClInclude Include="..\src\debug.h" />
+    <ClInclude Include="..\src\plans_func.h" />
+    <ClInclude Include="..\src\plans_type.h" />
+    <ClInclude Include="..\src\plans_base.h" />
     <ClInclude Include="..\src\video\dedicated_v.h" />
     <ClInclude Include="..\src\depot_base.h" />
     <ClInclude Include="..\src\depot_func.h" />
@@ -496,9 +524,11 @@
     <ClInclude Include="..\src\linkgraph\mcf.h" />
     <ClInclude Include="..\src\linkgraph\refresh.h" />
     <ClInclude Include="..\src\livery.h" />
+    <ClInclude Include="..\src\logic_signals.h" />
     <ClInclude Include="..\src\map_func.h" />
     <ClInclude Include="..\src\map_type.h" />
     <ClInclude Include="..\src\mixer.h" />
+    <ClInclude Include="..\src\triphistory.h" />
     <ClInclude Include="..\src\network\network.h" />
     <ClInclude Include="..\src\network\network_admin.h" />
     <ClInclude Include="..\src\network\network_base.h" />
@@ -547,6 +577,7 @@
     <ClInclude Include="..\src\sound\null_s.h" />
     <ClInclude Include="..\src\video\null_v.h" />
     <ClInclude Include="..\src\object.h" />
+    <ClCompile Include="..\src\triphistory_gui.cpp" />
     <ClInclude Include="..\src\object_base.h" />
     <ClInclude Include="..\src\object_type.h" />
     <ClInclude Include="..\src\openttd.h" />
@@ -585,6 +616,7 @@
     <ClInclude Include="..\src\signs_type.h" />
     <ClInclude Include="..\src\slope_func.h" />
     <ClInclude Include="..\src\slope_type.h" />
+    <ClInclude Include="..\src\smallmap_colours.h" />
     <ClInclude Include="..\src\smallmap_gui.h" />
     <ClInclude Include="..\src\sortlist_type.h" />
     <ClInclude Include="..\src\sound_func.h" />
@@ -648,6 +680,7 @@
     <ClInclude Include="..\src\water.h" />
     <ClInclude Include="..\src\waypoint_base.h" />
     <ClInclude Include="..\src\waypoint_func.h" />
+    <ClInclude Include="..\src\widgets\plans_widget.h" />
     <ClInclude Include="..\src\widget_type.h" />
     <ClInclude Include="..\src\os\windows\win32.h" />
     <ClInclude Include="..\src\music\win32_m.h" />
@@ -709,6 +742,7 @@
     <ClCompile Include="..\src\industry_gui.cpp" />
     <ClCompile Include="..\src\intro_gui.cpp" />
     <ClCompile Include="..\src\linkgraph\linkgraph_gui.cpp" />
+    <ClCompile Include="..\src\logic_signals_gui.cpp" />
     <ClCompile Include="..\src\main_gui.cpp" />
     <ClCompile Include="..\src\misc_gui.cpp" />
     <ClCompile Include="..\src\music_gui.cpp" />
@@ -808,6 +842,7 @@
     <ClCompile Include="..\src\disaster_cmd.cpp" />
     <ClCompile Include="..\src\group_cmd.cpp" />
     <ClCompile Include="..\src\industry_cmd.cpp" />
+    <ClCompile Include="..\src\logic_signals_cmd.cpp" />
     <ClCompile Include="..\src\misc_cmd.cpp" />
     <ClCompile Include="..\src\object_cmd.cpp" />
     <ClCompile Include="..\src\order_cmd.cpp" />
@@ -846,6 +881,7 @@
     <ClCompile Include="..\src\saveload\industry_sl.cpp" />
     <ClCompile Include="..\src\saveload\labelmaps_sl.cpp" />
     <ClCompile Include="..\src\saveload\linkgraph_sl.cpp" />
+    <ClCompile Include="..\src\saveload\logic_signals_sl.cpp" />
     <ClCompile Include="..\src\saveload\map_sl.cpp" />
     <ClCompile Include="..\src\saveload\misc_sl.cpp" />
     <ClCompile Include="..\src\saveload\newgrf_sl.cpp" />
@@ -868,6 +904,8 @@
     <ClCompile Include="..\src\saveload\town_sl.cpp" />
     <ClCompile Include="..\src\saveload\vehicle_sl.cpp" />
     <ClCompile Include="..\src\saveload\waypoint_sl.cpp" />
+    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp" />
+    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp" />
     <ClInclude Include="..\src\table\airport_defaults.h" />
     <ClInclude Include="..\src\table\airport_movement.h" />
     <ClInclude Include="..\src\table\airporttile_ids.h" />
@@ -1273,6 +1311,10 @@
     <ClCompile Include="..\src\os\windows\win32.cpp" />
     <ClInclude Include="..\src\thread\thread.h" />
     <ClCompile Include="..\src\thread\thread_win32.cpp" />
+    <ClInclude Include="..\src\tracerestrict.h" />
+    <ClCompile Include="..\src\tracerestrict.cpp" />
+    <ClCompile Include="..\src\tracerestrict_gui.cpp" />
+    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />

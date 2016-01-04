@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: dbg_helpers.cpp 20283 2010-08-01 19:22:34Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

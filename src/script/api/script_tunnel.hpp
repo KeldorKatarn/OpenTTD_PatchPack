@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_tunnel.hpp 26149 2013-12-08 15:44:09Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

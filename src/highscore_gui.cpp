@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: highscore_gui.cpp 25668 2013-08-05 20:36:24Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

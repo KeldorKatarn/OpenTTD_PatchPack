@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_config.cpp 26070 2013-11-23 18:11:01Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

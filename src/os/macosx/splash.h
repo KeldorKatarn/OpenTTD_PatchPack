@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: splash.h 22913 2011-09-09 20:28:48Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

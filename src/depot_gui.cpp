@@ -865,6 +865,7 @@ struct DepotWindow : Window {
 
 	virtual void OnMouseDrag(Point pt, int widget)
 	{
+
 		if (this->type != VEH_TRAIN || this->sel == INVALID_VEHICLE) return;
 
 		/* A rail vehicle is dragged.. */
@@ -919,6 +920,7 @@ struct DepotWindow : Window {
 
 					if (this->GetVehicleFromDepotWndPt(pt.x - nwi->pos_x, pt.y - nwi->pos_y, &v, &gdvp) == MODE_DRAG_VEHICLE && sel != INVALID_VEHICLE) {
 						if (gdvp.wagon != NULL && gdvp.wagon->index == sel && _ctrl_pressed) {
+
 							DoCommandP(Vehicle::Get(sel)->tile, Vehicle::Get(sel)->index, true,
 									CMD_REVERSE_TRAIN_DIRECTION | CMD_MSG(STR_ERROR_CAN_T_REVERSE_DIRECTION_RAIL_VEHICLE));
 						} else if (gdvp.wagon == NULL || gdvp.wagon->index != sel) {

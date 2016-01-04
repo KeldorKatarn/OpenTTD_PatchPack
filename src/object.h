@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: object.h 21846 2011-01-18 23:09:43Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

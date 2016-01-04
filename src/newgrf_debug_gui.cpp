@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_debug_gui.cpp 25946 2013-11-07 18:17:21Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: zoom_func.h 26202 2014-01-02 11:05:42Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

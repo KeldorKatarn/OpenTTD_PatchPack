@@ -46,18 +46,43 @@ static CommandCost ClearTile_Clear(TileIndex tile, DoCommandFlag flags)
 	return price;
 }
 
+SpriteID GetSpriteIDForClearLand(const Slope slope, byte set)
+{
+	return SPR_FLAT_BARE_LAND + SlopeToSpriteOffset(slope) + set * 19;
+}
+
 void DrawClearLandTile(const TileInfo *ti, byte set)
 {
-	DrawGroundSprite(SPR_FLAT_BARE_LAND + SlopeToSpriteOffset(ti->tileh) + set * 19, PAL_NONE);
+	DrawGroundSprite(GetSpriteIDForClearLand(ti->tileh, set), PAL_NONE);
+}
+
+SpriteID GetSpriteIDForHillyLand(const Slope slope, const uint rough_index)
+{
+	if (slope != SLOPE_FLAT) {
+		return SPR_FLAT_ROUGH_LAND + SlopeToSpriteOffset(slope);
+	} else {
+		return _landscape_clear_sprites_rough[rough_index];
+	}
 }
 
 void DrawHillyLandTile(const TileInfo *ti)
 {
-	if (ti->tileh != SLOPE_FLAT) {
-		DrawGroundSprite(SPR_FLAT_ROUGH_LAND + SlopeToSpriteOffset(ti->tileh), PAL_NONE);
-	} else {
-		DrawGroundSprite(_landscape_clear_sprites_rough[GB(ti->x ^ ti->y, 4, 3)], PAL_NONE);
-	}
+	DrawGroundSprite(GetSpriteIDForHillyLand(ti->tileh, GB(ti->x ^ ti->y, 4, 3)), PAL_NONE);
+}
+
+SpriteID GetSpriteIDForRocks(const Slope slope)
+{
+	return SPR_FLAT_ROCKY_LAND_1 + SlopeToSpriteOffset(slope);
+}
+
+SpriteID GetSpriteIDForFields(const uint field_type, const Slope slope)
+{
+	return _clear_land_sprites_farmland[field_type] + SlopeToSpriteOffset(slope);
+}
+
+SpriteID GetSpriteIDForSnowDesert(const uint density, const Slope slope)
+{
+	return _clear_land_sprites_snow_desert[density] + SlopeToSpriteOffset(slope);
 }
 
 static void DrawClearLandFence(const TileInfo *ti)
@@ -112,17 +137,17 @@ static void DrawTile_Clear(TileInfo *ti)
 			break;
 
 		case CLEAR_ROCKS:
-			DrawGroundSprite(SPR_FLAT_ROCKY_LAND_1 + SlopeToSpriteOffset(ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForRocks(ti->tileh), PAL_NONE);
 			break;
 
 		case CLEAR_FIELDS:
-			DrawGroundSprite(_clear_land_sprites_farmland[GetFieldType(ti->tile)] + SlopeToSpriteOffset(ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForFields(GetFieldType(ti->tile), ti->tileh), PAL_NONE);
 			DrawClearLandFence(ti);
 			break;
 
 		case CLEAR_SNOW:
 		case CLEAR_DESERT:
-			DrawGroundSprite(_clear_land_sprites_snow_desert[GetClearDensity(ti->tile)] + SlopeToSpriteOffset(ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForSnowDesert(GetClearDensity(ti->tile), ti->tileh), PAL_NONE);
 			break;
 	}
 
@@ -171,7 +196,7 @@ static void UpdateFences(TileIndex tile)
 		dirty = true;
 	}
 
-	if (dirty) MarkTileDirtyByTile(tile);
+	if (dirty) MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 }
 
 
@@ -253,7 +278,6 @@ static void TileLoop_Clear(TileIndex tile)
 		int z;
 		if (IsTileFlat(tile, &z) && z == 0) {
 			DoFloodTile(tile);
-			MarkTileDirtyByTile(tile);
 			return;
 		}
 	}
@@ -307,7 +331,7 @@ static void TileLoop_Clear(TileIndex tile)
 			return;
 	}
 
-	MarkTileDirtyByTile(tile);
+	MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 }
 
 void GenerateClearTile()
@@ -319,7 +343,37 @@ void GenerateClearTile()
 	i = ScaleByMapSize(GB(Random(), 0, 10) + 0x400);
 	gi = ScaleByMapSize(GB(Random(), 0, 7) + 0x80);
 
-	SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i);
+	if (_settings_game.construction.trees_around_snow_line_enabled) {
+		SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i + MapSize());
+
+		uint8 range = _settings_game.construction.trees_around_snow_line_range;
+		uint8 snow_line_height = HighestSnowLine() + range;
+
+		for (TileIndex possible_mountain_tile = 0; possible_mountain_tile < MapSize(); ++possible_mountain_tile) {
+			uint8 tile_z = GetTileZ(possible_mountain_tile);
+			bool is_above_snow_line = (tile_z > snow_line_height);
+			bool is_above_rock_line = (tile_z > snow_line_height + 2);
+			bool is_clear_tile = IsTileType(possible_mountain_tile, MP_CLEAR);
+
+			if (is_above_snow_line && is_clear_tile) {
+				bool is_desert_tile = IsClearGround(possible_mountain_tile, CLEAR_DESERT);
+
+				if (!is_desert_tile) {
+					if (is_above_rock_line) {
+						SetClearGroundDensity(possible_mountain_tile, CLEAR_ROCKS, 3);
+					}
+					else {
+						SetClearGroundDensity(possible_mountain_tile, CLEAR_ROUGH, 3);
+					}
+				}
+			}
+
+			IncreaseGeneratingWorldProgress(GWP_ROUGH_ROCKY);
+		}
+	} else {
+		SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i);
+	}
+	
 	do {
 		IncreaseGeneratingWorldProgress(GWP_ROUGH_ROCKY);
 		tile = RandomTile();

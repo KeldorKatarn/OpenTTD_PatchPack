@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_testmode.cpp 24008 2012-03-04 16:54:12Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

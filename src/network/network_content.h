@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: network_content.h 23465 2011-12-09 21:49:52Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraphjob.h 26347 2014-02-16 18:42:59Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -343,6 +343,8 @@ public:
  */
 class Path {
 public:
+	static Path *invalid_path;
+
 	Path(NodeID n, bool source = false);
 
 	/** Get the node this leg passes. */

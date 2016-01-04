@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sign_widget.h 24750 2012-11-14 22:51:05Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

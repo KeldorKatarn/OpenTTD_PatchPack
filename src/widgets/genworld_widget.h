@@ -35,6 +35,10 @@ enum GenerateLandscapeWidgets {
 	WID_GL_SNOW_LEVEL_TEXT,             ///< Snow level.
 	WID_GL_SNOW_LEVEL_UP,               ///< Increase snow level.
 
+	WID_GL_DESERT_AMOUNT_DOWN,          ///< Decrease desert amount.
+	WID_GL_DESERT_AMOUNT_TEXT,          ///< Desert level.
+	WID_GL_DESERT_AMOUNT_UP,            ///< Increase desert amount.
+
 	WID_GL_TREE_PULLDOWN,               ///< Dropdown 'Tree algorithm'.
 	WID_GL_LANDSCAPE_PULLDOWN,          ///< Dropdown 'Land generator'.
 

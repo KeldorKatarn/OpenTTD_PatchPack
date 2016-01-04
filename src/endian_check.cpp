@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: endian_check.cpp 23595 2011-12-19 17:48:04Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

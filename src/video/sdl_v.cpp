@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: sdl_v.cpp 26351 2014-02-16 21:57:22Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

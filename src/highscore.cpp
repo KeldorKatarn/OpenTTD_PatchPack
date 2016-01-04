@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: highscore.cpp 26062 2013-11-23 13:18:29Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

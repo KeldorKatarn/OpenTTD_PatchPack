@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: effectvehicle_func.h 22505 2011-05-28 09:45:12Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_station.cpp 26398 2014-03-11 22:08:58Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

@@ -15,12 +15,16 @@
 #include "train.h"
 #include "vehiclelist.h"
 #include "vehicle_func.h"
+#include "station_base.h"
+#include "town.h"
 #include "autoreplace_base.h"
 #include "autoreplace_func.h"
 #include "string_func.h"
+#include "strings_func.h"
 #include "company_func.h"
 #include "core/pool_func.hpp"
 #include "order_backup.h"
+#include "tbtr_template_vehicle.h"
 
 #include "table/strings.h"
 
@@ -137,6 +141,9 @@ void GroupStatistics::Clear()
  */
 /* static */ void GroupStatistics::CountVehicle(const Vehicle *v, int delta)
 {
+	/* make virtual trains group-neutral */
+	if ( HasBit(v->subtype, GVSF_VIRTUAL) ) return;
+
 	assert(delta == 1 || delta == -1);
 
 	GroupStatistics &stats_all = GroupStatistics::GetAllGroup(v);
@@ -315,7 +322,7 @@ CommandCost CmdDeleteGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 	/* Remove all vehicles from the group */
 	DoCommand(0, p1, 0, flags, CMD_REMOVE_ALL_VEHICLES_GROUP);
-
+ 
 	/* Delete sub-groups */
 	Group *gp;
 	FOR_ALL_GROUPS(gp) {
@@ -341,11 +348,15 @@ CommandCost CmdDeleteGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		VehicleType vt = g->vehicle_type;
 
+		/* Delete all template replacements using the just deleted group */
+		deleteIllegalTemplateReplacements(g->index);
+
 		/* Delete the Replace Vehicle Windows */
 		DeleteWindowById(WC_REPLACE_VEHICLE, g->vehicle_type);
 		delete g;
 
 		InvalidateWindowData(GetWindowClassForVehicleType(vt), VehicleListIdentifier(VL_GROUP_LIST, vt, _current_company).Pack());
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	return CommandCost();
@@ -367,7 +378,7 @@ static bool IsUniqueGroupNameForVehicleType(const char *name, VehicleType type)
  * @param tile unused
  * @param flags type of operation
  * @param p1   index of array group
- *   - p1 bit 0-15 : GroupID
+ *   - p1 bit 0-15 : GroupID///
  *   - p1 bit 16: 0 - Rename grouop
  *                1 - Set group parent
  * @param p2   parent group index
@@ -419,6 +430,7 @@ CommandCost CmdAlterGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 	if (flags & DC_EXEC) {
 		SetWindowDirty(WC_REPLACE_VEHICLE, g->vehicle_type);
 		InvalidateWindowData(GetWindowClassForVehicleType(g->vehicle_type), VehicleListIdentifier(VL_GROUP_LIST, g->vehicle_type, _current_company).Pack());
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	return CommandCost();
@@ -426,7 +438,7 @@ CommandCost CmdAlterGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 
 
 /**
- * Do add a vehicle to a group.
+ * Do add a vehicle to a group.///
  * @param v Vehicle to add.
  * @param new_g Group to add to.
  */
@@ -500,6 +512,145 @@ CommandCost CmdAddVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 		/* Update the Replace Vehicle Windows */
 		SetWindowDirty(WC_REPLACE_VEHICLE, v->type);
 		InvalidateWindowData(GetWindowClassForVehicleType(v->type), VehicleListIdentifier(VL_GROUP_LIST, v->type, _current_company).Pack());
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+	}
+
+	return CommandCost();
+}
+
+/**
+ * Create a new group, rename it with specific name and add vehicle to this group
+ * @param tile unused
+ * @param flags type of operation
+ * @param p1   vehicle to add to a group
+ *   - p1 bit 0-19 : VehicleID
+ *   - p1 bit   31 : Add shared vehicles as well.
+ * @param p2   unused
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	Vehicle *v = Vehicle::GetIfValid(GB(p1, 0, 20));
+
+	if (v == NULL) return CMD_ERROR;
+
+	if (v->owner != _current_company || !v->IsPrimaryVehicle()) return CMD_ERROR;
+
+	/* Get the essential orders */
+	VehicleOrderID start = 0;
+
+	Order *first = NULL;
+	Order *last = NULL;
+	Order *order = v->GetOrder(start);
+
+	if (order == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+
+	VehicleOrderID oid = start;
+
+	do {
+		if (order->IsType(OT_GOTO_STATION)) {
+			if(first == NULL) first = order;
+			last = order;
+		}
+
+		oid++;
+		order = order->next;
+		if (order == NULL) {
+			order = v->orders.list->GetFirstOrder();
+			oid = 0;
+		}
+	} while (oid != start);
+
+	if(last == NULL || first == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+
+	/* Create the name */
+
+	static char str[130] = { "" };  // 63 + 3 + 63 + 1
+
+	if(_settings_client.gui.specific_group_name == 1) { // Use station names
+
+		static char stationname_first[64] = { "" };
+		static char stationname_last[64] = { "" };
+
+		SetDParam(0, first->GetDestination());
+		GetString(stationname_first, STR_STATION_NAME, lastof(stationname_first));
+
+		SetDParam(0, last->GetDestination());
+		GetString(stationname_last, STR_STATION_NAME, lastof(stationname_last));
+
+		//if(strnatcmp(stationname_first, stationname_last) > 0) {  // Sort by name
+		//	Order *temp = first;
+		//	first = last;
+		//	last = temp;
+		//}
+		SetDParam(0, first->GetDestination());
+		SetDParam(1, last->GetDestination());
+		GetString(str, STR_GROUP_SPECIFIC_NAME_STATION, lastof(str));
+
+	}
+	else { //Use town names
+		
+		Station *station_first = Station::GetIfValid(first->GetDestination());
+		Station *station_last = Station::GetIfValid(last->GetDestination());
+				
+		if(station_last->IsValidID == false || station_first->IsValidID == false) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+
+		Town *town_first = station_first->town;
+		Town *town_last = station_last->town;
+
+		if(town_first->index == town_last->index) { // First and last station belong to the same town
+			SetDParam(0, town_first->index); 
+			GetString(str, STR_GROUP_SPECIFIC_NAME_TOWN_LOCAL, lastof(str));
+		}
+		else {
+			static char townname_first[64] = { "" };
+			static char townname_last[64] = { "" };
+
+			SetDParam(0, town_first->index);
+			GetString(townname_first, STR_TOWN_NAME, lastof(townname_first));
+
+			SetDParam(0, town_last->index);
+			GetString(townname_last, STR_TOWN_NAME, lastof(townname_last));
+
+			//if(strnatcmp(townname_first, townname_last) > 0) { // Sort by name
+			//	Town *town_temp = town_first;
+			//	town_first = town_last;
+			//	town_last = town_temp;
+			//}
+
+			SetDParam(0, town_first->index); 
+			SetDParam(1, town_last->index );
+			GetString(str, STR_GROUP_SPECIFIC_NAME_TOWN, lastof(str));
+		}
+	}
+	
+	if (!IsUniqueGroupNameForVehicleType(str, v->type)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+
+	if (Utf8StringLength(str) >= MAX_LENGTH_GROUP_NAME_CHARS) return CMD_ERROR;
+
+	CommandCost ret = CmdCreateGroup(0, flags, v->type, 0, NULL);
+	if (ret.Failed()) return ret;
+
+	GroupID new_g = _new_group_id;
+	CommandCost ret2 = CmdAlterGroup(0, flags, new_g, 0, str);
+
+	if (flags & DC_EXEC) {
+		AddVehicleToGroup(v, new_g);
+
+		if (HasBit(p1, 31)) {
+			/* Add vehicles in the shared order list as well. */
+			for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
+				if (v2->group_id != new_g) AddVehicleToGroup(v2, new_g);
+			}
+		}
+
+		GroupStatistics::UpdateAutoreplace(v->owner);
+
+		/* Update the Replace Vehicle Windows */
+		SetWindowDirty(WC_REPLACE_VEHICLE, v->type);
+		InvalidateWindowData(GetWindowClassForVehicleType(v->type), VehicleListIdentifier(VL_GROUP_LIST, v->type, _current_company).Pack());
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	return CommandCost();
@@ -538,6 +689,7 @@ CommandCost CmdAddSharedVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32
 		}
 
 		InvalidateWindowData(GetWindowClassForVehicleType(type), VehicleListIdentifier(VL_GROUP_LIST, type, _current_company).Pack());
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	return CommandCost();
@@ -579,7 +731,7 @@ CommandCost CmdRemoveAllVehiclesGroup(TileIndex tile, DoCommandFlag flags, uint3
 
 	return CommandCost();
 }
-
+ 
 /**
  * Set replace protection for a group and its sub-groups.
  * @param g initial group.
@@ -595,6 +747,7 @@ static void SetGroupReplaceProtection(Group *g, bool protect)
 	}
 }
 
+
 /**
  * (Un)set global replace protection from a group
  * @param tile unused
@@ -606,7 +759,7 @@ static void SetGroupReplaceProtection(Group *g, bool protect)
  * - p2 bit 1    : 1 to apply to sub-groups.
  * @param text unused
  * @return the cost of this operation or an error
- */
+ *////
 CommandCost CmdSetGroupReplaceProtection(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Group *g = Group::GetIfValid(p1);
@@ -688,12 +841,12 @@ void UpdateTrainGroupID(Train *v)
 
 /**
  * Get the number of engines with EngineID id_e in the group with GroupID
- * id_g
+ * id_g and its sub-groups.
  * @param company The company the group belongs to
  * @param id_g The GroupID of the group used
  * @param id_e The EngineID of the engine to count
  * @return The number of engines with EngineID id_e in the group
- */
+ *////
 uint GetGroupNumEngines(CompanyID company, GroupID id_g, EngineID id_e)
 {
 	uint count = 0;

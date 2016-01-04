@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: mixer.h 19332 2010-03-06 11:08:31Z peter1138 $ */
 
 /*
  * This file is part of OpenTTD.

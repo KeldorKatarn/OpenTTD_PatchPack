@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_animation_type.h 22745 2011-08-14 13:45:36Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

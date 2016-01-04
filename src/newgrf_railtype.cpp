@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_railtype.cpp 26388 2014-03-03 20:02:31Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

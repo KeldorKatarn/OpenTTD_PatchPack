@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: dmusic.cpp 25269 2013-05-20 13:35:41Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

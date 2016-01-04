@@ -12,7 +12,7 @@
 ##case d c b n m w
 
 
-# $Id$
+# $Id: polish.txt 26436 2014-03-29 18:45:20Z translators $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

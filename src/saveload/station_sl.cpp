@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: station_sl.cpp 26175 2013-12-23 18:09:29Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

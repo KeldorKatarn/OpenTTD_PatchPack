@@ -1073,7 +1073,6 @@ void GetRotorOverrideSprite(EngineID engine, const struct Aircraft *v, bool info
 	}
 }
 
-
 /**
  * Check if a wagon is currently using a wagon override
  * @param v The wagon to check
@@ -1329,3 +1328,4 @@ void FillNewGRFVehicleCache(const Vehicle *v)
 	/* Make sure really all bits are set. */
 	assert(v->grf_cache.cache_valid == (1 << NCVV_END) - 1);
 }
+

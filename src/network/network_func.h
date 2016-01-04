@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: network_func.h 26370 2014-02-23 19:32:32Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

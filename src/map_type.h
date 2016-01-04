@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: map_type.h 26319 2014-02-09 12:56:36Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

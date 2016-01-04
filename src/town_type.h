@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: town_type.h 23233 2011-11-15 20:47:53Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

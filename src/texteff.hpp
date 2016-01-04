@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: texteff.hpp 25011 2013-02-17 14:50:54Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

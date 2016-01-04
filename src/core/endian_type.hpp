@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: endian_type.hpp 22411 2011-05-02 17:42:12Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

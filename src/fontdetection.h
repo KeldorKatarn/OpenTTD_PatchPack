@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: fontdetection.h 25450 2013-06-23 18:32:02Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

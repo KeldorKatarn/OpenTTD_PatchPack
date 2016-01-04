@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: rail_gui.h 21867 2011-01-20 12:40:04Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

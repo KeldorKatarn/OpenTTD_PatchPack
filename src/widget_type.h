@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: widget_type.h 25864 2013-10-13 19:18:30Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

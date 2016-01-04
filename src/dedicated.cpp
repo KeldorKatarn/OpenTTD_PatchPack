@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: dedicated.cpp 26098 2013-11-25 09:20:35Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

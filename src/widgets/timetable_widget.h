@@ -31,6 +31,9 @@ enum VehicleTimetableWidgets {
 	WID_VT_EXPECTED_SELECTION,          ///< Disable/hide the expected selection button.
 	WID_VT_CHANGE_SPEED,                ///< Change speed limit button.
 	WID_VT_CLEAR_SPEED,                 ///< Clear speed limit button.
+	WID_VT_TTSEP_MODE_DROPDOWN,         ///< Select separation mode dropdown
+	WID_VT_TTSEP_SET_PARAMETER,         ///< Set the separation parameter (time / number)
+	WID_VT_TTSEP_PANEL_TEXT             ///< Panel area for separation info text
 };
 
 #endif /* WIDGETS_TIMETABLE_WIDGET_H */

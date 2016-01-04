@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cargopacket_sl.cpp 25361 2013-06-09 13:03:48Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

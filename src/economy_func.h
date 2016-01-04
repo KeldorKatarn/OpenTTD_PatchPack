@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: economy_func.h 24565 2012-10-01 19:31:55Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

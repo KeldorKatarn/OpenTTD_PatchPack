@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: clear_land.h 23188 2011-11-11 18:01:41Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

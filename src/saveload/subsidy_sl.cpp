@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: subsidy_sl.cpp 19973 2010-06-13 14:11:59Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

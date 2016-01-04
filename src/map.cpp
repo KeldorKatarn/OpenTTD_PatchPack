@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: map.cpp 23740 2012-01-03 21:32:51Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.
@@ -146,6 +146,25 @@ extern const TileIndexDiffC _tileoffs_by_dir[] = {
 	{ 1, -1}, ///< DIR_W
 	{ 0, -1}  ///< DIR_NW
 };
+
+uint DistanceEuclidean(TileIndex t0, TileIndex t1)
+{
+	return IntSqrt( DistanceSquare(t0, t1) );
+}
+
+/**
+* Gets the 'as the plane flies' distance between the two given tiles.
+* @param t0 the start tile
+* @param t1 the end tile
+* @return the distance
+*/
+uint DistanceOpenTTD(TileIndex t0, TileIndex t1)
+{
+	const uint dx = Delta(TileX(t0), TileX(t1));
+	const uint dy = Delta(TileY(t0), TileY(t1));
+
+	return DistanceEuclidean(t0, TileXY( TileX(t0) + minu(dx, dy), TileY(t0) + minu(dx, dy) )) + Delta(dx, dy);
+}
 
 /**
  * Gets the Manhattan distance between the two given tiles.

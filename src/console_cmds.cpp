@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: console_cmds.cpp 26000 2013-11-14 22:50:16Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

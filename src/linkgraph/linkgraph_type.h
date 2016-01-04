@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraph_type.h 26331 2014-02-10 20:13:07Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

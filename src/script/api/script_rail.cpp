@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_rail.cpp 26279 2014-01-26 14:54:34Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

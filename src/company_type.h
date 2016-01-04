@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: company_type.h 23602 2011-12-19 20:50:36Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

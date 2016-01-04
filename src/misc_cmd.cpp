@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: misc_cmd.cpp 25788 2013-09-21 13:07:42Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

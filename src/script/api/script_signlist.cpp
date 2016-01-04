@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_signlist.cpp 23355 2011-11-29 23:15:35Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

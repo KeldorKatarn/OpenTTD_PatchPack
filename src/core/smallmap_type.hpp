@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: smallmap_type.hpp 24741 2012-11-14 22:50:30Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

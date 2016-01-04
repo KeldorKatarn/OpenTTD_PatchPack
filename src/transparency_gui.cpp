@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: transparency_gui.cpp 25290 2013-05-26 19:25:01Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

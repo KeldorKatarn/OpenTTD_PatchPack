@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraphschedule.h 26347 2014-02-16 18:42:59Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

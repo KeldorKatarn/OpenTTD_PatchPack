@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: roadveh_movement.h 21263 2010-11-20 09:09:57Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

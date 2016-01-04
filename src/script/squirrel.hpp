@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: squirrel.hpp 23604 2011-12-19 20:50:54Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

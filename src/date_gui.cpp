@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: date_gui.cpp 26086 2013-11-24 14:46:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraph_sl.cpp 25898 2013-10-22 16:13:28Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -229,7 +229,7 @@ static void Load_LGRS()
  */
 void AfterLoadLinkGraphs()
 {
-	if (IsSavegameVersionBefore(191)) {
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 		LinkGraph *lg;
 		FOR_ALL_LINK_GRAPHS(lg) {
 			for (NodeID node_id = 0; node_id < lg->Size(); ++node_id) {

@@ -16,6 +16,7 @@
 #include "track_type.h"
 #include "command_type.h"
 #include "order_base.h"
+#include "triphistory.h"
 #include "cargopacket.h"
 #include "texteff.hpp"
 #include "engine_type.h"
@@ -23,8 +24,11 @@
 #include "transport_type.h"
 #include "group_type.h"
 #include "base_consist.h"
+#include <vector>
 #include <list>
 #include <map>
+
+CommandCost CmdRefitVehicle(TileIndex, DoCommandFlag, uint32, uint32, const char*);
 
 /** Vehicle status bits in #Vehicle::vehstatus. */
 enum VehStatus {
@@ -115,6 +119,7 @@ enum GroundVehicleSubtypeFlags {
 	GVSF_ENGINE           = 3, ///< Engine that can be front engine, but might be placed behind another engine (not used for road vehicles).
 	GVSF_FREE_WAGON       = 4, ///< First in a wagon chain (in depot) (not used for road vehicles).
 	GVSF_MULTIHEADED      = 5, ///< Engine is multiheaded (not used for road vehicles).
+	GVSF_VIRTUAL		  = 6, ///< Used for virtual trains during template design, it is needed to skip checks for tile or depot status
 };
 
 /** Cached often queried values common to all vehicles. */
@@ -162,6 +167,9 @@ private:
 
 	Vehicle *next_shared;               ///< pointer to the next vehicle that shares the order
 	Vehicle *previous_shared;           ///< NOSAVE: pointer to the previous vehicle in the shared order chain
+ 
+	Vehicle *ahead_separation;          ///< (outdated. Only for backwards compatibility)
+	Vehicle *behind_separation;         ///< (outdated. Only for backwards compatibility)
 
 public:
 	friend const SaveLoad *GetVehicleDescription(VehicleType vt); ///< So we can use private/protected variables in the saveload code
@@ -181,6 +189,8 @@ public:
 	Money profit_this_year;             ///< Profit this year << 8, low 8 bits are fract
 	Money profit_last_year;             ///< Profit last year << 8, low 8 bits are fract
 	Money value;                        ///< Value of the vehicle
+
+	TripHistory trip_history;           ///< Trip History Info
 
 	CargoPayment *cargo_payment;        ///< The cargo payment we're currently in
 
@@ -250,10 +260,12 @@ public:
 	uint16 refit_cap;                   ///< Capacity left over from before last refit.
 	VehicleCargoList cargo;             ///< The cargo this vehicle is carrying
 	uint16 cargo_age_counter;           ///< Ticks till cargo is aged next.
+	std::vector<int8> station_occupancies; ///< Occupancies of vehicle at each station (set after leaving a station).
+	int8 trip_occupancy;                ///< Occupancy of vehicle of the current trip (updated after leaving the last station in the order list).
 
 	byte day_counter;                   ///< Increased by one for each day
 	byte tick_counter;                  ///< Increased by one for each tick
-	byte running_ticks;                 ///< Number of ticks this vehicle was not stopped this day
+	uint16 running_ticks;               ///< Number of ticks this vehicle was not stopped this day
 
 	byte vehstatus;                     ///< Status
 	Order current_order;                ///< The current order (+ status, like: loading)
@@ -514,6 +526,7 @@ public:
 	Money GetDisplayProfitLastYear() const { return (this->profit_last_year >> 8); }
 
 	void SetNext(Vehicle *next);
+	inline void SetFirst(Vehicle *f) { this->first=f; }
 
 	/**
 	 * Get the next vehicle of this vehicle.
@@ -815,6 +828,8 @@ public:
 	bool HasEngineType() const;
 	bool HasDepotOrder() const;
 	void HandlePathfindingResult(bool path_found);
+	void MarkSeparationInvalid();
+	void SetSepSettings(TTSepMode Mode, uint Parameter);
 
 	/**
 	 * Check if the vehicle is a front engine.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: date_func.h 22411 2011-05-02 17:42:12Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.
@@ -23,6 +23,7 @@ extern uint16 _tick_counter;
 void SetDate(Date date, DateFract fract);
 void ConvertDateToYMD(Date date, YearMonthDay *ymd);
 Date ConvertYMDToDate(Year year, Month month, Day day);
+Ticks GetCurrentTickCount();
 
 /**
  * Checks whether the given year is a leap year or not.

@@ -52,9 +52,11 @@
 #include "gamelog.h"
 #include "linkgraph/linkgraph.h"
 #include "linkgraph/refresh.h"
+#include "blitter/factory.hpp"
 
 #include "table/strings.h"
 
+#include "tbtr_template_vehicle_func.h"
 #include "safeguards.h"
 
 #define GEN_HASH(x, y) ((GB((y), 6 + ZOOM_LVL_SHIFT, 6) << 6) + GB((x), 7 + ZOOM_LVL_SHIFT, 6))
@@ -125,10 +127,25 @@ bool Vehicle::NeedsServicing() const
 
 	/* Are we ready for the next service cycle? */
 	const Company *c = Company::Get(this->owner);
+
 	if (this->ServiceIntervalIsPercent() ?
-			(this->reliability >= this->GetEngine()->reliability * (100 - this->GetServiceInterval()) / 100) :
-			(this->date_of_last_service + this->GetServiceInterval() >= _date)) {
-		return false;
+		(this->reliability >= this->GetEngine()->reliability * (100 - this->GetServiceInterval()) / 100) :
+		(this->date_of_last_service + this->GetServiceInterval() >= _date)) {
+			return false;
+	}
+
+	/* Do we even have any depots/hangars */
+	uint rail_pices = 0;
+	uint road_pieces = 0;
+
+	for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pices += c->infrastructure.rail[i];
+	for (uint i = 0; i < lengthof(c->infrastructure.road); i++) road_pieces += c->infrastructure.road[i];
+
+	if ((this->type == VEH_TRAIN && rail_pices == 0) ||
+		(this->type == VEH_ROAD && road_pieces == 0) ||
+		(this->type == VEH_SHIP && c->infrastructure.water == 0) ||
+		(this->type == VEH_AIRCRAFT && c->infrastructure.airport == 0)) {
+			return false;
 	}
 
 	/* If we're servicing anyway, because we have not disabled servicing when
@@ -190,6 +207,7 @@ bool Vehicle::NeedsAutomaticServicing() const
 	if (this->HasDepotOrder()) return false;
 	if (this->current_order.IsType(OT_LOADING)) return false;
 	if (this->current_order.IsType(OT_GOTO_DEPOT) && this->current_order.GetDepotOrderType() != ODTFB_SERVICE) return false;
+	
 	return NeedsServicing();
 }
 
@@ -200,7 +218,8 @@ uint Vehicle::Crash(bool flooded)
 
 	uint pass = 0;
 	/* Stop the vehicle. */
-	if (this->IsPrimaryVehicle()) this->vehstatus |= VS_STOPPED;
+	if (this->IsPrimaryVehicle())
+		this->vehstatus |= VS_STOPPED;
 	/* crash all wagons, and count passengers */
 	for (Vehicle *v = this; v != NULL; v = v->Next()) {
 		/* We do not transfer reserver cargo back, so TotalCount() instead of StoredCount() */
@@ -221,6 +240,17 @@ uint Vehicle::Crash(bool flooded)
 	return RandomRange(pass + 1); // Randomise deceased passengers.
 }
 
+/** Marks the separation of this vehicle's order list invalid. */
+void Vehicle::MarkSeparationInvalid()
+{
+	if (this->orders.list != NULL) this->orders.list->MarkSeparationInvalid();
+}
+
+/** Sets new separation settings for this vehicle's shared orders. */
+void Vehicle::SetSepSettings(TTSepMode Mode, uint Parameter)
+{
+	if (this->orders.list != NULL) this->orders.list->SetSepSettings(Mode, Parameter);
+}
 
 /**
  * Displays a "NewGrf Bug" error message for a engine, and pauses the game if not networking.
@@ -626,6 +656,13 @@ void ResetVehicleColourMap()
 typedef SmallMap<Vehicle *, bool, 4> AutoreplaceMap;
 static AutoreplaceMap _vehicles_to_autoreplace;
 
+/**
+ * List of vehicles that are issued for template replacement this tick.
+ * Mapping is {vehicle : leave depot after replacement}
+ */
+typedef SmallMap<Train *, bool, 4> TemplateReplacementMap;
+static TemplateReplacementMap _vehicles_to_templatereplace;
+
 void InitializeVehicles()
 {
 	_vehicles_to_autoreplace.Reset();
@@ -828,14 +865,25 @@ Vehicle::~Vehicle()
  */
 void VehicleEnteredDepotThisTick(Vehicle *v)
 {
-	/* Vehicle should stop in the depot if it was in 'stopping' state */
-	_vehicles_to_autoreplace[v] = !(v->vehstatus & VS_STOPPED);
+	/* Template Replacement Setup stuff */
+	bool stayInDepot = v->current_order.GetDepotActionType() != ODATF_SERVICE_ONLY;
+	TemplateReplacement *tr = GetTemplateReplacementByGroupID(v->group_id);
+	if ( tr ) {
+		if ( stayInDepot )	_vehicles_to_templatereplace[(Train*)v] = true;
+		else				_vehicles_to_templatereplace[(Train*)v] = false;
+	}
+	/* Moved the assignment for auto replacement here to prevent auto replacement
+	 * from happening if template replacement is also scheduled */
+	else
+		/* Vehicle should stop in the depot if it was in 'stopping' state */
+		_vehicles_to_autoreplace[v] = !(v->vehstatus & VS_STOPPED);
 
 	/* We ALWAYS set the stopped state. Even when the vehicle does not plan on
 	 * stopping in the depot, so we stop it to ensure that it will not reserve
 	 * the path out of the depot before we might autoreplace it to a different
 	 * engine. The new engine would not own the reserved path we store that we
 	 * stopped the vehicle, so autoreplace can start it again */
+
 	v->vehstatus |= VS_STOPPED;
 }
 
@@ -877,6 +925,7 @@ static void RunVehicleDayProc()
 void CallVehicleTicks()
 {
 	_vehicles_to_autoreplace.Clear();
+	_vehicles_to_templatereplace.Clear();
 
 	RunVehicleDayProc();
 
@@ -953,6 +1002,7 @@ void CallVehicleTicks()
 		}
 	}
 
+	/* do Auto Replacement */
 	Backup<CompanyByte> cur_company(_current_company, FILE_LINE);
 	for (AutoreplaceMap::iterator it = _vehicles_to_autoreplace.Begin(); it != _vehicles_to_autoreplace.End(); it++) {
 		v = it->first;
@@ -997,8 +1047,24 @@ void CallVehicleTicks()
 		SetDParam(1, error_message);
 		AddVehicleAdviceNewsItem(message, v->index);
 	}
-
 	cur_company.Restore();
+
+	/* do Template Replacement */
+	Backup<CompanyByte> tmpl_cur_company(_current_company, FILE_LINE);
+	for (TemplateReplacementMap::iterator it = _vehicles_to_templatereplace.Begin(); it != _vehicles_to_templatereplace.End(); it++) {
+
+		Train *t = it->first;
+
+		tmpl_cur_company.Change(t->owner);
+
+		bool stayInDepot = it->second;
+
+		it->first->vehstatus |= VS_STOPPED;
+		CmdTemplateReplaceVehicle(t, stayInDepot, DC_EXEC);
+		/* Redraw main gui for changed statistics */
+		SetWindowClassesDirty(WC_TEMPLATEGUI_MAIN);
+	}
+	tmpl_cur_company.Restore();
 }
 
 /**
@@ -1070,6 +1136,62 @@ void ViewportAddVehicles(DrawPixelInfo *dpi)
 						r >= v->coord.left &&
 						b >= v->coord.top) {
 					DoDrawVehicle(v);
+				}
+				v = v->hash_viewport_next;
+			}
+
+			if (x == xu) break;
+		}
+
+		if (y == yu) break;
+	}
+}
+
+void ViewportMapDrawVehicles(DrawPixelInfo *dpi)
+{
+	/* The bounding rectangle */
+	const int l = dpi->left;
+	const int r = dpi->left + dpi->width;
+	const int t = dpi->top;
+	const int b = dpi->top + dpi->height;
+
+	/* The hash area to scan */
+	int xl, xu, yl, yu;
+
+	if (dpi->width + (70 * ZOOM_LVL_BASE) < (1 << (7 + 6 + ZOOM_LVL_SHIFT))) {
+		xl = GB(l - (70 * ZOOM_LVL_BASE), 7 + ZOOM_LVL_SHIFT, 6);
+		xu = GB(r,                        7 + ZOOM_LVL_SHIFT, 6);
+	} else {
+		/* scan whole hash row */
+		xl = 0;
+		xu = 0x3F;
+	}
+
+	if (dpi->height + (70 * ZOOM_LVL_BASE) < (1 << (6 + 6 + ZOOM_LVL_SHIFT))) {
+		yl = GB(t - (70 * ZOOM_LVL_BASE), 6 + ZOOM_LVL_SHIFT, 6) << 6;
+		yu = GB(b,                        6 + ZOOM_LVL_SHIFT, 6) << 6;
+	} else {
+		/* scan whole column */
+		yl = 0;
+		yu = 0x3F << 6;
+	}
+
+	const int w = UnScaleByZoom(dpi->width, dpi->zoom);
+	const int h = UnScaleByZoom(dpi->height, dpi->zoom);
+	Blitter *blitter = BlitterFactory::GetCurrentBlitter();
+	for (int y = yl;; y = (y + (1 << 6)) & (0x3F << 6)) {
+		for (int x = xl;; x = (x + 1) & 0x3F) {
+			const Vehicle *v = _vehicle_viewport_hash[x + y]; // already masked & 0xFFF
+
+			while (v != NULL) {
+				if (!(v->vehstatus & (VS_HIDDEN | VS_UNCLICKABLE)) && (v->type != VEH_EFFECT)) {
+					Point pt = RemapCoords(v->x_pos, v->y_pos, v->z_pos);
+					const int pixel_x = UnScaleByZoomLower(pt.x - dpi->left, dpi->zoom);
+					if (IsInsideMM(pixel_x, 0, w)) {
+						const int pixel_y = UnScaleByZoomLower(pt.y - dpi->top, dpi->zoom);
+						if (IsInsideMM(pixel_y, 0, h))
+							blitter->SetPixel(dpi->dst_ptr, pixel_x, pixel_y, PC_WHITE);
+					}
 				}
 				v = v->hash_viewport_next;
 			}
@@ -1364,7 +1486,7 @@ void VehicleEnterDepot(Vehicle *v)
 			SetWindowClassesDirty(WC_TRAINS_LIST);
 			/* Clear path reservation */
 			SetDepotReservation(t->tile, false);
-			if (_settings_client.gui.show_track_reservation) MarkTileDirtyByTile(t->tile);
+			if (_settings_client.gui.show_track_reservation) MarkTileDirtyByTile(t->tile, ZOOM_LVL_DRAW_MAP);
 
 			UpdateSignalsOnSegment(t->tile, INVALID_DIAGDIR, t->owner);
 			t->wait_counter = 0;
@@ -1464,6 +1586,7 @@ void VehicleEnterDepot(Vehicle *v)
 				AddVehicleAdviceNewsItem(STR_NEWS_TRAIN_IS_WAITING + v->type, v->index);
 			}
 			AI::NewEvent(v->owner, new ScriptEventVehicleWaitingInDepot(v->index));
+			v->MarkSeparationInvalid();
 		}
 		v->current_order.MakeDummy();
 	}
@@ -1510,6 +1633,7 @@ void Vehicle::UpdateViewport(bool dirty)
 					min(old_coord.top,    this->coord.top),
 					max(old_coord.right,  this->coord.right),
 					max(old_coord.bottom, this->coord.bottom));
+				v->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP
 		}
 	}
 }
@@ -1528,7 +1652,7 @@ void Vehicle::UpdatePositionAndViewport()
  */
 void Vehicle::MarkAllViewportsDirty() const
 {
-	::MarkAllViewportsDirty(this->coord.left, this->coord.top, this->coord.right, this->coord.bottom);
+	::MarkAllViewportsDirty(this->coord.left, this->coord.top, this->coord.right, this->coord.bottomVL_BASE, v->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP);
 }
 
 /**
@@ -2039,6 +2163,17 @@ void Vehicle::BeginLoading()
 		this->current_order.MakeLoading(false);
 	}
 
+	/* If all requirements for separation are met, we can initialize it. */
+	if (_settings_game.order.automatic_timetable_separation
+		&& this->IsOrderListShared()
+		&& this->orders.list->IsCompleteTimetable()
+		&& (this->cur_real_order_index == 0)) {
+
+		if (!this->orders.list->IsSeparationValid()) this->orders.list->InitializeSeparation();
+		this->lateness_counter = this->orders.list->SeparateVehicle();
+
+	}
+
 	if (this->last_loading_station != INVALID_STATION &&
 			this->last_loading_station != this->last_station_visited &&
 			((this->current_order.GetLoadType() & OLFB_NO_LOAD) == 0 ||
@@ -2101,9 +2236,38 @@ void Vehicle::LeaveStation()
 			/* if the vehicle could load here or could stop with cargo loaded set the last loading station */
 			this->last_loading_station = this->last_station_visited;
 		} else {
-			/* if the vehicle couldn't load and had to unload or transfer everything
+			/* if the vehicle couldn't load and /// had to unload or transfer everything
 			 * set the last loading station to invalid as it will leave empty. */
 			this->last_loading_station = INVALID_STATION;
+		}
+	}
+
+	bool current_order_was_load_order = (this->current_order.GetLoadType() & OLFB_NO_LOAD) == 0;
+
+	if (current_order_was_load_order)
+	{
+		int8 occupancy = CalcPercentVehicleFilled(this, NULL);
+		station_occupancies.push_back(occupancy);
+	}
+
+	bool isLastOrder = this->cur_real_order_index == (this->orders.list->GetNumOrders() - 1);
+
+	if (isLastOrder)
+	{
+		if (station_occupancies.size() == 0)
+		{
+			trip_occupancy = -1;
+		}
+		else
+		{
+			 int8 sum = 0;
+			 
+			 std::vector<int8>::const_iterator it;
+			 for (it = station_occupancies.begin(); it != station_occupancies.end(); ++it)
+				 sum += *it;
+
+			 trip_occupancy = sum/(int8)station_occupancies.size();
+			 station_occupancies.clear();
 		}
 	}
 
@@ -2604,6 +2768,7 @@ void Vehicle::AddToShared(Vehicle *shared_chain)
 	if (this->next_shared != NULL) this->next_shared->previous_shared = this;
 
 	shared_chain->orders.list->AddVehicle(this);
+	shared_chain->orders.list->MarkSeparationInvalid();
 }
 
 /**
@@ -2616,6 +2781,7 @@ void Vehicle::RemoveFromShared()
 	bool were_first = (this->FirstShared() == this);
 	VehicleListIdentifier vli(VL_SHARED_ORDERS, this->type, this->owner, this->FirstShared()->index);
 
+	this->orders.list->MarkSeparationInvalid();
 	this->orders.list->RemoveVehicle(this);
 
 	if (!were_first) {

@@ -13,7 +13,7 @@
  * the sprite numbers and a bunch of masks and macros to handle sprites and to get
  * rid of all the magic numbers in the code.
  *
- * @note
+ * @note///
  * ALL SPRITE NUMBERS BELOW 5126 are in the main files
  *
  * All elements which consist of two elements should
@@ -163,7 +163,15 @@ static const SpriteID SPR_WINDOW_DEFSIZE             = SPR_OPENTTD_BASE + 168;
 
 static const SpriteID SPR_IMG_CARGOFLOW              = SPR_OPENTTD_BASE + 174;
 
-static const SpriteID SPR_SIGNALS_BASE  = SPR_OPENTTD_BASE + OPENTTD_SPRITE_COUNT;
+/** Sprites for the route step marker. */
+static const SpriteID SPR_ROUTE_STEP_BASE          = SPR_OPENTTD_BASE + OPENTTD_SPRITE_COUNT;
+static const SpriteID SPR_ROUTE_STEP_TOP           = SPR_ROUTE_STEP_BASE + 0;
+static const SpriteID SPR_ROUTE_STEP_MIDDLE        = SPR_ROUTE_STEP_BASE + 1;
+static const SpriteID SPR_ROUTE_STEP_BOTTOM        = SPR_ROUTE_STEP_BASE + 2;
+static const SpriteID SPR_ROUTE_STEP_BOTTOM_SHADOW = SPR_ROUTE_STEP_BASE + 3;
+static const SpriteID ROUTE_STEP_SPRITE_COUNT = 4;
+
+static const SpriteID SPR_SIGNALS_BASE  = SPR_ROUTE_STEP_BASE + ROUTE_STEP_SPRITE_COUNT;
 static const uint16 PRESIGNAL_SPRITE_COUNT                   =  48;
 static const uint16 PRESIGNAL_AND_SEMAPHORE_SPRITE_COUNT     = 112;
 static const uint16 PRESIGNAL_SEMAPHORE_AND_PBS_SPRITE_COUNT = 240;
@@ -296,8 +304,29 @@ static const uint16 EMPTY_BOUNDING_BOX_SPRITE_COUNT = 1;
 static const SpriteID SPR_PALETTE_BASE = SPR_EMPTY_BOUNDING_BOX + EMPTY_BOUNDING_BOX_SPRITE_COUNT;
 static const uint16 PALETTE_SPRITE_COUNT = 1;
 
+/* OldTracks sprites, 30 in total */
+static const SpriteID SPR_OLDTRACKS_BASE               = SPR_PALETTE_BASE + PALETTE_SPRITE_COUNT;
+static const SpriteID SPR_OLDTRACKS_PHASE1_BASE        = SPR_OLDTRACKS_BASE;
+static const SpriteID SPR_OLDTRACKS_PHASE2_BASE        = SPR_OLDTRACKS_BASE + 10;
+static const SpriteID SPR_OLDTRACKS_PHASE3_BASE        = SPR_OLDTRACKS_BASE + 20;
+static const SpriteID OLDTRACKS_SPRITE_COUNT           = 30;
+
+/* Tracerestrict sprites */
+static const SpriteID SPR_TRACERESTRICT_BASE = SPR_OLDTRACKS_BASE + OLDTRACKS_SPRITE_COUNT;
+static const uint16 TRACERESTRICT_SPRITE_COUNT = 2;
+
+/* Zoning sprites */
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_BASE = SPR_TRACERESTRICT_BASE + TRACERESTRICT_SPRITE_COUNT;
+static const uint16 ZONING_INNER_HIGHLIGHT_SPRITE_COUNT = 32;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_RED = SPR_ZONING_INNER_HIGHLIGHT_BASE + 19;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_GREEN = SPR_ZONING_INNER_HIGHLIGHT_BASE + 20;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_BLACK = SPR_ZONING_INNER_HIGHLIGHT_BASE + 21;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_LIGHT_BLUE = SPR_ZONING_INNER_HIGHLIGHT_BASE + 22;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_ORANGE = SPR_ZONING_INNER_HIGHLIGHT_BASE + 23;
+static const SpriteID SPR_ZONING_INNER_HIGHLIGHT_WHITE = SPR_ZONING_INNER_HIGHLIGHT_BASE + 24;
+
 /* From where can we start putting NewGRFs? */
-static const SpriteID SPR_NEWGRFS_BASE = SPR_PALETTE_BASE + PALETTE_SPRITE_COUNT;
+static const SpriteID SPR_NEWGRFS_BASE = SPR_ZONING_INNER_HIGHLIGHT_BASE + ZONING_INNER_HIGHLIGHT_SPRITE_COUNT;
 
 /* Manager face sprites */
 static const SpriteID SPR_GRADIENT = 874; // background gradient behind manager face
@@ -1303,19 +1332,21 @@ static const SpriteID SPR_IMG_DEPOT_MAGLEV = SPR_OPENTTD_BASE + 73;
 static const SpriteID SPR_IMG_RAIL_STATION = 1298;
 static const SpriteID SPR_IMG_RAIL_SIGNALS = 1291;
 
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_NORM     = 1287;
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_ENTRY    = SPR_SIGNALS_BASE +  12;
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_EXIT     = SPR_SIGNALS_BASE +  28;
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_COMBO    = SPR_SIGNALS_BASE +  44;
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_PBS      = SPR_SIGNALS_BASE + 124;
-static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_PBS_OWAY = SPR_SIGNALS_BASE + 140;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_NORM    = SPR_SIGNALS_BASE +  60;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_ENTRY   = SPR_SIGNALS_BASE +  76;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_EXIT    = SPR_SIGNALS_BASE +  92;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_COMBO   = SPR_SIGNALS_BASE + 108;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_PBS     = SPR_SIGNALS_BASE + 188;
-static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_PBS_OWAY= SPR_SIGNALS_BASE + 204;
-static const SpriteID SPR_IMG_SIGNAL_CONVERT           = SPR_OPENTTD_BASE + 135;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_NORM        = 1287;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_ENTRY       = SPR_SIGNALS_BASE +  12;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_EXIT        = SPR_SIGNALS_BASE +  28;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_COMBO       = SPR_SIGNALS_BASE +  44;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_PBS         = SPR_SIGNALS_BASE + 124;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_PBS_OWAY    = SPR_SIGNALS_BASE + 140;
+static const SpriteID SPR_IMG_SIGNAL_ELECTRIC_LOGIC       = SPR_SIGNALS_BASE + 156;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_NORM       = SPR_SIGNALS_BASE +  60;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_ENTRY      = SPR_SIGNALS_BASE +  76;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_EXIT       = SPR_SIGNALS_BASE +  92;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_COMBO      = SPR_SIGNALS_BASE + 108;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_PBS        = SPR_SIGNALS_BASE + 188;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_PBS_OWAY   = SPR_SIGNALS_BASE + 204;
+static const SpriteID SPR_IMG_SIGNAL_SEMAPHORE_LOGIC      = SPR_SIGNALS_BASE + 220;
+static const SpriteID SPR_IMG_SIGNAL_CONVERT              = SPR_OPENTTD_BASE + 135;
 
 static const SpriteID SPR_IMG_TUNNEL_RAIL   = 2430;
 static const SpriteID SPR_IMG_TUNNEL_MONO   = 2431;

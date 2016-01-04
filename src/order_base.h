@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: order_base.h 26267 2014-01-19 09:27:44Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -20,6 +20,7 @@
 #include "station_type.h"
 #include "vehicle_type.h"
 #include "date_type.h"
+#include "date_func.h"
 
 typedef Pool<Order, OrderID, 256, 64000> OrderPool;
 typedef Pool<OrderList, OrderListID, 128, 64000> OrderListPool;
@@ -245,8 +246,35 @@ public:
 void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord);
 void DeleteOrder(Vehicle *v, VehicleOrderID sel_ord);
 
-/**
- * Shared order list linking together the linked list of orders and the list
+
+/** Working modes for timetable separation. */
+enum TTSepMode {
+	/** Timetable separation works in fully automatic mode, determining its parameters from the situation in game. */
+	TTS_MODE_AUTO,
+
+	/** Timetable separation is deactivated altogether. */
+	TTS_MODE_OFF,
+
+	/** Timetable separation is active in manual time mode. The amount of time between vehicles is set in ticks by the user. */
+	TTS_MODE_MAN_T,
+
+	/** Timetable separation is active in manual number mode. The user sets a number of vehicles that are supposed to be running
+	*  the timetable simultaneously. The algorithm acts according to this specification regardless of the actual number of
+	*  running vehicles.*/
+	TTS_MODE_MAN_N,
+
+	/** Timetable separation works in buffered automatic mode that keeps one vehicle waiting at the first stop as
+	*  reserve for delay compensation and behaves like full automatic otherwise. */
+	TTS_MODE_BUFFERED_AUTO,
+};
+
+struct TTSepSettings {
+	TTSepMode mode;
+	uint num_veh, sep_ticks;
+	TTSepSettings() : mode(TTS_MODE_AUTO), num_veh(0), sep_ticks(0) { }
+};
+
+/** Shared order list linking together the linked list of orders and the list
  *  of vehicles sharing this order list.
  */
 struct OrderList : OrderListPool::PoolItem<&_orderlist_pool> {
@@ -256,6 +284,9 @@ private:
 
 	StationID GetBestLoadableNext(const Vehicle *v, const Order *o1, const Order *o2) const;
 
+	/** Returns the number of running (i.e. not stopped) vehicles in the shared orders list. */
+	int GetNumRunningVehicles();
+
 	Order *first;                     ///< First order of the order list.
 	VehicleOrderID num_orders;        ///< NOSAVE: How many orders there are in the list.
 	VehicleOrderID num_manual_orders; ///< NOSAVE: How many manually added orders are there in the list.
@@ -264,12 +295,21 @@ private:
 
 	Ticks timetable_duration;         ///< NOSAVE: Total timetabled duration of the order list.
 	Ticks total_duration;             ///< NOSAVE: Total (timetabled or not) duration of the order list.
+	Ticks last_timetable_init;        ///< Contains the last absolute time of initialization in ticks.
+	uint separation_counter;          ///< Counts the vehicles that arrive at the first shared order for separation timing.
+	bool is_separation_valid;         ///< Is true if the separation has been initialized since last load or vehicle list change.
+	Ticks current_separation;         ///< The current separation between vehicles in the shared order list.
+	TTSepMode current_sep_mode;       ///< The current mode of vehicle separation.
+	uint num_sep_vehicles;            ///< Number of planned vehicles for separation.
 
 public:
 	/** Default constructor producing an invalid order list. */
 	OrderList(VehicleOrderID num_orders = INVALID_VEH_ORDER_ID)
 		: first(NULL), num_orders(num_orders), num_manual_orders(0), num_vehicles(0), first_shared(NULL),
-		  timetable_duration(0), total_duration(0) { }
+		  timetable_duration(0), total_duration(0),
+		  last_timetable_init(INVALID_TICKS), separation_counter(0),
+		  is_separation_valid(false), current_separation(INVALID_TICKS), current_sep_mode(TTS_MODE_OFF),
+		  num_sep_vehicles(0) { }
 
 	/**
 	 * Create an order list with the given order chain for the given vehicle.
@@ -342,6 +382,25 @@ public:
 	 */
 	inline uint GetNumVehicles() const { return this->num_vehicles; }
 
+	/**
+	* Returns the amount of separation time between vehicles.
+	* @return the amount of separation time between vehicles.
+	*/
+	inline uint GetSepTime() const
+	{
+		if (this->is_separation_valid) {
+			return this->current_separation;
+		}
+		else {
+			return this->GetTimetableTotalDuration() / this->GetNumVehicles();
+		}
+	}
+
+	TTSepSettings GetSepSettings();
+
+	void SetSepSettings(TTSepSettings s);
+	void SetSepSettings(TTSepMode Mode, uint Parameter);
+
 	bool IsVehicleInSharedOrdersList(const Vehicle *v) const;
 	int GetPositionInSharedOrderList(const Vehicle *v) const;
 
@@ -386,6 +445,63 @@ public:
 	 * @param delta By how many ticks has the total duration changed
 	 */
 	void UpdateTotalDuration(Ticks delta) { this->total_duration += delta; }
+
+	* Gets the last absolute time in Ticks since separation was initalized.
+	* @return last arrival time of first vehicle at first order.
+	*/
+	inline Ticks GetSeparationInitTime() const
+	{
+		return this->last_timetable_init;
+	}
+
+	/**
+	* Gets the current value of the timetable separation counter.
+	* @return the current value of the timetable separation counter.
+	*/
+	inline uint GetSeparationCounter() const
+	{
+		return this->separation_counter;
+	}
+
+	/** Increases the timetable separation counter. */
+	void IncreaseSeparationCounter()
+	{
+		this->separation_counter++;
+	}
+
+	/** Marks timetable separation invalid so it has to be initialized again. */
+	void MarkSeparationInvalid()
+	{
+		if ((this->current_sep_mode == TTS_MODE_AUTO) || (this->current_sep_mode == TTS_MODE_BUFFERED_AUTO))
+			this->is_separation_valid = false;
+	}
+
+	/**
+	* Returns the new delay for the current vehicle and increases the separation counter.
+	* @return the new delay
+	*/
+	Ticks SeparateVehicle();
+
+	/**
+	* Gets whether the timetable separation is currently valid or not.
+	* @return whether the timetable separation is currently valid or not.
+	*/
+	inline bool IsSeparationValid() const
+	{
+		return this->is_separation_valid;
+	}
+
+	/**
+	* Gets whether timetable separation is currently switched on or not.
+	* @return whether the timetable separation is currently switched on or not.
+	*/
+	inline bool IsSeparationOn() const
+	{
+		return this->current_sep_mode != TTS_MODE_OFF;
+	}
+
+	/** Initializes the separation system. */
+	void InitializeSeparation();
 
 	void FreeChain(bool keep_orderlist = false);
 

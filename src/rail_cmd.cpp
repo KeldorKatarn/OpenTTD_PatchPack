@@ -33,6 +33,8 @@
 #include "strings_func.h"
 #include "company_gui.h"
 #include "object_map.h"
+#include "tracerestrict.h"
+#include "logic_signals.h"
 
 #include "table/strings.h"
 #include "table/railtypes.h"
@@ -44,6 +46,7 @@
 typedef SmallVector<Train *, 16> TrainList;
 
 RailtypeInfo _railtypes[RAILTYPE_END];
+TileIndex _rail_track_endtile; ///< The end of a rail track; as hidden return from the rail build/remove command for GUI purposes.
 RailType _sorted_railtypes[RAILTYPE_END];
 uint8 _sorted_railtypes_size;
 
@@ -93,12 +96,15 @@ void ResolveRailTypeGUISprites(RailtypeInfo *rti)
 	}
 
 	/* Array of default GUI signal sprite numbers. */
+	/* Logic signals don't have their own sprites yet, lets use one-way pbs sprites for now */
 	const SpriteID _signal_lookup[2][SIGTYPE_END] = {
 		{SPR_IMG_SIGNAL_ELECTRIC_NORM,  SPR_IMG_SIGNAL_ELECTRIC_ENTRY, SPR_IMG_SIGNAL_ELECTRIC_EXIT,
-		 SPR_IMG_SIGNAL_ELECTRIC_COMBO, SPR_IMG_SIGNAL_ELECTRIC_PBS,   SPR_IMG_SIGNAL_ELECTRIC_PBS_OWAY},
+		 SPR_IMG_SIGNAL_ELECTRIC_COMBO, SPR_IMG_SIGNAL_ELECTRIC_PBS,   SPR_IMG_SIGNAL_ELECTRIC_PBS_OWAY,
+		 SPR_IMG_SIGNAL_ELECTRIC_LOGIC},
 
 		{SPR_IMG_SIGNAL_SEMAPHORE_NORM,  SPR_IMG_SIGNAL_SEMAPHORE_ENTRY, SPR_IMG_SIGNAL_SEMAPHORE_EXIT,
-		 SPR_IMG_SIGNAL_SEMAPHORE_COMBO, SPR_IMG_SIGNAL_SEMAPHORE_PBS,   SPR_IMG_SIGNAL_SEMAPHORE_PBS_OWAY},
+		 SPR_IMG_SIGNAL_SEMAPHORE_COMBO, SPR_IMG_SIGNAL_SEMAPHORE_PBS,   SPR_IMG_SIGNAL_SEMAPHORE_PBS_OWAY,
+		 SPR_IMG_SIGNAL_SEMAPHORE_LOGIC},
 	};
 
 	for (SignalType type = SIGTYPE_NORMAL; type < SIGTYPE_END; type = (SignalType)(type + 1)) {
@@ -437,6 +443,8 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 	Track track = Extract<Track, 0, 3>(p2);
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 
+	_rail_track_endtile = INVALID_TILE;
+
 	if (!ValParamRailtype(railtype) || !ValParamTrackOrientation(track)) return CMD_ERROR;
 
 	Slope tileh = GetTileSlope(tile);
@@ -453,7 +461,10 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 
 			ret = CheckTrackCombination(tile, trackbit, flags);
 			if (ret.Succeeded()) ret = EnsureNoTrainOnTrack(tile, track);
-			if (ret.Failed()) return ret;
+			if (ret.Failed()) {
+				if (ret.GetErrorMessage() == STR_ERROR_ALREADY_BUILT) _rail_track_endtile = tile;
+				return ret;
+			}
 
 			ret = CheckRailSlope(tileh, trackbit, GetTrackBits(tile), tile);
 			if (ret.Failed()) return ret;
@@ -476,6 +487,7 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 				SetRailGroundType(tile, RAIL_GROUND_BARREN);
 				TrackBits bits = GetTrackBits(tile);
 				SetTrackBits(tile, bits | trackbit);
+				ResetRailAge(tile);
 				/* Subtract old infrastructure count. */
 				uint pieces = CountBits(bits);
 				if (TracksOverlap(bits)) pieces *= pieces;
@@ -544,6 +556,7 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 			}
 
 			if (IsLevelCrossing(tile) && GetCrossingRailBits(tile) == trackbit) {
+				_rail_track_endtile = tile;
 				return_cmd_error(STR_ERROR_ALREADY_BUILT);
 			}
 			/* FALL THROUGH */
@@ -583,6 +596,7 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 	}
 
 	cost.AddCost(RailBuildCost(railtype));
+	_rail_track_endtile = tile;
 	return cost;
 }
 
@@ -600,6 +614,8 @@ CommandCost CmdRemoveSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 	Track track = Extract<Track, 0, 3>(p2);
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	bool crossing = false;
+
+	_rail_track_endtile = INVALID_TILE;
 
 	if (!ValParamTrackOrientation(track)) return CMD_ERROR;
 	TrackBits trackbit = TrackToTrackBits(track);
@@ -727,6 +743,7 @@ CommandCost CmdRemoveSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 		if (v != NULL) TryPathReserve(v, true);
 	}
 
+	_rail_track_endtile = tile;
 	return cost;
 }
 
@@ -860,6 +877,8 @@ static CommandCost CmdRailTrackHelper(TileIndex tile, DoCommandFlag flags, uint3
 	bool remove = HasBit(p2, 7);
 	RailType railtype = Extract<RailType, 0, 4>(p2);
 
+	_rail_track_endtile = INVALID_TILE;
+
 	if ((!remove && !ValParamRailtype(railtype)) || !ValParamTrackOrientation(track)) return CMD_ERROR;
 	if (p1 >= MapSize()) return CMD_ERROR;
 	TileIndex end_tile = p1;
@@ -871,10 +890,12 @@ static CommandCost CmdRailTrackHelper(TileIndex tile, DoCommandFlag flags, uint3
 	bool had_success = false;
 	CommandCost last_error = CMD_ERROR;
 	for (;;) {
+		TileIndex last_endtile = _rail_track_endtile;
 		CommandCost ret = DoCommand(tile, remove ? 0 : railtype, TrackdirToTrack(trackdir), flags, remove ? CMD_REMOVE_SINGLE_RAIL : CMD_BUILD_SINGLE_RAIL);
 
 		if (ret.Failed()) {
 			last_error = ret;
+			if (_rail_track_endtile == INVALID_TILE) _rail_track_endtile = last_endtile;
 			if (last_error.GetErrorMessage() != STR_ERROR_ALREADY_BUILT && !remove) {
 				if (HasBit(p2, 8)) return last_error;
 				break;
@@ -1035,9 +1056,12 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	if (sigtype > SIGTYPE_LAST) return CMD_ERROR;
 	if (cycle_start > cycle_stop || cycle_stop > SIGTYPE_LAST) return CMD_ERROR;
 
-	/* You can only build signals on plain rail tiles, and the selected track must exist */
-	if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) ||
-			!HasTrack(tile, track)) {
+	/* You can only build signals on plain rail tiles or tunnel/bridges, and the selected track must exist */
+	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+		if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return CMD_ERROR;
+		//CommandCost ret = EnsureNoTrainOnTrack(GetOtherTunnelBridgeEnd(tile), track);
+		//if (ret.Failed()) return ret;
+	} else if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) || !HasTrack(tile, track)) {
 		return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
 	}
 	/* Protect against invalid signal copying */
@@ -1045,6 +1069,53 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 
 	CommandCost ret = CheckTileOwnership(tile);
 	if (ret.Failed()) return ret;
+
+	CommandCost cost;
+	/* handle signals simulation on tunnel/bridge. */
+	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+		TileIndex tile_exit = GetOtherTunnelBridgeEnd(tile);
+		cost = CommandCost();
+		if (!HasWormholeSignals(tile)) { // toggle signal zero costs.
+			if (p2 != 12) cost = CommandCost(EXPENSES_CONSTRUCTION, _price[PR_BUILD_SIGNALS] * ((GetTunnelBridgeLength(tile, tile_exit) + 4) >> 2)); // minimal 1
+		}
+		if (flags & DC_EXEC) {
+			if (p2 == 0 && HasWormholeSignals(tile)){ // Toggle signal if already signals present.
+				if (IsTunnelBridgeEntrance (tile)) {
+					ClrBitTunnelBridgeSignal(tile);
+					ClrBitTunnelBridgeExit(tile_exit);
+					SetBitTunnelBridgeExit(tile);
+					SetBitTunnelBridgeSignal(tile_exit);
+				} else {
+					ClrBitTunnelBridgeSignal(tile_exit);
+					ClrBitTunnelBridgeExit(tile);
+					SetBitTunnelBridgeExit(tile_exit);
+					SetBitTunnelBridgeSignal(tile);
+				}			
+			} else{
+				/* Create one direction tunnel/bridge if required. */
+				if (p2 == 0) {
+					SetBitTunnelBridgeSignal(tile);
+					SetBitTunnelBridgeExit(tile_exit);
+				} else if (p2 == 4 || p2 == 8) {
+					DiagDirection tbdir = GetTunnelBridgeDirection(tile);
+					/* If signal only on one side build accordingly one-way tunnel/bridge. */
+					if ((p2 == 8 && (tbdir == DIAGDIR_NE || tbdir == DIAGDIR_SE)) ||
+						(p2 == 4 && (tbdir == DIAGDIR_SW || tbdir == DIAGDIR_NW))) {
+						SetBitTunnelBridgeSignal(tile);
+						SetBitTunnelBridgeExit(tile_exit);
+					} else {
+						SetBitTunnelBridgeSignal(tile_exit);
+						SetBitTunnelBridgeExit(tile);
+					}
+				}			
+			}
+
+			MarkBridgeTilesDirtyByTile(tile, tile_exit);
+			AddSideToSignalBuffer(tile, INVALID_DIAGDIR, _current_company);
+			YapfNotifyTrackLayoutChange(tile, track);
+		}
+		return cost;
+	}
 
 	/* See if this is a valid track combination for signals (no overlap) */
 	if (TracksOverlap(GetTrackBits(tile))) return_cmd_error(STR_ERROR_NO_SUITABLE_RAILROAD_TRACK);
@@ -1055,7 +1126,6 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	/* you can not convert a signal if no signal is on track */
 	if (convert_signal && !HasSignalOnTrack(tile, track)) return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
 
-	CommandCost cost;
 	if (!HasSignalOnTrack(tile, track)) {
 		/* build new signals */
 		cost = CommandCost(EXPENSES_CONSTRUCTION, _price[PR_BUILD_SIGNALS]);
@@ -1105,9 +1175,15 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 		if (p2 == 0) {
 			if (!HasSignalOnTrack(tile, track)) {
 				/* build new signals */
-				SetPresentSignals(tile, GetPresentSignals(tile) | (IsPbsSignal(sigtype) ? KillFirstBit(SignalOnTrack(track)) : SignalOnTrack(track)));
+				SetPresentSignals(tile, GetPresentSignals(tile) | (IsPbsOrLogicSignal(sigtype) ? KillFirstBit(SignalOnTrack(track)) : SignalOnTrack(track)));
 				SetSignalType(tile, track, sigtype);
 				SetSignalVariant(tile, track, sigvar);
+
+				/* logic signals: create a new signal program */
+				if (sigtype == SIGTYPE_LOGIC) {
+					CreateSignalProgram(tile, track);
+				}
+
 				while (num_dir_cycle-- > 0) CycleSignalSide(tile, track);
 			} else {
 				if (convert_signal) {
@@ -1119,9 +1195,13 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 						sigtype = GetSignalType(tile, track);
 					} else {
 						/* convert the present signal to the chosen type and variant */
+
+						/* logic signals: create or delete signal program as necessary */
+						SignalTypeChanged(tile, track, GetSignalType(tile, track), sigtype);
+
 						SetSignalType(tile, track, sigtype);
 						SetSignalVariant(tile, track, sigvar);
-						if (IsPbsSignal(sigtype) && (GetPresentSignals(tile) & SignalOnTrack(track)) == SignalOnTrack(track)) {
+						if (IsPbsOrLogicSignal(sigtype) && (GetPresentSignals(tile) & SignalOnTrack(track)) == SignalOnTrack(track)) {
 							SetPresentSignals(tile, (GetPresentSignals(tile) & ~SignalOnTrack(track)) | KillFirstBit(SignalOnTrack(track)));
 						}
 					}
@@ -1129,11 +1209,13 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 				} else if (ctrl_pressed) {
 					/* cycle between cycle_start and cycle_end */
 					sigtype = (SignalType)(GetSignalType(tile, track) + 1);
-
 					if (sigtype < cycle_start || sigtype > cycle_stop) sigtype = cycle_start;
 
+					/* logic signals: create or delete signal program as necessary */
+					SignalTypeChanged(tile, track, GetSignalType(tile, track), sigtype);
+
 					SetSignalType(tile, track, sigtype);
-					if (IsPbsSignal(sigtype) && (GetPresentSignals(tile) & SignalOnTrack(track)) == SignalOnTrack(track)) {
+					if (IsPbsOrLogicSignal(sigtype) && (GetPresentSignals(tile) & SignalOnTrack(track)) == SignalOnTrack(track)) {
 						SetPresentSignals(tile, (GetPresentSignals(tile) & ~SignalOnTrack(track)) | KillFirstBit(SignalOnTrack(track)));
 					}
 				} else {
@@ -1160,7 +1242,7 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 			uint mask = GetPresentSignals(tile) & SignalOnTrack(track);
 			SetSignalStates(tile, (GetSignalStates(tile) & ~mask) | ((HasBit(GetRailReservationTrackBits(tile), track) && EnsureNoVehicleOnGround(tile).Succeeded() ? UINT_MAX : 0) & mask));
 		}
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 		AddTrackToSignalBuffer(tile, track, _current_company);
 		YapfNotifyTrackLayoutChange(tile, track);
 		if (v != NULL) {
@@ -1213,6 +1295,7 @@ static bool CheckSignalAutoFill(TileIndex &tile, Trackdir &trackdir, int &signal
 			return true;
 
 		case MP_TUNNELBRIDGE: {
+			if (!remove && HasWormholeSignals(tile)) return false;
 			TileIndex orig_tile = tile; // backup old value
 
 			if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return false;
@@ -1324,7 +1407,8 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 	bool had_success = false;
 	for (;;) {
 		/* only build/remove signals with the specified density */
-		if (remove || minimise_gaps || signal_ctr % signal_density == 0) {
+
+		if (remove || minimise_gaps || signal_ctr % signal_density == 0 || IsTileType(tile, MP_TUNNELBRIDGE)) {
 			uint32 p1 = GB(TrackdirToTrack(trackdir), 0, 3);
 			SB(p1, 3, 1, mode);
 			SB(p1, 4, 1, semaphores);
@@ -1360,13 +1444,20 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 
 			/* Collect cost. */
 			if (!test_only) {
-				/* Be user-friendly and try placing signals as much as possible */
-				if (ret.Succeeded()) {
-					had_success = true;
-					total_cost.AddCost(ret);
-					last_used_ctr = last_suitable_ctr;
-					last_suitable_tile = INVALID_TILE;
+			/* Be user-friendly and try placing signals as much as possible */
+			if (ret.Succeeded()) {
+				had_success = true;
+				if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+					if ((!autofill && GetTunnelBridgeDirection(tile) == TrackdirToExitdir(trackdir)) ||
+							(autofill && GetTunnelBridgeDirection(tile) != TrackdirToExitdir(trackdir))) {
+						total_cost.AddCost(ret);
+					}
 				} else {
+					total_cost.AddCost(ret);
+				}
+				last_used_ctr = last_suitable_ctr;
+				last_suitable_tile = INVALID_TILE;
+			} else {
 					/* The "No railway" error is the least important one. */
 					if (ret.GetErrorMessage() != STR_ERROR_THERE_IS_NO_RAILROAD_TRACK ||
 							last_error.GetErrorMessage() == INVALID_STRING_ID) {
@@ -1437,22 +1528,47 @@ CommandCost CmdBuildSignalTrack(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Track track = Extract<Track, 0, 3>(p1);
+	Money cost = _price[PR_CLEAR_SIGNALS];
 
-	if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) || !HasTrack(tile, track)) {
-		return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
-	}
-	if (!HasSignalOnTrack(tile, track)) {
-		return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
+	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+		TileIndex end = GetOtherTunnelBridgeEnd(tile);
+		if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
+		if (!HasWormholeSignals(tile)) return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
+
+		cost *= ((GetTunnelBridgeLength(tile, end) + 4) >> 2);
+
+		CommandCost ret = EnsureNoTrainOnTrack(GetOtherTunnelBridgeEnd(tile), track);
+		//if (ret.Failed()) return ret;
+	} else {
+		if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) || !HasTrack(tile, track)) {
+			return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
+		}
+		if (!HasSignalOnTrack(tile, track)) {
+			return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
+		}
+		CommandCost ret = EnsureNoTrainOnTrack(tile, track);
+		//if (ret.Failed()) return ret;
 	}
 
 	/* Only water can remove signals from anyone */
 	if (_current_company != OWNER_WATER) {
-		CommandCost ret = CheckTileOwnership(tile);
-		if (ret.Failed()) return ret;
 	}
 
 	/* Do it? */
 	if (flags & DC_EXEC) {
+
+		if (HasWormholeSignals(tile)) { // handle tunnel/bridge signals.
+			TileIndex end = GetOtherTunnelBridgeEnd(tile);
+			ClrBitTunnelBridgeExit(tile);
+			ClrBitTunnelBridgeExit(end);
+			ClrBitTunnelBridgeSignal(tile);
+			ClrBitTunnelBridgeSignal(end);
+			_m[tile].m2 = 0;
+			_m[end].m2 = 0;
+			MarkBridgeTilesDirtyByTile(tile, end);
+			return CommandCost(EXPENSES_CONSTRUCTION, cost);
+		}
+
 		Train *v = NULL;
 		if (HasReservedTracks(tile, TrackToTrackBits(track))) {
 			v = GetTrainForReservation(tile, track);
@@ -1469,10 +1585,19 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 				}
 			}
 		}
+
+		/* Remove any links this signal had */
+		RemoveSignalLink(tile, track);
+		/* Logic signal: remove signal program */
+		if (IsLogicSignal(tile, track)) {
+			DeleteSignalProgram(tile, track);
+		}
+
 		Company::Get(GetTileOwner(tile))->infrastructure.signal -= CountBits(GetPresentSignals(tile));
 		SetPresentSignals(tile, GetPresentSignals(tile) & ~SignalOnTrack(track));
 		Company::Get(GetTileOwner(tile))->infrastructure.signal += CountBits(GetPresentSignals(tile));
 		DirtyCompanyInfrastructureWindows(GetTileOwner(tile));
+		TraceRestrictNotifySignalRemoval(tile, track);
 
 		/* removed last signal from tile? */
 		if (GetPresentSignals(tile) == 0) {
@@ -1485,10 +1610,10 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 		YapfNotifyTrackLayoutChange(tile, track);
 		if (v != NULL) TryPathReserve(v, false);
 
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 	}
 
-	return CommandCost(EXPENSES_CONSTRUCTION, _price[PR_CLEAR_SIGNALS]);
+	return CommandCost(EXPENSES_CONSTRUCTION, cost);
 }
 
 /**
@@ -1628,7 +1753,7 @@ CommandCost CmdConvertRail(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				}
 
 				SetRailType(tile, totype);
-				MarkTileDirtyByTile(tile);
+				MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 				/* update power of train on this tile */
 				FindVehicleOnPos(tile, &affected_trains, &UpdateTrainPowerProc);
 			}
@@ -1714,8 +1839,8 @@ CommandCost CmdConvertRail(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 					if (IsBridge(tile)) {
 						MarkBridgeDirty(tile);
 					} else {
-						MarkTileDirtyByTile(tile);
-						MarkTileDirtyByTile(endtile);
+						MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
+						MarkTileDirtyByTile(endtile, ZOOM_LVL_DRAW_MAP);
 					}
 				}
 
@@ -1881,6 +2006,7 @@ static void DrawSingleSignal(TileIndex tile, const RailtypeInfo *rti, Track trac
 	SignalVariant variant = GetSignalVariant(tile, track);
 
 	SpriteID sprite = GetCustomSignalSprite(rti, tile, type, variant, condition);
+	bool is_custom_sprite = (sprite != 0);
 	if (sprite != 0) {
 		sprite += image;
 	} else {
@@ -1889,7 +2015,11 @@ static void DrawSingleSignal(TileIndex tile, const RailtypeInfo *rti, Track trac
 		sprite += type * 16 + variant * 64 + image * 2 + condition + (type > SIGTYPE_LAST_NOPBS ? 64 : 0);
 	}
 
-	AddSortableSpriteToDraw(sprite, PAL_NONE, x, y, 1, 1, BB_HEIGHT_UNDER_BRIDGE, GetSaveSlopeZ(x, y, track));
+	if (!is_custom_sprite && IsRestrictedSignal(tile) && GetExistingTraceRestrictProgram(tile, track) != NULL) {
+		AddSortableSpriteToDraw(sprite, SPR_TRACERESTRICT_BASE + 1, x, y, 1, 1, BB_HEIGHT_UNDER_BRIDGE, GetSaveSlopeZ(x, y, track));
+	} else {
+		AddSortableSpriteToDraw(sprite, PAL_NONE, x, y, 1, 1, BB_HEIGHT_UNDER_BRIDGE, GetSaveSlopeZ(x, y, track));
+	}
 }
 
 static uint32 _drawtile_track_palette;
@@ -1974,6 +2104,137 @@ static void DrawTrackFence_NE(const TileInfo *ti, SpriteID base_image, uint num_
 	RailFenceOffset rfo = RFO_FLAT_Y_NE;
 	if (ti->tileh & SLOPE_NE) rfo = (ti->tileh & SLOPE_E) ? RFO_SLOPE_SE_NE : RFO_SLOPE_NW_NE;
 	DrawTrackFence(ti, base_image, num_sprites, rfo);
+}
+
+
+static byte GetTrackGrowthPhase(TileIndex ti, TrackBits trackbits)
+{
+	if (!IsTileType(ti, MP_RAILWAY))
+		return 0;
+
+	if (!IsPlainRailTile(ti))
+		return 0;
+
+	if ((GetTrackBits(ti) & trackbits) == 0)
+		return 0;
+
+	return GetTrackGrowthPhase(ti);
+}
+
+/**
+* GetTrackGrowthPhaseEx returns a calculated growth factor
+* for a specific track on a tile - by also looking at its
+* neighbours
+*/
+byte GetTrackGrowthPhaseEx(TileIndex ti, Track track)
+{
+	byte phase = GetTrackGrowthPhase(ti);
+	if (phase == 3) return 3;
+
+	/* If this track piece is connected to a neighbour tile///
+	* and that neighbour is used less often - we can't
+	* be the track piece that is used so often on this tile
+	*/
+	Trackdir td1 = TrackToTrackdir(track);
+	DiagDirection dd1 = TrackdirToExitdir(td1);
+	TrackBits tb1 = DiagdirReachesTracks(dd1);
+	TileIndex ti1 = ti + TileOffsByDiagDir(dd1);
+	byte phase1 = GetTrackGrowthPhase(ti1, tb1);
+	if (phase1 == 3) return 3;
+
+	/* Same check for the other neighbour */
+	Trackdir td2 = ReverseTrackdir(td1);
+	DiagDirection dd2 = TrackdirToExitdir(td2);
+	TrackBits tb2 = DiagdirReachesTracks(dd2);
+	TileIndex ti2 = ti + TileOffsByDiagDir(dd2);
+	byte phase2 = GetTrackGrowthPhase(ti2, tb2);
+	if (phase2 == 3) return 3;
+
+	/* Return the highest growth factor */
+	return max(phase, max(phase1, phase2));
+}
+
+static bool GetTrackGrowthSpriteBase(TileIndex tile, Track track, SpriteID& base)
+{
+	byte phase = GetTrackGrowthPhaseEx(tile, track);
+	if (phase == 0)
+		return false;
+
+	assert(phase <= 3);
+
+	base = SPR_OLDTRACKS_BASE + 10 * (phase - 1);
+	return true;
+}
+
+static bool GetTrackGrowthPalette(TileIndex tile, SpriteID& pal)
+{
+	pal = PAL_NONE;
+
+	/**
+	* In arctic, use the 'BARE' palette always, looks better on that terrain
+	* obsolete when it will get its own overlays (for snow, also)
+	*/
+	switch (_settings_game.game_creation.landscape) {
+	case LT_ARCTIC: pal = PALETTE_TO_BARE_LAND; break;
+	default: break;
+	}
+
+	/**
+	* Use 'BARE' palette for desert in tropical and snow in arctic since it
+	* looks better than green. But use other overlays in future!!
+	*/
+	switch (GetRailGroundType(tile)) {
+	case RAIL_GROUND_ICE_DESERT: /* fallthrough */
+	case RAIL_GROUND_BARREN:     pal = PALETTE_TO_BARE_LAND; break;
+	default: break;
+	}
+
+	/* Both base and pal set; we can return true */
+	return true;
+}
+
+void DrawTrackGrowth(TileInfo* ti, TrackBits track)
+{
+	SpriteID pal, base;
+	TileIndex tile = ti->tile;
+
+	if (!GetTrackGrowthPalette(tile, pal)) return;
+
+	/* future support for tunnels */
+	Slope tileh = ti->tileh;
+	if (IsTunnelTile(ti->tile)) tileh = SLOPE_FLAT;
+
+	switch (tileh) {
+	case SLOPE_NW:
+		assert(track == TRACK_BIT_Y);
+		if (GetTrackGrowthSpriteBase(tile, TRACK_Y, base))
+			DrawGroundSprite(base + 9, pal);
+		break;
+	case SLOPE_SW:
+		assert(track == TRACK_BIT_X);
+		if (GetTrackGrowthSpriteBase(tile, TRACK_X, base))
+			DrawGroundSprite(base + 8, pal);
+		break;
+	case SLOPE_SE:
+		assert(track == TRACK_BIT_Y);
+		if (GetTrackGrowthSpriteBase(tile, TRACK_Y, base))
+			DrawGroundSprite(base + 7, pal);
+		break;
+	case SLOPE_NE:
+		assert(track == TRACK_BIT_X);
+		if (GetTrackGrowthSpriteBase(tile, TRACK_X, base))
+			DrawGroundSprite(base + 6, pal);
+		break;
+	default:
+		/* any track bits on any other slope are drawn normally */
+		if ((track & TRACK_BIT_Y) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_Y, base))         DrawGroundSprite(base + 0, pal);
+		if ((track & TRACK_BIT_X) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_X, base))         DrawGroundSprite(base + 1, pal);
+		if ((track & TRACK_BIT_UPPER) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_UPPER, base)) DrawGroundSprite(base + 2, pal);
+		if ((track & TRACK_BIT_LOWER) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_LOWER, base)) DrawGroundSprite(base + 3, pal);
+		if ((track & TRACK_BIT_RIGHT) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_RIGHT, base)) DrawGroundSprite(base + 4, pal);
+		if ((track & TRACK_BIT_LEFT) != 0 && GetTrackGrowthSpriteBase(tile, TRACK_LEFT, base))   DrawGroundSprite(base + 5, pal);
+		break;
+	}
 }
 
 /**
@@ -2211,6 +2472,7 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 
 	if (rti->UsesOverlay()) {
 		DrawTrackBitsOverlay(ti, track, rti);
+		if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackGrowth(ti, track);
 		return;
 	}
 
@@ -2347,6 +2609,9 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 			DrawGroundSprite(_corner_to_track_sprite[halftile_corner] + rti->base_sprites.single_n, PALETTE_CRASH, NULL, 0, -(int)TILE_HEIGHT);
 		}
 	}
+	
+	/* Draw track overgrowth */
+	if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackGrowth(ti, track);
 }
 
 static void DrawSignals(TileIndex tile, TrackBits rails, const RailtypeInfo *rti)
@@ -2392,7 +2657,7 @@ static void DrawTile_Track(TileInfo *ti)
 
 		DrawTrackBits(ti, rails);
 
-		if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackDetails(ti, rti);
+		if (HasBit(_display_opt, DO_RAIL_FENCES)) DrawTrackDetails(ti, rti);
 
 		if (HasCatenaryDrawn(GetRailType(ti->tile))) DrawCatenary(ti);
 
@@ -2522,10 +2787,41 @@ static Foundation GetFoundation_Track(TileIndex tile, Slope tileh)
 	return IsPlainRail(tile) ? GetRailFoundation(tileh, GetTrackBits(tile)) : FlatteningFoundation(tileh);
 }
 
+void AgeTrack(TileIndex ti)
+{
+	assert(IsPlainRailTile(ti));
+
+	byte age = GetRailAge(ti);
+
+	const byte maxi = 255;
+	if (age == maxi)
+		return;
+
+	byte inv = maxi - age;
+
+	static byte shift = 7;
+	byte delta = max(1, inv >> shift);
+	inv -= delta;
+
+	age = maxi - inv;
+
+	byte old_growth = GetTrackGrowthPhase(ti);
+
+	SetRailAge(ti, age);
+
+	/* If rounded growth amount changes, redraw */
+	if (GetTrackGrowthPhase(ti) != old_growth)
+		MarkTileDirtyByTile(ti);
+}
+
 static void TileLoop_Track(TileIndex tile)
 {
+	if (IsPlainRailTile(tile)) AgeTrack(tile);
+
 	RailGroundType old_ground = GetRailGroundType(tile);
 	RailGroundType new_ground;
+
+	ReduceStuckCounter(tile);
 
 	if (old_ground == RAIL_GROUND_WATER) {
 		TileLoop_Water(tile);
@@ -2728,14 +3024,15 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 			break;
 
 		case RAIL_TILE_SIGNALS: {
-			static const StringID signal_type[6][6] = {
+			static const StringID signal_type[SIGTYPE_END][SIGTYPE_END] = {
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_SIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PRESIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_EXITSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_COMBOSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_LOGICSIGNALS
 				},
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PRESIGNALS,
@@ -2743,7 +3040,8 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_EXITSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_COMBOSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_PBSSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_LOGICSIGNALS
 				},
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_EXITSIGNALS,
@@ -2751,7 +3049,8 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXITSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_COMBOSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_LOGICSIGNALS
 				},
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_COMBOSIGNALS,
@@ -2759,7 +3058,8 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_COMBOSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBOSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_LOGICSIGNALS
 				},
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSSIGNALS,
@@ -2767,7 +3067,8 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBSSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_LOGICSIGNALS
 				},
 				{
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS,
@@ -2775,7 +3076,17 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS,
 					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS,
-					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRYSIGNALS
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRYSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRY_LOGICSIGNALS
+				},
+				{
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRY_LOGICSIGNALS,
+					STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_LOGICSIGNALS
 				}
 			};
 
@@ -2789,6 +3100,12 @@ static void GetTileDesc_Track(TileIndex tile, TileDesc *td)
 			}
 
 			td->str = signal_type[secondary_signal][primary_signal];
+
+			if (IsRestrictedSignal(tile)) {
+				SetDParamX(td->dparam, 0, td->str);
+				SetDParamX(td->dparam, 1, rti->strings.name);
+				td->str = STR_LAI_RAIL_DESCRIPTION_RESTRICTED_SIGNAL;
+			}
 			break;
 		}
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: refresh.h 26283 2014-01-28 19:49:43Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: elrail.cpp 26317 2014-02-07 23:48:56Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

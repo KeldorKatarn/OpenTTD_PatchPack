@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: network_udp.h 23751 2012-01-04 22:08:43Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

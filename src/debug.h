@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: debug.h 26195 2014-01-02 08:45:28Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

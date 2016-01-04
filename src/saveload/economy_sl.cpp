@@ -48,6 +48,7 @@ static const SaveLoad _economy_desc[] = {
 	    SLE_VAR(Economy, infl_amount,                   SLE_UINT8),
 	    SLE_VAR(Economy, infl_amount_pr,                SLE_UINT8),
 	SLE_CONDVAR(Economy, industry_daily_change_counter, SLE_UINT32,                102, SL_MAX_VERSION),
+	SLE_CONDVAR(Economy, industry_helper,               SLE_INT64,				   SL_PATCH_PACK_1_2, SL_MAX_VERSION),
 	    SLE_END()
 };
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: strings.cpp 26242 2014-01-12 18:00:55Z frosch $ */
 
 /*
  * This file is part of OpenTTD.
@@ -1467,6 +1467,11 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 					int64 args_array[] = {(int64)(size_t)v->name};
 					StringParameters tmp_params(args_array);
 					buff = GetStringWithArgs(buff, STR_JUST_RAW_STRING, &tmp_params, last);
+				} else if (v->group_id != DEFAULT_GROUP) {
+					/* The vehicle has no name, but is member of a group, so print group name */
+					int64 args_array[] = {(uint64)(size_t)v->group_id, v->unitnumber};
+					StringParameters tmp_params(args_array);
+					buff = GetStringWithArgs(buff, STR_FORMAT_GROUP_VEHICLE, &tmp_params, last);
 				} else {
 					int64 args_array[] = {v->unitnumber};
 					StringParameters tmp_params(args_array);

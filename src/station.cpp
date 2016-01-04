@@ -26,6 +26,7 @@
 #include "core/random_func.hpp"
 #include "linkgraph/linkgraph.h"
 #include "linkgraph/linkgraphschedule.h"
+#include "tracerestrict.h"
 
 #include "table/strings.h"
 
@@ -137,6 +138,8 @@ Station::~Station()
 	/* Now delete all orders that go to the station */
 	RemoveOrderFromAllVehicles(OT_GOTO_STATION, this->index);
 
+	TraceRestrictRemoveDestinationID(TROCAF_STATION, this->index);
+
 	/* Remove all news items */
 	DeleteStationNews(this->index);
 
@@ -219,7 +222,7 @@ void Station::MarkTilesDirty(bool cargo_change) const
 	for (h = 0; h < train_station.h; h++) {
 		for (w = 0; w < train_station.w; w++) {
 			if (this->TileBelongsToRailStation(tile)) {
-				MarkTileDirtyByTile(tile);
+				MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 			}
 			tile += TileDiffXY(1, 0);
 		}

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_event.hpp 24291 2012-05-26 14:16:45Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

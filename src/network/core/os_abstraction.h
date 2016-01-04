@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: os_abstraction.h 24571 2012-10-04 15:25:57Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

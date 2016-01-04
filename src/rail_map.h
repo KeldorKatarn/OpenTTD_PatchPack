@@ -12,6 +12,7 @@
 #ifndef RAIL_MAP_H
 #define RAIL_MAP_H
 
+#include "rail.h"
 #include "rail_type.h"
 #include "depot_type.h"
 #include "signal_func.h"
@@ -26,6 +27,10 @@ enum RailTileType {
 	RAIL_TILE_SIGNALS  = 1, ///< Normal rail tile with signals
 	RAIL_TILE_DEPOT    = 3, ///< Depot (one entrance)
 };
+
+static const RailTypeLabel _planning_tracks_label = 1347174734u;
+
+RailType GetTileRailType(TileIndex tile);
 
 /**
  * Returns the RailTileType (normal with or without signals,
@@ -285,10 +290,19 @@ static inline TrackBits GetDepotReservationTrackBits(TileIndex t)
 	return HasDepotReservation(t) ? TrackToTrackBits(GetRailDepotTrack(t)) : TRACK_BIT_NONE;
 }
 
-
 static inline bool IsPbsSignal(SignalType s)
 {
 	return s == SIGTYPE_PBS || s == SIGTYPE_PBS_ONEWAY;
+}
+
+/**
+ * Tests if the given signal type is a PBS or a logic signal.
+ * @param s The signal type to test
+ * @return Returns true if the given signal type is a PBS or a logic signal
+ */
+static inline bool IsPbsOrLogicSignal(SignalType s)
+{
+	return IsPbsSignal(s) || s == SIGTYPE_LOGIC;
 }
 
 static inline SignalType GetSignalType(TileIndex t, Track track)
@@ -316,6 +330,17 @@ static inline bool IsPresignalExit(TileIndex t, Track track)
 	return GetSignalType(t, track) == SIGTYPE_EXIT || GetSignalType(t, track) == SIGTYPE_COMBO;
 }
 
+/**
+ * Tests whether the signal on the given tile and track is a logic signal.
+ * @param t The tile to test
+ * @param track The track to test
+ * @return Returns true if the signal on the given tile and track is a logic signal.
+ */
+static inline bool IsLogicSignal(TileIndex t, Track track)
+{
+	return GetSignalType(t, track) == SIGTYPE_LOGIC;
+}
+
 /** One-way signals can't be passed the 'wrong' way. */
 static inline bool IsOnewaySignal(TileIndex t, Track track)
 {
@@ -328,7 +353,7 @@ static inline void CycleSignalSide(TileIndex t, Track track)
 	byte pos = (track == TRACK_LOWER || track == TRACK_RIGHT) ? 4 : 6;
 
 	sig = GB(_m[t].m3, pos, 2);
-	if (--sig == 0) sig = IsPbsSignal(GetSignalType(t, track)) ? 2 : 3;
+	if (--sig == 0) sig = IsPbsOrLogicSignal(GetSignalType(t, track)) ? 2 : 3;
 	SB(_m[t].m3, pos, 2, sig);
 }
 
@@ -426,7 +451,7 @@ static inline bool HasSignalOnTrack(TileIndex tile, Track track)
  */
 static inline bool HasSignalOnTrackdir(TileIndex tile, Trackdir trackdir)
 {
-	assert (IsValidTrackdir(trackdir));
+	//assert (IsValidTrackdir(trackdir));
 	return GetRailTileType(tile) == RAIL_TILE_SIGNALS && GetPresentSignals(tile) & SignalAlongTrackdir(trackdir);
 }
 
@@ -479,8 +504,60 @@ static inline bool HasOnewaySignalBlockingTrackdir(TileIndex tile, Trackdir td)
 			!HasSignalOnTrackdir(tile, td) && IsOnewaySignal(tile, TrackdirToTrack(td));
 }
 
+/**
+ * Return the rail 'age'.
+ */
+static inline byte GetRailAge(TileIndex ti)
+{
+	assert(IsPlainRailTile(ti));
 
-RailType GetTileRailType(TileIndex tile);
+	if (GetRailTypeInfo(GetTileRailType(ti))->label == _planning_tracks_label) {
+		// Never age planning tracks.
+		return 0;
+	}
+
+	/* using high bits of m2: (ok for depots and clear tracks only) */
+	/* m2 used by PBS/YAPP, shifting to m7 -Phazorx */
+	return GB(_me[ti].m7,0,8);
+}
+
+/**
+ * Does signal tile have "one or more trace restrict mappings present" bit set
+ * @param tile the tile to check
+ */
+static inline bool IsRestrictedSignal(TileIndex tile)
+{
+	assert(GetRailTileType(tile) == RAIL_TILE_SIGNALS);
+	return GB(_m[tile].m2, 12, 1) != 0;
+}
+
+/**
+ * Set signal tile "one or more trace restrict mappings present" bit
+ * @param tile the tile to set
+ */
+static inline void SetRestrictedSignal(TileIndex tile, bool is_restricted)
+{
+	assert(GetRailTileType(tile) == RAIL_TILE_SIGNALS);
+	SB(_m[tile].m2, 12, 1, is_restricted);
+}
+
+
+/**
+ * Set the rail 'age'.
+ */
+static inline void SetRailAge(TileIndex ti, byte new_age)
+{
+	assert(IsPlainRailTile(ti));
+
+	if (GetRailTypeInfo(GetTileRailType(ti))->label == _planning_tracks_label) {
+		// Never age planning tracks.
+		SB(_me[ti].m7, 0, 8, 0);
+	}
+
+	/* using high bits of m2: (ok for depots and clear tracks only) */
+	/* m2 used by PBS/YAPP, shifting to m7 -Phazorx */
+	SB(_me[ti].m7, 0, 8, new_age);
+}
 
 /** The ground 'under' the rail */
 enum RailGroundType {
@@ -525,6 +602,7 @@ static inline void MakeRailNormal(TileIndex t, Owner o, TrackBits b, RailType r)
 	_m[t].m3 = r;
 	_m[t].m4 = 0;
 	_m[t].m5 = RAIL_TILE_NORMAL << 6 | b;
+	SetRailAge(t, 0);
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = 0;
 }
@@ -540,6 +618,41 @@ static inline void MakeRailDepot(TileIndex t, Owner o, DepotID did, DiagDirectio
 	_m[t].m5 = RAIL_TILE_DEPOT << 6 | d;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = 0;
+}
+
+
+static inline void IncreaseStuckCounter(TileIndex t)
+{
+	//if (!IsTileType(t, MP_RAILWAY)) return;
+	//if (_me[t].m7 == 255) return;
+	//_me[t].m7++;
+}
+
+
+static inline void ReduceStuckCounter(TileIndex t)
+{
+	//if (!IsTileType(t, MP_RAILWAY)) return;
+	//_me[t].m7 -= _me[t].m7/4;
+}
+
+
+static inline byte GetStuckCounter(TileIndex t)
+{
+	return 0;
+	//if (!IsTileType(t, MP_RAILWAY)) return 0;
+	//return _me[t].m7;
+
+}
+
+static inline byte GetTrackGrowthPhase(TileIndex ti)
+{
+	return GetRailAge(ti) >> 6;
+}
+
+static inline void ResetRailAge(TileIndex ti)
+{
+	assert(IsPlainRailTile(ti));
+	SetRailAge(ti, 0);
 }
 
 #endif /* RAIL_MAP_H */

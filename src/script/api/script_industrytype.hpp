@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_industrytype.hpp 26164 2013-12-17 20:41:51Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

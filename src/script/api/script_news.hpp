@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_news.hpp 24286 2012-05-26 14:16:12Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: network_admin.cpp 25845 2013-10-12 17:03:15Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

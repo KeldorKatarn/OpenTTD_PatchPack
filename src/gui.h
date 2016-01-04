@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gui.h 25372 2013-06-09 13:23:03Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

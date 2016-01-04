@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: vehiclelist.h 26112 2013-11-25 16:36:11Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

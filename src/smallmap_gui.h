@@ -20,8 +20,33 @@
 #include "linkgraph/linkgraph_gui.h"
 #include "widgets/smallmap_widget.h"
 
+static const int NUM_NO_COMPANY_ENTRIES = 4; ///< Number of entries in the owner legend that are not companies.
+
+/** Mapping of tile type to importance of the tile (higher number means more interesting to show). */
+static const byte _tiletype_importance[] = {
+	2, // MP_CLEAR
+	8, // MP_RAILWAY
+	7, // MP_ROAD
+	5, // MP_HOUSE
+	2, // MP_TREES
+	9, // MP_STATION
+	2, // MP_WATER
+	1, // MP_VOID
+	6, // MP_INDUSTRY
+	8, // MP_TUNNELBRIDGE
+	2, // MP_OBJECT
+	0,
+};
+
 /* set up the cargos to be displayed in the smallmap's route legend */
 void BuildLinkStatsLegend();
+
+struct TunnelBridgeToMap {
+	TileIndex from_tile;
+	TileIndex to_tile;
+	uint8 colour;
+};
+typedef SmallVector<TunnelBridgeToMap, 64> TunnelBridgeToMapVector;
 
 void BuildIndustriesLegend();
 void ShowSmallMap();

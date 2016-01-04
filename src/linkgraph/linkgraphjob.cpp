@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: linkgraphjob.cpp 26347 2014-02-16 18:42:59Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -40,7 +40,7 @@ LinkGraphJob::LinkGraphJob(const LinkGraph &orig) :
 		link_graph(orig),
 		settings(_settings_game.linkgraph),
 		thread(NULL),
-		join_date(_date + _settings_game.linkgraph.recalc_time)
+		join_date(_date + max(1, (_settings_game.linkgraph.recalc_time / _settings_game.economy.daylength)))
 {
 }
 

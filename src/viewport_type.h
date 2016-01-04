@@ -15,8 +15,20 @@
 #include "zoom_type.h"
 #include "strings_type.h"
 #include "table/strings.h"
+#include "math.h"
 
 class LinkGraphOverlay;
+
+enum ViewportMapType {
+	VPMT_BEGIN = 0,      
+	VPMT_VEGETATION = 0,
+	VPMT_OWNER,
+	VPMT_INDUSTRY,
+	VPMT_END,
+
+	VPMT_MIN = VPMT_VEGETATION,
+	VPMT_MAX = VPMT_INDUSTRY,
+};
 
 /**
  * Data structure for viewport, display of a part of the world
@@ -32,7 +44,9 @@ struct ViewPort {
 	int virtual_width;   ///< width << zoom
 	int virtual_height;  ///< height << zoom
 
-	ZoomLevel zoom; ///< The zoom level of the viewport.
+	ZoomLevel zoom;      ///< The zoom level of the viewport.
+	ViewportMapType map_type;  ///< Rendering type
+
 	LinkGraphOverlay *overlay;
 };
 
@@ -85,6 +99,7 @@ enum ViewportPlaceMethod {
 	VPM_FIX_VERTICAL    =    6, ///< drag only in vertical direction
 	VPM_X_LIMITED       =    7, ///< Drag only in X axis with limited size
 	VPM_Y_LIMITED       =    8, ///< Drag only in Y axis with limited size
+	VPM_A_B_LINE        =    9, ///< Drag a line from tile A to tile B
 	VPM_RAILDIRS        = 0x40, ///< all rail directions
 	VPM_SIGNALDIRS      = 0x80, ///< similar to VMP_RAILDIRS, but with different cursor
 };
@@ -105,6 +120,8 @@ enum ViewportDragDropSelectionProcess {
 	DDSP_CREATE_RIVER,         ///< Create rivers
 	DDSP_PLANT_TREES,          ///< Plant trees
 	DDSP_BUILD_BRIDGE,         ///< Bridge placement
+	DDSP_DRAW_PLANLINE,        ///< Draw a line for a plan
+	DDSP_MEASURE,              ///< Measurement tool
 
 	/* Rail specific actions */
 	DDSP_PLACE_RAIL,           ///< Rail placement

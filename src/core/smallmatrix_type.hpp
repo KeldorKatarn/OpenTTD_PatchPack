@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: smallmatrix_type.hpp 25256 2013-05-19 14:06:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

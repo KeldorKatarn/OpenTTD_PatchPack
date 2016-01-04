@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: news_gui.h 24842 2012-12-23 21:06:37Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

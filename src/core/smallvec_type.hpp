@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: smallvec_type.hpp 25043 2013-02-24 16:43:24Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

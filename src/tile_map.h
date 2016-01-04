@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: tile_map.h 25849 2013-10-12 22:07:58Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

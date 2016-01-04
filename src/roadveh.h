@@ -219,13 +219,16 @@ protected: // These functions should not be called outside acceleration code.
 	 * @return Rolling friction coefficient in [1e-4].
 	 */
 	inline uint32 GetRollingFriction() const
-	{
-		/* Trams have a slightly greater friction coefficient than trains.
-		 * The rest of road vehicles have bigger values. */
-		uint32 coeff = (this->roadtype == ROADTYPE_TRAM) ? 40 : 75;
-		/* The friction coefficient increases with speed in a way that
-		 * it doubles at 128 km/h, triples at 256 km/h and so on. */
-		return coeff * (128 + this->GetCurrentSpeed()) / 128;
+	{		
+		/* Roughly 1000 * 9.81 * 0.002
+		 * 1000 for tonnes to kg
+		 * 9.81 for g
+		 * 0.002 for track to wheel friction or
+		 * 0.008 for truck wheels on asphalt
+		 */
+		uint32 coeff = (this->roadtype == ROADTYPE_TRAM) ? 17 : 78;
+
+		return coeff;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_town.cpp 26270 2014-01-20 22:34:22Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

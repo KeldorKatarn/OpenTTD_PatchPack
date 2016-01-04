@@ -163,6 +163,26 @@ void Town::InitializeLayout(TownLayout layout)
 }
 
 /**
+ * Updates the town label of the town after changes in rating. The colour scheme is:
+ * Red: Appalling and Very poor ratings.
+ * Orange: Poor and mediocre ratings.
+ * Yellow: Good rating.
+ * White: Very good rating (standard).
+ * Green: Excellent and outstanding ratings.
+ */
+void Town::UpdateLabel()
+{
+	if (!(_game_mode == GM_EDITOR) && (_local_company < MAX_COMPANIES)) {
+		int r = this->ratings[_local_company];
+		(this->town_label = 0, r <= RATING_VERYPOOR)  || // Appalling and Very Poor
+		(this->town_label++,   r <= RATING_MEDIOCRE)  || // Poor and Mediocre
+		(this->town_label++,   r <= RATING_GOOD)      || // Good
+		(this->town_label++,   r <= RATING_VERYGOOD)  || // Very Good
+		(this->town_label++,   true);                    // Excellent and Outstanding
+	}
+}
+
+/**
  * Get the cost for removing this house
  * @return the cost (inflation corrected etc)
  */
@@ -330,7 +350,7 @@ static void AnimateTile_Town(TileIndex tile)
 		DeleteAnimatedTile(tile);
 	}
 
-	MarkTileDirtyByTile(tile);
+	MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 }
 
 /**
@@ -373,11 +393,11 @@ static bool IsCloseToTown(TileIndex tile, uint dist)
  */
 void Town::UpdateVirtCoord()
 {
+	this->UpdateLabel();
 	Point pt = RemapCoords2(TileX(this->xy) * TILE_SIZE, TileY(this->xy) * TILE_SIZE);
 	SetDParam(0, this->index);
 	SetDParam(1, this->cache.population);
-	this->cache.sign.UpdatePosition(pt.x, pt.y - 24 * ZOOM_LVL_BASE,
-		_settings_client.gui.population_in_label ? STR_VIEWPORT_TOWN_POP : STR_VIEWPORT_TOWN,
+	this->cache.sign.UpdatePosition(pt.x, pt.y - 24 * ZOOM_LVL_BASE, this->Label());
 		STR_VIEWPORT_TOWN);
 
 	SetWindowDirty(WC_TOWN_VIEW, this->index);
@@ -441,7 +461,7 @@ static void MakeSingleHouseBigger(TileIndex tile)
 		ChangePopulation(Town::GetByTile(tile), HouseSpec::Get(GetHouseType(tile))->population);
 		ResetHouseAge(tile);
 	}
-	MarkTileDirtyByTile(tile);
+	MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 }
 
 /**
@@ -455,6 +475,61 @@ static void MakeTownHouseBigger(TileIndex tile)
 	if (flags & BUILDING_2_TILES_Y)   MakeSingleHouseBigger(TILE_ADDXY(tile, 0, 1));
 	if (flags & BUILDING_2_TILES_X)   MakeSingleHouseBigger(TILE_ADDXY(tile, 1, 0));
 	if (flags & BUILDING_HAS_4_TILES) MakeSingleHouseBigger(TILE_ADDXY(tile, 1, 1));
+}
+
+/**
+ * Generate cargo for a town (house).
+ *
+ * The amount of cargo should be and will be greater than zero.
+ *
+ * @param t current town
+ * @param ct type of cargo to generate, usually CT_PASSENGERS or CT_MAIL
+ * @param amount how many units of cargo
+ * @param stations available stations for this house
+ */
+static void TownGenerateCargo (Town *t, CargoID ct, uint amount, StationFinder &stations)
+{
+	// custom cargo generation factor
+	int cf = _settings_game.economy.town_cargo_factor;
+
+	// when the economy flunctuates, everyone wants to stay at home
+	if (EconomyIsInRecession()) {
+		amount = (amount + 1) >> 1; 
+	}
+	
+	// apply custom factor?
+	if (cf < 0) {
+		// approx (amount / 2^cf)
+		// adjust with a constant offset of {(2 ^ cf) - 1} (i.e. add cf * 1-bits) before dividing to ensure that it doesn't become zero
+		// this skews the curve a little so that isn't entirely exponential, but will still decrease
+		amount = (amount + ((1 << -cf) - 1)) >> -cf;
+	}
+
+	else if (cf > 0) {
+		// approx (amount * 2^cf)
+		// XXX: overflow?
+		amount = amount << cf;
+	}
+	
+	// with the adjustments above, this should never happen
+	assert(amount > 0);
+	
+	// calculate for town stats
+	const CargoSpec *cs = CargoSpec::Get(ct);
+	switch (cs->town_effect) {
+		case TE_PASSENGERS:
+			t->supplied[CT_PASSENGERS].new_max += amount;
+			t->supplied[CT_PASSENGERS].new_act += MoveGoodsToStation(CT_PASSENGERS, amount, ST_TOWN, t->index, stations.GetStations());
+			break;
+
+		case TE_MAIL:
+			t->supplied[CT_MAIL].new_max += amount;
+			t->supplied[CT_MAIL].new_act += MoveGoodsToStation(CT_MAIL, amount, ST_TOWN, t->index, stations.GetStations());
+			break;
+
+		default:
+			break;
+	}
 }
 
 /**
@@ -504,38 +579,35 @@ static void TileLoop_Town(TileIndex tile)
 			uint amt = GB(callback, 0, 8);
 			if (amt == 0) continue;
 
-			uint moved = MoveGoodsToStation(cargo, amt, ST_TOWN, t->index, stations.GetStations());
-
-			const CargoSpec *cs = CargoSpec::Get(cargo);
-			t->supplied[cs->Index()].new_max += amt;
-			t->supplied[cs->Index()].new_act += moved;
+			// XXX: no economy flunctuation for GRF cargos?
+			TownGenerateCargo(t, cargo, amt, stations);
 		}
 	} else {
 		if (GB(r, 0, 8) < hs->population) {
 			uint amt = GB(r, 0, 8) / 8 + 1;
 
-			if (EconomyIsInRecession()) amt = (amt + 1) >> 1;
-			t->supplied[CT_PASSENGERS].new_max += amt;
-			t->supplied[CT_PASSENGERS].new_act += MoveGoodsToStation(CT_PASSENGERS, amt, ST_TOWN, t->index, stations.GetStations());
+			TownGenerateCargo(t, CT_PASSENGERS, amt, stations);
 		}
 
 		if (GB(r, 8, 8) < hs->mail_generation) {
 			uint amt = GB(r, 8, 8) / 8 + 1;
 
-			if (EconomyIsInRecession()) amt = (amt + 1) >> 1;
-			t->supplied[CT_MAIL].new_max += amt;
-			t->supplied[CT_MAIL].new_act += MoveGoodsToStation(CT_MAIL, amt, ST_TOWN, t->index, stations.GetStations());
+			TownGenerateCargo(t, CT_MAIL, amt, stations);
 		}
 	}
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_TOWN, FILE_LINE);
 
+	const int32 ticks_per_tile_loop = 256;
+
 	if ((hs->building_flags & BUILDING_HAS_1_TILE) &&
 			HasBit(t->flags, TOWN_IS_GROWING) &&
 			CanDeleteHouse(tile) &&
 			GetHouseAge(tile) >= hs->minimum_life &&
-			--t->time_until_rebuild == 0) {
-		t->time_until_rebuild = GB(r, 16, 8) + 192;
+			t->time_until_rebuild <= (_date - (hs->minimum_life * DAYS_IN_YEAR))) {
+		
+		int32 tile_loops_until_rebuild = GB(r, 16, 8) + 192;
+		t->time_until_rebuild = _date + ((tile_loops_until_rebuild * ticks_per_tile_loop) / DEFAULT_DAY_TICKS);
 
 		ClearTownHouse(t, tile);
 
@@ -1559,9 +1631,12 @@ void UpdateTownMaxPass(Town *t)
  */
 static void DoCreateTown(Town *t, TileIndex tile, uint32 townnameparts, TownSize size, bool city, TownLayout layout, bool manual)
 {
+	const int32 tile_loops_until_rebuild = 10;
+	const int32 ticks_per_tile_loop = 256;
+
 	t->xy = tile;
 	t->cache.num_houses = 0;
-	t->time_until_rebuild = 10;
+	t->time_until_rebuild = _date + ((tile_loops_until_rebuild * ticks_per_tile_loop) / DEFAULT_DAY_TICKS);
 	UpdateTownRadius(t);
 	t->flags = 0;
 	t->cache.population = 0;
@@ -2958,6 +3033,7 @@ static CommandCost TownActionBribe(Town *t, DoCommandFlag flags)
 			 */
 			if (t->ratings[_current_company] > RATING_BRIBE_DOWN_TO) {
 				t->ratings[_current_company] = RATING_BRIBE_DOWN_TO;
+				t->UpdateVirtCoord();
 				SetWindowDirty(WC_TOWN_AUTHORITY, t->index);
 			}
 		} else {
@@ -3090,6 +3166,7 @@ static void UpdateTownRating(Town *t)
 		t->ratings[i] = Clamp(t->ratings[i], RATING_MINIMUM, RATING_MAXIMUM);
 	}
 
+	t->UpdateVirtCoord();
 	SetWindowDirty(WC_TOWN_AUTHORITY, t->index);
 }
 
@@ -3192,15 +3269,7 @@ static void UpdateTownUnwanted(Town *t)
  */
 CommandCost CheckIfAuthorityAllowsNewStation(TileIndex tile, DoCommandFlag flags)
 {
-	if (!Company::IsValidID(_current_company) || (flags & DC_NO_TEST_TOWN_RATING)) return CommandCost();
-
-	Town *t = ClosestTownFromTile(tile, _settings_game.economy.dist_local_authority);
-	if (t == NULL) return CommandCost();
-
-	if (t->ratings[_current_company] > RATING_VERYPOOR) return CommandCost();
-
-	SetDParam(0, t->index);
-	return_cmd_error(STR_ERROR_LOCAL_AUTHORITY_REFUSES_TO_ALLOW_THIS);
+	return CommandCost();
 }
 
 /**
@@ -3341,6 +3410,7 @@ void ChangeTownRating(Town *t, int add, int max, DoCommandFlag flags)
 	} else {
 		SetBit(t->have_ratings, _current_company);
 		t->ratings[_current_company] = rating;
+		t->UpdateVirtCoord();
 		SetWindowDirty(WC_TOWN_AUTHORITY, t->index);
 	}
 }

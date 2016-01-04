@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: win32_v.cpp 26367 2014-02-23 16:08:50Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

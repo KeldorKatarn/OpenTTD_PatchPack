@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: void_cmd.cpp 23160 2011-11-08 17:37:32Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

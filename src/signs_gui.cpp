@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: signs_gui.cpp 25918 2013-10-28 10:05:00Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

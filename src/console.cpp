@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: console.cpp 26284 2014-01-28 20:03:12Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

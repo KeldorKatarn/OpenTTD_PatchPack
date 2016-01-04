@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: bemidi.cpp 22410 2011-05-02 16:14:23Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

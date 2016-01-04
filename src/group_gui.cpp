@@ -32,6 +32,8 @@
 
 #include "safeguards.h"
 
+#include "tbtr_template_gui_main.h"
+
 static const int LEVEL_WIDTH = 10; ///< Indenting width of a sub-group in pixels
 
 typedef GUIList<const Group*> GUIGroupList;
@@ -55,7 +57,7 @@ static const NWidgetPart _nested_group_widgets[] = {
 						SetFill(1, 0), SetResize(0, 1), SetScrollbar(WID_GL_LIST_GROUP_SCROLLBAR),
 				NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_GL_LIST_GROUP_SCROLLBAR),
 			EndContainer(),
-			NWidget(WWT_PANEL, COLOUR_GREY, WID_GL_INFO), SetFill(1, 0), EndContainer(),
+			NWidget(WWT_PANEL, COLOUR_GREY, WID_GL_INFO), SetMinimalSize(200, 70), SetFill(1, 0), EndContainer(),
 			NWidget(NWID_HORIZONTAL),
 				NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_GL_CREATE_GROUP), SetFill(0, 1),
 						SetDataTip(SPR_GROUP_CREATE_TRAIN, STR_GROUP_CREATE_TOOLTIP),
@@ -193,7 +195,7 @@ private:
 	uint ComputeGroupInfoSize()
 	{
 		this->column_size[VGC_NAME] = maxdim(GetStringBoundingBox(STR_GROUP_DEFAULT_TRAINS + this->vli.vtype), GetStringBoundingBox(STR_GROUP_ALL_TRAINS + this->vli.vtype));
-		this->column_size[VGC_NAME].width = max(170u, this->column_size[VGC_NAME].width);
+		this->column_size[VGC_NAME].width = max(300u, this->column_size[VGC_NAME].width);
 		this->tiny_step_height = this->column_size[VGC_NAME].height;
 
 		this->column_size[VGC_PROTECT] = GetSpriteSize(SPR_GROUP_REPLACE_PROTECT);
@@ -233,7 +235,7 @@ private:
 	 * @param right Right of the row.
 	 * @param g_id Group to list.
 	 * @param indent Indentation level.
-	 * @param protection Whether autoreplace protection is set.
+	 * @param protection Whether autoreplac/// e protection is set.
 	 */
 	void DrawGroupInfo(int y, int left, int right, GroupID g_id, int indent = 0, bool protection = false) const
 	{
@@ -573,6 +575,50 @@ public:
 
 				break;
 			}
+ 
+			case WID_GL_INFO: {
+				Money this_year = 0;
+				Money last_year = 0;
+				uint32 occupancy = 0;
+				uint32 group_vehicles = 0;
+
+				for (uint i = 0, vehicle_count = this->vehicles.Length(); i < vehicle_count; i++) {
+					const Vehicle *v = this->vehicles[i];
+
+					assert(v->owner == this->owner);
+
+					this_year += v->GetDisplayProfitThisYear();
+					last_year += v->GetDisplayProfitLastYear();
+
+					if (v->trip_occupancy >= 0)
+					{
+						occupancy += v->trip_occupancy;
+						group_vehicles++;
+					}
+				}
+
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 1, STR_GROUP_PROFIT_THIS_YEAR, TC_BLACK);
+				SetDParam(0, this_year);
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 1, STR_JUST_CURRENCY_LONG, TC_BLACK, SA_RIGHT);
+				
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + FONT_HEIGHT_NORMAL + 2, STR_GROUP_PROFIT_LAST_YEAR, TC_BLACK);
+				SetDParam(0, last_year);
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + FONT_HEIGHT_NORMAL + 2, STR_JUST_CURRENCY_LONG, TC_BLACK, SA_RIGHT);
+
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_OCCUPANCY, TC_BLACK);
+
+				if (group_vehicles > 0)
+				{
+					SetDParam(0, occupancy / group_vehicles);
+					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_OCCUPANCY_VALUE, TC_BLACK, SA_RIGHT);
+				}
+				else
+				{
+					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_QUANTITY_N_A, TC_BLACK, SA_RIGHT);
+				}
+
+				break;
+			}
 
 			case WID_GL_LIST_GROUP: {
 				int y1 = r.top + WD_FRAMERECT_TOP;
@@ -690,6 +736,7 @@ public:
 			case WID_GL_DELETE_GROUP: { // Delete the selected group
 				this->group_confirm = this->vli.index;
 				ShowQuery(STR_QUERY_GROUP_DELETE_CAPTION, STR_GROUP_DELETE_QUERY_TEXT, this, DeleteGroupCallback);
+				InvalidateWindowData(WC_TEMPLATEGUI_MAIN, 0, 0, 0);
 				break;
 			}
 
@@ -795,6 +842,16 @@ public:
 				}
 				break;
 			}
+			case WID_GL_CREATE_GROUP: { // make new group with vehicle specific name and add vehicle
+				const VehicleID vindex = this->vehicle_sel;
+				this->vehicle_sel = INVALID_VEHICLE;
+				this->group_over = INVALID_GROUP;
+				this->SetDirty();
+
+				DoCommandP(0, vindex | (_ctrl_pressed ? 1 << 31 : 0),0 , CMD_CREATE_GROUP_SPECIFIC_NAME | CMD_MSG(STR_ERROR_GROUP_CAN_T_CREATE_SPECIFIC_NAME),  NULL);
+				
+				break;
+			}
 		}
 	}
 
@@ -809,6 +866,7 @@ public:
 	virtual void OnQueryTextFinished(char *str)
 	{
 		if (str != NULL) DoCommandP(0, this->group_rename, 0, CMD_ALTER_GROUP | CMD_MSG(STR_ERROR_GROUP_CAN_T_RENAME), NULL, str);
+		InvalidateWindowData(WC_TEMPLATEGUI_MAIN, 0, 0, 0);
 		this->group_rename = INVALID_GROUP;
 	}
 
@@ -829,6 +887,10 @@ public:
 				assert(this->vehicles.Length() != 0);
 
 				switch (index) {
+					case ADI_TEMPLATE_REPLACE: // TemplateReplace Window
+						if ( vli.vtype == VEH_TRAIN )
+							ShowTemplateReplaceWindow(this->unitnumber_digits, this->resize.step_height);
+						break;
 					case ADI_REPLACE: // Replace window
 						ShowReplaceGroupVehicleWindow(this->vli.index, this->vli.vtype);
 						break;
@@ -931,7 +993,6 @@ public:
 		if (this->vehicle_sel == vehicle) ResetObjectToPlace();
 	}
 };
-
 
 static WindowDesc _other_group_desc(
 	WDP_AUTO, "list_groups", 460, 246,

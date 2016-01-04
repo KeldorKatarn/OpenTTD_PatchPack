@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_company.cpp 26150 2013-12-08 18:20:14Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

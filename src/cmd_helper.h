@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cmd_helper.h 23742 2012-01-03 21:58:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

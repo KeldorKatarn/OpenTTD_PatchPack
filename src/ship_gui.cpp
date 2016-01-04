@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ship_gui.cpp 25454 2013-06-24 18:39:19Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

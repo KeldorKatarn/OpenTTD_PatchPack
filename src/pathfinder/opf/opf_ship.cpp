@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: opf_ship.cpp 24481 2012-08-18 11:37:47Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

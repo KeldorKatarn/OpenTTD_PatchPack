@@ -176,6 +176,7 @@ public:
 
 		/* Tiletype */
 		SetDParam(0, td.dparam[0]);
+		SetDParam(1, td.dparam[1]);
 		GetString(this->landinfo_data[line_nr], td.str, lastof(this->landinfo_data[line_nr]));
 		line_nr++;
 
@@ -652,11 +653,13 @@ struct TooltipsWindow : public Window
 	byte paramcount;                  ///< Number of string parameters in #string_id.
 	uint64 params[5];                 ///< The string parameters.
 	TooltipCloseCondition close_cond; ///< Condition for closing the window.
+	char buffer[DRAW_STRING_BUFFER];  ///< Text to draw
 
 	TooltipsWindow(Window *parent, StringID str, uint paramcount, const uint64 params[], TooltipCloseCondition close_tooltip) : Window(&_tool_tips_desc)
 	{
 		this->parent = parent;
 		this->string_id = str;
+		if (this->paramcount == 0) GetString(this->buffer, str, lastof(this->buffer)); // Get the text while params are available
 		assert_compile(sizeof(this->params[0]) == sizeof(params[0]));
 		assert(paramcount <= lengthof(this->params));
 		memcpy(this->params, params, sizeof(this->params[0]) * paramcount);
@@ -707,10 +710,14 @@ struct TooltipsWindow : public Window
 		GfxFillRect(r.left, r.top, r.right, r.bottom, PC_BLACK);
 		GfxFillRect(r.left + 1, r.top + 1, r.right - 1, r.bottom - 1, PC_LIGHT_YELLOW);
 
-		for (uint arg = 0; arg < this->paramcount; arg++) {
-			SetDParam(arg, this->params[arg]);
+		if (this->paramcount == 0) {
+			DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->buffer, TC_FROMSTRING, SA_CENTER);
+		} else {
+			for (uint arg = 0; arg < this->paramcount; arg++) {
+				SetDParam(arg, this->params[arg]);
+			}
+			DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->string_id, TC_FROMSTRING, SA_CENTER);
 		}
-		DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->string_id, TC_FROMSTRING, SA_CENTER);
 	}
 
 	virtual void OnMouseLoop()

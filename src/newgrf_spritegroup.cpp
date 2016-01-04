@@ -158,7 +158,6 @@ static uint32 RotateRight(uint32 val, uint32 rot)
 	return (val >> rot) | (val << (32 - rot));
 }
 
-
 /* Evaluate an adjustment for a variable of the given size.
  * U is the unsigned type and S is the signed type to use. */
 template <typename U, typename S>

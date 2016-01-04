@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_vehiclelist.hpp 23615 2011-12-19 20:57:34Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

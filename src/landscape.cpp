@@ -900,10 +900,11 @@ static void CreateDesertOrRainForest()
 
 		if (!IsValidTile(tile)) continue;
 
+		/* Amount of tiles that become desert, excluding those too close to watertiles.*/
 		for (data = _make_desert_or_rainforest_data;
 				data != endof(_make_desert_or_rainforest_data); ++data) {
 			TileIndex t = AddTileIndexDiffCWrap(tile, *data);
-			if (t != INVALID_TILE && (TileHeight(t) >= max_desert_height || IsTileType(t, MP_WATER))) break;
+			if (t != INVALID_TILE && (TileHeight(t) >= _settings_newgame.game_creation.desert_amount || IsTileType(t, MP_WATER))) break;
 		}
 		if (data == endof(_make_desert_or_rainforest_data)) {
 			SetTropicZone(tile, TROPICZONE_DESERT);
@@ -921,6 +922,7 @@ static void CreateDesertOrRainForest()
 
 		if (!IsValidTile(tile)) continue;
 
+		/* All "land" tiles that are not assigned as desert above become rainforest here. */
 		for (data = _make_desert_or_rainforest_data;
 				data != endof(_make_desert_or_rainforest_data); ++data) {
 			TileIndex t = AddTileIndexDiffCWrap(tile, *data);
@@ -1047,15 +1049,40 @@ static void River_GetNeighbours(AyStar *aystar, OpenListNode *current)
 	}
 }
 
+/** Callback to widen a river tile. */
+static bool RiverMakeWider(TileIndex tile, void *data)
+{
+	if (IsValidTile(tile) && !IsWaterTile(tile) && GetTileSlope(tile) == GetTileSlope(*(TileIndex *)data)) {
+		MakeRiver(tile, Random());
+		/* Remove desert directly around the river tile. */
+		TileIndex cur_tile = tile;
+		CircularTileSearch(&cur_tile, 5, RiverModifyDesertZone, NULL);
+	}
+	return false;
+}
+
 /* AyStar callback when an route has been found. */
 static void River_FoundEndNode(AyStar *aystar, OpenListNode *current)
 {
+	/* Count river length. */
+	uint length = 0;
 	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
+		length++;
+	}
+
+	uint cur_pos = 0;
+	for (PathNode *path = &current->path; path != NULL; path = path->parent, cur_pos++) {
 		TileIndex tile = path->node.tile;
 		if (!IsWaterTile(tile)) {
 			MakeRiver(tile, Random());
-			/* Remove desert directly around the river tile. */
-			CircularTileSearch(&tile, 5, RiverModifyDesertZone, NULL);
+			/* Widen river depending on how far we are away from the source. */
+			uint radius = min((length - cur_pos) / 15u, 3u);
+			if (radius > 1) {
+				CircularTileSearch(&tile, radius + RandomRange(1), RiverMakeWider, (void *)&path->node.tile);
+			} else {
+				/* Remove desert directly around the river tile. */
+				CircularTileSearch(&tile, 5, RiverModifyDesertZone, NULL);
+			}
 		}
 	}
 }

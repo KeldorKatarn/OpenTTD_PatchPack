@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: thread.h 26349 2014-02-16 21:37:05Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

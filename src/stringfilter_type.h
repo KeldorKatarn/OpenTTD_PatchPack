@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: stringfilter_type.h 24632 2012-10-27 15:26:17Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

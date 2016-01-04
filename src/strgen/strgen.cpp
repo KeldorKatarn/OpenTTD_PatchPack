@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: strgen.cpp 26058 2013-11-23 13:15:07Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.
@@ -439,7 +439,7 @@ int CDECL main(int argc, char *argv[])
 
 		switch (i) {
 			case 'v':
-				puts("$Revision$");
+				puts("$Revision: 26058 $");
 				return 0;
 
 			case 'C':
@@ -484,7 +484,7 @@ int CDECL main(int argc, char *argv[])
 
 			case 'h':
 				puts(
-					"strgen - $Revision$\n"
+					"strgen - $Revision: 26058 $\n"
 					" -v | --version    print version information and exit\n"
 					" -t | --todo       replace any untranslated strings with '<TODO>'\n"
 					" -w | --warning    print a warning for any untranslated strings\n"

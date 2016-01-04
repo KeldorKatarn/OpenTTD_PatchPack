@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: smallmap_widget.h 25262 2013-05-19 14:36:35Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

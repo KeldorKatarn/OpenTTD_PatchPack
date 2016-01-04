@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: heightmap.cpp 26057 2013-11-23 13:12:19Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

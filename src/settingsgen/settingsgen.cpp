@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: settingsgen.cpp 23940 2012-02-12 19:46:40Z smatz $ */
 
 /*
  * This file is part of OpenTTD.

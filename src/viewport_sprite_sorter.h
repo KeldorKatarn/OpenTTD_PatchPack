@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: viewport_sprite_sorter.h 26205 2014-01-02 16:48:16Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

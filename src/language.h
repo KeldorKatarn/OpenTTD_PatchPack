@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: language.h 23585 2011-12-17 23:16:16Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

@@ -257,11 +257,13 @@ void InvalidateVehicleOrder(const Vehicle *v, int data)
 		/* Calls SetDirty() too */
 		InvalidateWindowData(WC_VEHICLE_ORDERS,    v->index, data);
 		InvalidateWindowData(WC_VEHICLE_TIMETABLE, v->index, data);
+		InvalidateWindowData(WC_VEHICLE_TRIP_HISTORY, v->index, data);
 		return;
 	}
 
 	SetWindowDirty(WC_VEHICLE_ORDERS,    v->index);
 	SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
+	SetWindowDirty(WC_VEHICLE_TRIP_HISTORY, v->index);
 }
 
 /**
@@ -632,6 +634,147 @@ void OrderList::DebugCheckSanity() const
 			(uint)this->num_orders, (uint)this->num_manual_orders,
 			this->num_vehicles, this->timetable_duration, this->total_duration);
 }
+
+/** Returns the number of running (i.e. not stopped) vehicles in the shared orders list. */
+int OrderList::GetNumRunningVehicles()
+{
+	int num_running_vehicles = 0;
+
+	for (const Vehicle *v = this->first_shared; v != NULL; v = v->NextShared()) {
+		if (!(v->vehstatus & (VS_STOPPED | VS_CRASHED))) num_running_vehicles++;
+	}
+
+	return num_running_vehicles;
+}
+
+/** (Re-)Initializes Separation if necessary and possible. */
+void OrderList::InitializeSeparation()
+{
+	// Check whether separation can be used at all
+	if (!this->IsCompleteTimetable() || this->current_sep_mode == TTS_MODE_OFF) {
+		this->is_separation_valid = false;
+		return;
+	}
+
+	// Save current tick count as reference for future timetable start dates and reset the separation counter.
+	this->last_timetable_init = GetCurrentTickCount();
+	this->separation_counter = 0;
+
+	// Calculate separation amount depending on mode of operation.
+	switch (current_sep_mode) {
+	case TTS_MODE_AUTO: {
+		int num_running_vehicles = this->GetNumRunningVehicles();
+		assert(num_running_vehicles > 0);
+
+		this->current_separation = this->GetTimetableTotalDuration() / num_running_vehicles;
+		break;
+	}
+
+	case TTS_MODE_MAN_N:
+		this->current_separation = this->GetTimetableTotalDuration() / this->num_sep_vehicles;
+		break;
+
+	case TTS_MODE_MAN_T:
+		// separation is set manually -> nothing to do
+		break;
+
+	case TTS_MODE_BUFFERED_AUTO: {
+		int num_running_vehicles = this->GetNumRunningVehicles();
+		assert(num_running_vehicles > 0);
+
+		if (num_running_vehicles > 1)
+			num_running_vehicles--;
+
+		this->current_separation = this->GetTimetableTotalDuration() / num_running_vehicles;
+		break;
+	}
+
+	default:
+		NOT_REACHED();
+		break;
+	}
+
+	this->is_separation_valid = true;
+}
+
+/**
+* Returns the delay setting required for correct separation and increases the separation counter by 1.
+* @return the delay setting required for correct separation. */
+Ticks OrderList::SeparateVehicle()
+{
+	if (!this->is_separation_valid || this->current_sep_mode == TTS_MODE_OFF)
+		return INVALID_TICKS;
+
+	Ticks result = GetCurrentTickCount() - (this->separation_counter * this->current_separation + this->last_timetable_init);
+	this->separation_counter++;
+
+	return result;
+}
+
+/**
+* Returns the current separation settings.
+* @return the current separation settings.
+*/
+TTSepSettings OrderList::GetSepSettings()
+{
+	TTSepSettings result;
+
+	result.mode = this->current_sep_mode;
+	result.sep_ticks = GetSepTime();
+
+	// Depending on the operation mode return either the user setting or the true amount of vehicles running the timetable.
+	result.num_veh = (result.mode == TTS_MODE_MAN_N) ? this->num_sep_vehicles : GetNumVehicles();
+	return result;
+}
+
+/**
+* Prepares command to set new separation settings.
+* @param s Contains the new settings to be used for separation.
+* @todo Clean this up (e.g. via union type)
+*/
+void OrderList::SetSepSettings(TTSepSettings s)
+{
+	uint32 p2 = GB<uint32>(s.mode, 0, 3);
+	AB<uint32, uint>(p2, 3, 29, (s.mode == TTS_MODE_MAN_N) ? s.num_veh : s.sep_ticks);
+	DoCommandP(0, this->first_shared->index, p2, CMD_REINIT_SEPARATION);
+}
+
+/**
+* Sets new separation settings.
+* @param mode      Contains the operation mode that is to be used for separation.
+* @param parameter Depending on the operation mode this contains either the number of vehicles (#TTS_MODE_MAN_N)
+*                  or the time between vehicles in ticks (#TTS_MODE_MAN_T). For other modes, this is undefined.
+*/
+void OrderList::SetSepSettings(TTSepMode mode, uint32 parameter)
+{
+	this->current_sep_mode = mode;
+
+	switch (this->current_sep_mode)
+	{
+	case TTS_MODE_MAN_N:
+		this->current_separation = this->GetTimetableTotalDuration() / parameter;
+		this->num_sep_vehicles = parameter;
+		break;
+
+	case TTS_MODE_MAN_T:
+		this->current_separation = parameter;
+		this->num_sep_vehicles = this->GetTimetableTotalDuration() / this->current_separation;
+		break;
+
+	case TTS_MODE_AUTO:
+	case TTS_MODE_BUFFERED_AUTO:
+	case TTS_MODE_OFF:
+		/* nothing to do */
+		break;
+
+	default:
+		NOT_REACHED();
+		break;
+	}
+
+	this->is_separation_valid = false;
+}
+
 
 /**
  * Checks whether the order goes to a station or not, i.e. whether the
@@ -1774,7 +1917,8 @@ void CheckOrders(const Vehicle *v)
 	if (v->FirstShared() != v) return;
 
 	/* Only check every 20 days, so that we don't flood the message log */
-	if (v->owner == _local_company && v->day_counter % 20 == 0) {
+	/* The check is skipped entirely in case the current vehicle is virtual (a.k.a a 'template train') */
+	if (v->owner == _local_company && v->day_counter % 20 == 0 && !HasBit(v->subtype, GVSF_VIRTUAL) ) {
 		const Order *order;
 		StringID message = INVALID_STRING_ID;
 

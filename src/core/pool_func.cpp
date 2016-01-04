@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: pool_func.cpp 22136 2011-02-24 06:57:55Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

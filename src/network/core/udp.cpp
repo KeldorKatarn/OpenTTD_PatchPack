@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: udp.cpp 26046 2013-11-22 21:41:19Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

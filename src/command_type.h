@@ -19,7 +19,7 @@
 struct GRFFile;
 
 /**
- * Common return value for all commands. Wraps the cost and
+ * Common return value for all commands. Wraps the cost and///
  * a possible error message/state together.
  */
 class CommandCost {
@@ -240,6 +240,8 @@ enum Commands {
 
 	CMD_WANT_ENGINE_PREVIEW,          ///< confirm the preview of an engine
 
+	CMD_SET_VEHICLE_UNIT_NUMBER,      ///< sets the unit number of a vehicle
+
 	CMD_RENAME_VEHICLE,               ///< rename a whole vehicle
 	CMD_RENAME_ENGINE,                ///< rename a engine (in the engine list)
 	CMD_RENAME_COMPANY,               ///< change the company name
@@ -306,6 +308,22 @@ enum Commands {
 
 	CMD_SET_AUTOREPLACE,              ///< set an autoreplace entry
 
+	CMD_TOGGLE_REUSE_DEPOT_VEHICLES,  ///< toggle 'reuse depot vehicles' on template
+	CMD_TOGGLE_KEEP_REMAINING_VEHICLES, ///< toggle 'keep remaining vehicles' on template
+	CMD_TOGGLE_REFIT_AS_TEMPLATE,     ///< toggle 'refit as template' on template
+
+	CMD_VIRTUAL_TRAIN_FROM_TEMPLATE_VEHICLE, ///< Creates a virtual train from a template
+	CMD_VIRTUAL_TRAIN_FROM_TRAIN,     ///< Creates a virtual train from a regular train
+	CMD_DELETE_VIRTUAL_TRAIN,         ///< Delete a virtual train
+	CMD_BUILD_VIRTUAL_RAIL_VEHICLE,   ///< Build a virtual train
+	CMD_REPLACE_TEMPLATE_VEHICLE,     ///< Replace a template vehicle with another one based on a virtual train
+
+	CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN, ///< clone a train and create a new template vehicle based on it
+	CMD_DELETE_TEMPLATE_VEHICLE,      ///< delete a template vehicle
+
+	CMD_ISSUE_TEMPLATE_REPLACEMENT,   ///< issue a template replacement for a vehicle group
+	CMD_DELETE_TEMPLATE_REPLACEMENT,  ///< delete a template replacement from a vehicle group
+
 	CMD_CLONE_VEHICLE,                ///< clone a vehicle
 	CMD_START_STOP_VEHICLE,           ///< start or stop a vehicle
 	CMD_MASS_START_STOP,              ///< start/stop all vehicles (in a depot)
@@ -314,6 +332,7 @@ enum Commands {
 	CMD_DEPOT_MASS_AUTOREPLACE,       ///< force the autoreplace to take action in a given depot
 
 	CMD_CREATE_GROUP,                 ///< create a new group
+	CMD_CREATE_GROUP_SPECIFIC_NAME,   ///< create a new group
 	CMD_DELETE_GROUP,                 ///< delete a group
 	CMD_ALTER_GROUP,                  ///< alter a group
 	CMD_ADD_VEHICLE_GROUP,            ///< add a vehicle to a group
@@ -326,8 +345,19 @@ enum Commands {
 	CMD_SET_VEHICLE_ON_TIME,          ///< set the vehicle on time feature (timetable)
 	CMD_AUTOFILL_TIMETABLE,           ///< autofill the timetable
 	CMD_SET_TIMETABLE_START,          ///< set the date that a timetable should start
+	CMD_REINIT_SEPARATION,            ///< reinit timetable separation with new parameters
 
 	CMD_OPEN_CLOSE_AIRPORT,           ///< open/close an airport to incoming aircraft
+
+	CMD_ADD_PLAN,
+	CMD_ADD_PLAN_LINE,
+	CMD_REMOVE_PLAN,
+	CMD_REMOVE_PLAN_LINE,
+	CMD_CHANGE_PLAN_VISIBILITY,
+
+	CMD_PROGRAM_TRACERESTRICT_SIGNAL, ///< modify a signal tracerestrict program
+
+	CMD_PROGRAM_LOGIC_SIGNAL,         ///< modify a logic signal program
 
 	CMD_END,                          ///< Must ALWAYS be on the end of this list!! (period)
 };
@@ -466,6 +496,8 @@ struct Command {
  */
 typedef void CommandCallback(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2);
 
+#define MAX_CMD_TEXT_LENGTH 32000
+
 /**
  * Structure for buffering the build command when selecting a station to join.
  */
@@ -475,7 +507,8 @@ struct CommandContainer {
 	uint32 p2;                       ///< parameter p2.
 	uint32 cmd;                      ///< command being executed.
 	CommandCallback *callback;       ///< any callback function executed upon successful completion of the command.
-	char text[32 * MAX_CHAR_LENGTH]; ///< possible text sent for name changes etc, in bytes including '\0'.
+	uint32 binary_length;            ///< in case text contains binary data, this describes its length.
+	char text[MAX_CMD_TEXT_LENGTH];  ///< possible text sent for name changes etc, in bytes including '\0'.
 };
 
 #endif /* COMMAND_TYPE_H */

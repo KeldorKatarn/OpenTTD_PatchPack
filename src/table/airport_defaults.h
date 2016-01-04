@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: airport_defaults.h 23415 2011-12-03 23:40:46Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

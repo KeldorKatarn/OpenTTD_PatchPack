@@ -171,12 +171,13 @@ static const SaveLoad _town_desc[] = {
 
 	SLE_CONDSTR(Town, text,                  SLE_STR | SLF_ALLOW_CONTROL, 0, 168, SL_MAX_VERSION),
 
-	SLE_CONDVAR(Town, time_until_rebuild,    SLE_FILE_U8 | SLE_VAR_U16,  0, 53),
+	SLE_CONDVAR(Town, time_until_rebuild,    SLE_FILE_U8 | SLE_VAR_I32,  0, 53),
 	SLE_CONDVAR(Town, grow_counter,          SLE_FILE_U8 | SLE_VAR_U16,  0, 53),
 	SLE_CONDVAR(Town, growth_rate,           SLE_FILE_U8 | SLE_VAR_I16,  0, 53),
 
-	SLE_CONDVAR(Town, time_until_rebuild,    SLE_UINT16,                54, SL_MAX_VERSION),
-	SLE_CONDVAR(Town, grow_counter,          SLE_UINT16,                54, SL_MAX_VERSION),
+	SLE_CONDVAR(Town, time_until_rebuild,    SLE_FILE_U16 | SLE_VAR_I32, 54, SL_PATCH_PACK_DAYLENGTH),
+	SLE_CONDVAR(Town, time_until_rebuild,    SLE_INT32,                  SL_PATCH_PACK_TOWN_BUILDINGS, SL_MAX_VERSION),
+	SLE_CONDVAR(Town, grow_counter,          SLE_UINT16,                 54, SL_MAX_VERSION),
 
 	SLE_CONDVAR(Town, growth_rate,           SLE_FILE_I16 | SLE_VAR_U16, 54, 164),
 	SLE_CONDVAR(Town, growth_rate,           SLE_UINT16,                 165, SL_MAX_VERSION),

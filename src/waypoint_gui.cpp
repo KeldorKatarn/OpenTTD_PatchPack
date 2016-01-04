@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: waypoint_gui.cpp 25294 2013-05-26 19:30:07Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

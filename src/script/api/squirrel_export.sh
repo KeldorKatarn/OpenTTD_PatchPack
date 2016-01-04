@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id$
+# $Id: squirrel_export.sh 23652 2011-12-21 15:06:00Z truebrain $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

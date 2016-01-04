@@ -21,6 +21,7 @@ struct BaseConsist {
 
 	/* Used for timetabling. */
 	uint32 current_order_time;          ///< How many ticks have passed since this order started.
+	uint32 current_loading_time;        ///< (outdated. Only for backwards compatibility)
 	int32 lateness_counter;             ///< How many ticks late (or early if negative) this vehicle is.
 	Date timetable_start;               ///< When the vehicle is supposed to start the timetable.
 

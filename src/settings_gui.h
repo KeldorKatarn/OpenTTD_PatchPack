@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: settings_gui.h 24311 2012-06-01 14:41:47Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

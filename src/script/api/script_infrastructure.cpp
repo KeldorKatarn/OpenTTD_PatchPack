@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_infrastructure.cpp 23931 2012-02-11 22:43:39Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

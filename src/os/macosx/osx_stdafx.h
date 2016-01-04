@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: osx_stdafx.h 25913 2013-10-26 17:20:48Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

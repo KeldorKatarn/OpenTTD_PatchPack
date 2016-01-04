@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gfxinit.h 18028 2009-11-09 10:40:33Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

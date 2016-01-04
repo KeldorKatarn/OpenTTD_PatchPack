@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: crashlog_unix.cpp 20266 2010-07-31 21:02:56Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

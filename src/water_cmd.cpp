@@ -387,7 +387,7 @@ bool RiverModifyDesertZone(TileIndex tile, void *)
  * @param tile end tile of stretch-dragging
  * @param flags type of operation
  * @param p1 start tile of stretch-dragging
- * @param p2 waterclass to build. sea and river can only be built in scenario editor
+ * @param p2 waterclass to build. sea can only be built in scenario editor
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -396,8 +396,8 @@ CommandCost CmdBuildCanal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 	WaterClass wc = Extract<WaterClass, 0, 2>(p2);
 	if (p1 >= MapSize() || wc == WATER_CLASS_INVALID) return CMD_ERROR;
 
-	/* Outside of the editor you can only build canals, not oceans */
-	if (wc != WATER_CLASS_CANAL && _game_mode != GM_EDITOR) return CMD_ERROR;
+	/* Outside of the editor you may not build oceans */
+	if (wc == WATER_CLASS_SEA && _game_mode != GM_EDITOR) return CMD_ERROR;
 
 	TileArea ta(tile, p1);
 
@@ -413,8 +413,8 @@ CommandCost CmdBuildCanal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 			return_cmd_error(STR_ERROR_FLAT_LAND_REQUIRED);
 		}
 
-		/* can't make water of water! */
-		if (IsTileType(tile, MP_WATER) && (!IsTileOwner(tile, OWNER_WATER) || wc == WATER_CLASS_SEA)) continue;
+		/* skip tile if it already has the right type */
+		if (IsTileType(tile, MP_WATER) && (wc == WATER_CLASS_SEA && IsSea(tile) || (wc == WATER_CLASS_CANAL && IsCanal(tile)) || (wc == WATER_CLASS_RIVER && IsRiver(tile)))) continue;
 
 		bool water = IsWaterTile(tile);
 		ret = DoCommand(tile, 0, 0, flags | DC_FORCE_CLEAR_TILE, CMD_LANDSCAPE_CLEAR);
@@ -1126,7 +1126,7 @@ static void DoDryUp(TileIndex tile)
 
 		case MP_TREES:
 			SetTreeGroundDensity(tile, TREE_GROUND_GRASS, 3);
-			MarkTileDirtyByTile(tile);
+			MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 			break;
 
 		case MP_WATER:

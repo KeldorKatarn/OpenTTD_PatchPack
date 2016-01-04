@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: autoreplace.cpp 24950 2013-01-31 10:21:04Z peter1138 $ */
 
 /*
  * This file is part of OpenTTD.

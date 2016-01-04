@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_airport.h 25705 2013-08-09 18:43:44Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

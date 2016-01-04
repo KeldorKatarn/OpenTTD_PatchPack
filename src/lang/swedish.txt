@@ -10,7 +10,7 @@
 ##grflangid 0x2e
 
 
-# $Id$
+# $Id: swedish.txt 26434 2014-03-28 18:46:02Z translators $
 
 # This file is part of OpenTTD.
 # OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.

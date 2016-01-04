@@ -45,6 +45,7 @@ enum VehicleRefitWidgets {
 /** Widgets of the #VehicleDetailsWindow class. */
 enum VehicleDetailsWidgets {
 	WID_VD_CAPTION,                     ///< Caption of window.
+	WID_VD_TRIP_HISTORY,                ///< Show the trip history of vehicle.
 	WID_VD_RENAME_VEHICLE,              ///< Rename this vehicle.
 	WID_VD_TOP_DETAILS,                 ///< Panel with generic details.
 	WID_VD_INCREASE_SERVICING_INTERVAL, ///< Increase the servicing interval.

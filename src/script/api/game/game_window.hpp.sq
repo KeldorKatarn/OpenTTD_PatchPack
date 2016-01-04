@@ -236,7 +236,7 @@ void SQGSWindow_Register(Squirrel *engine)
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BBS_BRIDGE_LIST,                       "WID_BBS_BRIDGE_LIST");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BBS_SCROLLBAR,                         "WID_BBS_SCROLLBAR");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_CAPTION,                            "WID_BV_CAPTION");
-	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_SORT_ASSENDING_DESCENDING,          "WID_BV_SORT_ASSENDING_DESCENDING");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_SORT_ASCENDING_DESCENDING,          "WID_BV_SORT_ASCENDING_DESCENDING");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_SORT_DROPDOWN,                      "WID_BV_SORT_DROPDOWN");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_CARGO_FILTER_DROPDOWN,              "WID_BV_CARGO_FILTER_DROPDOWN");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BV_LIST,                               "WID_BV_LIST");
@@ -891,6 +891,7 @@ void SQGSWindow_Register(Squirrel *engine)
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_BUILD_EW,                          "WID_RAT_BUILD_EW");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_BUILD_Y,                           "WID_RAT_BUILD_Y");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_AUTORAIL,                          "WID_RAT_AUTORAIL");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_POLYRAIL,                          "WID_RAT_POLYRAIL");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_DEMOLISH,                          "WID_RAT_DEMOLISH");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_BUILD_DEPOT,                       "WID_RAT_BUILD_DEPOT");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_RAT_BUILD_WAYPOINT,                    "WID_RAT_BUILD_WAYPOINT");

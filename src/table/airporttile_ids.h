@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: airporttile_ids.h 19099 2010-02-11 20:52:56Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

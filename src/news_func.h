@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: news_func.h 24845 2012-12-23 21:08:42Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gfx_type.h 24111 2012-04-10 20:16:51Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

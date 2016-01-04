@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: game_instance.cpp 26305 2014-02-06 19:41:56Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

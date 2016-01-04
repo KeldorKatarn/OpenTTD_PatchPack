@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: game_sl.cpp 25817 2013-10-06 12:10:33Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

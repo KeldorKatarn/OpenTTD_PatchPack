@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_grouplist.hpp 23370 2011-11-29 23:27:26Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

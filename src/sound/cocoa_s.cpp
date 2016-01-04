@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cocoa_s.cpp 25714 2013-08-10 12:47:24Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

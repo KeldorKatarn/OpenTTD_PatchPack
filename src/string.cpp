@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: string.cpp 26384 2014-03-01 14:14:41Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

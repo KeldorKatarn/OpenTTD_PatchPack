@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: math_func.cpp 25347 2013-06-09 12:50:33Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

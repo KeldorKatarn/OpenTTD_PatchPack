@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: goal_base.h 25299 2013-05-27 21:59:11Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

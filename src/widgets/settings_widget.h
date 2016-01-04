@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: settings_widget.h 26320 2014-02-09 13:04:50Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

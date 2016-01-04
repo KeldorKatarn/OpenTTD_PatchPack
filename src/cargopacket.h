@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cargopacket.h 26327 2014-02-09 21:10:25Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -133,6 +133,14 @@ public:
 	inline byte DaysInTransit() const
 	{
 		return this->days_in_transit;
+	}
+
+	/**
+	 * Resets the number of days this cargo has been in transit.
+	 */
+	inline void ResetTransitDays()
+	{
+		this->days_in_transit = 0x00;
 	}
 
 	/**

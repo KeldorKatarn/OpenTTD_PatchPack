@@ -17,6 +17,7 @@
 #include "core/sort_func.hpp"
 #include "core/smallvec_type.hpp"
 #include "date_type.h"
+#include "settings_type.h"
 
 /** Flags of the sort list. */
 enum SortListFlags {

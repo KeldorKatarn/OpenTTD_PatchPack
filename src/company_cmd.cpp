@@ -571,6 +571,8 @@ Company *DoStartupNewCompany(bool is_ai, CompanyID company = INVALID_COMPANY)
 	AI::BroadcastNewEvent(new ScriptEventCompanyNew(c->index), c->index);
 	Game::NewEvent(new ScriptEventCompanyNew(c->index));
 
+	if (!is_ai) UpdateAllTownVirtCoords();
+
 	return c;
 }
 
@@ -882,7 +884,7 @@ CommandCost CmdCompanyCtrl(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 						 * When replaying, the command to rename the president will
 						 * automatically be ran, so this is not even needed to get
 						 * the exact same state. */
-						NetworkSendCommand(0, 0, 0, CMD_RENAME_PRESIDENT, NULL, ci->client_name, c->index);
+						NetworkSendCommand(0, 0, 0, CMD_RENAME_PRESIDENT, NULL, ci->client_name, c->index, 0);
 					}
 				}
 

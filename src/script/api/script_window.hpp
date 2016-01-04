@@ -299,7 +299,15 @@ public:
 		 * Vehicle timetable; %Window numbers:
 		 *   - #VehicleID = #VehicleTimetableWidgets
 		 */
-		WC_VEHICLE_TIMETABLE                         = ::WC_VEHICLE_TIMETABLE,
+		 WC_VEHICLE_TIMETABLE                         = ::WC_VEHICLE_TIMETABLE,
+
+		 /**
+		 * Vehicle trip history; %Window numbers:
+		 *   - #VehicleID = #VehicleTripHistoryWidgets
+		 */
+		 WC_VEHICLE_TRIP_HISTORY                         = ::WC_VEHICLE_TRIP_HISTORY,
+
+		 /**
 
 		/**
 		 * Company colour selection; %Window numbers:
@@ -965,7 +973,7 @@ public:
 	/** Widgets of the #BuildVehicleWindow class. */
 	enum BuildVehicleWidgets {
 		WID_BV_CAPTION                               = ::WID_BV_CAPTION,                               ///< Caption of window.
-		WID_BV_SORT_ASSENDING_DESCENDING             = ::WID_BV_SORT_ASSENDING_DESCENDING,             ///< Sort direction.
+		WID_BV_SORT_ASCENDING_DESCENDING             = ::WID_BV_SORT_ASCENDING_DESCENDING,             ///< Sort direction.
 		WID_BV_SORT_DROPDOWN                         = ::WID_BV_SORT_DROPDOWN,                         ///< Criteria of sorting dropdown.
 		WID_BV_CARGO_FILTER_DROPDOWN                 = ::WID_BV_CARGO_FILTER_DROPDOWN,                 ///< Cargo filter dropdown.
 		WID_BV_LIST                                  = ::WID_BV_LIST,                                  ///< List of vehicles.
@@ -1958,6 +1966,7 @@ public:
 		WID_RAT_BUILD_EW                             = ::WID_RAT_BUILD_EW,                             ///< Build rail along the game view X axis.
 		WID_RAT_BUILD_Y                              = ::WID_RAT_BUILD_Y,                              ///< Build rail along the game grid Y axis.
 		WID_RAT_AUTORAIL                             = ::WID_RAT_AUTORAIL,                             ///< Autorail tool.
+		WID_RAT_POLYRAIL                             = ::WID_RAT_POLYRAIL,                             ///< Polyline rail tool.
 		WID_RAT_DEMOLISH                             = ::WID_RAT_DEMOLISH,                             ///< Destroy something with dynamite!
 		WID_RAT_BUILD_DEPOT                          = ::WID_RAT_BUILD_DEPOT,                          ///< Build a depot.
 		WID_RAT_BUILD_WAYPOINT                       = ::WID_RAT_BUILD_WAYPOINT,                       ///< Build a waypoint.
@@ -2028,6 +2037,7 @@ public:
 		WID_BS_ELECTRIC_PBS                          = ::WID_BS_ELECTRIC_PBS,                          ///< Build an electric path signal.
 		WID_BS_ELECTRIC_PBS_OWAY                     = ::WID_BS_ELECTRIC_PBS_OWAY,                     ///< Build an electric one way path signal.
 		WID_BS_CONVERT                               = ::WID_BS_CONVERT,                               ///< Convert the signal.
+		WID_BS_TRACE_RESTRICT                        = ::WID_BS_TRACE_RESTRICT,                        ///< Open trace restrict window.
 		WID_BS_DRAG_SIGNALS_DENSITY_LABEL            = ::WID_BS_DRAG_SIGNALS_DENSITY_LABEL,            ///< The current signal density.
 		WID_BS_DRAG_SIGNALS_DENSITY_DECREASE         = ::WID_BS_DRAG_SIGNALS_DENSITY_DECREASE,         ///< Decrease the signal density.
 		WID_BS_DRAG_SIGNALS_DENSITY_INCREASE         = ::WID_BS_DRAG_SIGNALS_DENSITY_INCREASE,         ///< Increase the signal density.
@@ -2521,6 +2531,7 @@ public:
 	/** Widgets of the #VehicleDetailsWindow class. */
 	enum VehicleDetailsWidgets {
 		WID_VD_CAPTION                               = ::WID_VD_CAPTION,                               ///< Caption of window.
+		WID_VD_TRIP_HISTORY                          = ::WID_VD_TRIP_HISTORY,                          ///< Show the trip history of vehicle.
 		WID_VD_RENAME_VEHICLE                        = ::WID_VD_RENAME_VEHICLE,                        ///< Rename this vehicle.
 		WID_VD_TOP_DETAILS                           = ::WID_VD_TOP_DETAILS,                           ///< Panel with generic details.
 		WID_VD_INCREASE_SERVICING_INTERVAL           = ::WID_VD_INCREASE_SERVICING_INTERVAL,           ///< Increase the servicing interval.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: yapf_cache.h 21594 2010-12-22 11:24:38Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

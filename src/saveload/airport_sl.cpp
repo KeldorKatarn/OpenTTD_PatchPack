@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: airport_sl.cpp 20450 2010-08-11 19:09:26Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: signs.cpp 23319 2011-11-24 17:37:20Z peter1138 $ */
 
 /*
  * This file is part of OpenTTD.

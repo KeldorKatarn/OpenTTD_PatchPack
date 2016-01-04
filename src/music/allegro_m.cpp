@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: allegro_m.cpp 20286 2010-08-01 19:44:49Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

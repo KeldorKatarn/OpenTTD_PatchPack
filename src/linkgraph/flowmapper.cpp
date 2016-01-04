@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: flowmapper.cpp 26166 2013-12-20 14:57:44Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.
@@ -50,7 +50,7 @@ void FlowMapper::Run(LinkGraphJob &job) const
 		flows.FinalizeLocalConsumption(node.Station());
 		if (this->scale) {
 			/* Scale by time the graph has been running without being compressed. */
-			uint runtime = job.JoinDate() - job.Settings().recalc_time - job.LastCompression();
+			uint runtime = max(1, job.JoinDate() - max(1, (job.Settings().recalc_time / _settings_game.economy.daylength)) - job.LastCompression());
 			for (FlowStatMap::iterator i = flows.begin(); i != flows.end(); ++i) {
 				i->second.ScaleToMonthly(runtime);
 			}

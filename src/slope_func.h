@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: slope_func.h 23106 2011-11-04 11:30:37Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

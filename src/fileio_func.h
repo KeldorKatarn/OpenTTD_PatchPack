@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: fileio_func.h 25974 2013-11-13 18:57:25Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

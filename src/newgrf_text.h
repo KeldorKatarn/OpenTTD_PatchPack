@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_text.h 26243 2014-01-12 18:01:16Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

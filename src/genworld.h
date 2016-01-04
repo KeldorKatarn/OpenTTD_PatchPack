@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: genworld.h 23611 2011-12-19 20:56:50Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

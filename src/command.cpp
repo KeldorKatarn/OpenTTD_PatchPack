@@ -103,6 +103,8 @@ CommandProc CmdDecreaseLoan;
 
 CommandProc CmdWantEnginePreview;
 
+CommandProc CmdSetVehicleUnitNumber;
+
 CommandProc CmdRenameVehicle;
 CommandProc CmdRenameEngine;
 
@@ -172,6 +174,22 @@ CommandProc CmdRemoveSignalTrack;
 
 CommandProc CmdSetAutoReplace;
 
+CommandProc CmdToggleReuseDepotVehicles;
+CommandProc CmdToggleKeepRemainingVehicles;
+CommandProc CmdToggleRefitAsTemplate;
+
+CommandProc CmdVirtualTrainFromTemplateVehicle;
+CommandProc CmdVirtualTrainFromTrain;
+CommandProc CmdDeleteVirtualTrain;
+CommandProc CmdBuildVirtualRailVehicle;
+CommandProc CmdReplaceTemplateVehicle;
+
+CommandProc CmdTemplateVehicleFromTrain;
+CommandProc CmdDeleteTemplateVehicle;
+
+CommandProc CmdIssueTemplateReplacement;
+CommandProc CmdDeleteTemplateReplacement;
+
 CommandProc CmdCloneVehicle;
 CommandProc CmdStartStopVehicle;
 CommandProc CmdMassStartStopVehicle;
@@ -180,7 +198,8 @@ CommandProc CmdDepotSellAllVehicles;
 CommandProc CmdDepotMassAutoReplace;
 
 CommandProc CmdCreateGroup;
-CommandProc CmdRenameGroup;
+CommandProc CmdCreateGroupSpecificName;
+CommandProc CmdAlterGroup;
 CommandProc CmdDeleteGroup;
 CommandProc CmdAddVehicleGroup;
 CommandProc CmdAddSharedVehicleGroup;
@@ -192,8 +211,19 @@ CommandProc CmdChangeTimetable;
 CommandProc CmdSetVehicleOnTime;
 CommandProc CmdAutofillTimetable;
 CommandProc CmdSetTimetableStart;
+CommandProc CmdReinitSeparation;
 
 CommandProc CmdOpenCloseAirport;
+
+CommandProc CmdAddPlan;
+CommandProc CmdAddPlanLine;
+CommandProc CmdRemovePlan;
+CommandProc CmdRemovePlanLine;
+CommandProc CmdChangePlanVisibility;
+
+CommandProc CmdProgramSignalTraceRestrict;
+
+CommandProc CmdProgramLogicSignal;
 
 #define DEF_CMD(proc, flags, type) {proc, #proc, (CommandFlags)flags, type}
 
@@ -242,7 +272,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdRefitVehicle,                                   0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_REFIT_VEHICLE
 	DEF_CMD(CmdSendVehicleToDepot,                             0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_SEND_VEHICLE_TO_DEPOT
 
-	DEF_CMD(CmdMoveRailVehicle,                                0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_MOVE_RAIL_VEHICLE
+	DEF_CMD(CmdMoveRailVehicle,                    CMD_ALL_TILES, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_MOVE_RAIL_VEHICLE
 	DEF_CMD(CmdForceTrainProceed,                              0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_FORCE_TRAIN_PROCEED
 	DEF_CMD(CmdReverseTrainDirection,                          0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_REVERSE_TRAIN_DIRECTION
 
@@ -262,6 +292,8 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdDecreaseLoan,                                   0, CMDT_MONEY_MANAGEMENT      ), // CMD_DECREASE_LOAN
 
 	DEF_CMD(CmdWantEnginePreview,                              0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_WANT_ENGINE_PREVIEW
+
+	DEF_CMD(CmdSetVehicleUnitNumber,                           0, CMDT_OTHER_MANAGEMENT      ), // CMD_SET_VEHICLE_UNIT_NUMBER
 
 	DEF_CMD(CmdRenameVehicle,                                  0, CMDT_OTHER_MANAGEMENT      ), // CMD_RENAME_VEHICLE
 	DEF_CMD(CmdRenameEngine,                          CMD_SERVER, CMDT_OTHER_MANAGEMENT      ), // CMD_RENAME_ENGINE
@@ -330,6 +362,23 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdChangeSetting,                         CMD_SERVER, CMDT_SERVER_SETTING        ), // CMD_CHANGE_SETTING
 	DEF_CMD(CmdChangeCompanySetting,                           0, CMDT_COMPANY_SETTING       ), // CMD_CHANGE_COMPANY_SETTING
 	DEF_CMD(CmdSetAutoReplace,                                 0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_SET_AUTOREPLACE
+
+	DEF_CMD(CmdToggleReuseDepotVehicles,           CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_TOGGLE_REUSE_DEPOT_VEHICLES
+	DEF_CMD(CmdToggleKeepRemainingVehicles,        CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_TOGGLE_KEEP_REMAINING_VEHICLES
+	DEF_CMD(CmdToggleRefitAsTemplate,              CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_TOGGLE_REFIT_AS_TEMPLATE
+
+	DEF_CMD(CmdVirtualTrainFromTemplateVehicle,    CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_VIRTUAL_TRAIN_FROM_TEMPLATE_VEHICLE
+	DEF_CMD(CmdVirtualTrainFromTrain,              CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_VIRTUAL_TRAIN_FROM_TRAIN
+	DEF_CMD(CmdDeleteVirtualTrain,                 CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_DELETE_VIRTUAL_TRAIN
+	DEF_CMD(CmdBuildVirtualRailVehicle,            CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_BUILD_VIRTUAL_RAIL_VEHICLE
+	DEF_CMD(CmdReplaceTemplateVehicle,             CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_REPLACE_TEMPLATE_VEHICLE
+
+	DEF_CMD(CmdTemplateVehicleFromTrain,           CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN
+	DEF_CMD(CmdDeleteTemplateVehicle,              CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_DELETE_TEMPLATE_VEHICLE
+
+	DEF_CMD(CmdIssueTemplateReplacement,           CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_ISSUE_TEMPLATE_REPLACEMENT
+	DEF_CMD(CmdDeleteTemplateReplacement,          CMD_ALL_TILES, CMDT_VEHICLE_MANAGEMENT    ), // CMD_DELETE_TEMPLATE_REPLACEMENT
+
 	DEF_CMD(CmdCloneVehicle,                         CMD_NO_TEST, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_CLONE_VEHICLE; NewGRF callbacks influence building and refitting making it impossible to correctly estimate the cost
 	DEF_CMD(CmdStartStopVehicle,                               0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_START_STOP_VEHICLE
 	DEF_CMD(CmdMassStartStopVehicle,                           0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_MASS_START_STOP
@@ -337,8 +386,9 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdDepotSellAllVehicles,                           0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_DEPOT_SELL_ALL_VEHICLES
 	DEF_CMD(CmdDepotMassAutoReplace,                           0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_DEPOT_MASS_AUTOREPLACE
 	DEF_CMD(CmdCreateGroup,                                    0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CREATE_GROUP
+	DEF_CMD(CmdCreateGroupSpecificName,                        0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CREATE_GROUP_SPECIFIC_NAME
 	DEF_CMD(CmdDeleteGroup,                                    0, CMDT_ROUTE_MANAGEMENT      ), // CMD_DELETE_GROUP
-	DEF_CMD(CmdRenameGroup,                                    0, CMDT_OTHER_MANAGEMENT      ), // CMD_RENAME_GROUP
+	DEF_CMD(CmdAlterGroup,                                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_ALTER_GROUP
 	DEF_CMD(CmdAddVehicleGroup,                                0, CMDT_ROUTE_MANAGEMENT      ), // CMD_ADD_VEHICLE_GROUP
 	DEF_CMD(CmdAddSharedVehicleGroup,                          0, CMDT_ROUTE_MANAGEMENT      ), // CMD_ADD_SHARE_VEHICLE_GROUP
 	DEF_CMD(CmdRemoveAllVehiclesGroup,                         0, CMDT_ROUTE_MANAGEMENT      ), // CMD_REMOVE_ALL_VEHICLES_GROUP
@@ -348,8 +398,18 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdSetVehicleOnTime,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_VEHICLE_ON_TIME
 	DEF_CMD(CmdAutofillTimetable,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_AUTOFILL_TIMETABLE
 	DEF_CMD(CmdSetTimetableStart,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_TIMETABLE_START
+	DEF_CMD(CmdReinitSeparation,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_REINIT_SEPARATION
 
 	DEF_CMD(CmdOpenCloseAirport,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_OPEN_CLOSE_AIRPORT
+
+	DEF_CMD(CmdAddPlan,                                        0, CMDT_OTHER_MANAGEMENT      ), // CMD_ADD_PLAN
+	DEF_CMD(CmdAddPlanLine,                                    0, CMDT_OTHER_MANAGEMENT      ), // CMD_ADD_PLAN_LINE
+	DEF_CMD(CmdRemovePlan,                                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_REMOVE_PLAN
+	DEF_CMD(CmdRemovePlanLine,                                 0, CMDT_OTHER_MANAGEMENT      ), // CMD_REMOVE_PLAN_LINE
+	DEF_CMD(CmdChangePlanVisibility,                           0, CMDT_OTHER_MANAGEMENT      ), // CMD_CHANGE_PLAN_VISIBILITY
+
+	DEF_CMD(CmdProgramSignalTraceRestrict,                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_TRACERESTRICT_SIGNAL
+	DEF_CMD(CmdProgramLogicSignal,                             0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_LOGIC_SIGNAL
 };
 
 /*!
@@ -538,19 +598,27 @@ bool DoCommandP(const CommandContainer *container, bool my_cmd)
  * @param callback A callback function to call after the command is finished
  * @param text The text to pass
  * @param my_cmd indicator if the command is from a company or server (to display error messages for a user)
+ * @param binary_length The quantity of binary data in text
  * @return \c true if the command succeeded, else \c false.
  */
-bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback, const char *text, bool my_cmd)
+bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback, const char *text, bool my_cmd, uint32 binary_length)
 {
 	/* Cost estimation is generally only done when the
-	 * local user presses shift while doing somthing.
-	 * However, in case of incoming network commands,
-	 * map generation or the pause button we do want
-	 * to execute. */
-	bool estimate_only = _shift_pressed && IsLocalCompany() &&
-			!_generating_world &&
-			!(cmd & CMD_NETWORK_COMMAND) &&
-			(cmd & CMD_ID_MASK) != CMD_PAUSE;
+	 * local user presses shift while constructing somthing.
+	 * However, in case of incoming network commands or
+	 * map generation we do want to execute. */
+	bool estimate_only = false;
+	switch (_command_proc_table[cmd & CMD_ID_MASK].type) {
+		case CMDT_LANDSCAPE_CONSTRUCTION:
+		case CMDT_VEHICLE_CONSTRUCTION:
+			estimate_only = _shift_pressed && IsLocalCompany() &&
+					!_generating_world && !(cmd & CMD_NETWORK_COMMAND);
+			break;
+
+		default:
+			break; // just to silence warnings
+	}
+
 
 	/* We're only sending the command, so don't do
 	 * fancy things for 'success'. */
@@ -570,7 +638,7 @@ bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallbac
 	if (!(cmd & CMD_NETWORK_COMMAND) && GetCommandFlags(cmd) & CMD_CLIENT_ID && p2 == 0) p2 = CLIENT_ID_SERVER;
 #endif
 
-	CommandCost res = DoCommandPInternal(tile, p1, p2, cmd, callback, text, my_cmd, estimate_only);
+	CommandCost res = DoCommandPInternal(tile, p1, p2, cmd, callback, text, my_cmd, estimate_only, binary_length);
 	if (res.Failed()) {
 		/* Only show the error when it's for us. */
 		StringID error_part1 = GB(cmd, 16, 16);
@@ -616,7 +684,7 @@ bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallbac
  * @param estimate_only whether to give only the estimate or also execute the command
  * @return the command cost of this function.
  */
-CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback, const char *text, bool my_cmd, bool estimate_only)
+CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback, const char *text, bool my_cmd, bool estimate_only, uint32 binary_length)
 {
 	/* Prevent recursion; it gives a mess over the network */
 	assert(_docommand_recursive == 0);
@@ -695,7 +763,7 @@ CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd,
 	 * send it to the command-queue and abort execution
 	 */
 	if (_networking && !_generating_world && !(cmd & CMD_NETWORK_COMMAND)) {
-		NetworkSendCommand(tile, p1, p2, cmd & ~CMD_FLAGS_MASK, callback, text, _current_company);
+		NetworkSendCommand(tile, p1, p2, cmd & ~CMD_FLAGS_MASK, callback, text, _current_company, binary_length);
 		cur_company.Restore();
 
 		/* Don't return anything special here; no error, no costs.

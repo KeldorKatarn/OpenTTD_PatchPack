@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gamelog_sl.cpp 23065 2011-10-30 13:47:45Z yexo $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: ship.h 24839 2012-12-23 01:00:25Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: screenshot.h 24805 2012-12-09 16:53:01Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

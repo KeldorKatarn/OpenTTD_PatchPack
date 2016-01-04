@@ -354,7 +354,7 @@ protected:
 			if (IsTunnel(m_new_tile)) {
 				if (!m_is_tunnel) {
 					DiagDirection tunnel_enterdir = GetTunnelBridgeDirection(m_new_tile);
-					if (tunnel_enterdir != m_exitdir) {
+					if (tunnel_enterdir != m_exitdir || IsTunnelBridgeExit(m_new_tile)) {
 						m_err = EC_NO_WAY;
 						return false;
 					}
@@ -362,7 +362,7 @@ protected:
 			} else { // IsBridge(m_new_tile)
 				if (!m_is_bridge) {
 					DiagDirection ramp_enderdir = GetTunnelBridgeDirection(m_new_tile);
-					if (ramp_enderdir != m_exitdir) {
+					if (ramp_enderdir != m_exitdir || IsTunnelBridgeExit(m_new_tile)) {
 						m_err = EC_NO_WAY;
 						return false;
 					}

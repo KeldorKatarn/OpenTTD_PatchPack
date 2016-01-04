@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: random_func.cpp 25893 2013-10-20 14:48:08Z fonsinchen $ */
 
 /*
  * This file is part of OpenTTD.

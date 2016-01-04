@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: water_land.h 22646 2011-07-10 13:04:04Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

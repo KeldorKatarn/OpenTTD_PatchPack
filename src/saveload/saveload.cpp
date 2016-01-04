@@ -10,7 +10,7 @@
 /**
  * @file saveload.cpp
  * All actions handling saving and loading goes on in this file. The general actions
- * are as follows for saving a game (loading is analogous):
+ * are as follows for saving a game (loading is analogous):///
  * <ol>
  * <li>initialize the writer by creating a temporary memory-buffer for it
  * <li>go through all to-be saved elements, each 'chunk' (#ChunkHandler) prefixed by a label
@@ -43,6 +43,8 @@
 #include "../string_func.h"
 #include "../fios.h"
 #include "../error.h"
+
+#include "../tbtr_template_vehicle.h"
 
 #include "table/strings.h"
 
@@ -254,8 +256,20 @@
  *  186   25833
  *  187   25899
  *  188   26169   1.4.x
+ *  
+ *  255   SL_PATCH_PACK
+ *  256   SL_PATCH_PACK_DAYLENGTH
+ *  257   SL_PATCH_PACK_TOWN_BUILDINGS
+ *  258   SL_PATCH_PACK_MAP_FEATURES
+ *  259   SL_PATCH_PACK_SAFE_WAITING_LOCATION
+ *  260   SL_PATCH_PACK_1_2
+ *  261   SL_PATCH_PACK_1_3
+ *  262   SL_PATCH_PACK_1_4
+ *  263   SL_PATCH_PACK_1_5
+ *  264   SL_PATCH_PACK_1_6
+ *  265   SL_PATCH_PACK_1_7
  */
-extern const uint16 SAVEGAME_VERSION = 188; ///< Current savegame version of OpenTTD.
+extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_7; ///< Current savegame version of OpenTTD.
 
 SavegameType _savegame_type; ///< type of savegame we are loading
 
@@ -439,6 +453,11 @@ extern const ChunkHandler _linkgraph_chunk_handlers[];
 extern const ChunkHandler _airport_chunk_handlers[];
 extern const ChunkHandler _object_chunk_handlers[];
 extern const ChunkHandler _persistent_storage_chunk_handlers[];
+extern const ChunkHandler _plan_chunk_handlers[];
+extern const ChunkHandler _trace_restrict_chunk_handlers[];
+extern const ChunkHandler _template_replacement_chunk_handlers[];
+extern const ChunkHandler _template_vehicle_chunk_handlers[];
+extern const ChunkHandler _logic_signal_handlers[];
 
 /** Array of all chunks in a savegame, \c NULL terminated. */
 static const ChunkHandler * const _chunk_handlers[] = {
@@ -475,6 +494,11 @@ static const ChunkHandler * const _chunk_handlers[] = {
 	_airport_chunk_handlers,
 	_object_chunk_handlers,
 	_persistent_storage_chunk_handlers,
+	_plan_chunk_handlers,
+	_trace_restrict_chunk_handlers,
+	_template_replacement_chunk_handlers,
+	_template_vehicle_chunk_handlers,
+	_logic_signal_handlers,
 	NULL,
 };
 
@@ -1221,6 +1245,7 @@ static size_t ReferenceToInt(const void *obj, SLRefType rt)
 	switch (rt) {
 		case REF_VEHICLE_OLD: // Old vehicles we save as new ones
 		case REF_VEHICLE:   return ((const  Vehicle*)obj)->index + 1;
+		case REF_TEMPLATE_VEHICLE: return ((const TemplateVehicle*)obj)->index + 1;
 		case REF_STATION:   return ((const  Station*)obj)->index + 1;
 		case REF_TOWN:      return ((const     Town*)obj)->index + 1;
 		case REF_ORDER:     return ((const    Order*)obj)->index + 1;
@@ -1279,6 +1304,10 @@ static void *IntToReference(size_t index, SLRefType rt)
 		case REF_VEHICLE:
 			if (Vehicle::IsValidID(index)) return Vehicle::Get(index);
 			SlErrorCorrupt("Referencing invalid Vehicle");
+
+		case REF_TEMPLATE_VEHICLE:
+			if (TemplateVehicle::IsValidID(index)) return TemplateVehicle::Get(index);
+			SlErrorCorrupt("Referencing invalid TemplateVehicle");
 
 		case REF_STATION:
 			if (Station::IsValidID(index)) return Station::Get(index);

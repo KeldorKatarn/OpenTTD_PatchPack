@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: countedptr.hpp 24900 2013-01-08 22:46:42Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

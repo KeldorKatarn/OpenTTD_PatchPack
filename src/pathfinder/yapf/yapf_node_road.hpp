@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: yapf_node_road.hpp 22350 2011-04-19 18:12:47Z smatz $ */
 
 /*
  * This file is part of OpenTTD.

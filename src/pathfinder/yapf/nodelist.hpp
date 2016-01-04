@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: nodelist.hpp 23640 2011-12-20 17:57:56Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

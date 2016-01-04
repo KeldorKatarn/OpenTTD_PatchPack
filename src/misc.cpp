@@ -28,6 +28,8 @@
 #include "core/pool_type.hpp"
 #include "game/game.hpp"
 #include "linkgraph/linkgraphschedule.h"
+#include "tracerestrict.h"
+#include "logic_signals.h"
 
 
 extern TileIndex _cur_tileloop_tile;
@@ -70,6 +72,7 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	}
 
 	LinkGraphSchedule::Clear();
+	ClearTraceRestrictMapping();
 	PoolBase::Clean(PT_NORMAL);
 
 	ResetPersistentNewGRFData();
@@ -91,6 +94,8 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	InitializeIndustries();
 	InitializeObjects();
 	InitializeBuildingCounts();
+	
+	FreeAllSignalPrograms();
 
 	InitializeNPF();
 
@@ -108,6 +113,7 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	InitializeEconomy();
 
 	ResetObjectToPlace();
+	ResetRailPlacementSnapping();
 
 	GamelogReset();
 	GamelogStartAction(GLAT_START);

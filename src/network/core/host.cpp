@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: host.cpp 17693 2009-10-04 17:16:41Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

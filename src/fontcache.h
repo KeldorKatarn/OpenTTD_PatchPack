@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: fontcache.h 26170 2013-12-22 17:46:27Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

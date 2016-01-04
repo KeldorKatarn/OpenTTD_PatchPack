@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: engine_type.h 24810 2012-12-09 16:55:03Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

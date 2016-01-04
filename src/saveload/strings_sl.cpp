@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: strings_sl.cpp 22957 2011-09-23 19:27:15Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

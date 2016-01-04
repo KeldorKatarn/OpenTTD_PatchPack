@@ -548,8 +548,8 @@ STR_GRAPH_COMPANY_PERFORMANCE_RATINGS_CAPTION                   :{WHITE}Bewertun
 STR_GRAPH_COMPANY_VALUES_CAPTION                                :{WHITE}Firmenwert
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Frachtbeförderungspreise
-STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Tage unterwegs
-STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Zahlung für 10 gelieferte Einheiten (oder 10.000 Liter) Fracht über eine Strecke von 20 Feldern
+STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Mittlere Transportgeschwindigkeit (km/h)
+STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Zahlung für 1 gelieferte Einheit (oder 1.000 Liter) Fracht über eine Strecke von 200 Feldern
 STR_GRAPH_CARGO_ENABLE_ALL                                      :{TINY_FONT}{BLACK}Alle auswählen
 STR_GRAPH_CARGO_DISABLE_ALL                                     :{TINY_FONT}{BLACK}Alle abwählen
 STR_GRAPH_CARGO_TOOLTIP_ENABLE_ALL                              :{BLACK}Zeige alle Frachtarten im Frachtraten-Diagramm an
@@ -1131,6 +1131,10 @@ STR_CONFIG_SETTING_DISASTERS_HELPTEXT                           :Ein- oder Aussc
 STR_CONFIG_SETTING_CITY_APPROVAL                                :Toleranz der Stadtverwaltung bei Landschaftsumgestaltungen: {STRING}
 STR_CONFIG_SETTING_CITY_APPROVAL_HELPTEXT                       :Auswählen, wie stark Lärm und Umweltschäden die Stadtbewertung einer Firma sinken lassen. Bei einer zu schlechten Bewertung werden dann in dieser Stadt keine Bauvorhaben mehr genehmigt
 
+# daylength advanced setting
+STR_CONFIG_PATCHES_DAYLENGTH                                    :{LTBLUE}Faktor für Tageslänge: {ORANGE}{STRING}
+STR_CONFIG_PATCHES_DAYLENGTH_HELPTEXT                           :Einstellen, wieviel länger ein Tag im Spiel dauern soll. Standardmäßig dauert ein Tag etwa 2,22 Sekunden.
+
 STR_CONFIG_SETTING_BUILDONSLOPES                                :Das Bauen an Hängen und Küsten erlauben: {STRING}
 STR_CONFIG_SETTING_BUILDONSLOPES_HELPTEXT                       :Falls aktiviert, können Transportwege und Stationen an die meisten Hänge gebaut werden. Falls deaktiviert, dürfen sie nur dann an einen Hang gebaut werden, wenn dafür keine Fundamente errichtet werden müssen
 STR_CONFIG_SETTING_AUTOSLOPE                                    :Landschaftsbau unter Gebäuden, Gleisen, usw. erlauben: {STRING}
@@ -1360,8 +1364,8 @@ STR_CONFIG_SETTING_ADVANCED_VEHICLE_LISTS                       :Erweiterte Fahr
 STR_CONFIG_SETTING_ADVANCED_VEHICLE_LISTS_HELPTEXT              :Nutze erweiterte Fahrzeuglisten für die Gruppierung von Fahrzeugen
 STR_CONFIG_SETTING_LOADING_INDICATORS                           :Ladestandanzeiger verwenden: {STRING}
 STR_CONFIG_SETTING_LOADING_INDICATORS_HELPTEXT                  :Auswählen, ob beim Be- oder Entladen der Ladestand in Prozent über dem Fahrzeug angezeigt werden soll
-STR_CONFIG_SETTING_TIMETABLE_IN_TICKS                           :Fahrpläne in Ticks anstatt in Tagen anzeigen: {STRING}
-STR_CONFIG_SETTING_TIMETABLE_IN_TICKS_HELPTEXT                  :Zeige Fahrtzeiten in Fahrplänen in Ticks statt Tagen
+STR_CONFIG_SETTING_TIMETABLE_IN_TICKS                           :Fahrpläne in Minuten anstatt in Tagen anzeigen: {STRING}
+STR_CONFIG_SETTING_TIMETABLE_IN_TICKS_HELPTEXT                  :Zeige Fahrtzeiten unabhängig von der eingestellten Tageslänge in Minuten an
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE             :Zeige Ankunft und Abfahrt im Fahrplan: {STRING}
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE_HELPTEXT    :Zeige geschätzte Ankunfts- und Abfahrtzeiten in Fahrplänen
 STR_CONFIG_SETTING_QUICKGOTO                                    :Schnelle Erzeugung von Aufträgen für Fahrzeuge: {STRING}
@@ -3826,7 +3830,7 @@ STR_TIMETABLE_TRAVEL_FOR_SPEED                                  :Fahrt zu {STRIN
 STR_TIMETABLE_STAY_FOR                                          :und {STRING} lang bleiben
 STR_TIMETABLE_AND_TRAVEL_FOR                                    :und {STRING} lang unterwegs
 STR_TIMETABLE_DAYS                                              :{COMMA} Tag{P "" e}
-STR_TIMETABLE_TICKS                                             :{COMMA} Tick{P "" s}
+STR_TIMETABLE_TICKS                                             :{COMMA} Minute{P "" n}
 
 STR_TIMETABLE_TOTAL_TIME                                        :{BLACK}Dieser Fahrplan benötigt {STRING}
 STR_TIMETABLE_TOTAL_TIME_INCOMPLETE                             :{BLACK}Dieser Fahrplan benötigt mindestens {STRING} (nicht alle geplant)

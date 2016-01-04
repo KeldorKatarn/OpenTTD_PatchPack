@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_vehiclelist.cpp 23941 2012-02-12 21:17:32Z smatz $ */
 
 /*
  * This file is part of OpenTTD.

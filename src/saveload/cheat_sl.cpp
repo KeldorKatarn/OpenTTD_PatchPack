@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cheat_sl.cpp 22737 2011-08-12 18:36:47Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

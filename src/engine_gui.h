@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: engine_gui.h 23735 2012-01-03 20:26:05Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.
@@ -16,6 +16,7 @@
 #include "sortlist_type.h"
 #include "gfx_type.h"
 #include "vehicle_type.h"
+#include "group_type.h"
 
 typedef GUIList<EngineID, CargoID> GUIEngineList;
 
@@ -31,5 +32,6 @@ void DrawTrainEngine(int left, int right, int preferred_x, int y, EngineID engin
 void DrawRoadVehEngine(int left, int right, int preferred_x, int y, EngineID engine, PaletteID pal, EngineImageType image_type);
 void DrawShipEngine(int left, int right, int preferred_x, int y, EngineID engine, PaletteID pal, EngineImageType image_type);
 void DrawAircraftEngine(int left, int right, int preferred_x, int y, EngineID engine, PaletteID pal, EngineImageType image_type);
+void DrawEngineList(VehicleType type, int l, int r, int y, const GUIEngineList *eng_list, uint16 min, uint16 max, EngineID selected_id, bool show_count, GroupID selected_group);
 
 #endif /* ENGINE_GUI_H */

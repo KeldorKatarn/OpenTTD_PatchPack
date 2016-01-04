@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: null_s.cpp 22406 2011-05-01 19:51:52Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

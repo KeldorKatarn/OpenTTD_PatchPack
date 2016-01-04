@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_waypointlist.cpp 23632 2011-12-19 21:05:25Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

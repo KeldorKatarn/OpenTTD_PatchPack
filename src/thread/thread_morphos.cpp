@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: thread_morphos.cpp 17339 2009-09-01 10:07:22Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

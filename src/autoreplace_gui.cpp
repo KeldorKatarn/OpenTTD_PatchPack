@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: autoreplace_gui.cpp 25919 2013-10-28 10:28:24Z frosch $ */
 
 /*
  * This file is part of OpenTTD.
@@ -28,9 +28,6 @@
 
 #include "widgets/autoreplace_widget.h"
 
-
-uint GetEngineListHeight(VehicleType type);
-void DrawEngineList(VehicleType type, int x, int r, int y, const GUIEngineList *eng_list, uint16 min, uint16 max, EngineID selected_id, bool show_count, GroupID selected_group);
 
 static int CDECL EngineNumberSorter(const EngineID *a, const EngineID *b)
 {

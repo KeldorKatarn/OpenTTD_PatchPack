@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: overflowsafe_type.hpp 24776 2012-12-01 13:12:39Z alberth $ */
 
 /*
  * This file is part of OpenTTD.

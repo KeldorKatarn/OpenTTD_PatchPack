@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: waypoint_sl.cpp 24166 2012-04-22 16:28:14Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

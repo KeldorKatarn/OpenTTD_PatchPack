@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_properties.h 23504 2011-12-13 00:43:35Z michi_cc $ */
 
 /*
  * This file is part of OpenTTD.

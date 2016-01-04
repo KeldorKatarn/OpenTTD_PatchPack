@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_airport.cpp 23633 2011-12-19 21:05:36Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

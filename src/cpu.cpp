@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cpu.cpp 26225 2014-01-04 19:46:24Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

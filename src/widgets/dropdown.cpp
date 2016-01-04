@@ -97,6 +97,7 @@ struct DropdownWindow : Window {
 	int scrolling;                ///< If non-zero, auto-scroll the item list (one time).
 	Point position;               ///< Position of the topleft corner of the window.
 	Scrollbar *vscroll;
+	DropDownSyncFocus sync_parent_focus; ///< Call parent window's OnFocus[Lost]().
 
 	/**
 	 * Create a dropdown menu.
@@ -111,10 +112,13 @@ struct DropdownWindow : Window {
 	 * @param scroll        Dropdown menu has a scrollbar.
 	 * @param widget        Widgets of the dropdown menu window.
 	 */
-	DropdownWindow(Window *parent, const DropDownList *list, int selected, int button, bool instant_close, const Point &position, const Dimension &size, Colours wi_colour, bool scroll)
+	DropdownWindow(Window *parent, const DropDownList *list, int selected, int button, bool instant_close, const Point &position, const Dimension &size, Colours wi_colour, bool scroll, DropDownSyncFocus sync_parent_focus)
 			: Window(&_dropdown_desc)
 	{
 		this->position = position;
+		this->parent_wnd_class = parent->window_class;
+		this->parent_wnd_num   = parent->window_number;
+		this->sync_parent_focus = sync_parent_focus;
 
 		this->CreateNestedTree();
 
@@ -144,8 +148,6 @@ struct DropdownWindow : Window {
 		this->vscroll->SetCapacity(size.height * (uint16)list->Length() / list_height);
 		this->vscroll->SetCount((uint16)list->Length());
 
-		this->parent_wnd_class = parent->window_class;
-		this->parent_wnd_num   = parent->window_number;
 		this->parent_button    = button;
 		this->list             = list;
 		this->selected_index   = selected;
@@ -314,6 +316,22 @@ struct DropdownWindow : Window {
 			}
 		}
 	}
+
+	virtual void OnFocus(Window *previously_focused_window)
+	{
+		if (this->sync_parent_focus & DDSF_RECV_FOCUS) {
+			Window *parent = FindWindowById(this->parent_wnd_class, this->parent_wnd_num);
+			if (parent) parent->OnFocus(previously_focused_window);
+		}
+	}
+
+	virtual void OnFocusLost(Window *newly_focused_window)
+	{
+		if (this->sync_parent_focus & DDSF_LOST_FOCUS) {
+			Window *parent = FindWindowById(this->parent_wnd_class, this->parent_wnd_num);
+			if (parent) parent->OnFocusLost(newly_focused_window);
+		}
+	}
 };
 
 /**
@@ -330,7 +348,7 @@ struct DropdownWindow : Window {
  * @param instant_close Set to true if releasing mouse button should close the
  *                      list regardless of where the cursor is.
  */
-void ShowDropDownListAt(Window *w, const DropDownList *list, int selected, int button, Rect wi_rect, Colours wi_colour, bool auto_width, bool instant_close)
+void ShowDropDownListAt(Window *w, const DropDownList *list, int selected, int button, Rect wi_rect, Colours wi_colour, bool auto_width, bool instant_close, DropDownSyncFocus sync_parent_focus)
 {
 	DeleteWindowById(WC_DROPDOWN_MENU, 0);
 
@@ -387,7 +405,7 @@ void ShowDropDownListAt(Window *w, const DropDownList *list, int selected, int b
 
 	Point dw_pos = { w->left + (_current_text_dir == TD_RTL ? wi_rect.right + 1 - width : wi_rect.left), top};
 	Dimension dw_size = {width, height};
-	new DropdownWindow(w, list, selected, button, instant_close, dw_pos, dw_size, wi_colour, scroll);
+	new DropdownWindow(w, list, selected, button, instant_close, dw_pos, dw_size, wi_colour, scroll, sync_parent_focus);
 }
 
 /**
@@ -403,7 +421,7 @@ void ShowDropDownListAt(Window *w, const DropDownList *list, int selected, int b
  * @param instant_close Set to true if releasing mouse button should close the
  *                      list regardless of where the cursor is.
  */
-void ShowDropDownList(Window *w, const DropDownList *list, int selected, int button, uint width, bool auto_width, bool instant_close)
+void ShowDropDownList(Window *w, const DropDownList *list, int selected, int button, uint width, bool auto_width, bool instant_close, DropDownSyncFocus sync_parent_focus)
 {
 	/* Our parent's button widget is used to determine where to place the drop
 	 * down list window. */
@@ -430,7 +448,7 @@ void ShowDropDownList(Window *w, const DropDownList *list, int selected, int but
 		}
 	}
 
-	ShowDropDownListAt(w, list, selected, button, wi_rect, wi_colour, auto_width, instant_close);
+	ShowDropDownListAt(w, list, selected, button, wi_rect, wi_colour, auto_width, instant_close, sync_parent_focus);
 }
 
 /**
@@ -444,7 +462,7 @@ void ShowDropDownList(Window *w, const DropDownList *list, int selected, int but
  * @param hidden_mask   Bitmask for hidden items (items with their bit set are not copied to the dropdown list).
  * @param width         Width of the dropdown menu. If \c 0, use the width of parent widget \a button.
  */
-void ShowDropDownMenu(Window *w, const StringID *strings, int selected, int button, uint32 disabled_mask, uint32 hidden_mask, uint width)
+void ShowDropDownMenu(Window *w, const StringID *strings, int selected, int button, uint32 disabled_mask, uint32 hidden_mask, uint width, DropDownSyncFocus sync_parent_focus)
 {
 	DropDownList *list = new DropDownList();
 
@@ -460,7 +478,7 @@ void ShowDropDownMenu(Window *w, const StringID *strings, int selected, int butt
 		return;
 	}
 
-	ShowDropDownList(w, list, selected, button, width);
+	ShowDropDownList(w, list, selected, button, width, false, false, sync_parent_focus);
 }
 
 /**
@@ -487,3 +505,10 @@ int HideDropDownMenu(Window *pw)
 	return -1;
 }
 
+void GetParentWindowInfo(Window *w, WindowClass &parent_wc, WindowNumber &parent_wn)
+{
+	DropdownWindow *dw = dynamic_cast<DropdownWindow*>(w);
+	assert(dw != NULL);
+	parent_wc = dw->parent_wnd_class;
+	parent_wn = dw->parent_wnd_num;
+}

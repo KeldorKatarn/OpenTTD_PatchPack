@@ -18,8 +18,9 @@
 #include "station_type.h"
 #include "engine_type.h"
 #include "company_type.h"
+#include "widgets/dropdown_func.h"
 
-void ShowVehicleRefitWindow(const Vehicle *v, VehicleOrderID order, Window *parent, bool auto_refit = false);
+void ShowVehicleRefitWindow(const Vehicle *v, VehicleOrderID order, Window *parent, bool auto_refit = false, bool is_virtual_train = false);
 
 /** The tabs in the train details window */
 enum TrainDetailsWindowTabs {
@@ -45,6 +46,8 @@ void DrawShipImage(const Vehicle *v, int left, int right, int y, VehicleID selec
 void DrawAircraftImage(const Vehicle *v, int left, int right, int y, VehicleID selection, EngineImageType image_type);
 
 void ShowBuildVehicleWindow(TileIndex tile, VehicleType type);
+
+uint GetEngineListHeight(VehicleType type);
 
 uint ShowRefitOptionsList(int left, int right, int y, EngineID engine);
 StringID GetCargoSubtypeText(const Vehicle *v);
@@ -100,5 +103,36 @@ void StartStopVehicle(const Vehicle *v, bool texteffect);
 Vehicle *CheckClickOnVehicle(const struct ViewPort *vp, int x, int y);
 
 void DrawVehicleImage(const Vehicle *v, int left, int right, int y, VehicleID selection, EngineImageType image_type, int skip);
+
+void ShowTripHistoryWindow(const Vehicle *v);
+
+/**
+ * Tell if the focused window concerns the specified vehicle.
+ * @param vid Vehicle id to check.
+ * @param ref_window The window to check against.
+ * @return True if the focused window is about specified vehicle.
+ */
+static inline bool HasFocusedVehicleChanged(const VehicleID vid, Window *ref_window)
+{
+	if (ref_window) {
+		WindowClass wc = ref_window->window_class;
+		WindowNumber wn = ref_window->window_number;
+
+		if (wc == WC_DROPDOWN_MENU) GetParentWindowInfo(ref_window, wc, wn);
+
+		switch (wc) {
+			default:
+				break;
+			case WC_VEHICLE_DETAILS:
+			case WC_VEHICLE_REFIT:
+			case WC_VEHICLE_ORDERS:
+			case WC_VEHICLE_TIMETABLE:
+			case WC_VEHICLE_VIEW:
+				return ((uint32) wn != vid);
+		}
+	}
+
+	return true;
+}
 
 #endif /* VEHICLE_GUI_H */

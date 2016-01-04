@@ -219,6 +219,12 @@ enum WindowClass {
 	WC_VEHICLE_TIMETABLE,
 
 	/**
+	* Vehicle trip history; %Window numbers:
+	*   - #VehicleID = #VehicleTripHistoryWidgets
+	*/
+	WC_VEHICLE_TRIP_HISTORY,
+
+	/**
 	 * Company colour selection; %Window numbers:
 	 *   - #CompanyID = #SelectCompanyLiveryWidgets
 	 */
@@ -670,10 +676,38 @@ enum WindowClass {
 	WC_SPRITE_ALIGNER,
 
 	/**
+	* Zoning toolbar.
+	*/
+	WC_ZONING_TOOLBAR,
+
+	/**
 	 * Linkgraph legend; Window numbers:
 	 *   - 0 = #LinkGraphWidgets
 	 */
 	WC_LINKGRAPH_LEGEND,
+
+	/**
+	 * Plans window.
+	 */
+	WC_PLANS,
+
+	/**
+	 * Trace restrict programme window; %Window numbers:
+	 *   - #TileIndex << 3 | #Track = #TraceRestrictWindow
+	 */
+	WC_TRACE_RESTRICT,
+
+	WC_TEMPLATEGUI_MAIN,
+	WC_TEMPLATEGUI_RPLALL,
+	WC_BUILD_VIRTUAL_TRAIN,
+	WC_CREATE_TEMPLATE,
+
+
+	/**
+	 * Signal program GUI; %Window numbers:
+	 *   - #SignalReference
+	 */
+	WC_SIGNAL_PROGRAM,
 
 	WC_INVALID = 0xFFFF, ///< Invalid window.
 };

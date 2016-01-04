@@ -1395,6 +1395,19 @@ uint SettingsPage::Draw(GameSettings *settings_ptr, int left, int right, int bas
 	return cur_row;
 }
 
+static SettingEntry _settings_vpmap_display[] = {
+	SettingEntry("gui.default_viewport_map_mode"),
+	SettingEntry("gui.action_when_viewport_map_is_dblclicked"),
+	SettingEntry("gui.viewport_map_scan_surroundings"),
+	SettingEntry("gui.show_scrolling_viewport_on_map"),
+	SettingEntry("gui.show_slopes_on_viewport_map"),
+	SettingEntry("gui.show_bridges_on_map"),
+	SettingEntry("gui.show_tunnels_on_map"),
+	SettingEntry("gui.use_owner_colour_for_tunnelbridge"),
+};
+
+/** ViewportMap options sub-page */
+static SettingsPage _settings_vpmap_display_page = {_settings_vpmap_display, lengthof(_settings_vpmap_display)};
 
 static SettingEntry _settings_ui_localisation[] = {
 	SettingEntry("locale.units_velocity"),
@@ -1408,6 +1421,7 @@ static SettingEntry _settings_ui_localisation[] = {
 static SettingsPage _settings_ui_localisation_page = {_settings_ui_localisation, lengthof(_settings_ui_localisation)};
 
 static SettingEntry _settings_ui_display[] = {
+	SettingEntry(&_settings_vpmap_display_page, STR_CONFIG_SETTING_VIEWPORT_MAP_OPTIONS),
 	SettingEntry("gui.date_format_in_default_names"),
 	SettingEntry("gui.population_in_label"),
 	SettingEntry("gui.measure_tooltip"),
@@ -1419,6 +1433,9 @@ static SettingEntry _settings_ui_display[] = {
 	SettingEntry("gui.zoom_min"),
 	SettingEntry("gui.zoom_max"),
 	SettingEntry("gui.graph_line_thickness"),
+	SettingEntry("gui.show_vehicle_route_steps"),
+	SettingEntry("gui.show_vehicle_route"),
+	SettingEntry("gui.dash_level_of_route_lines"),
 };
 /** Display options sub-page */
 static SettingsPage _settings_ui_display_page = {_settings_ui_display, lengthof(_settings_ui_display)};
@@ -1493,6 +1510,7 @@ static SettingEntry _settings_ui[] = {
 	SettingEntry("gui.statusbar_pos"),
 	SettingEntry("gui.newgrf_default_palette"),
 	SettingEntry("gui.pause_on_newgame"),
+	SettingEntry("gui.advanced_train_purchase_window"),
 	SettingEntry("gui.advanced_vehicle_list"),
 	SettingEntry("gui.timetable_in_ticks"),
 	SettingEntry("gui.timetable_arrival_departure"),
@@ -1506,6 +1524,7 @@ static SettingsPage _settings_ui_page = {_settings_ui, lengthof(_settings_ui)};
 
 static SettingEntry _settings_construction_signals[] = {
 	SettingEntry("construction.train_signal_side"),
+	SettingEntry("construction.simulated_wormhole_signals"),
 	SettingEntry("gui.enable_signal_gui"),
 	SettingEntry("gui.drag_signals_fixed_distance"),
 	SettingEntry("gui.semaphore_build_before"),
@@ -1525,6 +1544,9 @@ static SettingEntry _settings_construction[] = {
 	SettingEntry("station.never_expire_airports"),
 	SettingEntry("construction.freeform_edges"),
 	SettingEntry("construction.extra_tree_placement"),
+	SettingEntry("construction.tree_growth_rate"),
+	SettingEntry("construction.trees_around_snow_line_enabled"),
+	SettingEntry("construction.trees_around_snow_line_range"),
 	SettingEntry("construction.command_pause_level"),
 };
 /** Construction sub-page */
@@ -1565,6 +1587,7 @@ static SettingEntry _settings_economy_towns[] = {
 	SettingEntry("economy.town_growth_rate"),
 	SettingEntry("economy.larger_towns"),
 	SettingEntry("economy.initial_city_size"),
+	SettingEntry("economy.town_cargo_factor"),
 };
 /** Towns sub-page */
 static SettingsPage _settings_economy_towns_page = {_settings_economy_towns, lengthof(_settings_economy_towns)};
@@ -1582,6 +1605,7 @@ static SettingsPage _settings_economy_industries_page = {_settings_economy_indus
 static SettingEntry _settings_economy[] = {
 	SettingEntry(&_settings_economy_towns_page, STR_CONFIG_SETTING_ECONOMY_TOWNS),
 	SettingEntry(&_settings_economy_industries_page, STR_CONFIG_SETTING_ECONOMY_INDUSTRIES),
+	SettingEntry("economy.daylength"),
 	SettingEntry("economy.inflation"),
 	SettingEntry("difficulty.initial_interest"),
 	SettingEntry("difficulty.max_loan"),
@@ -1636,6 +1660,7 @@ static SettingsPage _settings_ai_page = {_settings_ai, lengthof(_settings_ai)};
 static SettingEntry _settings_vehicles_routing[] = {
 	SettingEntry("pf.pathfinder_for_trains"),
 	SettingEntry("pf.forbid_90_deg"),
+	SettingEntry("pf.back_of_one_way_pbs_waiting_point"),
 	SettingEntry("pf.pathfinder_for_roadvehs"),
 	SettingEntry("pf.roadveh_queue"),
 	SettingEntry("pf.pathfinder_for_ships"),
@@ -1683,6 +1708,7 @@ static SettingEntry _settings_vehicles[] = {
 	SettingEntry(&_settings_vehicles_autorenew_page, STR_CONFIG_SETTING_VEHICLES_AUTORENEW),
 	SettingEntry(&_settings_vehicles_servicing_page, STR_CONFIG_SETTING_VEHICLES_SERVICING),
 	SettingEntry(&_settings_vehicles_trains_page, STR_CONFIG_SETTING_VEHICLES_TRAINS),
+	SettingEntry("gui.specific_group_name"),
 	SettingEntry("gui.new_nonstop"),
 	SettingEntry("gui.order_review_system"),
 	SettingEntry("gui.vehicle_income_warn"),
@@ -1694,6 +1720,7 @@ static SettingEntry _settings_vehicles[] = {
 	SettingEntry("vehicle.max_ships"),
 	SettingEntry("vehicle.plane_speed"),
 	SettingEntry("vehicle.plane_crashes"),
+	SettingEntry("order.automatic_timetable_separation"),
 	SettingEntry("vehicle.dynamic_engines"),
 	SettingEntry("vehicle.roadveh_acceleration_model"),
 	SettingEntry("vehicle.roadveh_slope_steepness"),

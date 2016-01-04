@@ -1018,10 +1018,13 @@ struct PaymentRatesGraphWindow : BaseGraphWindow {
 
 		int i = 0;
 		const CargoSpec *cs;
+		byte ctt = 0; //cargo transfer time a 200 tile 
 		FOR_ALL_SORTED_STANDARD_CARGOSPECS(cs) {
 			this->colours[i] = cs->legend_colour;
+			// velocity instead of time
 			for (uint j = 0; j != 20; j++) {
-				this->cost[i][j] = GetTransportedGoodsIncome(10, 20, j * 4 + 4, cs->Index());
+				ctt = 229 / (j + 1); //200*28.57*0.4/V, V=10*j 
+				this->cost[i][j] = GetTransportedGoodsIncome(4, 50, ctt, cs->Index());
 			}
 			i++;
 		}

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: getoptdata.cpp 23245 2011-11-17 21:18:24Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

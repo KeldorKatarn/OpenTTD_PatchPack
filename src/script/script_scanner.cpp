@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_scanner.cpp 25546 2013-06-30 20:40:49Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

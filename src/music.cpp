@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: music.cpp 23214 2011-11-14 19:24:22Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

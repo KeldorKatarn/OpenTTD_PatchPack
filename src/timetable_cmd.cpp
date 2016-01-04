@@ -16,6 +16,7 @@
 #include "window_func.h"
 #include "vehicle_base.h"
 #include "cmd_helper.h"
+#include "settings_type.h"
 #include "core/sort_func.hpp"
 
 #include "table/strings.h"
@@ -70,6 +71,8 @@ static void ChangeTimetable(Vehicle *v, VehicleOrderID order_number, uint16 val,
 				default:
 					NOT_REACHED();
 			}
+			
+			v->MarkSeparationInvalid();
 		}
 		SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
 	}
@@ -339,6 +342,33 @@ CommandCost CmdAutofillTimetable(TileIndex tile, DoCommandFlag flags, uint32 p1,
 }
 
 /**
+* Set new separation parameters
+* @param tile  Not used.
+* @param flags Operation to perform.
+* @param p1    Order lit id.
+* @param p2
+*   - p2 = (bit 0-1)  - Separation mode (@see TTSepMode)
+*   - p2 = (bit 2-31) - Separation parameter (Unused if #TTS_MODE_OFF | #TTS_MODE_AUTO,
+*                       Number of vehicles if #TTS_MODE_MAN_N, separation delay in ticks if #TTS_MODE_MAN_T).
+* @param text  Not used.
+* @return      The error or cost of the operation.
+*/
+CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	Vehicle *v = Vehicle::GetIfValid(GB(p1, 0, 20));
+	if (v == NULL || !v->IsPrimaryVehicle()) return CMD_ERROR;
+
+	CommandCost ret = CheckOwnership(v->owner);
+	if (ret.Failed()) return ret;
+
+	if (flags & DC_EXEC) {
+		v->SetSepSettings((TTSepMode)GB(p2, 0, 3), GB(p2, 2, 29));
+	}
+
+	return CommandCost();
+}
+
+/**
  * Update the timetable for the vehicle.
  * @param v The vehicle to update the timetable for.
  * @param travelling Whether we just travelled or waited at a station.
@@ -361,6 +391,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 
 	/* This vehicle is arriving at the first destination in the timetable. */
 	if (v->cur_real_order_index == first_manual_order && travelling) {
+		v->trip_history.NewRound();
 		/* If the start date hasn't been set, or it was set automatically when
 		 * the vehicle last arrived at the first destination, update it to the
 		 * current time. Otherwise set the late counter appropriately to when
@@ -398,7 +429,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 			 * the timetable entry like is done for road vehicles/ships.
 			 * Thus always make sure at least one tick is used between the
 			 * processing of different orders when filling the timetable. */
-			time_taken = CeilDiv(max(time_taken, 1U), DAY_TICKS) * DAY_TICKS;
+			//time_taken = CeilDiv(max(time_taken, 1U), DAY_TICKS) * DAY_TICKS;
 
 			ChangeTimetable(v, v->cur_real_order_index, time_taken, travelling ? MTF_TRAVEL_TIME : MTF_WAIT_TIME);
 		}
@@ -420,7 +451,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	 * when this happens. */
 	if (timetabled == 0 && (travelling || v->lateness_counter >= 0)) return;
 
-	v->lateness_counter -= (timetabled - time_taken);
+	v->lateness_counter -= (timetabled - time_taken); v->lateness_counter -= (timetabled - time_taken);
 
 	/* When we are more late than this timetabled bit takes we (somewhat expensively)
 	 * check how many ticks the (fully filled) timetable has. If a timetable cycle is

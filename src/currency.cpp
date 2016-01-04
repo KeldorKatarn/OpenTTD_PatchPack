@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: currency.cpp 26262 2014-01-15 21:52:22Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

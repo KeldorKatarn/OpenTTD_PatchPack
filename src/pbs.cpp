@@ -14,9 +14,10 @@
 #include "vehicle_func.h"
 #include "newgrf_station.h"
 #include "pathfinder/follow_track.hpp"
+#include "tracerestrict.h"
 
 /**
- * Get the reserved trackbits for any tile, regardless of type.
+ * Get the reserved trackbits for any tile, regardless of type.///
  * @param t the tile
  * @return the reserved trackbits. TRACK_BIT_NONE on nothing reserved or
  *     a tile without rail.
@@ -64,9 +65,27 @@ void SetRailStationPlatformReservation(TileIndex start, DiagDirection dir, bool 
 
 	do {
 		SetRailStationReservation(tile, b);
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 		tile = TILE_ADD(tile, diff);
 	} while (IsCompatibleTrainStationTile(tile, start));
+}
+
+/**
+ * Try to reserve a specific track on a tile
+ * This also sets PBS signals to green if reserving through the facing track direction
+ * @param tile the tile
+ * @param t the track
+ * @param trigger_stations whether to call station randomisation trigger
+ * @return \c true if reservation was successful, i.e. the track was
+ *     free and didn't cross any other reserved tracks.
+ */
+bool TryReserveRailTrackdir(TileIndex tile, Trackdir td, bool trigger_stations)
+{
+	bool success = TryReserveRailTrack(tile, TrackdirToTrack(td), trigger_stations);
+	if (success && HasPbsSignalOnTrackdir(tile, td)) {
+		SetSignalStateByTrackdir(tile, td, SIGNAL_STATE_GREEN);
+	}
+	return success;
 }
 
 /**
@@ -83,7 +102,7 @@ bool TryReserveRailTrack(TileIndex tile, Track t, bool trigger_stations)
 
 	if (_settings_client.gui.show_track_reservation) {
 		/* show the reserved rail if needed */
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 	}
 
 	switch (GetTileType(tile)) {
@@ -92,7 +111,7 @@ bool TryReserveRailTrack(TileIndex tile, Track t, bool trigger_stations)
 			if (IsRailDepot(tile)) {
 				if (!HasDepotReservation(tile)) {
 					SetDepotReservation(tile, true);
-					MarkTileDirtyByTile(tile); // some GRFs change their appearance when tile is reserved
+					MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP); // some GRFs change their appearance when tile is reserved
 					return true;
 				}
 			}
@@ -101,8 +120,7 @@ bool TryReserveRailTrack(TileIndex tile, Track t, bool trigger_stations)
 		case MP_ROAD:
 			if (IsLevelCrossing(tile) && !HasCrossingReservation(tile)) {
 				SetCrossingReservation(tile, true);
-				BarCrossing(tile);
-				MarkTileDirtyByTile(tile); // crossing barred, make tile dirty
+				UpdateLevelCrossing(tile, false);
 				return true;
 			}
 			break;
@@ -111,7 +129,7 @@ bool TryReserveRailTrack(TileIndex tile, Track t, bool trigger_stations)
 			if (HasStationRail(tile) && !HasStationReservation(tile)) {
 				SetRailStationReservation(tile, true);
 				if (trigger_stations && IsRailStation(tile)) TriggerStationRandomisation(NULL, tile, SRT_PATH_RESERVATION);
-				MarkTileDirtyByTile(tile); // some GRFs need redraw after reserving track
+				MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP); // some GRFs need redraw after reserving track
 				return true;
 			}
 			break;
@@ -139,14 +157,14 @@ void UnreserveRailTrack(TileIndex tile, Track t)
 	assert((GetTileTrackStatus(tile, TRANSPORT_RAIL, 0) & TrackToTrackBits(t)) != 0);
 
 	if (_settings_client.gui.show_track_reservation) {
-		MarkTileDirtyByTile(tile);
+		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 	}
 
 	switch (GetTileType(tile)) {
 		case MP_RAILWAY:
 			if (IsRailDepot(tile)) {
 				SetDepotReservation(tile, false);
-				MarkTileDirtyByTile(tile);
+				MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 				break;
 			}
 			if (IsPlainRail(tile)) UnreserveTrack(tile, t);
@@ -162,7 +180,7 @@ void UnreserveRailTrack(TileIndex tile, Track t)
 		case MP_STATION:
 			if (HasStationRail(tile)) {
 				SetRailStationReservation(tile, false);
-				MarkTileDirtyByTile(tile);
+				MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 			}
 			break;
 
@@ -361,6 +379,46 @@ Train *GetTrainForReservation(TileIndex tile, Track track)
 }
 
 /**
+ * This is called to retrieve the previous signal, as required
+ * This is not run all the time as it is somewhat expensive and most restrictions will not test for the previous signal
+ */
+static TileIndex IsSafeWaitingPositionTraceRestrictPreviousSignalCallback(const Train *v, const void *)
+{
+	// scan forwards from vehicle position, for the case that train is waiting at/approaching PBS signal
+
+	TileIndex tile = v->tile;
+	Trackdir  trackdir = v->GetVehicleTrackdir();
+
+	CFollowTrackRail ft(v);
+
+	for (;;) {
+		if (IsTileType(tile, MP_RAILWAY) && HasSignalOnTrackdir(tile, trackdir)) {
+			if (HasPbsSignalOnTrackdir(tile, trackdir)) {
+				// found PBS signal
+				return tile;
+			} else {
+				// wrong type of signal
+				return INVALID_TILE;
+			}
+		}
+
+		// advance to next tile
+		if (!ft.Follow(tile, trackdir)) {
+			// ran out of track
+			return INVALID_TILE;
+		}
+
+		if (KillFirstBit(ft.m_new_td_bits) != TRACKDIR_BIT_NONE) {
+			// reached a junction tile
+			return INVALID_TILE;
+		}
+
+		tile = ft.m_new_tile;
+		trackdir = FindFirstTrackdir(ft.m_new_td_bits);
+	}
+}
+
+/**
  * Determine whether a certain track on a tile is a safe position to end a path.
  *
  * @param v the vehicle to test for
@@ -395,8 +453,20 @@ bool IsSafeWaitingPosition(const Train *v, TileIndex tile, Trackdir trackdir, bo
 
 	if (ft.m_new_td_bits != TRACKDIR_BIT_NONE && KillFirstBit(ft.m_new_td_bits) == TRACKDIR_BIT_NONE) {
 		Trackdir td = FindFirstTrackdir(ft.m_new_td_bits);
-		/* PBS signal on next trackdir? Safe position. */
-		if (HasPbsSignalOnTrackdir(ft.m_new_tile, td)) return true;
+		/* PBS signal on next trackdir? Conditionally safe position. */
+		if (HasPbsSignalOnTrackdir(ft.m_new_tile, td)) {
+			if (IsRestrictedSignal(ft.m_new_tile)) {
+				const TraceRestrictProgram *prog = GetExistingTraceRestrictProgram(ft.m_new_tile, TrackdirToTrack(td));
+				if (prog && prog->actions_used_flags & TRPAUF_RESERVE_THROUGH) {
+					TraceRestrictProgramResult out;
+					prog->Execute(v, TraceRestrictProgramInput(tile, trackdir, &IsSafeWaitingPositionTraceRestrictPreviousSignalCallback, nullptr), out);
+					if (out.flags & TRPRF_RESERVE_THROUGH) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 		/* One-way PBS signal against us? Safe if end-of-line is allowed. */
 		if (IsTileType(ft.m_new_tile, MP_RAILWAY) && HasSignalOnTrackdir(ft.m_new_tile, ReverseTrackdir(td)) &&
 				GetSignalType(ft.m_new_tile, TrackdirToTrack(td)) == SIGTYPE_PBS_ONEWAY) {

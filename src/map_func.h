@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: map_func.h 24900 2013-01-08 22:46:42Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.
@@ -327,6 +327,8 @@ static inline TileIndexDiffC TileIndexToTileIndexDiffC(TileIndex tile_a, TileInd
 
 /* Functions to calculate distances */
 uint DistanceManhattan(TileIndex, TileIndex); ///< also known as L1-Norm. Is the shortest distance one could go over diagonal tracks (or roads)
+uint DistanceEuclidean(TileIndex, TileIndex);
+uint DistanceOpenTTD(TileIndex, TileIndex); ///< 64K times the distance an openTTD plane flies. (Going both diagonal and orthogonal)
 uint DistanceSquare(TileIndex, TileIndex); ///< euclidian- or L2-Norm squared
 uint DistanceMax(TileIndex, TileIndex); ///< also known as L-Infinity-Norm
 uint DistanceMaxPlusManhattan(TileIndex, TileIndex); ///< Max + Manhattan

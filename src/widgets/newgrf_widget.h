@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: newgrf_widget.h 23932 2012-02-12 10:32:41Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

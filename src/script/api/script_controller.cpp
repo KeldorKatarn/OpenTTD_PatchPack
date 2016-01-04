@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: script_controller.cpp 24575 2012-10-05 19:16:23Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

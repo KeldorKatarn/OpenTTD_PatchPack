@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: object_land.h 25876 2013-10-17 21:41:17Z planetmaker $ */
 
 /*
  * This file is part of OpenTTD.

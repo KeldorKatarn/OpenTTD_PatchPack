@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: depend.cpp 26060 2013-11-23 13:16:45Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

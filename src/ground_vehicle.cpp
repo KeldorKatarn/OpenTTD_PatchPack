@@ -60,7 +60,8 @@ void GroundVehicle<T, Type>::PowerChanged()
 	max_te /= 256;   // Tractive effort is a [0-255] coefficient.
 	if (this->gcache.cached_power != total_power || this->gcache.cached_max_te != max_te) {
 		/* Stop the vehicle if it has no power. */
-		if (total_power == 0) this->vehstatus |= VS_STOPPED;
+		if (total_power == 0)
+			this->vehstatus |= VS_STOPPED;
 
 		this->gcache.cached_power = total_power;
 		this->gcache.cached_max_te = max_te;
@@ -90,8 +91,6 @@ void GroundVehicle<T, Type>::CargoChanged()
 
 	/* Store consist weight in cache. */
 	this->gcache.cached_weight = max<uint32>(1, weight);
-	/* Friction in bearings and other mechanical parts is 0.1% of the weight (result in N). */
-	this->gcache.cached_axle_resistance = 10 * weight;
 
 	/* Now update vehicle power (tractive effort is dependent on weight). */
 	this->PowerChanged();
@@ -106,7 +105,7 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 {
 	/* Templated class used for function calls for performance reasons. */
 	const T *v = T::From(this);
-	int32 speed = v->GetCurrentSpeed(); // [km/h-ish]
+	int32 speed = (v->GetCurrentSpeed() * 5) / 18; // [m/s-ish]
 
 	/* Weight is stored in tonnes. */
 	int32 mass = this->gcache.cached_weight;
@@ -120,10 +119,9 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 
 	const int area = v->GetAirDragArea();
 	if (!maglev) {
-		/* Static resistance plus rolling friction. */
-		resistance = this->gcache.cached_axle_resistance;
 		resistance += mass * v->GetRollingFriction();
 	}
+
 	/* Air drag; the air drag coefficient is in an arbitrary NewGRF-unit,
 	 * so we need some magic conversion factor. */
 	resistance += (area * this->gcache.cached_air_drag * speed * speed) / 1000;
@@ -133,12 +131,12 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 	/* This value allows to know if the vehicle is accelerating or braking. */
 	AccelStatus mode = v->GetAccelerationStatus();
 
-	const int max_te = this->gcache.cached_max_te; // [N]
+	int max_te = this->gcache.cached_max_te; // [N]
+
 	int force;
 	if (speed > 0) {
 		if (!maglev) {
-			/* Conversion factor from km/h to m/s is 5/18 to get [N] in the end. */
-			force = power * 18 / (speed * 5);
+			force = power / speed;
 			if (mode == AS_ACCEL && force > max_te) force = max_te;
 		} else {
 			force = power / 25;
@@ -158,7 +156,8 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 		 * down hill will never slow down enough, and a vehicle that came up
 		 * a hill will never speed up enough to (eventually) get back to the
 		 * same (maximum) speed. */
-		int accel = (force - resistance) / (mass * 4);
+		int accel = (force - resistance) / mass;
+
 		return force < resistance ? min(-1, accel) : max(1, accel);
 	} else {
 		return min(-force - resistance, -10000) / mass;

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: signs_func.h 20516 2010-08-16 16:15:22Z terkhen $ */
 
 /*
  * This file is part of OpenTTD.

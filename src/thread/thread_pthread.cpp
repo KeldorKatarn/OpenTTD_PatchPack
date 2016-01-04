@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: thread_pthread.cpp 26349 2014-02-16 21:37:05Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

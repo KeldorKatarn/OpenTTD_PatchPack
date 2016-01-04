@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: labelmaps_sl.cpp 20860 2010-10-01 16:42:28Z smatz $ */
 
 /*
  * This file is part of OpenTTD.

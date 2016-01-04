@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: signs_sl.cpp 23835 2012-01-22 13:54:02Z frosch $ */
 
 /*
  * This file is part of OpenTTD.

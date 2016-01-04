@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: squirrel.cpp 26113 2013-11-25 16:42:35Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

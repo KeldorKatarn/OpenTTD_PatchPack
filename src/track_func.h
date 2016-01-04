@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: track_func.h 26105 2013-11-25 13:16:06Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: yapf_node_rail.hpp 26058 2013-11-23 13:15:07Z rubidium $ */
 
 /*
  * This file is part of OpenTTD.

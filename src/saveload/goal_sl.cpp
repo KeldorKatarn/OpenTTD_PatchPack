@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: goal_sl.cpp 25296 2013-05-26 19:54:43Z zuu $ */
 
 /*
  * This file is part of OpenTTD.

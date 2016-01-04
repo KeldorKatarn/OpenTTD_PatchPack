@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: squirrel_std.cpp 23293 2011-11-23 13:37:48Z truebrain $ */
 
 /*
  * This file is part of OpenTTD.

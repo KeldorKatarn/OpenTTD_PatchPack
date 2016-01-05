@@ -270,6 +270,7 @@
  *  263   SL_PATCH_PACK_1_5
  *  264   SL_PATCH_PACK_1_6
  *  265   SL_PATCH_PACK_1_7
+ *  266   SL_PATCH_PACK_1_8
  */
 extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_8; ///< Current savegame version of OpenTTD.
 

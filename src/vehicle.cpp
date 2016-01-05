@@ -1632,8 +1632,8 @@ void Vehicle::UpdateViewport(bool dirty)
 					min(old_coord.left,   this->coord.left),
 					min(old_coord.top,    this->coord.top),
 					max(old_coord.right,  this->coord.right),
-					max(old_coord.bottom, this->coord.bottom));
-				v->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP
+					max(old_coord.bottom, this->coord.bottom),
+					this->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP);
 		}
 	}
 }
@@ -1652,7 +1652,7 @@ void Vehicle::UpdatePositionAndViewport()
  */
 void Vehicle::MarkAllViewportsDirty() const
 {
-	::MarkAllViewportsDirty(this->coord.left, this->coord.top, this->coord.right, this->coord.bottomVL_BASE, v->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP);
+	::MarkAllViewportsDirty(this->coord.left, this->coord.top, this->coord.right, this->coord.bottom, this->type != VEH_EFFECT ? ZOOM_LVL_END : ZOOM_LVL_DRAW_MAP);
 }
 
 /**

@@ -937,58 +937,6 @@ static EngList_SortTypeFunction * const _sorter_wagon[7] = {
 	&TrainEngineCapacitySorterWagon
 };
 
-	/* Trains */
-	STR_SORT_BY_ENGINE_ID,
-	STR_SORT_BY_COST,
-	STR_SORT_BY_MAX_SPEED,
-	STR_SORT_BY_POWER,
-	STR_SORT_BY_TRACTIVE_EFFORT,
-	STR_SORT_BY_INTRO_DATE,
-	STR_SORT_BY_NAME,
-	STR_SORT_BY_RUNNING_COST,
-	STR_SORT_BY_POWER_VS_RUNNING_COST,
-	STR_SORT_BY_RELIABILITY,
-	STR_SORT_BY_CARGO_CAPACITY,
-	INVALID_STRING_ID
-}, {
-	/* Road vehicles */
-	STR_SORT_BY_ENGINE_ID,
-	STR_SORT_BY_COST,
-	STR_SORT_BY_MAX_SPEED,
-	STR_SORT_BY_POWER,
-	STR_SORT_BY_TRACTIVE_EFFORT,
-	STR_SORT_BY_INTRO_DATE,
-	STR_SORT_BY_NAME,
-	STR_SORT_BY_RUNNING_COST,
-	STR_SORT_BY_POWER_VS_RUNNING_COST,
-	STR_SORT_BY_RELIABILITY,
-	STR_SORT_BY_CARGO_CAPACITY,
-	INVALID_STRING_ID
-}, {
-	/* Ships */
-	STR_SORT_BY_ENGINE_ID,
-	STR_SORT_BY_COST,
-	STR_SORT_BY_MAX_SPEED,
-	STR_SORT_BY_INTRO_DATE,
-	STR_SORT_BY_NAME,
-	STR_SORT_BY_RUNNING_COST,
-	STR_SORT_BY_RELIABILITY,
-	STR_SORT_BY_CARGO_CAPACITY,
-	INVALID_STRING_ID
-}, {
-	/* Aircraft */
-	STR_SORT_BY_ENGINE_ID,
-	STR_SORT_BY_COST,
-	STR_SORT_BY_MAX_SPEED,
-	STR_SORT_BY_INTRO_DATE,
-	STR_SORT_BY_NAME,
-	STR_SORT_BY_RUNNING_COST,
-	STR_SORT_BY_RELIABILITY,
-	STR_SORT_BY_CARGO_CAPACITY,
-	STR_SORT_BY_RANGE,
-	INVALID_STRING_ID
-}};
-
 static const StringID _sort_listing_loco[12] = {
 	/* Locomotives */
 	STR_SORT_BY_ENGINE_ID,
@@ -2511,7 +2459,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 
 			case WID_BV_SORT_ASSENDING_DESCENDING_LOCO: {
 				Dimension d = GetStringBoundingBox(this->GetWidget<NWidgetCore>(widget)->widget_data);
-				d.width += padding.width + WD_SORTBUTTON_ARROW_WIDTH * 2; // Doubled since the string is centred and it also looks better.
+				d.width += padding.width + Window::SortButtonWidth() * 2; // Doubled since the string is centred and it also looks better.
 				d.height += padding.height;
 				*size = maxdim(*size, d);
 				break;
@@ -2530,7 +2478,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 
 			case WID_BV_SORT_ASSENDING_DESCENDING_WAGON: {
 				Dimension d = GetStringBoundingBox(this->GetWidget<NWidgetCore>(widget)->widget_data);
-				d.width += padding.width + WD_SORTBUTTON_ARROW_WIDTH * 2; // Doubled since the string is centred and it also looks better.
+				d.width += padding.width + Window::SortButtonWidth() * 2; // Doubled since the string is centred and it also looks better.
 				d.height += padding.height;
 				*size = maxdim(*size, d);
 				break;

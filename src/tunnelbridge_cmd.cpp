@@ -66,7 +66,7 @@ void MarkBridgeDirty(TileIndex begin, TileIndex end, DiagDirection direction, ui
 {
 	TileIndexDiff delta = TileOffsByDiagDir(direction);
 	for (TileIndex t = begin; t != end; t += delta) {
-		MarkTileDirtyByTile(t, bridge_height - TileHeight(t));
+		MarkTileDirtyByTile(t, ZOOM_LVL_DRAW_MAP, bridge_height - TileHeight(t));
 	}
 	MarkTileDirtyByTile(end);
 }
@@ -949,7 +949,7 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 				if (height < minz) SetRoadside(c, ROADSIDE_PAVED);
 			}
 			ClearBridgeMiddle(c);
-			MarkTileDirtyByTile(c, height - TileHeight(c));
+			MarkTileDirtyByTile(c, ZOOM_LVL_DRAW_MAP, height - TileHeight(c));
 		}
 
 		if (rail) {

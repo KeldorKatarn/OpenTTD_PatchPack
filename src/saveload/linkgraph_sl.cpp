@@ -109,7 +109,7 @@ const SaveLoad *GetLinkGraphScheduleDesc()
  * SaveLoad desc for a link graph node.
  */
 static const SaveLoad _node_desc[] = {
-	SLE_CONDVAR(Node, xy,          SLE_UINT32, 191, SL_MAX_VERSION),
+	SLE_CONDVAR(Node, xy, SLE_UINT32, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 	    SLE_VAR(Node, supply,      SLE_UINT32),
 	    SLE_VAR(Node, demand,      SLE_UINT32),
 	    SLE_VAR(Node, station,     SLE_UINT16),
@@ -140,7 +140,7 @@ void SaveLoad_LinkGraph(LinkGraph &lg)
 	for (NodeID from = 0; from < size; ++from) {
 		Node *node = &lg.nodes[from];
 		SlObject(node, _node_desc);
-		if (IsSavegameVersionBefore(191)) {
+		if (IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 			/* We used to save the full matrix ... */
 			for (NodeID to = 0; to < size; ++to) {
 				SlObject(&lg.edges[from][to], _edge_desc);
@@ -246,7 +246,7 @@ void AfterLoadLinkGraphs()
 		}
 	}
 
-	LinkGraphSchedule::Instance()->SpawnAll();
+	LinkGraphSchedule::instance.SpawnAll();
 }
 
 /**

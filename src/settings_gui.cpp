@@ -1448,6 +1448,9 @@ static SettingsContainer &GetSettingsTree()
 			graphics->Add(new SettingEntry("gui.zoom_max"));
 			graphics->Add(new SettingEntry("gui.smallmap_land_colour"));
 			graphics->Add(new SettingEntry("gui.graph_line_thickness"));
+			graphics->Add(new SettingEntry("gui.show_vehicle_route_steps"));
+			graphics->Add(new SettingEntry("gui.show_vehicle_route"));
+			graphics->Add(new SettingEntry("gui.dash_level_of_route_lines"));
 		}
 
 		SettingsPage *sound = main->Add(new SettingsPage(STR_CONFIG_SETTING_SOUND));
@@ -1496,6 +1499,18 @@ static SettingsContainer &GetSettingsTree()
 				viewports->Add(new SettingEntry("gui.show_track_reservation"));
 			}
 
+			SettingsPage *viewport_map_display = interface->Add(new SettingsPage(STR_CONFIG_SETTING_VIEWPORT_MAP_OPTIONS));
+			{
+				viewport_map_display->Add(new SettingEntry("gui.default_viewport_map_mode"));
+				viewport_map_display->Add(new SettingEntry("gui.action_when_viewport_map_is_dblclicked"));
+				viewport_map_display->Add(new SettingEntry("gui.viewport_map_scan_surroundings"));
+				viewport_map_display->Add(new SettingEntry("gui.show_scrolling_viewport_on_map"));
+				viewport_map_display->Add(new SettingEntry("gui.show_slopes_on_viewport_map"));
+				viewport_map_display->Add(new SettingEntry("gui.show_bridges_on_map"));
+				viewport_map_display->Add(new SettingEntry("gui.show_tunnels_on_map"));
+				viewport_map_display->Add(new SettingEntry("gui.use_owner_colour_for_tunnelbridge"));
+			}
+
 			SettingsPage *construction = interface->Add(new SettingsPage(STR_CONFIG_SETTING_INTERFACE_CONSTRUCTION));
 			{
 				construction->Add(new SettingEntry("gui.link_terraform_toolbar"));
@@ -1511,6 +1526,7 @@ static SettingsContainer &GetSettingsTree()
 			interface->Add(new SettingEntry("gui.statusbar_pos"));
 			interface->Add(new SettingEntry("gui.prefer_teamchat"));
 			interface->Add(new SettingEntry("gui.advanced_vehicle_list"));
+			interface->Add(new SettingEntry("gui.advanced_train_purchase_window"));
 			interface->Add(new SettingEntry("gui.timetable_in_ticks"));
 			interface->Add(new SettingEntry("gui.timetable_arrival_departure"));
 			interface->Add(new SettingEntry("gui.expenses_layout"));
@@ -1546,6 +1562,7 @@ static SettingsContainer &GetSettingsTree()
 			company->Add(new SettingEntry("gui.default_signal_type"));
 			company->Add(new SettingEntry("gui.cycle_signal_types"));
 			company->Add(new SettingEntry("gui.drag_signals_fixed_distance"));
+			company->Add(new SettingEntry("construction.simulated_wormhole_signals"));
 			company->Add(new SettingEntry("gui.new_nonstop"));
 			company->Add(new SettingEntry("gui.stop_location"));
 			company->Add(new SettingEntry("company.engine_renew"));
@@ -1589,13 +1606,16 @@ static SettingsContainer &GetSettingsTree()
 				routing->Add(new SettingEntry("pf.pathfinder_for_trains"));
 				routing->Add(new SettingEntry("difficulty.line_reverse_mode"));
 				routing->Add(new SettingEntry("pf.reverse_at_signals"));
+				routing->Add(new SettingEntry("pf.back_of_one_way_pbs_waiting_point"));
 				routing->Add(new SettingEntry("pf.forbid_90_deg"));
 				routing->Add(new SettingEntry("pf.pathfinder_for_roadvehs"));
 				routing->Add(new SettingEntry("pf.pathfinder_for_ships"));
 			}
 
+			vehicles->Add(new SettingEntry("gui.specific_group_name"));
 			vehicles->Add(new SettingEntry("order.no_servicing_if_no_breakdowns"));
 			vehicles->Add(new SettingEntry("order.serviceathelipad"));
+			vehicles->Add(new SettingEntry("order.automatic_timetable_separation"));
 		}
 
 		SettingsPage *limitations = main->Add(new SettingsPage(STR_CONFIG_SETTING_LIMITATIONS));
@@ -1640,6 +1660,7 @@ static SettingsContainer &GetSettingsTree()
 			genworld->Add(new SettingEntry("vehicle.road_side"));
 			genworld->Add(new SettingEntry("economy.larger_towns"));
 			genworld->Add(new SettingEntry("economy.initial_city_size"));
+			genworld->Add(new SettingEntry("economy.town_cargo_factor"));
 			genworld->Add(new SettingEntry("economy.town_layout"));
 			genworld->Add(new SettingEntry("difficulty.industry_density"));
 			genworld->Add(new SettingEntry("gui.pause_on_newgame"));
@@ -1688,8 +1709,10 @@ static SettingsContainer &GetSettingsTree()
 				cdist->Add(new SettingEntry("linkgraph.short_path_saturation"));
 			}
 
+			environment->Add(new SettingEntry("economy.daylength"));
 			environment->Add(new SettingEntry("station.modified_catchment"));
 			environment->Add(new SettingEntry("construction.extra_tree_placement"));
+			environment->Add(new SettingEntry("construction.tree_growth_rate"));
 		}
 
 		SettingsPage *ai = main->Add(new SettingsPage(STR_CONFIG_SETTING_AI));

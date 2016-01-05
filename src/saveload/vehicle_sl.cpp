@@ -626,7 +626,9 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 
 		     SLE_VAR(Vehicle, day_counter,           SLE_UINT8),
 		     SLE_VAR(Vehicle, tick_counter,          SLE_UINT8),
-		 SLE_CONDVAR(Vehicle, running_ticks,         SLE_UINT8,                   88, SL_MAX_VERSION),
+
+			 SLE_CONDVAR(Vehicle, running_ticks, SLE_FILE_U8 | SLE_VAR_U16, 88, SL_PATCH_PACK_1_8 - 1),
+			 SLE_CONDVAR(Vehicle, running_ticks, SLE_UINT16, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 
 		     SLE_VAR(Vehicle, cur_implicit_order_index,  SLE_UINT8),
 		 SLE_CONDVAR(Vehicle, cur_real_order_index,  SLE_UINT8,                  158, SL_MAX_VERSION),
@@ -719,16 +721,16 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		SLE_CONDVAR(Vehicle, trip_history.t[7].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
 		SLE_CONDVAR(Vehicle, trip_history.t[8].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
 		SLE_CONDVAR(Vehicle, trip_history.t[9].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[0].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[1].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[2].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[3].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[4].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[5].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[6].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[7].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[8].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		SLE_CONDVAR(Vehicle, trip_history.t[9].date,       SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[0].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[1].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[2].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[3].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[4].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[5].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[6].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[7].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[8].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		SLE_CONDVAR(Vehicle, trip_history.t[9].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
 		     SLE_END()
 	};
 

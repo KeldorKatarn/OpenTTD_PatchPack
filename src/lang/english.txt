@@ -3594,8 +3594,8 @@ STR_GROUP_SPECIFIC_NAME_STATION                                 :{STATION} - {ST
 STR_GROUP_SPECIFIC_NAME_TOWN                                    :{TOWN} - {TOWN}
 STR_GROUP_SPECIFIC_NAME_TOWN_LOCAL                              :Local {TOWN}
 
-STR_GROUP_PROFIT_THIS_YEAR                                      :{BLACK}Profit this year: {CURRENCY_LONG}
-STR_GROUP_PROFIT_LAST_YEAR                                      :{BLACK}Profit last year: {CURRENCY_LONG}
+STR_GROUP_PROFIT_THIS_YEAR                                      :{BLACK}Profit this year:
+STR_GROUP_PROFIT_LAST_YEAR                                      :{BLACK}Profit last year:
 STR_GROUP_OCCUPANCY                                             :Current usage:
 STR_GROUP_OCCUPANCY_VALUE                                       :{NUM}%
 

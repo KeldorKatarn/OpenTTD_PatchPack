@@ -446,7 +446,7 @@ public:
 	 */
 	void UpdateTotalDuration(Ticks delta) { this->total_duration += delta; }
 
-	* Gets the last absolute time in Ticks since separation was initalized.
+	/* Gets the last absolute time in Ticks since separation was initialized.
 	* @return last arrival time of first vehicle at first order.
 	*/
 	inline Ticks GetSeparationInitTime() const

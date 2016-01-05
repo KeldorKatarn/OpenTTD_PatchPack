@@ -186,7 +186,7 @@ static void Load_ORDR()
 		while ((index = SlIterateArray()) != -1) {
 			Order *order = new (index) Order();
 			SlObject(order, GetOrderDescription());
-			if (IsSavegameVersionBefore(190)) {
+			if (IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 				order->SetTravelTimetabled(order->GetTravelTime() > 0);
 				order->SetWaitTimetabled(order->GetWaitTime() > 0);
 			}
@@ -260,11 +260,11 @@ const SaveLoad *GetOrderBackupDescription()
 		     SLE_VAR(OrderBackup, user,                     SLE_UINT32),
 		     SLE_VAR(OrderBackup, tile,                     SLE_UINT32),
 		     SLE_VAR(OrderBackup, group,                    SLE_UINT16),
-		 SLE_CONDVAR(OrderBackup, service_interval,         SLE_FILE_U32 | SLE_VAR_U16,  0, 191),
-		 SLE_CONDVAR(OrderBackup, service_interval,         SLE_UINT16,                192, SL_MAX_VERSION),
-		     SLE_STR(OrderBackup, name,                     SLE_STR, 0),
-		SLE_CONDNULL(2,                                                                  0, 191), // clone (2 bytes of pointer, i.e. garbage)
-		 SLE_CONDREF(OrderBackup, clone,                    REF_VEHICLE,               192, SL_MAX_VERSION),
+		 SLE_CONDVAR(OrderBackup, service_interval, SLE_FILE_U32 | SLE_VAR_U16,          0, SL_PATCH_PACK_1_7),
+		 SLE_CONDVAR(OrderBackup, service_interval, SLE_UINT16,          SL_PATCH_PACK_1_8, SL_MAX_VERSION),
+		     SLE_STR(OrderBackup, name, SLE_STR, 0),
+		SLE_CONDNULL(2,                                                                  0, SL_PATCH_PACK_1_7), // clone (2 bytes of pointer, i.e. garbage)
+		 SLE_CONDREF(OrderBackup, clone, REF_VEHICLE,                    SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 		     SLE_VAR(OrderBackup, cur_real_order_index,     SLE_UINT8),
 		 SLE_CONDVAR(OrderBackup, cur_implicit_order_index, SLE_UINT8,                 176, SL_MAX_VERSION),
 		 SLE_CONDVAR(OrderBackup, current_order_time,       SLE_UINT32,                176, SL_MAX_VERSION),

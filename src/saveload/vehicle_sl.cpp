@@ -869,9 +869,9 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		 SLE_CONDVAR(Vehicle, age,                   SLE_INT32,                   31, SL_MAX_VERSION),
 		     SLE_VAR(Vehicle, tick_counter,          SLE_UINT8),
 
-		 SLE_CONDVAR(DisasterVehicle, image_override,           SLE_UINT16, SL_PATCH_PACK_1_7, 190),
+			 SLE_CONDVAR(DisasterVehicle, image_override, SLE_FILE_U16 | SLE_VAR_U32, 0, SL_PATCH_PACK_1_7),
 		 SLE_CONDVAR(DisasterVehicle, image_override,           SLE_UINT32, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
-		 SLE_CONDVAR(DisasterVehicle, big_ufo_destroyer_target, SLE_UINT16, SL_PATCH_PACK_1_7, 190),
+		 SLE_CONDVAR(DisasterVehicle, big_ufo_destroyer_target, SLE_FILE_U16 | SLE_VAR_U32, 0, SL_PATCH_PACK_1_7),
 		 SLE_CONDVAR(DisasterVehicle, big_ufo_destroyer_target, SLE_UINT32, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 		 SLE_CONDVAR(DisasterVehicle, flags,                     SLE_UINT8,                  194, SL_MAX_VERSION),
 

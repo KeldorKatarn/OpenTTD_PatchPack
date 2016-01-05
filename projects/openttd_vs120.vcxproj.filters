@@ -1707,9 +1707,6 @@
     <ClCompile Include="..\src\depot_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\disaster_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\group_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>

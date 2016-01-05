@@ -2753,15 +2753,16 @@ void ConstrainAllViewportsZoom()
  * @param bridge_level_offset Height of bridge on tile to also mark dirty. (Height level relative to north corner.)
  * @ingroup dirty
  */
-void MarkTileDirtyByTile(TileIndex tile, int bridge_level_offset)
+void MarkTileDirtyByTile(const TileIndex tile, const ZoomLevel mark_dirty_if_zoomlevel_is_below, int bridge_level_offset)
 {
 	Point pt = RemapCoords(TileX(tile) * TILE_SIZE, TileY(tile) * TILE_SIZE, TilePixelHeight(tile));
 	MarkAllViewportsDirty(
-			pt.x - MAX_TILE_EXTENT_LEFT,
-			pt.y - MAX_TILE_EXTENT_TOP - ZOOM_LVL_BASE * TILE_HEIGHT * bridge_level_offset,
-			pt.x + MAX_TILE_EXTENT_RIGHT,
-			pt.y + MAX_TILE_EXTENT_BOTTOM,
-			mark_dirty_if_zoomlevel_is_below};
+		pt.x - MAX_TILE_EXTENT_LEFT,
+		pt.y - MAX_TILE_EXTENT_TOP - ZOOM_LVL_BASE * TILE_HEIGHT * bridge_level_offset,
+		pt.x + MAX_TILE_EXTENT_RIGHT,
+		pt.y + MAX_TILE_EXTENT_BOTTOM,
+		mark_dirty_if_zoomlevel_is_below);
+}
 
 /**
  * Mark a (virtual) tile outside the map dirty for repaint.

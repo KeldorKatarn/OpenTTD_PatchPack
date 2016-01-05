@@ -1418,8 +1418,8 @@ STR_CONFIG_SETTING_LOADING_INDICATORS                           :Use loading ind
 STR_CONFIG_SETTING_LOADING_INDICATORS_HELPTEXT                  :Select whether loading indicators are displayed above loading or unloading vehicles
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATED                          :Automatically managed timetables: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATED_HELPTEXT                 :Automatically add, remove and adjust times and entries in timetables
-STR_CONFIG_SETTING_TIMETABLE_IN_TICKS                           :Show timetable in minutes rather than days: {STRING2}
-STR_CONFIG_SETTING_TIMETABLE_IN_TICKS_HELPTEXT                  :Show travel times in time tables in daylength independent minutes instead of game days
+STR_CONFIG_SETTING_TIMETABLE_IN_TICKS                           :Show timetable in ticks rather than days: {STRING2}
+STR_CONFIG_SETTING_TIMETABLE_IN_TICKS_HELPTEXT                  :Show travel times in time tables in game ticks instead of days
 STR_CONFIG_SETTING_TIMETABLE_SEPARATION                         :Use timetable to ensure vehicle separation: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_SEPARATION_HELPTEXT                :Use timetable to automatically separate vehicles by having vehicles too close to the one ahead wait at stations
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE             :Show arrival and departure in timetables: {STRING2}

@@ -2242,33 +2242,54 @@ void Vehicle::LeaveStation()
 		}
 	}
 
-	bool current_order_was_load_order = (this->current_order.GetLoadType() & OLFB_NO_LOAD) == 0;
 
-	if (current_order_was_load_order)
-	{
-		int8 occupancy = (int8)CalcPercentVehicleFilled(this, NULL);
-		station_occupancies.push_back(occupancy);
+	int last_loading_order_index = -1;
+
+	// Reverse iterate through the orders list and find the first (i.e. last) order that is of loading type.
+	for (int i = this->orders.list->GetNumOrders() - 1; i >= 0; --i) {
+		Order* order = this->orders.list->GetOrderAt(i);
+
+		if (order->CanLoadOrUnload() &&	!(order->GetLoadType() & OLFB_NO_LOAD)) {
+			last_loading_order_index = i;
+			break;
+		}
 	}
 
-	bool isLastOrder = this->cur_real_order_index == (this->orders.list->GetNumOrders() - 1);
+	if (last_loading_order_index >= 0 && last_loading_order_index < this->orders.list->GetNumOrders()) {
 
-	if (isLastOrder)
-	{
-		if (station_occupancies.size() == 0)
-		{
-			trip_occupancy = -1;
-		}
-		else
-		{
-			 int8 sum = 0;
-			 
-			 std::vector<int8>::const_iterator it;
-			 for (it = station_occupancies.begin(); it != station_occupancies.end(); ++it)
-				 sum += *it;
+		Order* current_real_order = this->orders.list->GetOrderAt(this->cur_real_order_index);
+		bool current_order_was_load_order = (current_real_order->CanLoadOrUnload() && !(current_real_order->GetLoadType() & OLFB_NO_LOAD));
 
-			 trip_occupancy = sum/(int8)station_occupancies.size();
-			 station_occupancies.clear();
+		if (current_order_was_load_order)
+		{
+			int8 occupancy = (int8)CalcPercentVehicleFilled(this, NULL);
+			station_occupancies.push_back(occupancy);
 		}
+
+		bool wasLastLoadingOrder = this->cur_real_order_index == last_loading_order_index;
+
+		if (wasLastLoadingOrder)
+		{
+			if (station_occupancies.size() == 0)
+			{
+				trip_occupancy = -1;
+			}
+			else
+			{
+				int sum = 0;
+
+				std::vector<int8>::const_iterator it;
+				for (it = station_occupancies.begin(); it != station_occupancies.end(); ++it)
+					sum += *it;
+
+				trip_occupancy = (uint8)(sum / (int)station_occupancies.size());
+				station_occupancies.clear();
+			}
+		}
+	}
+	else {
+		trip_occupancy = -1;
+		station_occupancies.clear();
 	}
 
 	this->current_order.MakeLeaveStation();

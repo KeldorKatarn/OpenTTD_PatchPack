@@ -1445,7 +1445,7 @@ STR_CONFIG_SETTING_TIMETABLE_SEPARATION                         :Use timetable t
 STR_CONFIG_SETTING_TIMETABLE_SEPARATION_HELPTEXT                :Use timetable to automatically separate vehicles by having vehicles too close to the one ahead wait at stations
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE             :Show arrival and departure in timetables: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE_HELPTEXT    :Display anticipated arrival and departure times in timetables
-STR_CONFIG_SETTING_TIMETABLE_ENABLE_SEPARATION                  :{LTBLUE}Enable automatic timetable separation: {ORANGE}{STRING1}
+STR_CONFIG_SETTING_TIMETABLE_ENABLE_SEPARATION                  :Enable automatic timetable separation: {STRING2}
 STR_CONFIG_SETTING_QUICKGOTO                                    :Quick creation of vehicle orders: {STRING2}
 STR_CONFIG_SETTING_QUICKGOTO_HELPTEXT                           :Pre-select the 'goto cursor' when opening the orders window
 STR_CONFIG_SETTING_DEFAULT_RAIL_TYPE                            :Default rail type (after new game/game load): {STRING2}

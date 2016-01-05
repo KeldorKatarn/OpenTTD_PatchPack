@@ -1745,6 +1745,8 @@ static SettingsContainer &GetSettingsTree()
 			environment->Add(new SettingEntry("station.modified_catchment"));
 			environment->Add(new SettingEntry("construction.extra_tree_placement"));
 			environment->Add(new SettingEntry("construction.tree_growth_rate"));
+			environment->Add(new SettingEntry("construction.trees_around_snow_line_enabled"));
+			environment->Add(new SettingEntry("construction.trees_around_snow_line_range"));
 		}
 
 		SettingsPage *ai = main->Add(new SettingsPage(STR_CONFIG_SETTING_AI));

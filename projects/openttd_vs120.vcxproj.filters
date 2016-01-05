@@ -198,6 +198,9 @@
     <ClCompile Include="..\src\depot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\disaster_vehicle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -583,6 +586,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\direction_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\disaster_vehicle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\music\dmusic.h">
@@ -987,6 +993,9 @@
     <ClInclude Include="..\src\roadveh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\safeguards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\screenshot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1257,9 +1266,6 @@
     <ClInclude Include="..\src\zoom_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\zoning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\src\core\alloc_func.cpp">
       <Filter>Core Source Code</Filter>
     </ClCompile>
@@ -1518,9 +1524,6 @@
     <ClCompile Include="..\src\waypoint_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\zoning_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
     <ClInclude Include="..\src\widgets\airport_widget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
@@ -1773,9 +1776,6 @@
     <ClCompile Include="..\src\waypoint_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\zoning_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\saveload\afterload.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
@@ -1950,6 +1950,9 @@
     <ClInclude Include="..\src\table\genland.h">
       <Filter>Tables</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\table\heightmap_colours.h">
+      <Filter>Tables</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\table\industry_land.h">
       <Filter>Tables</Filter>
     </ClInclude>
@@ -1990,6 +1993,9 @@
       <Filter>Tables</Filter>
     </ClInclude>
     <ClInclude Include="..\src\table\strgen_tables.h">
+      <Filter>Tables</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\table\string_colours.h">
       <Filter>Tables</Filter>
     </ClInclude>
     <ClInclude Include="..\src\..\objs\langs\table\strings.h">
@@ -2157,25 +2163,10 @@
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdaux.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdblob.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdblobimpl.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdio.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdmath.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdstream.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdstring.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdsystem.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstring.h">

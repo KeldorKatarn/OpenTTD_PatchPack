@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -65,7 +65,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
@@ -92,11 +91,13 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\lib\shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\lib\win32\library;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\lib\win32;$(LibraryPath)</LibraryPath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\lib\shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\lib\win64\library;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\lib\win64;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\lib\win32;$(LibraryPath)</LibraryPath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\lib\shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\lib\win64\library;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\lib\win64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -105,14 +106,14 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP /J %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;..\lib\shared\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -135,6 +136,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>FastCall</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -154,15 +157,8 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
-</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy executable to bin directory</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -171,8 +167,9 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;WIN32_ENABLE_DIRECTMUSIC_SUPPORT;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -185,9 +182,11 @@
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>FastCall</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -205,14 +204,8 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
-</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy executable to bin directory</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -222,7 +215,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP /J %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -252,6 +245,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>FastCall</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -268,14 +263,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <TargetMachine>MachineX64</TargetMachine>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <MinimumRequiredVersion>5.02</MinimumRequiredVersion>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
-</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy executable to bin directory</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -285,8 +274,9 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";_SQ64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -306,6 +296,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -320,14 +312,8 @@
       <StackReserveSize>1048576</StackReserveSize>
       <StackCommitSize>1048576</StackCommitSize>
       <TargetMachine>MachineX64</TargetMachine>
+      <MinimumRequiredVersion>5.02</MinimumRequiredVersion>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
-</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy executable to bin directory</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
@@ -362,6 +348,7 @@
     <ClCompile Include="..\src\debug.cpp" />
     <ClCompile Include="..\src\dedicated.cpp" />
     <ClCompile Include="..\src\depot.cpp" />
+    <ClCompile Include="..\src\disaster_vehicle.cpp" />
     <ClCompile Include="..\src\driver.cpp" />
     <ClCompile Include="..\src\economy.cpp" />
     <ClCompile Include="..\src\effectvehicle.cpp" />
@@ -498,6 +485,7 @@
     <ClInclude Include="..\src\depot_type.h" />
     <ClInclude Include="..\src\direction_func.h" />
     <ClInclude Include="..\src\direction_type.h" />
+    <ClInclude Include="..\src\disaster_vehicle.h" />
     <ClInclude Include="..\src\music\dmusic.h" />
     <ClInclude Include="..\src\driver.h" />
     <ClInclude Include="..\src\economy_base.h" />
@@ -594,6 +582,7 @@
     <ClInclude Include="..\src\newgrf_industries.h" />
     <ClInclude Include="..\src\newgrf_industrytiles.h" />
     <ClInclude Include="..\src\newgrf_object.h" />
+    <ClCompile Include="..\src\triphistory_gui.cpp" />
     <ClInclude Include="..\src\newgrf_properties.h" />
     <ClInclude Include="..\src\newgrf_railtype.h" />
     <ClInclude Include="..\src\newgrf_sound.h" />
@@ -610,7 +599,6 @@
     <ClInclude Include="..\src\sound\null_s.h" />
     <ClInclude Include="..\src\video\null_v.h" />
     <ClInclude Include="..\src\object.h" />
-    <ClCompile Include="..\src\triphistory_gui.cpp" />
     <ClInclude Include="..\src\object_base.h" />
     <ClInclude Include="..\src\object_type.h" />
     <ClInclude Include="..\src\openttd.h" />
@@ -632,6 +620,7 @@
     <ClInclude Include="..\src\road_type.h" />
     <ClInclude Include="..\src\roadstop_base.h" />
     <ClInclude Include="..\src\roadveh.h" />
+    <ClInclude Include="..\src\safeguards.h" />
     <ClInclude Include="..\src\screenshot.h" />
     <ClInclude Include="..\src\sdl.h" />
     <ClInclude Include="..\src\sound\sdl_s.h" />
@@ -723,7 +712,6 @@
     <ClInclude Include="..\src\window_type.h" />
     <ClInclude Include="..\src\zoom_func.h" />
     <ClInclude Include="..\src\zoom_type.h" />
-    <ClInclude Include="..\src\zoning.h" />
     <ClCompile Include="..\src\core\alloc_func.cpp" />
     <ClInclude Include="..\src\core\alloc_func.hpp" />
     <ClInclude Include="..\src\core\alloc_type.hpp" />
@@ -810,7 +798,6 @@
     <ClCompile Include="..\src\vehicle_gui.cpp" />
     <ClCompile Include="..\src\viewport_gui.cpp" />
     <ClCompile Include="..\src\waypoint_gui.cpp" />
-    <ClCompile Include="..\src\zoning_gui.cpp" />
     <ClInclude Include="..\src\widgets\airport_widget.h" />
     <ClInclude Include="..\src\widgets\ai_widget.h" />
     <ClInclude Include="..\src\widgets\autoreplace_widget.h" />
@@ -873,7 +860,6 @@
     <ClCompile Include="..\src\clear_cmd.cpp" />
     <ClCompile Include="..\src\company_cmd.cpp" />
     <ClCompile Include="..\src\depot_cmd.cpp" />
-    <ClCompile Include="..\src\disaster_cmd.cpp" />
     <ClCompile Include="..\src\group_cmd.cpp" />
     <ClCompile Include="..\src\industry_cmd.cpp" />
     <ClCompile Include="..\src\logic_signals_cmd.cpp" />
@@ -896,7 +882,6 @@
     <ClCompile Include="..\src\void_cmd.cpp" />
     <ClCompile Include="..\src\water_cmd.cpp" />
     <ClCompile Include="..\src\waypoint_cmd.cpp" />
-    <ClCompile Include="..\src\zoning_cmd.cpp" />
     <ClCompile Include="..\src\saveload\afterload.cpp" />
     <ClCompile Include="..\src\saveload\ai_sl.cpp" />
     <ClCompile Include="..\src\saveload\airport_sl.cpp" />
@@ -955,6 +940,7 @@
     <ClInclude Include="..\src\table\elrail_data.h" />
     <ClInclude Include="..\src\table\engines.h" />
     <ClInclude Include="..\src\table\genland.h" />
+    <ClInclude Include="..\src\table\heightmap_colours.h" />
     <ClInclude Include="..\src\table\industry_land.h" />
     <ClInclude Include="..\src\table\landscape_sprite.h" />
     <ClInclude Include="..\src\table\newgrf_debug_data.h" />
@@ -969,6 +955,7 @@
     <ClInclude Include="..\src\table\sprites.h" />
     <ClInclude Include="..\src\table\station_land.h" />
     <ClInclude Include="..\src\table\strgen_tables.h" />
+    <ClInclude Include="..\src\table\string_colours.h" />
     <ClInclude Include="..\src\..\objs\langs\table\strings.h" />
     <ClInclude Include="..\src\table\town_land.h" />
     <ClInclude Include="..\src\table\townname.h" />
@@ -1024,13 +1011,8 @@
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqpcheader.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstate.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdaux.h" />
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdblob.h" />
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdblobimpl.h" />
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdio.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdmath.h" />
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdstream.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdstring.h" />
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdsystem.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstring.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqtable.h" />
     <ClInclude Include="..\src\3rdparty\squirrel\include\squirrel.h" />

@@ -3743,8 +3743,8 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 					v->load_unload_ticks = 0;
 					v->x_pos = gp.x;
 					v->y_pos = gp.y;
-					VehicleUpdatePosition(v);
-					VehicleUpdateViewport(v, false);
+					v->UpdatePosition();
+					v->UpdateViewport(false, false);
 					UpdateSignalsOnSegment(gp.new_tile, INVALID_DIAGDIR, v->owner);
 					continue;
 				}

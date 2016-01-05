@@ -496,19 +496,18 @@ struct TimetableWindow : Window {
 							if (this->show_expected && i / 2 == earlyID) {
 								SetDParam(0, _date + arr_dep[i / 2].arrival / DAY_TICKS);
 								DrawString(time_left, time_right, y, STR_JUST_DATE_TINY, TC_GREEN);
-							}
+							} else {
 								SetDParam(0, _date + (arr_dep[i / 2].arrival + offset) / DAY_TICKS);
-								DrawString(time_left, time_right, y, STR_JUST_DATE_TINY,
-										show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
+								DrawString(time_left, time_right, y, STR_JUST_DATE_TINY, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 							}
 						}
 					}
 					else {
 						if (arr_dep[i / 2].departure != INVALID_TICKS) {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_DEPARTURE_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
-							SetDParam(0, _date + (arr_dep[i/2].departure + offset) / DAY_TICKS);
+							SetDParam(0, _date + (arr_dep[i / 2].departure + offset) / DAY_TICKS);
 							DrawString(time_left, time_right, y, STR_JUST_DATE_TINY,
-									show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
+								show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 						}
 					}
 					y += FONT_HEIGHT_NORMAL;

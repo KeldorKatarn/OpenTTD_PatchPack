@@ -624,11 +624,13 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		 SLE_CONDARR(Vehicle, cargo.action_counts,   SLE_UINT, VehicleCargoList::NUM_MOVE_TO_ACTION, 181, SL_MAX_VERSION),
 		 SLE_CONDVAR(Vehicle, cargo_age_counter,     SLE_UINT16,                 162, SL_MAX_VERSION),
 
-		     SLE_VAR(Vehicle, day_counter,           SLE_UINT8),
-		     SLE_VAR(Vehicle, tick_counter,          SLE_UINT8),
+		 SLE_CONDVAR(Vehicle, trip_occupancy,        SLE_INT8,     SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 
-			 SLE_CONDVAR(Vehicle, running_ticks, SLE_FILE_U8 | SLE_VAR_U16, 88, SL_PATCH_PACK_1_8 - 1),
-			 SLE_CONDVAR(Vehicle, running_ticks, SLE_UINT16, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
+		     SLE_VAR(Vehicle, day_counter,           SLE_UINT8),
+			 SLE_VAR(Vehicle, tick_counter,          SLE_UINT8),
+
+		 SLE_CONDVAR(Vehicle, running_ticks, SLE_FILE_U8 | SLE_VAR_U16,           88, SL_PATCH_PACK_1_8 - 1),
+		 SLE_CONDVAR(Vehicle, running_ticks, SLE_UINT16,           SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 
 		     SLE_VAR(Vehicle, cur_implicit_order_index,  SLE_UINT8),
 		 SLE_CONDVAR(Vehicle, cur_real_order_index,  SLE_UINT8,                  158, SL_MAX_VERSION),

@@ -2242,7 +2242,7 @@ void Vehicle::LeaveStation()
 
 	if (current_order_was_load_order)
 	{
-		int8 occupancy = CalcPercentVehicleFilled(this, NULL);
+		int8 occupancy = (int8)CalcPercentVehicleFilled(this, NULL);
 		station_occupancies.push_back(occupancy);
 	}
 

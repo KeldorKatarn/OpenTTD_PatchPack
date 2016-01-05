@@ -1,5 +1,8 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2010
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 12
+VisualStudioVersion = 10.0.40219.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openttd", "openttd_vs120.vcxproj", "{668328A0-B40E-4CDB-BD72-D0064424414A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0817F629-589E-4A3B-B81A-8647BC571E35} = {0817F629-589E-4A3B-B81A-8647BC571E35}

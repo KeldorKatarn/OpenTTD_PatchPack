@@ -102,42 +102,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClInclude Include="..\src\tbtr_template_gui_main.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_replaceall.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\src\airport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -196,6 +166,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\depot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\disaster_vehicle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\driver.cpp">
@@ -417,9 +390,6 @@
     <ClCompile Include="..\src\townname.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\triphistory_cmd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\vehicle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -439,6 +409,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tracerestrict.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClInclude Include="..\src\aircraft.h">
@@ -583,6 +556,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\direction_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\disaster_vehicle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\music\dmusic.h">
@@ -921,9 +897,6 @@
     <ClInclude Include="..\src\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="..\src\triphistory_gui.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClInclude Include="..\src\object_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -985,6 +958,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\roadveh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\safeguards.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\screenshot.h">
@@ -1257,9 +1233,6 @@
     <ClInclude Include="..\src\zoom_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\zoning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\src\core\alloc_func.cpp">
       <Filter>Core Source Code</Filter>
     </ClCompile>
@@ -1500,6 +1473,9 @@
     <ClCompile Include="..\src\town_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\tracerestrict_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\train_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1509,6 +1485,9 @@
     <ClCompile Include="..\src\tree_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\triphistory_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\vehicle_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1516,9 +1495,6 @@
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClCompile Include="..\src\waypoint_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\zoning_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClInclude Include="..\src\widgets\airport_widget.h">
@@ -1707,9 +1683,6 @@
     <ClCompile Include="..\src\depot_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\disaster_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\group_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
@@ -1758,6 +1731,9 @@
     <ClCompile Include="..\src\train_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\triphistory_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\tree_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
@@ -1774,9 +1750,6 @@
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\waypoint_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\zoning_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\afterload.cpp">
@@ -1953,6 +1926,9 @@
     <ClInclude Include="..\src\table\genland.h">
       <Filter>Tables</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\table\heightmap_colours.h">
+      <Filter>Tables</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\table\industry_land.h">
       <Filter>Tables</Filter>
     </ClInclude>
@@ -1993,6 +1969,9 @@
       <Filter>Tables</Filter>
     </ClInclude>
     <ClInclude Include="..\src\table\strgen_tables.h">
+      <Filter>Tables</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\table\string_colours.h">
       <Filter>Tables</Filter>
     </ClInclude>
     <ClInclude Include="..\src\..\objs\langs\table\strings.h">
@@ -2160,25 +2139,10 @@
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdaux.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdblob.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdblobimpl.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdio.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdmath.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\sqstdlib\sqstdstream.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdstring.h">
-      <Filter>Squirrel headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdsystem.h">
       <Filter>Squirrel headers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstring.h">
@@ -3126,27 +3090,71 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\saveload\plans_sl.cpp" />
-    <ClCompile Include="..\src\tracerestrict.cpp" />
-    <ClCompile Include="..\src\tracerestrict_gui.cpp" />
+    <ClCompile Include="..\src\saveload\plans_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\plans_gui.cpp" />
-    <ClCompile Include="..\src\plans.cpp" />
-    <ClCompile Include="..\src\plans_cmd.cpp" />
-    <ClInclude Include="..\src\plans_type.h" />
-    <ClInclude Include="..\src\plans_base.h" />
-    <ClInclude Include="..\src\widgets\plans_widget.h" />
-    <ClInclude Include="..\src\plans_func.h" />
+    <ClCompile Include="..\src\plans_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
     <None Include="..\readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\tracerestrict.h" />
+    <ClInclude Include="..\src\plans_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\plans_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\plans_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\widgets\plans_widget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tracerestrict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_replaceall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

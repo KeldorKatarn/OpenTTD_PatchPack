@@ -560,10 +560,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\disaster_vehicle.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\driver.cpp"
 				>
 			</File>
@@ -1081,10 +1077,6 @@
 			</File>
 			<File
 				RelativePath=".\..\src\direction_type.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\disaster_vehicle.h"
 				>
 			</File>
 			<File
@@ -2596,6 +2588,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\disaster_cmd.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\group_cmd.cpp"
 				>
 			</File>
@@ -2924,10 +2920,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\table\heightmap_colours.h"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\table\industry_land.h"
 				>
 			</File>
@@ -2981,10 +2973,6 @@
 			</File>
 			<File
 				RelativePath=".\..\src\table\strgen_tables.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\table\string_colours.h"
 				>
 			</File>
 			<File
@@ -3224,11 +3212,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdblob.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\squirrel\sqstdlib\sqstdblobimpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdio.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdmath.h"
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\3rdparty\squirrel\sqstdlib\sqstdstream.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdstring.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdsystem.h"
 				>
 			</File>
 			<File

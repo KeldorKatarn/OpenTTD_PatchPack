@@ -107,15 +107,14 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 {
 	/* Templated class used for function calls for performance reasons. */
 	const T *v = T::From(this);
-	int32 speed = (v->GetCurrentSpeed() * 5) / 18; // [m/s-ish]
-	int64 speed = v->GetCurrentSpeed(); // [km/h-ish]
+	int64 speed = (v->GetCurrentSpeed() * 5) / 18; // [m/s-ish]
 
 	/* Weight is stored in tonnes. */
 	int32 mass = this->gcache.cached_weight;
 
 	/* Power is stored in HP, we need it in watts.
 	 * Each vehicle can have U16 power, 128 vehicles, HP -> watt
-	 * and km/h to m/s conversion below result in a maxium of
+	 * and km/h to m/s conversion below result in a maximum of
 	 * about 1.1E11, way more than 4.3E9 of int32. */
 	int64 power = this->gcache.cached_power * 746ll;
 

@@ -168,7 +168,8 @@ struct TimetableWindow : Window {
 	uint deparr_time_width;               ///< The width of the departure/arrival time
 	uint deparr_abbr_width;               ///< The width of the departure/arrival abbreviation
 	Scrollbar *vscroll;
-	bool query_is_speed_query;            ///< The currently open query window is a speed query and not a time query.
+	bool query_is_speed_query;            ///< The currently open query window is a speed query and not a time query
+	bool query_is_global_query;           ///< The currently open query window applies to all relevant orders.
 	TTSepSettings new_sep_settings;       ///< Contains new separation settings.
 	VehicleTimetableWidgets query_widget; ///< Required to determinate source of input query
 
@@ -328,15 +329,7 @@ struct TimetableWindow : Window {
 		this->vscroll->SetCount(v->GetNumOrders() * 2);
 
 		if (v->owner == _local_company) {
-			bool disable = true;
-			if (selected != -1) {
-				const Order *order = v->GetOrder(((selected + 1) / 2) % v->GetNumOrders());
-				if (selected % 2 == 1) {
-					disable = order != NULL && (order->IsType(OT_CONDITIONAL) || order->IsType(OT_IMPLICIT));
-				} else {
-					disable = order == NULL || ((!order->IsType(OT_GOTO_STATION) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION)) && !order->IsType(OT_CONDITIONAL));
-				}
-			}
+			bool disable = IsActionDisabled(v, selected);
 			bool disable_speed = disable || selected % 2 != 1 || v->type == VEH_AIRCRAFT;
 
 			this->SetWidgetDisabledState(WID_VT_CHANGE_TIME, disable);
@@ -633,6 +626,21 @@ struct TimetableWindow : Window {
 		return v->index | (order_number << 20) | (mtf << 28);
 	}
 
+	static inline bool IsActionDisabled(const Vehicle *v, int selected)
+	{
+		bool disabled = true;
+		if (selected != -1) {
+			const Order *order = v->GetOrder(((selected + 1) / 2) % v->GetNumOrders());
+			if (selected % 2 == 1) {
+				disabled = order != NULL && (order->IsType(OT_CONDITIONAL) || order->IsType(OT_IMPLICIT));
+			}
+			else {
+				disabled = order == NULL || order->IsType(OT_CONDITIONAL) || !order->IsType(OT_GOTO_STATION) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION);
+			}
+		}
+		return disabled;
+	}
+
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
 		const Vehicle *v = this->vehicle;
@@ -677,6 +685,7 @@ struct TimetableWindow : Window {
 
 				this->query_widget = WID_VT_CHANGE_TIME;
 				this->query_is_speed_query = false;
+				this->query_is_global_query = _ctrl_pressed;
 				ShowQueryString(current, STR_TIMETABLE_CHANGE_TIME, 31, this, CS_NUMERAL, QSF_ACCEPT_UNCHANGED);
 				break;
 			}
@@ -696,20 +705,44 @@ struct TimetableWindow : Window {
 					}
 				}
 
+				this->query_widget = WID_VT_CHANGE_SPEED;
 				this->query_is_speed_query = true;
+				this->query_is_global_query = _ctrl_pressed;
 				ShowQueryString(current, STR_TIMETABLE_CHANGE_SPEED, 31, this, CS_NUMERAL, QSF_NONE);
 				break;
 			}
 
 			case WID_VT_CLEAR_TIME: { // Clear waiting time.
-				uint32 p1 = PackTimetableArgs(v, this->sel_index, false);
-				DoCommandP(0, p1, 0, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+				uint32 p1;
+				if (_ctrl_pressed) {
+					for (int i = 0, sel = this->sel_index % 2; i < v->GetNumOrders(); ++i, sel += 2) {
+						if (!IsActionDisabled(v, sel)) {
+							p1 = PackTimetableArgs(v, sel, false);
+							DoCommandP(0, p1, 0, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+						}
+					}
+				}
+				else {
+					p1 = PackTimetableArgs(v, this->sel_index, false);
+					DoCommandP(0, p1, 0, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+				}
 				break;
 			}
 
 			case WID_VT_CLEAR_SPEED: { // Clear max speed button.
-				uint32 p1 = PackTimetableArgs(v, this->sel_index, true);
-				DoCommandP(0, p1, UINT16_MAX, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+				uint32 p1;
+				if (_ctrl_pressed) {
+					for (int i = 0, sel = 1; i < v->GetNumOrders(); ++i, sel += 2) {
+						if (!IsActionDisabled(v, sel)) {
+							p1 = PackTimetableArgs(v, sel, true);
+							DoCommandP(0, p1, UINT16_MAX, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+						}
+					}
+				}
+				else {
+					p1 = PackTimetableArgs(v, this->sel_index, true);
+					DoCommandP(0, p1, UINT16_MAX, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+				}
 				break;
 			}
 
@@ -766,10 +799,11 @@ struct TimetableWindow : Window {
 			return;
 
 		switch (this->query_widget) {
-		case WID_VT_CHANGE_TIME: {
+		case WID_VT_CHANGE_TIME:
+		case WID_VT_CHANGE_SPEED: {
 			const Vehicle *v = this->vehicle;
 
-			uint32 p1 = PackTimetableArgs(v, this->sel_index, this->query_is_speed_query);
+			uint32 p1;
 
 			uint64 val = StrEmpty(str) ? 0 : strtoul(str, NULL, 10);
 			if (this->query_is_speed_query) {
@@ -784,7 +818,18 @@ struct TimetableWindow : Window {
 			uint32 p2 = minu(val, UINT16_MAX);
 
 
-			DoCommandP(0, p1, p2, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+			if (this->query_is_global_query) {
+				for (int i = 0, sel = this->sel_index % 2; i < v->GetNumOrders(); ++i, sel += 2) {
+					if (!IsActionDisabled(v, sel)) {
+						p1 = PackTimetableArgs(v, sel, this->query_is_speed_query);
+						DoCommandP(0, p1, p2, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+					}
+				}
+			}
+			else {
+				p1 = PackTimetableArgs(v, this->sel_index, this->query_is_speed_query);
+				DoCommandP(0, p1, p2, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+			}
 			break;
 		}
 		case WID_VT_TTSEP_SET_PARAMETER: {

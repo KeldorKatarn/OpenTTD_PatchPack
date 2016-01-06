@@ -862,7 +862,7 @@ static int CDECL TrainEngineCapacitySorterWagon(const EngineID *a, const EngineI
 	return _internal_sort_order_wagon ? -r : r;
 }
 
-static EngList_SortTypeFunction * const _sorter[][11] = {{
+static EngList_SortTypeFunction * const _engine_sort_functions[][11] = { {
 	/* Trains */
 	&EngineNumberSorter,
 	&EngineCostSorter,
@@ -909,7 +909,61 @@ static EngList_SortTypeFunction * const _sorter[][11] = {{
 	&EngineReliabilitySorter,
 	&AircraftEngineCargoSorter,
 	&AircraftRangeSorter,
-}};
+} };
+
+/** Dropdown menu strings for the vehicle sort criteria. */
+const StringID _engine_sort_listing[][12] = { {
+		/* Trains */
+		STR_SORT_BY_ENGINE_ID,
+		STR_SORT_BY_COST,
+		STR_SORT_BY_MAX_SPEED,
+		STR_SORT_BY_POWER,
+		STR_SORT_BY_TRACTIVE_EFFORT,
+		STR_SORT_BY_INTRO_DATE,
+		STR_SORT_BY_NAME,
+		STR_SORT_BY_RUNNING_COST,
+		STR_SORT_BY_POWER_VS_RUNNING_COST,
+		STR_SORT_BY_RELIABILITY,
+		STR_SORT_BY_CARGO_CAPACITY,
+		INVALID_STRING_ID
+	}, {
+		/* Road vehicles */
+		STR_SORT_BY_ENGINE_ID,
+		STR_SORT_BY_COST,
+		STR_SORT_BY_MAX_SPEED,
+		STR_SORT_BY_POWER,
+		STR_SORT_BY_TRACTIVE_EFFORT,
+		STR_SORT_BY_INTRO_DATE,
+		STR_SORT_BY_NAME,
+		STR_SORT_BY_RUNNING_COST,
+		STR_SORT_BY_POWER_VS_RUNNING_COST,
+		STR_SORT_BY_RELIABILITY,
+		STR_SORT_BY_CARGO_CAPACITY,
+		INVALID_STRING_ID
+	}, {
+		/* Ships */
+		STR_SORT_BY_ENGINE_ID,
+		STR_SORT_BY_COST,
+		STR_SORT_BY_MAX_SPEED,
+		STR_SORT_BY_INTRO_DATE,
+		STR_SORT_BY_NAME,
+		STR_SORT_BY_RUNNING_COST,
+		STR_SORT_BY_RELIABILITY,
+		STR_SORT_BY_CARGO_CAPACITY,
+		INVALID_STRING_ID
+	}, {
+		/* Aircraft */
+		STR_SORT_BY_ENGINE_ID,
+		STR_SORT_BY_COST,
+		STR_SORT_BY_MAX_SPEED,
+		STR_SORT_BY_INTRO_DATE,
+		STR_SORT_BY_NAME,
+		STR_SORT_BY_RUNNING_COST,
+		STR_SORT_BY_RELIABILITY,
+		STR_SORT_BY_CARGO_CAPACITY,
+		STR_SORT_BY_RANGE,
+		INVALID_STRING_ID
+	} };
 
 static EngList_SortTypeFunction * const _sorter_loco[11] = {
 	/* Locomotives */

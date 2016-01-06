@@ -650,12 +650,12 @@ struct TooltipsWindow : public Window
 	{
 		this->parent = parent;
 		this->string_id = str;
-		if (this->paramcount == 0) GetString(this->buffer, str, lastof(this->buffer)); // Get the text while params are available
 		assert_compile(sizeof(this->params[0]) == sizeof(params[0]));
 		assert(paramcount <= lengthof(this->params));
 		memcpy(this->params, params, sizeof(this->params[0]) * paramcount);
 		this->paramcount = paramcount;
 		this->close_cond = close_tooltip;
+		if (this->paramcount == 0) GetString(this->buffer, str, lastof(this->buffer)); // Get the text while params are available
 
 		this->InitNested();
 
@@ -703,7 +703,8 @@ struct TooltipsWindow : public Window
 
 		if (this->paramcount == 0) {
 			DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->buffer, TC_FROMSTRING, SA_CENTER);
-		} else {
+		}
+		else {
 			for (uint arg = 0; arg < this->paramcount; arg++) {
 				SetDParam(arg, this->params[arg]);
 			}

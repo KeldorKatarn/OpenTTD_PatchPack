@@ -854,11 +854,11 @@ void *GetRawSprite(SpriteID sprite, SpriteType type, AllocatorProc *allocator)
 }
 
 /**
- * Reads a sprite and finds its most representative colour.
- * @param sprite Sprite to read.
- * @param palette_id Palette for remapping colours.
- * @return if blitter supports 32bpp, average Colour.data else a palette index.
- */
+* Reads a sprite and finds its most representative colour.
+* @param sprite Sprite to read.
+* @param palette_id Palette for remapping colours.
+* @return if blitter supports 32bpp, average Colour.data else a palette index.
+*/
 uint32 GetSpriteMainColour(SpriteID sprite_id, PaletteID palette_id)
 {
 	if (!SpriteExists(sprite_id)) return 0;
@@ -895,7 +895,8 @@ uint32 GetSpriteMainColour(SpriteID sprite_id, PaletteID palette_id)
 							b += c.b;
 							cnt++;
 						}
-					} else {
+					}
+					else {
 						r += pixel->r;
 						g += pixel->g;
 						b += pixel->b;
@@ -927,7 +928,8 @@ uint32 GetSpriteMainColour(SpriteID sprite_id, PaletteID palette_id)
 				pixel++;
 			}
 			return cnt ? Colour(r / cnt, g / cnt, b / cnt).data : 0;
-		} else {
+		}
+		else {
 			/* Return the most used indexed colour. */
 			int cnt[256];
 			memset(cnt, 0, sizeof(cnt));

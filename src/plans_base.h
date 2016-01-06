@@ -1,11 +1,11 @@
 /* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file plans_base.h Base class for plans. */
 
@@ -60,13 +60,13 @@ struct PlanLine {
 
 			if (cnt > 1) {
 				const TileIndex t0 = this->tiles[cnt - 2];
-				const int x0 = (int) TileX(t0);
-				const int y0 = (int) TileY(t0);
+				const int x0 = (int)TileX(t0);
+				const int y0 = (int)TileY(t0);
 				const TileIndex t1 = this->tiles[cnt - 1];
-				const int x1 = (int) TileX(t1);
-				const int y1 = (int) TileY(t1);
-				const int x2 = (int) TileX(tile);
-				const int y2 = (int) TileY(tile);
+				const int x1 = (int)TileX(t1);
+				const int y1 = (int)TileY(t1);
+				const int x2 = (int)TileX(tile);
+				const int y2 = (int)TileY(tile);
 
 				if ((y1 - y0) * (x2 - x1) == (y2 - y1) * (x1 - x0)) { // Same direction.
 					if (abs(x2 - x1) <= abs(x2 - x0) && abs(y2 - y1) <= abs(y2 - y0)) { // Tile i+1 is between i and i+2.
@@ -107,7 +107,7 @@ struct PlanLine {
 	{
 		const uint sz = (uint) this->tiles.size();
 		for (uint i = 1; i < sz; i++) {
-			MarkTileLineDirty(this->tiles[i-1], this->tiles[i]);
+			MarkTileLineDirty(this->tiles[i - 1], this->tiles[i]);
 		}
 	}
 
@@ -115,7 +115,7 @@ struct PlanLine {
 	{
 		const uint cnt = (uint) this->tiles.size();
 		const uint datalen = sizeof(TileIndex) * cnt;
-		TileIndex *buffer = (TileIndex *) malloc(datalen);
+		TileIndex *buffer = (TileIndex *)malloc(datalen);
 		if (buffer) {
 			for (uint i = 0; i < cnt; i++) {
 				buffer[i] = TO_LE32(this->tiles[i]);
@@ -204,7 +204,7 @@ struct Plan : PlanPool::PoolItem<&_plan_pool> {
 			const TileIndex *buffer = this->temp_line->Export(&buffer_length);
 			if (buffer) {
 				_current_plan->SetVisibility(true, false);
-				ret = DoCommandP(0, _current_plan->index, (uint32) this->temp_line->tiles.size(), CMD_ADD_PLAN_LINE, NULL, (const char *) buffer, true, buffer_length);
+				ret = DoCommandP(0, _current_plan->index, (uint32) this->temp_line->tiles.size(), CMD_ADD_PLAN_LINE, NULL, (const char *)buffer, true, buffer_length);
 				free(buffer);
 			}
 			_current_plan->temp_line->MarkDirty();

@@ -172,7 +172,6 @@ protected:
 		return Company::IsValidID(_local_company) ? 1U << _local_company : 0xffffffff;
 	}
 
-	void RebuildColourIndexIfNecessary();
 	uint GetNumberRowsLegend(uint columns) const;
 	void SelectLegendItem(int click_pos, LegendAndColour *legend, int end_legend_item, int begin_legend_item = 0);
 	void SwitchMapType(SmallMapType map_type);
@@ -199,6 +198,8 @@ public:
 
 	SmallMapWindow(WindowDesc *desc, int window_number);
 	virtual ~SmallMapWindow() { delete this->overlay; }
+
+	static void RebuildColourIndexIfNecessary();
 
 	void SmallMapCenterOnCurrentPos();
 	Point GetStationMiddle(const Station *st) const;

@@ -382,18 +382,18 @@ static void UpdateRouteStepSpriteSize()
 static SpriteID GetSpriteIDForClearGround(const ClearGround cg, const Slope slope, const uint multi)
 {
 	switch (cg) {
-		case CLEAR_GRASS:
-			return GetSpriteIDForClearLand(slope, (byte) multi);
-		case CLEAR_ROUGH:
-			return GetSpriteIDForHillyLand(slope, multi);
-		case CLEAR_ROCKS:
-			return GetSpriteIDForRocks(slope);
-		case CLEAR_FIELDS:
-			return GetSpriteIDForFields(multi, slope);
-		case CLEAR_SNOW:
-		case CLEAR_DESERT:
-			return GetSpriteIDForSnowDesert(multi, slope);
-		default: NOT_REACHED();
+	case CLEAR_GRASS:
+		return GetSpriteIDForClearLand(slope, (byte)multi);
+	case CLEAR_ROUGH:
+		return GetSpriteIDForHillyLand(slope, multi);
+	case CLEAR_ROCKS:
+		return GetSpriteIDForRocks(slope, multi);
+	case CLEAR_FIELDS:
+		return GetSpriteIDForFields(slope, multi);
+	case CLEAR_SNOW:
+	case CLEAR_DESERT:
+		return GetSpriteIDForSnowDesert(slope, multi);
+	default: NOT_REACHED();
 	}
 }
 
@@ -419,7 +419,7 @@ void GfxDetermineMainColours()
 	} multi[6] = {
 		{ 0, 3 }, // CLEAR_GRASS, density
 		{ 0, 7 }, // CLEAR_ROUGH, "random" based on position
-		{ 0, 0 }, // CLEAR_ROCKS, unused
+		{ 0, 1 }, // CLEAR_ROCKS, tile hash parity
 		{ 0, 7 }, // CLEAR_FIELDS, some field types
 		{ 0, 3 }, // CLEAR_SNOW, density
 		{ 1, 3 }, // CLEAR_DESERT, density
@@ -427,14 +427,14 @@ void GfxDetermineMainColours()
 	for (uint s = 0; s <= SLOPE_ELEVATED; s++) {
 		for (uint cg = 0; cg < 6; cg++) {
 			for (uint m = multi[cg].min; m <= multi[cg].max; m++) {
-				_vp_map_vegetation_clear_colours[s][cg][m] = GetSpriteMainColour(GetSpriteIDForClearGround((ClearGround) cg, (Slope) s, m), PAL_NONE);
+				_vp_map_vegetation_clear_colours[s][cg][m] = GetSpriteMainColour(GetSpriteIDForClearGround((ClearGround)cg, (Slope)s, m), PAL_NONE);
 			}
 		}
 	}
 
 	/* Trees. */
 	extern uint32 _vp_map_vegetation_tree_colours[5][MAX_TREE_COUNT_BY_LANDSCAPE];
-	const uint base  = _tree_base_by_landscape[_settings_game.game_creation.landscape];
+	const uint base = _tree_base_by_landscape[_settings_game.game_creation.landscape];
 	const uint count = _tree_count_by_landscape[_settings_game.game_creation.landscape];
 	for (uint tg = 0; tg < 5; tg++) {
 		for (uint i = base; i < base + count; i++) {

@@ -40,7 +40,7 @@ static const SaveLoad _engine_desc[] = {
 	SLE_CONDNULL(1,                                                        0,  44),
 	 SLE_CONDVAR(Engine, company_avail,       SLE_FILE_U8  | SLE_VAR_U16,  0, 103),
 	 SLE_CONDVAR(Engine, company_avail,       SLE_UINT16,                104, SL_MAX_VERSION),
-	 SLE_CONDVAR(Engine, company_hidden,      SLE_UINT16,                193, SL_MAX_VERSION),
+	 SLE_CONDVAR(Engine, company_hidden,      SLE_UINT16,  SL_PATCH_PACK_1_9, SL_MAX_VERSION),
 	 SLE_CONDSTR(Engine, name,                SLE_STR, 0,                 84, SL_MAX_VERSION),
 
 	SLE_CONDNULL(16,                                                       2, 143), // old reserved space

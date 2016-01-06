@@ -59,13 +59,13 @@ static const NWidgetPart _nested_build_vehicle_widgets_train_advanced[] = {
 				EndContainer(),
 			EndContainer(),
 			NWidget(WWT_PANEL, COLOUR_GREY),
-				NWidget(NWID_HORIZONTAL),
-					NWidget(NWID_VERTICAL),
+				NWidget(NWID_VERTICAL),
+					NWidget(NWID_HORIZONTAL),
 						NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_SORT_ASSENDING_DESCENDING_LOCO), SetDataTip(STR_BUTTON_SORT_BY, STR_TOOLTIP_SORT_ORDER), SetFill(1, 0),
-						NWidget(NWID_SPACER), SetFill(1, 1),
-					EndContainer(),
-					NWidget(NWID_VERTICAL),
 						NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_BV_SORT_DROPDOWN_LOCO), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_SORT_CRITERIA),
+					EndContainer(),
+					NWidget(NWID_HORIZONTAL),
+						NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_BV_SHOW_HIDDEN_LOCOS),
 						NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_BV_CARGO_FILTER_DROPDOWN_LOCO), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_FILTER_CRITERIA),
 					EndContainer(),
 				EndContainer(),
@@ -82,6 +82,7 @@ static const NWidgetPart _nested_build_vehicle_widgets_train_advanced[] = {
 				NWidget(NWID_SELECTION, INVALID_COLOUR, WID_BV_BUILD_SEL_LOCO),
 					NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_BUILD_LOCO), SetResize(1, 0), SetFill(1, 0),
 				EndContainer(),
+				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_SHOW_HIDE_LOCO), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_NULL),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_RENAME_LOCO), SetResize(1, 0), SetFill(1, 0),
 			EndContainer(),
 
@@ -94,13 +95,13 @@ static const NWidgetPart _nested_build_vehicle_widgets_train_advanced[] = {
 				EndContainer(),
 			EndContainer(),
 			NWidget(WWT_PANEL, COLOUR_GREY),
-				NWidget(NWID_HORIZONTAL),
-					NWidget(NWID_VERTICAL),
+				NWidget(NWID_VERTICAL),
+					NWidget(NWID_HORIZONTAL),
 						NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_SORT_ASSENDING_DESCENDING_WAGON), SetDataTip(STR_BUTTON_SORT_BY, STR_TOOLTIP_SORT_ORDER), SetFill(1, 0),
-						NWidget(NWID_SPACER), SetFill(1, 1),
-					EndContainer(),
-					NWidget(NWID_VERTICAL),
 						NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_BV_SORT_DROPDOWN_WAGON), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_SORT_CRITERIA),
+					EndContainer(),
+					NWidget(NWID_HORIZONTAL),
+						NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_BV_SHOW_HIDDEN_WAGONS),
 						NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_BV_CARGO_FILTER_DROPDOWN_WAGON), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_FILTER_CRITERIA),
 					EndContainer(),
 				EndContainer(),
@@ -117,6 +118,7 @@ static const NWidgetPart _nested_build_vehicle_widgets_train_advanced[] = {
 				NWidget(NWID_SELECTION, INVALID_COLOUR, WID_BV_BUILD_SEL_WAGON),
 					NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_BUILD_WAGON), SetResize(1, 0), SetFill(1, 0),
 				EndContainer(),
+				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_SHOW_HIDE_WAGON), SetResize(1, 0), SetFill(1, 0), SetDataTip(STR_JUST_STRING, STR_NULL),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_BV_RENAME_WAGON), SetResize(1, 0), SetFill(1, 0),
 				NWidget(WWT_RESIZEBOX, COLOUR_GREY),
 			EndContainer(),
@@ -1257,6 +1259,7 @@ struct BuildVirtualTrainWindow : Window {
 	GUIEngineList eng_list_loco;
 	Scrollbar *vscroll_loco;
 	byte cargo_filter_criteria_loco;                 ///< Selected cargo filter
+	bool show_hidden_locos;                          ///< State of the 'show hidden locomotives' button.
 	int details_height_loco;                         ///< Minimal needed height of the details panels (found so far).
 	CargoID cargo_filter_loco[NUM_CARGO + 2];        ///< Available cargo filters; CargoID or CF_ANY or CF_NONE
 	StringID cargo_filter_texts_loco[NUM_CARGO + 3]; ///< Texts for filter_cargo, terminated by INVALID_STRING_ID
@@ -1271,6 +1274,7 @@ struct BuildVirtualTrainWindow : Window {
 	GUIEngineList eng_list_wagon;
 	Scrollbar *vscroll_wagon;
 	byte cargo_filter_criteria_wagon;                 ///< Selected cargo filter
+	bool show_hidden_wagons;                          ///< State of the 'show hidden wagons' button.
 	int details_height_wagon;                         ///< Minimal needed height of the details panels (found so far).
 	CargoID cargo_filter_wagon[NUM_CARGO + 2];        ///< Available cargo filters; CargoID or CF_ANY or CF_NONE
 	StringID cargo_filter_texts_wagon[NUM_CARGO + 3]; ///< Texts for filter_cargo, terminated by INVALID_STRING_ID
@@ -1283,25 +1287,25 @@ struct BuildVirtualTrainWindow : Window {
 		this->sel_engine_loco            = INVALID_ENGINE;
 		this->sort_criteria_loco         = _last_sort_criteria_loco;
 		this->descending_sort_order_loco = _last_sort_order_loco;
+		this->show_hidden_wagons         = _engine_sort_show_hidden_wagons;
 
 		this->sel_engine_wagon            = INVALID_ENGINE;
 		this->sort_criteria_wagon         = _last_sort_criteria_wagon;
 		this->descending_sort_order_wagon = _last_sort_order_wagon;
+		this->show_hidden_locos           = _engine_sort_show_hidden_locos;
 
 		this->CreateNestedTree();
 
 		this->vscroll_loco = this->GetScrollbar(WID_BV_SCROLLBAR_LOCO);
 		this->vscroll_wagon = this->GetScrollbar(WID_BV_SCROLLBAR_WAGON);
 
-		/* disable renaming engines in network games if you are not the server */
-		this->SetWidgetDisabledState(WID_BV_RENAME_LOCO, _networking && !_network_server);
-		this->SetWidgetDisabledState(WID_BV_RENAME_WAGON, _networking && !_network_server);
-
-
 		/* Locomotives */
 
 		NWidgetCore *widget_loco = this->GetWidget<NWidgetCore>(WID_BV_LIST_LOCO);
 		widget_loco->tool_tip = STR_BUY_VEHICLE_TRAIN_LIST_TOOLTIP + VEH_TRAIN;
+
+		widget_loco = this->GetWidget<NWidgetCore>(WID_BV_SHOW_HIDE_LOCO);
+		widget_loco->tool_tip = STR_BUY_VEHICLE_TRAIN_HIDE_SHOW_TOGGLE_TOOLTIP + VEH_TRAIN;
 
 		widget_loco = this->GetWidget<NWidgetCore>(WID_BV_BUILD_LOCO);
 		widget_loco->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_LOCOMOTIVE_BUTTON;
@@ -1311,11 +1315,19 @@ struct BuildVirtualTrainWindow : Window {
 		widget_loco->widget_data = STR_BUY_VEHICLE_TRAIN_RENAME_LOCOMOTIVE_BUTTON;
 		widget_loco->tool_tip    = STR_BUY_VEHICLE_TRAIN_RENAME_LOCOMOTIVE_TOOLTIP;
 
+		widget_loco = this->GetWidget<NWidgetCore>(WID_BV_SHOW_HIDDEN_LOCOS);
+		widget_loco->widget_data = STR_SHOW_HIDDEN_ENGINES_VEHICLE_TRAIN + VEH_TRAIN;
+		widget_loco->tool_tip = STR_SHOW_HIDDEN_ENGINES_VEHICLE_TRAIN_TOOLTIP + VEH_TRAIN;
+		widget_loco->SetLowered(this->show_hidden_locos);
+
 
 		/* Wagons */
 
 		NWidgetCore *widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_LIST_WAGON);
 		widget_wagon->tool_tip = STR_BUY_VEHICLE_TRAIN_LIST_TOOLTIP + VEH_TRAIN;
+
+		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_SHOW_HIDE_WAGON);
+		widget_wagon->tool_tip = STR_BUY_VEHICLE_TRAIN_HIDE_SHOW_TOGGLE_TOOLTIP + VEH_TRAIN;
 
 		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_BUILD_WAGON);
 		widget_wagon->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_WAGON_BUTTON;
@@ -1323,7 +1335,12 @@ struct BuildVirtualTrainWindow : Window {
 
 		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_RENAME_WAGON);
 		widget_wagon->widget_data = STR_BUY_VEHICLE_TRAIN_RENAME_WAGON_BUTTON;
-		widget_wagon->tool_tip    = STR_BUY_VEHICLE_TRAIN_RENAME_WAGON_TOOLTIP;
+		widget_wagon->tool_tip = STR_BUY_VEHICLE_TRAIN_RENAME_WAGON_TOOLTIP;
+
+		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_SHOW_HIDDEN_WAGONS);
+		widget_wagon->widget_data = STR_SHOW_HIDDEN_ENGINES_VEHICLE_TRAIN + VEH_TRAIN;
+		widget_wagon->tool_tip = STR_SHOW_HIDDEN_ENGINES_VEHICLE_TRAIN_TOOLTIP + VEH_TRAIN;
+		widget_wagon->SetLowered(this->show_hidden_wagons);
 
 
 		this->details_height_loco = 10 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
@@ -1489,6 +1506,7 @@ struct BuildVirtualTrainWindow : Window {
 		const Engine *e_loco;
 
 		FOR_ALL_ENGINES_OF_TYPE(e_loco, VEH_TRAIN) {
+			if (!this->show_hidden_locos && e_loco->IsHidden(_local_company)) continue;
 			EngineID eid = e_loco->index;
 			const RailVehicleInfo *rvi = &e_loco->u.rail;
 
@@ -1524,6 +1542,7 @@ struct BuildVirtualTrainWindow : Window {
 		const Engine *e_wagon;
 
 		FOR_ALL_ENGINES_OF_TYPE(e_wagon, VEH_TRAIN) {
+			if (!this->show_hidden_wagons && e_wagon->IsHidden(_local_company)) continue;
 			EngineID eid = e_wagon->index;
 			const RailVehicleInfo *rvi = &e_wagon->u.rail;
 
@@ -1581,12 +1600,27 @@ struct BuildVirtualTrainWindow : Window {
 				break;
 			}
 
+			case WID_BV_SHOW_HIDDEN_LOCOS: {
+				this->show_hidden_locos ^= true;
+				_engine_sort_show_hidden_locos = this->show_hidden_locos;
+				this->eng_list_loco.ForceRebuild();
+				this->SetWidgetLoweredState(widget, this->show_hidden_locos);
+				this->SetDirty();
+				break;
+			}
+
 			case WID_BV_LIST_LOCO: {
 				uint i = this->vscroll_loco->GetScrolledRowFromWidget(pt.y, this, WID_BV_LIST_LOCO);
 				size_t num_items = this->eng_list_loco.Length();
 				this->sel_engine_loco = (i < num_items) ? this->eng_list_loco[i] : INVALID_ENGINE;
 				this->SetDirty();
-				if (click_count > 1 && !this->listview_mode) this->OnClick(pt, WID_BV_BUILD_LOCO, 1);
+
+				if (_ctrl_pressed) {
+					this->OnClick(pt, WID_BV_SHOW_HIDE_LOCO, 1);
+				}
+				else if (click_count > 1 && !this->listview_mode) {
+					this->OnClick(pt, WID_BV_BUILD_LOCO, 1);
+				}
 				break;
 			}
 
@@ -1602,6 +1636,14 @@ struct BuildVirtualTrainWindow : Window {
 
 			case WID_BV_CARGO_FILTER_DROPDOWN_LOCO: { // Select cargo filtering criteria dropdown menu
 				ShowDropDownMenu(this, this->cargo_filter_texts_loco, this->cargo_filter_criteria_loco, WID_BV_CARGO_FILTER_DROPDOWN_LOCO, 0, 0);
+				break;
+			}
+
+			case WID_BV_SHOW_HIDE_LOCO: {
+				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_loco);
+				if (e != NULL) {
+					DoCommandP(0, 0, this->sel_engine_loco | (e->IsHidden(_current_company) ? 0 : (1u << 31)), CMD_SET_VEHICLE_VISIBILITY);
+				}
 				break;
 			}
 
@@ -1635,12 +1677,27 @@ struct BuildVirtualTrainWindow : Window {
 				break;
 			}
 
+			case WID_BV_SHOW_HIDDEN_WAGONS: {
+				this->show_hidden_wagons ^= true;
+				_engine_sort_show_hidden_wagons = this->show_hidden_wagons;
+				this->eng_list_wagon.ForceRebuild();
+				this->SetWidgetLoweredState(widget, this->show_hidden_wagons);
+				this->SetDirty();
+				break;
+			}
+
 			case WID_BV_LIST_WAGON: {
 				uint i = this->vscroll_wagon->GetScrolledRowFromWidget(pt.y, this, WID_BV_LIST_WAGON);
 				size_t num_items = this->eng_list_wagon.Length();
 				this->sel_engine_wagon = (i < num_items) ? this->eng_list_wagon[i] : INVALID_ENGINE;
 				this->SetDirty();
-				if (click_count > 1 && !this->listview_mode) this->OnClick(pt, WID_BV_BUILD_WAGON, 1);
+
+				if (_ctrl_pressed) {
+					this->OnClick(pt, WID_BV_SHOW_HIDE_WAGON, 1);
+				}
+				else if (click_count > 1 && !this->listview_mode) {
+					this->OnClick(pt, WID_BV_BUILD_WAGON, 1);
+				}
 				break;
 			}
 
@@ -1656,6 +1713,14 @@ struct BuildVirtualTrainWindow : Window {
 
 			case WID_BV_CARGO_FILTER_DROPDOWN_WAGON: { // Select cargo filtering criteria dropdown menu
 				ShowDropDownMenu(this, this->cargo_filter_texts_wagon, this->cargo_filter_criteria_wagon, WID_BV_CARGO_FILTER_DROPDOWN_WAGON, 0, 0);
+				break;
+			}
+
+			case WID_BV_SHOW_HIDE_WAGON: {
+				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_wagon);
+				if (e != NULL) {
+					DoCommandP(0, 0, this->sel_engine_wagon | (e->IsHidden(_current_company) ? 0 : (1u << 31)), CMD_SET_VEHICLE_VISIBILITY);
+				}
 				break;
 			}
 
@@ -1724,6 +1789,17 @@ struct BuildVirtualTrainWindow : Window {
 				break;
 			}
 
+			case WID_BV_SHOW_HIDE_LOCO: {
+				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_loco);
+				if (e != NULL && e->IsHidden(_local_company)) {
+					SetDParam(0, STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + VEH_TRAIN);
+				}
+				else {
+					SetDParam(0, STR_BUY_VEHICLE_TRAIN_HIDE_TOGGLE_BUTTON + VEH_TRAIN);
+				}
+				break;
+			}
+
 			case WID_BV_CAPTION_WAGON: {
 				SetDParam(0, STR_BUY_VEHICLE_TRAIN_WAGONS);
 				break;
@@ -1746,6 +1822,17 @@ struct BuildVirtualTrainWindow : Window {
 
 			case WID_BV_CARGO_FILTER_DROPDOWN_WAGON: {
 				SetDParam(0, this->cargo_filter_texts_wagon[this->cargo_filter_criteria_wagon]);
+				break;
+			}
+
+			case WID_BV_SHOW_HIDE_WAGON: {
+				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_wagon);
+				if (e != NULL && e->IsHidden(_local_company)) {
+					SetDParam(0, STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + VEH_TRAIN);
+				}
+				else {
+					SetDParam(0, STR_BUY_VEHICLE_TRAIN_HIDE_TOGGLE_BUTTON + VEH_TRAIN);
+				}
 				break;
 			}
 		}
@@ -1791,6 +1878,22 @@ struct BuildVirtualTrainWindow : Window {
 				*size = maxdim(*size, d);
 				break;
 			}
+
+			case WID_BV_SHOW_HIDE_LOCO: {
+				*size = GetStringBoundingBox(STR_BUY_VEHICLE_TRAIN_HIDE_TOGGLE_BUTTON + this->vehicle_type);
+				*size = maxdim(*size, GetStringBoundingBox(STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + this->vehicle_type));
+				size->width += padding.width;
+				size->height += padding.height;
+				break;
+			}
+
+			case WID_BV_SHOW_HIDE_WAGON: {
+				*size = GetStringBoundingBox(STR_BUY_VEHICLE_TRAIN_HIDE_TOGGLE_BUTTON + this->vehicle_type);
+				*size = maxdim(*size, GetStringBoundingBox(STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + this->vehicle_type));
+				size->width += padding.width;
+				size->height += padding.height;
+				break;
+			}
 		}
 	}
 
@@ -1824,6 +1927,17 @@ struct BuildVirtualTrainWindow : Window {
 		this->GenerateBuildList();
 		this->vscroll_loco->SetCount(this->eng_list_loco.Length());
 		this->vscroll_wagon->SetCount(this->eng_list_wagon.Length());
+
+		this->SetWidgetDisabledState(WID_BV_SHOW_HIDE_LOCO, this->sel_engine_loco == INVALID_ENGINE);
+		this->SetWidgetDisabledState(WID_BV_SHOW_HIDE_WAGON, this->sel_engine_wagon == INVALID_ENGINE);
+
+		/* disable renaming engines in network games if you are not the server */
+		this->SetWidgetDisabledState(WID_BV_RENAME_LOCO, (this->sel_engine_loco == INVALID_ENGINE) || (_networking && !_network_server));
+		this->SetWidgetDisabledState(WID_BV_BUILD_LOCO, this->sel_engine_loco == INVALID_ENGINE);
+
+		/* disable renaming engines in network games if you are not the server */
+		this->SetWidgetDisabledState(WID_BV_RENAME_WAGON, (this->sel_engine_wagon == INVALID_ENGINE) || (_networking && !_network_server));
+		this->SetWidgetDisabledState(WID_BV_BUILD_WAGON, this->sel_engine_wagon == INVALID_ENGINE);
 
 		this->DrawWidgets();
 

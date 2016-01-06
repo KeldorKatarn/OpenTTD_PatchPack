@@ -235,15 +235,13 @@ static const LegendAndColour * const _legend_table[] = {
 	_legend_land_owners,
 };
 
-#include "table/heightmap_colours.h"
-	uint32 *height_colours;            ///< Cached colours for each level in a map.
-	const uint32 *height_colours_base; ///< Base table for determining the colours
-	size_t colour_count;               ///< The number of colours.
-	uint32 default_colour;             ///< Default colour of the land.
-static SmallMapColourScheme _heightmap_schemes[] = {
-	{NULL, _green_map_heights,      lengthof(_green_map_heights),      MKCOLOUR_XXXX(0x54)}, ///< Green colour scheme.
+/** Available colour schemes for height maps. */
+SmallMapColourScheme _heightmap_schemes[] = {
+	{NULL, _green_map_heights, lengthof(_green_map_heights), MKCOLOUR_XXXX(0x5B)}, ///< Green colour scheme.
 	{NULL, _dark_green_map_heights, lengthof(_dark_green_map_heights), MKCOLOUR_XXXX(0x62)}, ///< Dark green colour scheme.
 	{NULL, _violet_map_heights,     lengthof(_violet_map_heights),     MKCOLOUR_XXXX(0x82)}, ///< Violet colour scheme.
+};
+
 /**
  * (Re)build the colour tables for the legends.
  */
@@ -377,10 +375,6 @@ static inline uint32 GetSmallMapRoutesPixels(TileIndex tile, TileType t)
 			case STATION_DOCK:    return MKCOLOUR_XXXX(PC_LIGHT_BLUE);
 			default:              return MKCOLOUR_FFFF;
 		}
-	} else if (t == MP_RAILWAY) {
-		byte c = GetStuckCounter(tile);
-		if (c==0) return 0;
-		return _stuck_counter_colours[c/32];
 	}
 
 	/* Ground colour */

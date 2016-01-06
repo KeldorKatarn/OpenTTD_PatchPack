@@ -251,7 +251,7 @@ struct MainWindow : Window
 		NWidgetViewport *nvp = this->GetWidget<NWidgetViewport>(WID_M_VIEWPORT);
 		nvp->InitializeViewport(this, TileXY(32, 32), ZOOM_LVL_VIEWPORT);
 
-		this->viewport->map_type = (ViewportMapType) _settings_client.gui.default_viewport_map_mode;
+		this->viewport->map_type = (ViewportMapType)_settings_client.gui.default_viewport_map_mode;
 		this->viewport->overlay = new LinkGraphOverlay(this, WID_M_VIEWPORT, 0, 0, 3);
 		this->refresh = LINKGRAPH_DELAY;
 	}
@@ -430,7 +430,8 @@ struct MainWindow : Window
 				if (_focused_window && _focused_window->viewport && _focused_window->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
 					_focused_window->viewport->map_type = ChangeRenderMode(_focused_window->viewport, true);
 					_focused_window->SetDirty();
-				} else if (this->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
+				}
+				else if (this->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
 					this->viewport->map_type = ChangeRenderMode(this->viewport, true);
 					this->SetDirty();
 				}
@@ -439,7 +440,8 @@ struct MainWindow : Window
 				if (_focused_window && _focused_window->viewport && _focused_window->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
 					_focused_window->viewport->map_type = ChangeRenderMode(_focused_window->viewport, false);
 					_focused_window->SetDirty();
-				} else if (this->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
+				}
+				else if (this->viewport->zoom >= ZOOM_LVL_DRAW_MAP) {
 					this->viewport->map_type = ChangeRenderMode(this->viewport, false);
 					this->SetDirty();
 				}
@@ -465,7 +467,8 @@ struct MainWindow : Window
 			/* Cycle through the drawing modes */
 			this->viewport->map_type = ChangeRenderMode(this->viewport, wheel < 0);
 			this->SetDirty();
-		} else if (_settings_client.gui.scrollwheel_scrolling == 0) {
+		}
+		else if (_settings_client.gui.scrollwheel_scrolling == 0) {
 			ZoomInOrOutToCursorWindow(wheel < 0, this);
 		}
 	}

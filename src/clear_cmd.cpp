@@ -70,17 +70,17 @@ void DrawHillyLandTile(const TileInfo *ti)
 	DrawGroundSprite(GetSpriteIDForHillyLand(ti->tileh, GB(ti->x ^ ti->y, 4, 3)), PAL_NONE);
 }
 
-SpriteID GetSpriteIDForRocks(const Slope slope)
+SpriteID GetSpriteIDForRocks(const Slope slope, const uint tile_hash)
 {
-	return SPR_FLAT_ROCKY_LAND_1 + SlopeToSpriteOffset(slope);
+	return (tile_hash & 1 ? SPR_FLAT_ROCKY_LAND_2 : SPR_FLAT_ROCKY_LAND_1) + SlopeToSpriteOffset(slope);
 }
 
-SpriteID GetSpriteIDForFields(const uint field_type, const Slope slope)
+SpriteID GetSpriteIDForFields(const Slope slope, const uint field_type)
 {
 	return _clear_land_sprites_farmland[field_type] + SlopeToSpriteOffset(slope);
 }
 
-SpriteID GetSpriteIDForSnowDesert(const uint density, const Slope slope)
+SpriteID GetSpriteIDForSnowDesert(const Slope slope, const uint density)
 {
 	return _clear_land_sprites_snow_desert[density] + SlopeToSpriteOffset(slope);
 }
@@ -137,17 +137,17 @@ static void DrawTile_Clear(TileInfo *ti)
 			break;
 
 		case CLEAR_ROCKS:
-			DrawGroundSprite((HasGrfMiscBit(GMB_SECOND_ROCKY_TILE_SET) && (TileHash(ti->x, ti->y) & 1) ? SPR_FLAT_ROCKY_LAND_2 : SPR_FLAT_ROCKY_LAND_1) + SlopeToSpriteOffset(ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForRocks(ti->tileh, TileHash(ti->x, ti->y)), PAL_NONE);
 			break;
 
 		case CLEAR_FIELDS:
-			DrawGroundSprite(GetSpriteIDForFields(GetFieldType(ti->tile), ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForFields(ti->tileh, GetFieldType(ti->tile)), PAL_NONE);
 			DrawClearLandFence(ti);
 			break;
 
 		case CLEAR_SNOW:
 		case CLEAR_DESERT:
-			DrawGroundSprite(GetSpriteIDForSnowDesert(GetClearDensity(ti->tile), ti->tileh), PAL_NONE);
+			DrawGroundSprite(GetSpriteIDForSnowDesert(ti->tileh, GetClearDensity(ti->tile)), PAL_NONE);
 			break;
 	}
 

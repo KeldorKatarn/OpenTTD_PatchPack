@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -322,6 +322,7 @@
     <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
+    <ClInclude Include="..\src\table\darklight_colours.h" />
     <ClInclude Include="..\src\tbtr_template_gui_main.h" />
     <ClInclude Include="..\src\tbtr_template_gui_create.h" />
     <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h" />
@@ -712,6 +713,7 @@
     <ClInclude Include="..\src\window_type.h" />
     <ClInclude Include="..\src\zoom_func.h" />
     <ClInclude Include="..\src\zoom_type.h" />
+    <ClInclude Include="..\src\zoning.h" />
     <ClCompile Include="..\src\core\alloc_func.cpp" />
     <ClInclude Include="..\src\core\alloc_func.hpp" />
     <ClInclude Include="..\src\core\alloc_type.hpp" />
@@ -798,6 +800,7 @@
     <ClCompile Include="..\src\vehicle_gui.cpp" />
     <ClCompile Include="..\src\viewport_gui.cpp" />
     <ClCompile Include="..\src\waypoint_gui.cpp" />
+    <ClCompile Include="..\src\zoning_gui.cpp" />
     <ClInclude Include="..\src\widgets\airport_widget.h" />
     <ClInclude Include="..\src\widgets\ai_widget.h" />
     <ClInclude Include="..\src\widgets\autoreplace_widget.h" />
@@ -882,6 +885,7 @@
     <ClCompile Include="..\src\void_cmd.cpp" />
     <ClCompile Include="..\src\water_cmd.cpp" />
     <ClCompile Include="..\src\waypoint_cmd.cpp" />
+    <ClCompile Include="..\src\zoning_cmd.cpp" />
     <ClCompile Include="..\src\saveload\afterload.cpp" />
     <ClCompile Include="..\src\saveload\ai_sl.cpp" />
     <ClCompile Include="..\src\saveload\airport_sl.cpp" />

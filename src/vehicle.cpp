@@ -1207,8 +1207,9 @@ void ViewportMapDrawVehicles(DrawPixelInfo *dpi)
 
 	if (dpi->width + (70 * ZOOM_LVL_BASE) < (1 << (7 + 6 + ZOOM_LVL_SHIFT))) {
 		xl = GB(l - (70 * ZOOM_LVL_BASE), 7 + ZOOM_LVL_SHIFT, 6);
-		xu = GB(r,                        7 + ZOOM_LVL_SHIFT, 6);
-	} else {
+		xu = GB(r, 7 + ZOOM_LVL_SHIFT, 6);
+	}
+	else {
 		/* scan whole hash row */
 		xl = 0;
 		xu = 0x3F;
@@ -1216,8 +1217,9 @@ void ViewportMapDrawVehicles(DrawPixelInfo *dpi)
 
 	if (dpi->height + (70 * ZOOM_LVL_BASE) < (1 << (6 + 6 + ZOOM_LVL_SHIFT))) {
 		yl = GB(t - (70 * ZOOM_LVL_BASE), 6 + ZOOM_LVL_SHIFT, 6) << 6;
-		yu = GB(b,                        6 + ZOOM_LVL_SHIFT, 6) << 6;
-	} else {
+		yu = GB(b, 6 + ZOOM_LVL_SHIFT, 6) << 6;
+	}
+	else {
 		/* scan whole column */
 		yl = 0;
 		yu = 0x3F << 6;

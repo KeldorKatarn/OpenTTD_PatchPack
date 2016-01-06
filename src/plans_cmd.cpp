@@ -1,11 +1,11 @@
 /* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file plans_cmd.cpp Handling of plan related commands. */
 
@@ -19,19 +19,19 @@
 #include "table/strings.h"
 
 /**
- * Create a new plan.
- * @param tile unused
- * @param flags type of operation
- * @param p1 owner of the plan
- * @param p2 unused
- * @param text unused
- * @return the cost of this operation or an error
- */
+* Create a new plan.
+* @param tile unused
+* @param flags type of operation
+* @param p1 owner of the plan
+* @param p2 unused
+* @param text unused
+* @return the cost of this operation or an error
+*/
 CommandCost CmdAddPlan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (!Plan::CanAllocateItem()) return_cmd_error(STR_ERROR_TOO_MANY_PLANS);
 	if (flags & DC_EXEC) {
-		Owner o = (Owner) p1;
+		Owner o = (Owner)p1;
 		_new_plan = new Plan(o);
 		if (o == _local_company) {
 			_new_plan->SetVisibility(true);
@@ -43,21 +43,22 @@ CommandCost CmdAddPlan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2
 }
 
 /**
- * Create a new line in a plan.
- * @param tile unused
- * @param flags type of operation
- * @param p1 plan id
- * @param p2 number of nodes
- * @param text list of tile indexes that compose the line, encoded in base64
- * @return the cost of this operation or an error
- */
+* Create a new line in a plan.
+* @param tile unused
+* @param flags type of operation
+* @param p1 plan id
+* @param p2 number of nodes
+* @param text list of tile indexes that compose the line, encoded in base64
+* @return the cost of this operation or an error
+*/
 CommandCost CmdAddPlanLine(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (flags & DC_EXEC) {
 		Plan *p = Plan::Get(p1);
 		PlanLine *pl = p->NewLine();
 		if (!pl) return_cmd_error(STR_ERROR_NO_MORE_SPACE_FOR_LINES);
-		pl->Import((const TileIndex *) text, p2);
+		if (p2 > (MAX_CMD_TEXT_LENGTH / sizeof(TileIndex))) return_cmd_error(STR_ERROR_TOO_MANY_NODES);
+		pl->Import((const TileIndex *)text, p2);
 		if (p->IsListable()) {
 			pl->SetVisibility(p->visible);
 			if (p->visible) pl->MarkDirty();
@@ -69,14 +70,14 @@ CommandCost CmdAddPlanLine(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 }
 
 /**
- * Edit the visibility of a plan.
- * @param tile unused
- * @param flags type of operation
- * @param p1 plan id
- * @param p2 visibility
- * @param text unused
- * @return the cost of this operation or an error
- */
+* Edit the visibility of a plan.
+* @param tile unused
+* @param flags type of operation
+* @param p1 plan id
+* @param p2 visibility
+* @param text unused
+* @return the cost of this operation or an error
+*/
 CommandCost CmdChangePlanVisibility(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (flags & DC_EXEC) {
@@ -89,14 +90,14 @@ CommandCost CmdChangePlanVisibility(TileIndex tile, DoCommandFlag flags, uint32 
 }
 
 /**
- * Delete a plan.
- * @param tile unused
- * @param flags type of operation
- * @param p1 plan id
- * @param p2 unused
- * @param text unused
- * @return the cost of this operation or an error
- */
+* Delete a plan.
+* @param tile unused
+* @param flags type of operation
+* @param p1 plan id
+* @param p2 unused
+* @param text unused
+* @return the cost of this operation or an error
+*/
 CommandCost CmdRemovePlan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (flags & DC_EXEC) {
@@ -113,14 +114,14 @@ CommandCost CmdRemovePlan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 }
 
 /**
- * Remove a line from a plan.
- * @param tile unused
- * @param flags type of operation
- * @param p1 plan id
- * @param p2 line id
- * @param text unused
- * @return the cost of this operation or an error
- */
+* Remove a line from a plan.
+* @param tile unused
+* @param flags type of operation
+* @param p1 plan id
+* @param p2 line id
+* @param text unused
+* @return the cost of this operation or an error
+*/
 CommandCost CmdRemovePlanLine(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (flags & DC_EXEC) {

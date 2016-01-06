@@ -4777,6 +4777,7 @@ STR_ERROR_CAN_T_DELETE_SIGN                                     :{WHITE}Can't de
 
 # Plan related errors
 STR_ERROR_TOO_MANY_PLANS                                        :{WHITE}... too many plans
+STR_ERROR_TOO_MANY_NODES                                        :{WHITE}... too many nodes in plan line
 STR_ERROR_NO_MORE_SPACE_FOR_LINES                               :{WHITE}No more space for lines
 
 # Translatable comment for OpenTTD's desktop shortcut

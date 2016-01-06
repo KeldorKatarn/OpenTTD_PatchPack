@@ -332,7 +332,8 @@ void Blitter_32bppAnim::SetLine(void *video, int x, int y, uint8 *colours, uint 
 			dst++;
 			colours++;
 		} while (--width);
-	} else {
+	}
+	else {
 		uint16 *dstanim = (uint16 *)(&this->anim_buf[(uint32 *)video - (uint32 *)_screen.dst_ptr + x + y * _screen.pitch]);
 		do {
 			*dstanim = *colours | (DEFAULT_BRIGHTNESS << 8);
@@ -354,7 +355,8 @@ void Blitter_32bppAnim::SetLine32(void *video, int x, int y, uint32 *colours, ui
 			dst++;
 			colours++;
 		} while (--width);
-	} else {
+	}
+	else {
 		uint16 *dstanim = (uint16 *)(&this->anim_buf[(uint32 *)video - (uint32 *)_screen.dst_ptr + x + y * _screen.pitch]);
 		do {
 			*dstanim = 0;
@@ -365,6 +367,7 @@ void Blitter_32bppAnim::SetLine32(void *video, int x, int y, uint32 *colours, ui
 		} while (--width);
 	}
 }
+
 
 void Blitter_32bppAnim::DrawRect(void *video, int width, int height, uint8 colour)
 {

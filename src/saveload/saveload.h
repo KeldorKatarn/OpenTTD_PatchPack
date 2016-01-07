@@ -484,6 +484,16 @@ static inline bool IsSavegameVersionBefore(uint16 major, byte minor = 0)
 }
 
 /**
+* Checks whether the savegame is a patch pack savegame below \a major.
+* @param major Major number of the version to check against.
+* @return Savegame version is a patch pack version earlier than the specified version.
+*/
+static inline bool IsPatchPackSavegameVersionBefore(uint16 major)
+{
+	return !IsSavegameVersionBefore(SL_PATCH_PACK) && IsSavegameVersionBefore(major);
+}
+
+/**
  * Checks if some version from/to combination falls within the range of the
  * active savegame version.
  * @param version_from Lowest version number that falls within the range.

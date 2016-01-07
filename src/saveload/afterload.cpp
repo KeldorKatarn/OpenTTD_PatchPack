@@ -510,7 +510,7 @@ static uint FixVehicleInclination(Vehicle *v, Direction dir)
  * Checks for the possibility that a bridge may be on this tile
  * These are in fact all the tile types on which a bridge can be found
  * @param t The tile to analyze
- * @return True if a bridge might have been present prior to savegame SL_PATCH_PACK_1_9.
+ * @return True if a bridge might have been present prior to savegame 194 or to patch pack savegame SL_PATCH_PACK_1_9.
  */
 static inline bool MayHaveBridgeAbove(TileIndex t)
 {
@@ -583,7 +583,7 @@ bool AfterLoadGame()
 		}
 	}
 
-	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_9)) {
+	if (IsSavegameVersionBefore(194) || IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_9)) {
 		_settings_game.construction.max_heightlevel = 15;
 
 		/* In old savegame versions, the heightlevel was coded in bits 0..3 of the type field */
@@ -2968,9 +2968,9 @@ bool AfterLoadGame()
 	 * Only keep order-backups for network clients (and when replaying).
 	 * If we are a network server or not networking, then we just loaded a previously
 	 * saved-by-server savegame. There are no clients with a backup, so clear it.
-	 * Furthermore before savegame version SL_PATCH_PACK_1_8 the actual content was always corrupt.
+	 * Furthermore before savegame version 192 / SL_PATCH_PACK_1_8 the actual content was always corrupt.
 	 */
-	if (!_networking || _network_server || IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
+	if (!_networking || _network_server || IsSavegameVersionBefore(192) || IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 #ifndef DEBUG_DUMP_COMMANDS
 		/* Note: We cannot use CleanPool since that skips part of the destructor
 		 * and then leaks un-reachable Orders in the order pool. */

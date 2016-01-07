@@ -245,6 +245,11 @@ static const NWidgetPart _nested_heightmap_load_widgets[] = {
 									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_SNOW_LEVEL_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_SNOW_LINE_UP), SetFill(0, 1),
 								EndContainer(),
 								NWidget(NWID_HORIZONTAL),
+									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_DESERT_AMOUNT_DOWN), SetFill(0, 1),
+									NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_DESERT_AMOUNT_UP), SetFill(0, 1),
+								EndContainer(),
+								NWidget(NWID_HORIZONTAL),
 									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_MAX_HEIGHTLEVEL_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_MAX_HEIGHTLEVEL_DOWN), SetFill(0, 1),
 									NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_MAX_HEIGHTLEVEL_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
 									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_MAX_HEIGHTLEVEL_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_MAX_HEIGHTLEVEL_UP), SetFill(0, 1),
@@ -255,11 +260,6 @@ static const NWidgetPart _nested_heightmap_load_widgets[] = {
 									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_START_DATE_UP), SetDataTip(SPR_ARROW_UP, STR_SCENEDIT_TOOLBAR_TOOLTIP_MOVE_THE_STARTING_DATE_FORWARD), SetFill(0, 1),
 								EndContainer(),
 							EndContainer(),
-								NWidget(NWID_HORIZONTAL),
-									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_DESERT_AMOUNT_DOWN), SetFill(0, 1),
-									NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
-									NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_DESERT_AMOUNT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_DESERT_AMOUNT_UP), SetFill(0, 1),
-								EndContainer(),
 						EndContainer(),
 						NWidget(WWT_PUSHTXTBTN, COLOUR_GREEN, WID_GL_GENERATE_BUTTON), SetMinimalSize(84, 0), SetDataTip(STR_MAPGEN_GENERATE, STR_NULL), SetFill(1, 1),
 					EndContainer(),
@@ -439,6 +439,8 @@ struct GenerateLandscapeWindow : public Window {
 		/* Update availability of decreasing / increasing start date, snow level and desert level. */
 		this->SetWidgetDisabledState(WID_GL_MAX_HEIGHTLEVEL_DOWN, _settings_newgame.construction.max_heightlevel <= MIN_MAX_HEIGHTLEVEL);
 		this->SetWidgetDisabledState(WID_GL_MAX_HEIGHTLEVEL_UP, _settings_newgame.construction.max_heightlevel >= MAX_MAX_HEIGHTLEVEL);
+		this->SetWidgetDisabledState(WID_GL_SNOW_LEVEL_DOWN, _settings_newgame.game_creation.snow_line_height <= MIN_SNOWLINE_HEIGHT);
+		this->SetWidgetDisabledState(WID_GL_SNOW_LEVEL_UP, _settings_newgame.game_creation.snow_line_height >= MAX_SNOWLINE_HEIGHT);
 		this->SetWidgetDisabledState(WID_GL_START_DATE_DOWN, _settings_newgame.game_creation.starting_year <= MIN_YEAR);
 		this->SetWidgetDisabledState(WID_GL_START_DATE_UP,   _settings_newgame.game_creation.starting_year >= MAX_YEAR);
 		this->SetWidgetDisabledState(WID_GL_DESERT_AMOUNT_DOWN, _settings_newgame.game_creation.desert_amount <= MIN_DESERT_AMOUNT || _settings_newgame.game_creation.landscape != LT_TROPIC);
@@ -668,7 +670,7 @@ struct GenerateLandscapeWindow : public Window {
 			case WID_GL_DESERT_AMOUNT_TEXT: // Desert amount text.
 				this->widget_id = WID_GL_DESERT_AMOUNT_TEXT;
 				SetDParam(0, _settings_newgame.game_creation.desert_amount);
-				ShowQueryString(STR_JUST_INT, STR_MAPGEN_DESERT_AMOUNT_QUERY_CAPT, 3, this, CS_NUMERAL, QSF_ENABLE_DEFAULT);
+				ShowQueryString(STR_JUST_INT, STR_MAPGEN_DESERT_AMOUNT_QUERY_CAPT, 4, this, CS_NUMERAL, QSF_ENABLE_DEFAULT);
 				break;
 
 			case WID_GL_TREE_PULLDOWN: // Tree placer

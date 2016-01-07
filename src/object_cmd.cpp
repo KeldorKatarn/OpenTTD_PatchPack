@@ -745,6 +745,10 @@ void GenerateObjects()
 			amount = ScaleByMapSize(amount);
 		}
 
+		if ((i == OBJECT_TRANSMITTER) || (i == OBJECT_LIGHTHOUSE)) {
+			amount /= 10;
+		}
+
 		/* Now try to place the requested amount of this object */
 		for (uint j = ScaleByMapSize(1000); j != 0 && amount != 0 && Object::CanAllocateItem(); j--) {
 			switch (i) {

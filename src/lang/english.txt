@@ -4379,7 +4379,8 @@ STR_TTSEPARATION_SET_XX                                         :{BLACK}Set {STR
 STR_TTSEPARATION_SET_NUM                                        :number
 STR_TTSEPARATION_SET_TIME                                       :time
 STR_TTSEPARATION_STATUS_DESC                                    :{BLACK}Status:{}{STRING}
-STR_TTSEPARATION_STATUS_INIT                                    :{RED}Initializing
+STR_TTSEPARATION_STATUS_INIT                                    :{RED}Initializing...
+STR_TTSEPARATION_STATUS_WAITING_FOR_TIMETABLE                   :{RED}Waiting for complete timetable...
 STR_TTSEPARATION_STATUS_RUNNING                                 :{GREEN}Running
 STR_TTSEPARATION_STATUS_OFF                                     :{BLACK}Off
 STR_TTSEPARATION_REQ_TIME_DESC_TICKS                            :{NUM} ticks between

@@ -109,6 +109,7 @@ const SaveLoad *GetLinkGraphScheduleDesc()
  * SaveLoad desc for a link graph node.
  */
 static const SaveLoad _node_desc[] = {
+	SLE_CONDVAR(Node, xy, SLE_UINT32,               191, SL_PATCH_PACK-1),
 	SLE_CONDVAR(Node, xy, SLE_UINT32, SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 	    SLE_VAR(Node, supply,      SLE_UINT32),
 	    SLE_VAR(Node, demand,      SLE_UINT32),
@@ -121,7 +122,8 @@ static const SaveLoad _node_desc[] = {
  * SaveLoad desc for a link graph edge.
  */
 static const SaveLoad _edge_desc[] = {
-	SLE_CONDNULL(4, 0, SL_PATCH_PACK_1_7), // distance
+	SLE_CONDNULL(4,             0, 190),               // distance
+	SLE_CONDNULL(4, SL_PATCH_PACK, SL_PATCH_PACK_1_7), // distance
 	     SLE_VAR(Edge, capacity,                 SLE_UINT32),
 	     SLE_VAR(Edge, usage,                    SLE_UINT32),
 	     SLE_VAR(Edge, last_unrestricted_update, SLE_INT32),
@@ -140,7 +142,7 @@ void SaveLoad_LinkGraph(LinkGraph &lg)
 	for (NodeID from = 0; from < size; ++from) {
 		Node *node = &lg.nodes[from];
 		SlObject(node, _node_desc);
-		if (IsSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
+		if (IsSavegameVersionBefore(191) || IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 			/* We used to save the full matrix ... */
 			for (NodeID to = 0; to < size; ++to) {
 				SlObject(&lg.edges[from][to], _edge_desc);

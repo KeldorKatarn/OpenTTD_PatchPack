@@ -98,6 +98,7 @@
 #include "bridge_map.h"
 
 #include <map>
+#include <vector>
 #include "depot_base.h"
 #include "tunnelbridge_map.h"
 #include "gui.h"
@@ -164,7 +165,7 @@ typedef SmallVector<StringSpriteToDraw, 4> StringSpriteToDrawVector;
 typedef SmallVector<ParentSpriteToDraw, 64> ParentSpriteToDrawVector;
 typedef SmallVector<ChildScreenSpriteToDraw, 16> ChildScreenSpriteToDrawVector;
 
-typedef std::list<std::pair<int, OrderType>> RankOrderTypeList;
+typedef std::list<std::pair<int, OrderType> > RankOrderTypeList;
 typedef std::map<TileIndex, RankOrderTypeList> RouteStepsMap;
 
 enum RailSnapMode {
@@ -204,7 +205,8 @@ struct ViewportDrawer {
 	ParentSpriteToDrawVector parent_sprites_to_draw;
 	ParentSpriteToSortVector parent_sprites_to_sort; ///< Parent sprite pointer array used for sorting
 	ChildScreenSpriteToDrawVector child_screen_sprites_to_draw;
-	TunnelBridgeToMapVector tunnel_bridge_to_map;
+	TunnelBridgeToMapVector tunnel_to_map;
+	TunnelBridgeToMapVector bridge_to_map;
 
 	int *last_child;
 
@@ -217,16 +219,38 @@ struct ViewportDrawer {
 };
 
 static void MarkViewportDirty(const ViewPort * const vp, int left, int top, int right, int bottom);
+static void MarkRouteStepDirty(const TileIndex tile, uint order_nr);
 
 static DrawPixelInfo _dpi_for_text;
 static ViewportDrawer _vd;
 
 RouteStepsMap _vp_route_steps;
+RouteStepsMap _vp_route_steps_last_mark_dirty;
 uint _vp_route_step_width = 0;
 uint _vp_route_step_height_top = 0;
 uint _vp_route_step_height_middle = 0;
 uint _vp_route_step_height_bottom = 0;
 SubSprite _vp_route_step_subsprite;
+ 
+struct DrawnPathRouteTileLine {
+	TileIndex from_tile;
+	TileIndex to_tile;
+
+	bool operator==(const DrawnPathRouteTileLine &other) const
+	{
+		return this->from_tile == other.from_tile && this->to_tile == other.to_tile;
+	}
+
+	bool operator!=(const DrawnPathRouteTileLine &other) const
+	{
+		return !(*this == other);
+	}
+};
+
+std::vector<DrawnPathRouteTileLine> _vp_route_paths_drawn_dirty;
+std::vector<DrawnPathRouteTileLine> _vp_route_paths_last_mark_dirty;
+
+static void MarkRoutePathsDirty(const std::vector<DrawnPathRouteTileLine> &lines);
 
 TileHighlightData _thd;
 static TileInfo *_cur_ti;
@@ -1548,12 +1572,10 @@ static void ViewportMapStoreBridgeTunnel(const ViewPort * const vp, const TileIn
 
 	const Owner o = GetTileOwner(tile);
 
-	if ((o >= MAX_COMPANIES) || (_company_to_list_pos[o] >= NUM_NO_COMPANY_ENTRIES + MAX_COMPANIES + 1)) return;
-
-	if (!_legend_land_owners[_company_to_list_pos[o]].show_on_map) return;
+	if (o < MAX_COMPANIES && !_legend_land_owners[_company_to_list_pos[o]].show_on_map) return;
 
 	/* Check if already stored */
-	TunnelBridgeToMapVector * const tbtmv = &_vd.tunnel_bridge_to_map;
+	TunnelBridgeToMapVector * const tbtmv = tile_is_tunnel ? &_vd.tunnel_to_map : &_vd.bridge_to_map;
 	TunnelBridgeToMap *tbtm = tbtmv->Begin();
 	const TunnelBridgeToMap * const tbtm_end = tbtmv->End();
 	while (tbtm != tbtm_end) {
@@ -1563,14 +1585,32 @@ static void ViewportMapStoreBridgeTunnel(const ViewPort * const vp, const TileIn
 
 	/* It's a new one, add it to the list */
 	tbtm = tbtmv->Append();
-	tbtm->from_tile = tile;
-	tbtm->to_tile = GetOtherTunnelBridgeEnd(tile);
-	if (vp->map_type == VPMT_OWNER && _settings_client.gui.use_owner_colour_for_tunnelbridge && o < MAX_COMPANIES) {
-		const uint8 colour = _legend_land_owners[_company_to_list_pos[o]].colour;
-		tbtm->colour = tile_is_tunnel ? _darken_colour[colour] : _lighten_colour[colour];
+	TileIndex other_end = GetOtherTunnelBridgeEnd(tile);
+
+	/* ensure deterministic ordering, to avoid render flicker */
+	if (other_end > tile) {
+		tbtm->from_tile = other_end;
+		tbtm->to_tile = tile;
+	} else {
+		tbtm->from_tile = tile;
+		tbtm->to_tile = other_end;
 	}
-	else
-		tbtm->colour = tile_is_tunnel ? PC_BLACK : PC_VERY_LIGHT_YELLOW;
+}
+
+void ViewportMapClearTunnelCache()
+{
+	_vd.tunnel_to_map.Clear();
+}
+
+void ViewportMapInvalidateTunnelCacheByTile(const TileIndex tile)
+{
+	TunnelBridgeToMapVector * const tbtmv = &_vd.tunnel_to_map;
+	for (TunnelBridgeToMap *tbtm = tbtmv->Begin(); tbtm != tbtmv->End(); tbtm++) {
+		if (tbtm->from_tile == tile || tbtm->to_tile == tile) {
+			tbtmv->Erase(tbtm);
+			tbtm--;
+		}
+	}
 }
 
 /**
@@ -1687,13 +1727,32 @@ static void ViewportMapDrawVehicleRoute(const ViewPort *vp)
 {
 	Order *order;
 	const Vehicle *veh = GetVehicleFromWindow(_focused_window);
-	if (!veh) return;
+
+	if (!veh) {
+		if (!_vp_route_paths_drawn_dirty.empty()) {
+			// make sure we remove any leftover paths
+			MarkRoutePathsDirty(_vp_route_paths_drawn_dirty);
+			_vp_route_paths_drawn_dirty.clear();
+			DEBUG(misc, 1, "ViewportMapDrawVehicleRoute: redrawing dirty paths 0");
+		}
+		return;
+	}
 
 	switch (_settings_client.gui.show_vehicle_route) {
 		/* case 0: return; // No */
 	case 1: { // Simple
 		TileIndex from_tile = GetLastValidOrderLocation(veh);
-		if (from_tile == INVALID_TILE) return;
+		if (from_tile == INVALID_TILE) {
+			if (!_vp_route_paths_drawn_dirty.empty()) {
+				// make sure we remove any leftover paths
+				MarkRoutePathsDirty(_vp_route_paths_drawn_dirty);
+				_vp_route_paths_drawn_dirty.clear();
+				DEBUG(misc, 1, "ViewportMapDrawVehicleRoute: redrawing dirty paths 1");
+			}
+			return;
+		}
+
+		std::vector<DrawnPathRouteTileLine> drawn_paths;
 
 		DrawPixelInfo *old_dpi = _cur_dpi;
 		_cur_dpi = &_dpi_for_text;
@@ -1717,9 +1776,26 @@ static void ViewportMapDrawVehicleRoute(const ViewPort *vp)
 			}
 			GfxDrawLine(from_x, from_y, to_x, to_y, (final_order == order) ? PC_WHITE : PC_YELLOW, line_width, _settings_client.gui.dash_level_of_route_lines);
 
+			DrawnPathRouteTileLine path = { from_tile, to_tile };
+			drawn_paths.push_back(path);
+
 			const OrderType ot = order->GetType();
 			if (ot == OT_GOTO_STATION || ot == OT_GOTO_DEPOT || ot == OT_GOTO_WAYPOINT || ot == OT_IMPLICIT) from_tile = to_tile;
 		}
+
+		if (!_vp_route_paths_drawn_dirty.empty() && _vp_route_paths_drawn_dirty != drawn_paths) {
+			// make sure we remove any leftover paths
+			MarkRoutePathsDirty(_vp_route_paths_drawn_dirty);
+			DEBUG(misc, 1, "ViewportMapDrawVehicleRoute: redrawing dirty paths 2");
+		}
+		if (_vp_route_paths_last_mark_dirty != drawn_paths) {
+			// make sure we're not drawing a partial path
+			MarkRoutePathsDirty(drawn_paths);
+			_vp_route_paths_last_mark_dirty = drawn_paths;
+			DEBUG(misc, 1, "ViewportMapDrawVehicleRoute: redrawing dirty paths 3");
+		}
+
+		_vp_route_paths_drawn_dirty.swap(drawn_paths); // move
 
 		_cur_dpi = old_dpi;
 		break;
@@ -1801,6 +1877,13 @@ static void ViewportDrawVehicleRouteSteps(const ViewPort * const vp)
 {
 	const Vehicle * const veh = GetVehicleFromWindow(_focused_window);
 	if (veh && ViewportPrepareVehicleRouteSteps(veh)) {
+		if (_vp_route_steps != _vp_route_steps_last_mark_dirty) {
+			for (RouteStepsMap::const_iterator cit = _vp_route_steps.begin(); cit != _vp_route_steps.end(); cit++) {
+				MarkRouteStepDirty(cit->first, (uint)cit->second.size());
+			}
+			_vp_route_steps_last_mark_dirty = _vp_route_steps;
+		}
+
 		for (RouteStepsMap::const_iterator cit = _vp_route_steps.begin(); cit != _vp_route_steps.end(); cit++) {
 			DrawRouteStep(vp, cit->first, cit->second);
 		}
@@ -2077,6 +2160,32 @@ static inline uint32 ViewportMapGetColourOwner(const TileIndex tile, TileType t,
 	return colour;
 }
 
+static inline void ViewportMapStoreBridgeAboveTile(const ViewPort * const vp, const TileIndex tile)
+{
+	/* No need to bother for hidden things */
+	if (!_settings_client.gui.show_bridges_on_map) return;
+
+	/* Check existing stored bridges */
+	TunnelBridgeToMap *tbtm = _vd.bridge_to_map.Begin();
+	TunnelBridgeToMap *tbtm_end = _vd.bridge_to_map.End();
+	for (; tbtm != tbtm_end; ++tbtm) {
+		if (!IsBridge(tbtm->from_tile)) continue;
+
+		TileIndex from = tbtm->from_tile;
+		TileIndex to = tbtm->to_tile;
+		if (TileX(from) == TileX(to) && TileX(from) == TileX(tile)) {
+			if (TileY(from) > TileY(to)) std::swap(from, to);
+			if (TileY(from) <= TileY(tile) && TileY(tile) <= TileY(to)) return; /* already covered */
+		}
+		else if (TileY(from) == TileY(to) && TileY(from) == TileY(tile)) {
+			if (TileX(from) > TileX(to)) std::swap(from, to);
+			if (TileX(from) <= TileX(tile) && TileX(tile) <= TileX(to)) return; /* already covered */
+		}
+	}
+
+	ViewportMapStoreBridgeTunnel(vp, GetSouthernBridgeEnd(tile));
+}
+
 static inline TileIndex ViewportMapGetMostSignificantTileType(const ViewPort * const vp, const TileIndex from_tile, TileType * const tile_type)
 {
 	if (vp->zoom <= ZOOM_LVL_OUT_128X || !_settings_client.gui.viewport_map_scan_surroundings) {
@@ -2084,6 +2193,7 @@ static inline TileIndex ViewportMapGetMostSignificantTileType(const ViewPort * c
 		/* Store bridges and tunnels. */
 		if (ttype != MP_TUNNELBRIDGE) {
 			*tile_type = ttype;
+			if (IsBridgeAbove(from_tile)) ViewportMapStoreBridgeAboveTile(vp, from_tile);
 		}
 		else {
 			ViewportMapStoreBridgeTunnel(vp, from_tile);
@@ -2109,6 +2219,9 @@ static inline TileIndex ViewportMapGetMostSignificantTileType(const ViewPort * c
 		if (tile_importance > importance) {
 			importance = tile_importance;
 			result = tile;
+		}
+		if (ttype != MP_TUNNELBRIDGE && IsBridgeAbove(tile)) {
+			ViewportMapStoreBridgeAboveTile(vp, tile);
 		}
 	}
 
@@ -2232,6 +2345,36 @@ static void ViewportMapDrawScrollingViewportBox(const ViewPort * const vp)
 }
 
 uint32 *_vp_map_line; ///< Buffer for drawing the map of a viewport.
+ 
+static void ViewportMapDrawBridgeTunnel(const ViewPort * const vp, const TunnelBridgeToMap * const tbtm, const int z,
+	const bool is_tunnel, const int w, const int h, Blitter * const blitter)
+{
+	extern LegendAndColour _legend_land_owners[NUM_NO_COMPANY_ENTRIES + MAX_COMPANIES + 1];
+	extern uint _company_to_list_pos[MAX_COMPANIES];
+
+	TileIndex tile = tbtm->from_tile;
+	const Owner o = GetTileOwner(tile);
+	if (o < MAX_COMPANIES && !_legend_land_owners[_company_to_list_pos[o]].show_on_map) return;
+
+	uint8 colour;
+	if (vp->map_type == VPMT_OWNER && _settings_client.gui.use_owner_colour_for_tunnelbridge && o < MAX_COMPANIES) {
+		colour = _legend_land_owners[_company_to_list_pos[o]].colour;
+		colour = is_tunnel ? _darken_colour[colour] : _lighten_colour[colour];
+	}
+	else {
+		colour = is_tunnel ? PC_BLACK : PC_VERY_LIGHT_YELLOW;
+	}
+
+	TileIndexDiff delta = TileOffsByDiagDir(GetTunnelBridgeDirection(tile));
+	for (; tile != tbtm->to_tile; tile += delta) { // For each tile
+		const Point pt = RemapCoords(TileX(tile) * TILE_SIZE, TileY(tile) * TILE_SIZE, z);
+		const int x = UnScaleByZoomLower(pt.x - _vd.dpi.left, _vd.dpi.zoom);
+		if (IsInsideMM(x, 0, w)) {
+			const int y = UnScaleByZoomLower(pt.y - _vd.dpi.top, _vd.dpi.zoom);
+			if (IsInsideMM(y, 0, h)) blitter->SetPixel(_vd.dpi.dst_ptr, x, y, colour);
+		}
+	}
+}
 
 /** Draw the map on a viewport. */
 template <bool is_32bpp, bool show_slope>
@@ -2291,21 +2434,31 @@ void ViewportMapDraw(const ViewPort * const vp)
 		b += incr_b;
 	} while (++j < h);
 
-	/* Render bridges and tunnels */
-	if (_vd.tunnel_bridge_to_map.Length() != 0) {
-		const TunnelBridgeToMap * const tbtm_end = _vd.tunnel_bridge_to_map.End();
-		for (const TunnelBridgeToMap *tbtm = _vd.tunnel_bridge_to_map.Begin(); tbtm != tbtm_end; tbtm++) { // For each bridge or tunnel
-			TileIndex tile = tbtm->from_tile;
-			const int z = TileHeight(tile) * 4;
-			TileIndexDiff delta = TileOffsByDiagDir(GetTunnelBridgeDirection(tile));
-			for (; tile != tbtm->to_tile; tile += delta) { // For each tile
-				const Point pt = RemapCoords(TileX(tile) * TILE_SIZE, TileY(tile) * TILE_SIZE, z);
-				const int x = UnScaleByZoomLower(pt.x - _vd.dpi.left, _vd.dpi.zoom);
-				if (IsInsideMM(x, 0, w)) {
-					const int y = UnScaleByZoomLower(pt.y - _vd.dpi.top, _vd.dpi.zoom);
-					if (IsInsideMM(y, 0, h)) blitter->SetPixel(_vd.dpi.dst_ptr, x, y, tbtm->colour);
-				}
-			}
+	/* Render tunnels */
+	if (_settings_client.gui.show_tunnels_on_map && _vd.tunnel_to_map.Length() != 0) {
+		const TunnelBridgeToMap * const tbtm_end = _vd.tunnel_to_map.End();
+		for (const TunnelBridgeToMap *tbtm = _vd.tunnel_to_map.Begin(); tbtm != tbtm_end; tbtm++) { // For each tunnel
+			const int tunnel_z = GetTileZ(tbtm->from_tile) * TILE_HEIGHT;
+			const Point pt_from = RemapCoords(TileX(tbtm->from_tile) * TILE_SIZE, TileY(tbtm->from_tile) * TILE_SIZE, tunnel_z);
+			const Point pt_to = RemapCoords(TileX(tbtm->to_tile) * TILE_SIZE, TileY(tbtm->to_tile) * TILE_SIZE, tunnel_z);
+
+			/* check if tunnel is wholly outside redrawing area */
+			const int x_from = UnScaleByZoomLower(pt_from.x - _vd.dpi.left, _vd.dpi.zoom);
+			const int x_to = UnScaleByZoomLower(pt_to.x - _vd.dpi.left, _vd.dpi.zoom);
+			if ((x_from < 0 && x_to < 0) || (x_from > w && x_to > w)) continue;
+			const int y_from = UnScaleByZoomLower(pt_from.y - _vd.dpi.top, _vd.dpi.zoom);
+			const int y_to = UnScaleByZoomLower(pt_to.y - _vd.dpi.top, _vd.dpi.zoom);
+			if ((y_from < 0 && y_to < 0) || (y_from > h && y_to > h)) continue;
+
+			ViewportMapDrawBridgeTunnel(vp, tbtm, tunnel_z, true, w, h, blitter);
+		}
+	}
+
+	/* Render bridges */
+	if (_settings_client.gui.show_bridges_on_map && _vd.bridge_to_map.Length() != 0) {
+		const TunnelBridgeToMap * const tbtm_end = _vd.bridge_to_map.End();
+		for (const TunnelBridgeToMap *tbtm = _vd.bridge_to_map.Begin(); tbtm != tbtm_end; tbtm++) { // For each bridge
+			ViewportMapDrawBridgeTunnel(vp, tbtm, (GetBridgeHeight(tbtm->from_tile) - 1) * TILE_HEIGHT, false, w, h, blitter);
 		}
 	}
 }
@@ -2405,7 +2558,7 @@ void ViewportDoDraw(const ViewPort *vp, int left, int top, int right, int bottom
 
 	_cur_dpi = old_dpi;
 
-	_vd.tunnel_bridge_to_map.Clear();
+	_vd.bridge_to_map.Clear();
 	_vd.string_sprites_to_draw.Clear();
 	_vd.tile_sprites_to_draw.Clear();
 	_vd.parent_sprites_to_draw.Clear();
@@ -2733,6 +2886,7 @@ void MarkAllRouteStepsDirty(Window *vehicle_window)
 	for (RouteStepsMap::const_iterator cit = _vp_route_steps.begin(); cit != _vp_route_steps.end(); cit++) {
 		MarkRouteStepDirty(cit->first, (uint)cit->second.size());
 	}
+	_vp_route_steps_last_mark_dirty.swap(_vp_route_steps);
 	_vp_route_steps.clear();
 }
 
@@ -2808,10 +2962,15 @@ void MarkTileLineDirty(const TileIndex from_tile, const TileIndex to_tile)
 	assert(from_tile != INVALID_TILE);
 	assert(to_tile != INVALID_TILE);
 
-	int x1 = TileX(from_tile);
-	int y1 = TileY(from_tile);
-	const int x2 = TileX(to_tile);
-	const int y2 = TileY(to_tile);
+	const Point from_pt = RemapCoords2(TileX(from_tile) * TILE_SIZE + TILE_SIZE / 2, TileY(from_tile) * TILE_SIZE + TILE_SIZE / 2);
+	const Point to_pt = RemapCoords2(TileX(to_tile) * TILE_SIZE + TILE_SIZE / 2, TileY(to_tile) * TILE_SIZE + TILE_SIZE / 2);
+
+	const int block_radius = 20;
+
+	int x1 = from_pt.x / block_radius;
+	int y1 = from_pt.y / block_radius;
+	const int x2 = to_pt.x / block_radius;
+	const int y2 = to_pt.y / block_radius;
 
 	/* http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#Simplification */
 	const int dx = abs(x2 - x1);
@@ -2820,7 +2979,13 @@ void MarkTileLineDirty(const TileIndex from_tile, const TileIndex to_tile)
 	const int sy = (y1 < y2) ? 1 : -1;
 	int err = dx - dy;
 	for (;;) {
-		MarkTileDirtyByTile(TileXY(x1, y1));
+		MarkAllViewportsDirty(
+				(x1 - 1) * block_radius,
+				(y1 - 1) * block_radius,
+				(x1 + 1) * block_radius,
+				(y1 + 1) * block_radius,
+				ZOOM_LVL_END
+		);
 		if (x1 == x2 && y1 == y2) break;
 		const int e2 = 2 * err;
 		if (e2 > -dy) {
@@ -2834,6 +2999,13 @@ void MarkTileLineDirty(const TileIndex from_tile, const TileIndex to_tile)
 	}
 }
 
+static void MarkRoutePathsDirty(const std::vector<DrawnPathRouteTileLine> &lines)
+{
+	for (std::vector<DrawnPathRouteTileLine>::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+		MarkTileLineDirty(it->from_tile, it->to_tile);
+	}
+}
+
 void MarkAllRoutePathsDirty(const Vehicle *veh)
 {
 	Order *order;
@@ -2843,6 +3015,9 @@ void MarkAllRoutePathsDirty(const Vehicle *veh)
 		return;
 
 	case 1: // Simple
+		MarkRoutePathsDirty(_vp_route_paths_drawn_dirty);
+		_vp_route_paths_drawn_dirty.clear();
+		std::vector<DrawnPathRouteTileLine> dirtied_paths;
 		from_tile = GetLastValidOrderLocation(veh);
 		if (from_tile == INVALID_TILE) return;
 		FOR_VEHICLE_ORDERS(veh, order) {
@@ -2851,8 +3026,11 @@ void MarkAllRoutePathsDirty(const Vehicle *veh)
 			if (to_tile == INVALID_TILE) continue;
 			MarkTileLineDirty(from_tile, to_tile);
 			const OrderType ot = order->GetType();
+			DrawnPathRouteTileLine path = { from_tile, to_tile };
+			dirtied_paths.push_back(path);
 			if (ot == OT_GOTO_STATION || ot == OT_GOTO_DEPOT || ot == OT_GOTO_WAYPOINT || ot == OT_IMPLICIT) from_tile = to_tile;
 		}
+		_vp_route_paths_last_mark_dirty.swap(dirtied_paths);
 		break;
 	}
 }

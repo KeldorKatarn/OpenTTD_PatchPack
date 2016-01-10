@@ -1524,6 +1524,8 @@ STR_CONFIG_SETTING_NOSERVICE                                    :Disable servici
 STR_CONFIG_SETTING_NOSERVICE_HELPTEXT                           :When enabled, vehicles do not get serviced if they cannot break down
 STR_CONFIG_SETTING_WAGONSPEEDLIMITS                             :Enable wagon speed limits: {STRING2}
 STR_CONFIG_SETTING_WAGONSPEEDLIMITS_HELPTEXT                    :When enabled, also use speed limits of wagons for deciding the maximum speed of a train
+STR_CONFIG_SETTING_TRAIN_SPEED_ADAPTION                         :Enable train speed adaption: {STRING2}
+STR_CONFIG_SETTING_TRAIN_SPEED_ADAPTION_HELPTEXT                :If enabled, faster trains behind slower trains slow down instead of catching up and stopping continuously.
 STR_CONFIG_SETTING_DISABLE_ELRAILS                              :Disable electric rails: {STRING2}
 STR_CONFIG_SETTING_DISABLE_ELRAILS_HELPTEXT                     :Enabling this setting disables the requirement to electrify tracks to make electric engines run on them
 
@@ -3577,6 +3579,12 @@ STR_GROUPS_CLICK_ON_GROUP_FOR_TOOLTIP                           :{BLACK}Groups -
 STR_GROUP_CREATE_TOOLTIP                                        :{BLACK}Click to create a group
 STR_GROUP_DELETE_TOOLTIP                                        :{BLACK}Delete the selected group
 STR_GROUP_RENAME_TOOLTIP                                        :{BLACK}Rename the selected group
+STR_GROUP_COLLAPSE                                              :{BLACK}Collapse
+STR_GROUP_EXPAND                                                :{BLACK}Expand
+STR_GROUP_EXPAND_ALL                                           :{BLACK}Expand all
+STR_GROUP_COLLAPSE_ALL                                         :{BLACK}Collapse all
+STR_GROUP_COLLAPSE_TOOLTIP                                      :{BLACK}Click to collapse the selected group
+STR_GROUP_EXPAND_TOOLTIP                                        :{BLACK}Click to expand the selected group
 STR_GROUP_REPLACE_PROTECTION_TOOLTIP                            :{BLACK}Click to protect this group from global autoreplace
 
 STR_QUERY_GROUP_DELETE_CAPTION                                  :{WHITE}Delete Group

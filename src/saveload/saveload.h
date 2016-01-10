@@ -100,14 +100,15 @@ enum SLRefType {
 #define SL_PATCH_PACK_TOWN_BUILDINGS 257
 #define SL_PATCH_PACK_MAP_FEATURES 258
 #define SL_PATCH_PACK_SAFE_WAITING_LOCATION 259
-#define SL_PATCH_PACK_1_2 260
-#define SL_PATCH_PACK_1_3 261
-#define SL_PATCH_PACK_1_4 262
-#define SL_PATCH_PACK_1_5 263
-#define SL_PATCH_PACK_1_6 264
-#define SL_PATCH_PACK_1_7 265
-#define SL_PATCH_PACK_1_8 266
-#define SL_PATCH_PACK_1_9 267
+#define SL_PATCH_PACK_1_2  260
+#define SL_PATCH_PACK_1_3  261
+#define SL_PATCH_PACK_1_4  262
+#define SL_PATCH_PACK_1_5  263
+#define SL_PATCH_PACK_1_6  264
+#define SL_PATCH_PACK_1_7  265
+#define SL_PATCH_PACK_1_8  266
+#define SL_PATCH_PACK_1_9  267
+#define SL_PATCH_PACK_1_10 268
 
 /** Flags of a chunk. */
 enum ChunkType {

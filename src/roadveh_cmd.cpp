@@ -1592,6 +1592,8 @@ static bool RoadVehController(RoadVehicle *v)
 	v->HandleLoading();
 
 	if (v->current_order.IsType(OT_LOADING)) return true;
+	v->HandleWaiting(false);
+	if (v->current_order.IsType(OT_WAITING)) return true;
 
 	if (v->IsInDepot() && RoadVehLeaveDepot(v, true)) return true;
 

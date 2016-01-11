@@ -2221,6 +2221,32 @@ void Vehicle::BeginLoading()
 		this->current_order.MakeLoading(false);
 	}
 
+	/* If all requirements for separation are met, we can initialize it. */
+	if (_settings_game.order.automatic_timetable_separation) {
+		int first_load_order_index = -1;
+
+		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+			Order* order = this->orders.list->GetOrderAt(i);
+
+			if (order->IsType(OT_GOTO_STATION) && !order->IsType(OT_IMPLICIT)) {
+				first_load_order_index = i;
+				break;
+			}
+		}
+
+		if (this->IsOrderListShared() &&
+			this->orders.list->IsCompleteTimetable() &&
+			(this->cur_implicit_order_index == first_load_order_index)) {
+
+			if (!this->orders.list->IsSeparationValid()) {
+				this->orders.list->InitializeSeparation();
+				SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
+			}
+			this->lateness_counter = this->orders.list->SeparateVehicle();
+
+		}
+	}
+
 	if (this->last_loading_station != INVALID_STATION &&
 			this->last_loading_station != this->last_station_visited &&
 			((this->current_order.GetLoadType() & OLFB_NO_LOAD) == 0 ||

@@ -411,19 +411,6 @@ CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, 
  */
 void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 {
-	if (!travelling) {
-		/* If all requirements for separation are met, we can initialize it. */
-		if (_settings_game.order.automatic_timetable_separation
-			&& v->IsOrderListShared()
-			&& v->orders.list->IsCompleteTimetable()
-			&& (v->cur_real_order_index == 0)) {
-
-			if (!v->orders.list->IsSeparationValid()) v->orders.list->InitializeSeparation();
-			v->lateness_counter = v->orders.list->SeparateVehicle();
-
-		}
-	}
-
 	uint time_taken = v->current_order_time;
 
 	v->current_order_time = 0;

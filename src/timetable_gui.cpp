@@ -200,7 +200,7 @@ struct TimetableWindow : Window {
 	{
 		assert(HasBit(v->vehicle_flags, VF_TIMETABLE_STARTED));
 
-		bool travelling = (!v->current_order.IsType(OT_LOADING) || v->current_order.GetNonStopType() == ONSF_STOP_EVERYWHERE);
+		bool travelling = (!(v->current_order.IsType(OT_LOADING) || v->current_order.IsType(OT_WAITING)) || v->current_order.GetNonStopType() == ONSF_STOP_EVERYWHERE);
 		Ticks start_time = _date_fract - v->current_order_time;
 
 		FillTimetableArrivalDepartureTable(v, v->cur_real_order_index % v->GetNumOrders(), travelling, table, start_time);
@@ -626,7 +626,7 @@ struct TimetableWindow : Window {
 				disabled = order != NULL && (order->IsType(OT_CONDITIONAL) || order->IsType(OT_IMPLICIT));
 			}
 			else {
-				disabled = order == NULL || order->IsType(OT_CONDITIONAL) || !order->IsType(OT_GOTO_STATION) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION);
+				disabled = order == NULL || ((!(order->IsType(OT_GOTO_STATION) || (order->IsType(OT_GOTO_DEPOT) && !(order->GetDepotActionType() & ODATFB_HALT))) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION)) && !order->IsType(OT_CONDITIONAL));
 			}
 		}
 		return disabled;

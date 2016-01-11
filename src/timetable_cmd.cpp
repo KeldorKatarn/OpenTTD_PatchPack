@@ -146,6 +146,9 @@ CommandCost CmdChangeTimetable(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 			case OT_GOTO_STATION:
 				if (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION) return_cmd_error(STR_ERROR_TIMETABLE_NOT_STOPPING_HERE);
 				break;
+ 
+			case OT_GOTO_DEPOT:
+				break;
 
 			case OT_CONDITIONAL:
 				break;
@@ -404,10 +407,23 @@ CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 /**
  * Update the timetable for the vehicle.
  * @param v The vehicle to update the timetable for.
- * @param travelling Whether we just travelled or waited at a station.
+ * @param traveling Whether we just traveled or waited at a station.
  */
 void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 {
+	if (!travelling) {
+		/* If all requirements for separation are met, we can initialize it. */
+		if (_settings_game.order.automatic_timetable_separation
+			&& v->IsOrderListShared()
+			&& v->orders.list->IsCompleteTimetable()
+			&& (v->cur_real_order_index == 0)) {
+
+			if (!v->orders.list->IsSeparationValid()) v->orders.list->InitializeSeparation();
+			v->lateness_counter = v->orders.list->SeparateVehicle();
+
+		}
+	}
+
 	uint time_taken = v->current_order_time;
 
 	v->current_order_time = 0;

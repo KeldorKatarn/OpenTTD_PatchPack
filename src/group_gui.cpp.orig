@@ -756,11 +756,16 @@ public:
 				break;
 
 			case WID_GL_COLLAPSE_ALL_GROUPS: {				
+<<<<<<< HEAD
+				std::for_each(_collapsed_groups.begin(), _collapsed_groups.end(), [](std::pair<const GroupID, bool> &key_value_pair) {
+					if (key_value_pair.first != ALL_GROUP && key_value_pair.first != DEFAULT_GROUP && key_value_pair.first != INVALID_GROUP) {
+=======
 				std::for_each(_collapsed_groups.begin(), _collapsed_groups.end(), [this](std::pair<const GroupID, bool> &key_value_pair) {
 					Group* group = Group::GetIfValid(key_value_pair.first);
 					
 					if (group != nullptr && group->vehicle_type == this->vli.vtype &&
 						key_value_pair.first != ALL_GROUP && key_value_pair.first != DEFAULT_GROUP && key_value_pair.first != INVALID_GROUP) {
+>>>>>>> release/1.11.0
 						key_value_pair.second = true;
 					}
 				});
@@ -770,11 +775,16 @@ public:
 			}
 
 			case WID_GL_EXPAND_ALL_GROUPS: {				
+<<<<<<< HEAD
+				std::for_each(_collapsed_groups.begin(), _collapsed_groups.end(), [](std::pair<const GroupID, bool> &key_value_pair) {
+					if (key_value_pair.first != ALL_GROUP && key_value_pair.first != DEFAULT_GROUP && key_value_pair.first != INVALID_GROUP) {
+=======
 				std::for_each(_collapsed_groups.begin(), _collapsed_groups.end(), [this](std::pair<const GroupID, bool> &key_value_pair) {
 					Group* group = Group::GetIfValid(key_value_pair.first);
 
 					if (group != nullptr && group->vehicle_type == this->vli.vtype && 
 						key_value_pair.first != ALL_GROUP && key_value_pair.first != DEFAULT_GROUP && key_value_pair.first != INVALID_GROUP) {
+>>>>>>> release/1.11.0
 						key_value_pair.second = false;
 					}
 				});

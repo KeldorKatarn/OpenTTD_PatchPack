@@ -146,6 +146,9 @@ CommandCost CmdChangeTimetable(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 			case OT_GOTO_STATION:
 				if (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION) return_cmd_error(STR_ERROR_TIMETABLE_NOT_STOPPING_HERE);
 				break;
+ 
+			case OT_GOTO_DEPOT:
+				break;
 
 			case OT_CONDITIONAL:
 				break;
@@ -404,7 +407,7 @@ CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 /**
  * Update the timetable for the vehicle.
  * @param v The vehicle to update the timetable for.
- * @param travelling Whether we just travelled or waited at a station.
+ * @param traveling Whether we just traveled or waited at a station.
  */
 void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 {
@@ -459,16 +462,13 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	/* Before modifying waiting times, check whether we want to preserve bigger ones. */
 	if (!real_current_order->IsType(OT_CONDITIONAL) &&
 			(travelling || time_taken > real_current_order->GetWaitTime() || remeasure_wait_time)) {
-		/* Round the time taken up to the nearest day, as this will avoid
-		 * confusion for people who are timetabling in days, and can be
-		 * adjusted later by people who aren't.
-		 * For trains/aircraft multiple movement cycles are done in one
+		/* For trains/aircraft multiple movement cycles are done in one
 		 * tick. This makes it possible to leave the station and process
 		 * e.g. a depot order in the same tick, causing it to not fill
 		 * the timetable entry like is done for road vehicles/ships.
 		 * Thus always make sure at least one tick is used between the
 		 * processing of different orders when filling the timetable. */
-		uint time_to_set = CeilDiv(max(time_taken, 1U), DAY_TICKS) * DAY_TICKS;
+		uint time_to_set = max(time_taken, 1U);
 
 		if (travelling && (autofilling || !real_current_order->IsTravelTimetabled())) {
 			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_TRAVEL_TIME, autofilling);

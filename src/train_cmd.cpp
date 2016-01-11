@@ -2271,6 +2271,11 @@ static bool CheckTrainStayInDepot(Train *v)
 		SetWindowDirty(WC_VEHICLE_DEPOT, v->tile);
 		return true;
 	}
+ 
+	if (v->current_order.IsWaitTimetabled())
+		v->HandleWaiting(false);
+	if (v->current_order.IsType(OT_WAITING))
+		return true;
 
 	SigSegState seg_state;
 

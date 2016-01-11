@@ -59,13 +59,8 @@ struct TimetableArrivalDeparture {
  */
 void SetTimetableParams(int param1, int param2, Ticks ticks)
 {
-	if (_settings_client.gui.timetable_in_ticks) {
-		SetDParam(param1, STR_TIMETABLE_TICKS);
-		SetDParam(param2, ticks);
-	} else {
-		SetDParam(param1, STR_TIMETABLE_DAYS);
-		SetDParam(param2, ticks / DAY_TICKS);
-	}
+	SetDParam(param1, STR_TIMETABLE_TICKS);
+	SetDParam(param2, ticks);
 }
 
 /**
@@ -516,7 +511,7 @@ struct TimetableWindow : Window {
 					 * when we aren't even "on service"/"on duty"? */
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_NOT_STARTED);
 				}
-				else if ((_settings_client.gui.timetable_in_ticks && v->lateness_counter == 0) || (!_settings_client.gui.timetable_in_ticks && v->lateness_counter / DAY_TICKS == 0)) {
+				else if (v->lateness_counter == 0) {
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_ON_TIME);
 				}
 				else {
@@ -538,8 +533,7 @@ struct TimetableWindow : Window {
 				/* If the new mode is OFF... */
 				if (this->new_sep_settings.mode == TTS_MODE_OFF) {
 					/* ... skip description lines. */
-					int offset = _settings_client.gui.timetable_in_ticks ? GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height
-						: GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_DAYS).height;
+					int offset = GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
 
 					y = y + GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height + offset;
 
@@ -561,19 +555,11 @@ struct TimetableWindow : Window {
 
 					if (this->new_sep_settings.mode == TTS_MODE_MAN_T || 
 						(this->vehicle->orders.list->IsCompleteTimetable() && this->vehicle->orders.list->IsSeparationValid())) {
-						// Depending on the setting for time displays, set up and draw either tick or days string.
-						if (_settings_client.gui.timetable_in_ticks) {
-							SetDParam(0, par);
-							DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_TICKS, TC_BLACK);
+						
+						SetDParam(0, par);
+						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_TICKS, TC_BLACK);
 
-							y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
-						}
-						else {
-							SetDParam(0, par / DAY_TICKS);
-							DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_DAYS, TC_BLACK);
-
-							y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_DAYS).height;
-						}
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
 					}
 					else {
 						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
@@ -677,9 +663,6 @@ struct TimetableWindow : Window {
 
 				if (order != NULL) {
 					uint time = (selected % 2 == 1) ? order->GetTravelTime() : order->GetWaitTime();
-					if (!_settings_client.gui.timetable_in_ticks) {
-						time /= DAY_TICKS;
-					}
 
 					if (time != 0) {
 						SetDParam(0, time);
@@ -812,11 +795,6 @@ struct TimetableWindow : Window {
 			uint64 val = StrEmpty(str) ? 0 : strtoul(str, NULL, 10);
 			if (this->query_is_speed_query) {
 				val = ConvertDisplaySpeedToKmhishSpeed(val);
-			}
-			else {
-				if (!_settings_client.gui.timetable_in_ticks) {
-					val *= DAY_TICKS;
-				}
 			}
 
 			uint32 p2 = minu(val, UINT16_MAX);

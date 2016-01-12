@@ -136,6 +136,7 @@ struct GUISettings {
 	Year   semaphore_build_before;           ///< build semaphore signals automatically before this year
 	byte   news_message_timeout;             ///< how much longer than the news message "age" should we keep the message in the history
 	bool   show_track_reservation;           ///< highlight reserved tracks.
+	bool   show_track_overgrowth;            ///< show track age by overgrowing grass.
 	uint8  default_signal_type;              ///< the signal type to build by default.
 	uint8  cycle_signal_types;               ///< what signal types to cycle with the build signal tool.
 	byte   station_numtracks;                ///< the number of platforms to default on for rail stations

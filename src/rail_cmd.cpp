@@ -2472,7 +2472,7 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 
 	if (rti->UsesOverlay()) {
 		DrawTrackBitsOverlay(ti, track, rti);
-		if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackGrowth(ti, track);
+		if (_settings_client.gui.show_track_overgrowth) DrawTrackGrowth(ti, track);
 		return;
 	}
 
@@ -2611,7 +2611,7 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 	}
 	
 	/* Draw track overgrowth */
-	if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackGrowth(ti, track);
+	if (_settings_client.gui.show_track_overgrowth) DrawTrackGrowth(ti, track);
 }
 
 static void DrawSignals(TileIndex tile, TrackBits rails, const RailtypeInfo *rti)

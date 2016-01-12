@@ -30,9 +30,9 @@ struct SnowLine {
 
 bool IsSnowLineSet();
 void SetSnowLine(byte table[SNOW_LINE_MONTHS][SNOW_LINE_DAYS]);
-byte GetSnowLine();
-byte HighestSnowLine();
-byte LowestSnowLine();
+uint16 GetSnowLine();
+uint16 HighestSnowLine();
+uint16 LowestSnowLine();
 void ClearSnowLine();
 
 int GetSlopeZInCorner(Slope tileh, Corner corner);

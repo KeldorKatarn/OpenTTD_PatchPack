@@ -560,7 +560,7 @@ void SetSnowLine(byte table[SNOW_LINE_MONTHS][SNOW_LINE_DAYS])
  * @return the snow line height.
  * @ingroup SnowLineGroup
  */
-byte GetSnowLine()
+uint16 GetSnowLine()
 {
 	if (_snow_line == NULL) return _settings_game.game_creation.snow_line_height;
 
@@ -574,7 +574,7 @@ byte GetSnowLine()
  * @return the highest snow line height.
  * @ingroup SnowLineGroup
  */
-byte HighestSnowLine()
+uint16 HighestSnowLine()
 {
 	return _snow_line == NULL ? _settings_game.game_creation.snow_line_height : _snow_line->highest_value;
 }
@@ -584,7 +584,7 @@ byte HighestSnowLine()
  * @return the lowest snow line height.
  * @ingroup SnowLineGroup
  */
-byte LowestSnowLine()
+uint16 LowestSnowLine()
 {
 	return _snow_line == NULL ? _settings_game.game_creation.snow_line_height : _snow_line->lowest_value;
 }

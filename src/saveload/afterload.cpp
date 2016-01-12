@@ -2961,6 +2961,13 @@ bool AfterLoadGame()
 			}
 		}
 	}
+ 
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_12)) {
+		Train *t;
+		FOR_ALL_TRAINS(t) {
+			t->reverse_distance = 0;
+		}
+	}
 
 	/*
 	 * Only keep order-backups for network clients (and when replaying).

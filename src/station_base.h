@@ -220,7 +220,9 @@ struct GoodsEntry {
 		amount_fract(0),
 		link_graph(INVALID_LINK_GRAPH),
 		node(INVALID_NODE),
-		max_waiting_cargo(0)
+		max_waiting_cargo(0),
+		punishment_triggered(false),
+		punishment_in_effect(false)
 	{}
 
 	byte status; ///< Status of this cargo, see #GoodsEntryStatus.
@@ -251,13 +253,15 @@ struct GoodsEntry {
 	 */
 	byte last_age;
 
-	byte amount_fract;      ///< Fractional part of the amount in the cargo list
-	StationCargoList cargo; ///< The cargo packets of cargo waiting in this station
+	byte amount_fract;         ///< Fractional part of the amount in the cargo list
+	StationCargoList cargo;    ///< The cargo packets of cargo waiting in this station
 
-	LinkGraphID link_graph; ///< Link graph this station belongs to.
-	NodeID node;            ///< ID of node in link graph referring to this goods entry.
-	FlowStatMap flows;      ///< Planned flows through this station.
-	uint max_waiting_cargo; ///< Max cargo from this station waiting at any station.
+	LinkGraphID link_graph;    ///< Link graph this station belongs to.
+	NodeID node;               ///< ID of node in link graph referring to this goods entry.
+	FlowStatMap flows;         ///< Planned flows through this station.
+	uint max_waiting_cargo;    ///< Max cargo from this station waiting at any station.
+	bool punishment_triggered; ///< A punishment was triggered. See below.
+	bool punishment_in_effect; ///< The station is being punished because the cargo is not being transported further at a destination.
 
 	/**
 	 * Reports whether a vehicle has ever tried to load the cargo at this station.

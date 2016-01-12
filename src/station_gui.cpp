@@ -33,6 +33,7 @@
 #include "town.h"
 #include "linkgraph/linkgraph.h"
 #include "zoom_func.h"
+#include "newgrf_cargo.h"
 
 #include "widgets/station_widget.h"
 
@@ -1386,6 +1387,149 @@ struct StationViewWindow : public Window {
 				break;
 		}
 	}
+ 
+	virtual void OnHover(Point pt, int widget)
+	{
+		switch (widget) {
+			case WID_SV_ACCEPT_RATING_LIST:
+				if (this->GetWidget<NWidgetCore>(WID_SV_ACCEPTS_RATINGS)->widget_data != STR_STATION_VIEW_RATINGS_BUTTON) {
+
+					const NWidgetBase *wid = this->GetWidget<NWidgetBase>(WID_SV_ACCEPT_RATING_LIST);
+					const Rect r = { (int)wid->pos_x, (int)wid->pos_y, (int)(wid->pos_x + wid->current_x - 1), (int)(wid->pos_y + wid->current_y - 1) };
+
+
+					const Station *st = Station::Get(this->window_number);
+					pt.y -= r.top + WD_FRAMERECT_TOP + FONT_HEIGHT_NORMAL;
+
+					if (st->town->exclusive_counter > 0) {
+						pt.y -= WD_PAR_VSEP_WIDE;
+					}
+
+					if (pt.y < 0) return;
+
+					int cargo_line = pt.y / FONT_HEIGHT_NORMAL;
+					int current_cargo = 0;
+					bool mouse_is_over_valid_cargo = false;
+					const GoodsEntry* goods_entry = nullptr;
+
+					const CargoSpec *cs;
+					FOR_ALL_SORTED_STANDARD_CARGOSPECS(cs) {
+						goods_entry = &st->goods[cs->Index()];
+						if (!goods_entry->HasRating()) continue;
+
+						if (cargo_line == current_cargo) {
+							mouse_is_over_valid_cargo = true;
+							break;
+						}
+
+						++current_cargo;
+					}
+					
+					if (!mouse_is_over_valid_cargo || cs == nullptr) return;
+
+					uint param_count = 0;
+					int total_rating = 0;
+					bool has_newgrf_rating = false;
+
+					SetDParam(param_count++, cs->name);
+
+					if (HasBit(cs->callback_mask, CBM_CARGO_STATION_RATING_CALC)) {
+						/* Perform custom station rating. If it succeeds the speed, days in transit and
+						* waiting cargo ratings must not be executed. */
+
+						/* NewGRFs expect last speed to be 0xFF when no vehicle has arrived yet. */
+						uint last_speed = goods_entry->HasVehicleEverTriedLoading() ? goods_entry->last_speed : 0xFF;
+
+						uint32 var18 = min(goods_entry->time_since_pickup, 0xFF) | (min(goods_entry->max_waiting_cargo, 0xFFFF) << 8) | (min(last_speed, 0xFF) << 24);
+						/* Convert to the 'old' vehicle types */
+						uint32 var10 = (st->last_vehicle_type == VEH_INVALID) ? 0x0 : (st->last_vehicle_type + 0x10);
+						uint16 callback = GetCargoCallback(CBID_CARGO_STATION_RATING_CALC, var10, var18, cs);
+						if (callback != CALLBACK_FAILED) {
+							has_newgrf_rating = true;
+
+							int custom_rating = GB(callback, 0, 14);
+
+							/* Simulate a 15 bit signed value */
+							if (HasBit(callback, 14)) custom_rating -= 0x4000;
+
+							SetDParam(param_count++, min(100, std::round(custom_rating * 100.0 / 255.0)));
+							total_rating += custom_rating;
+						}
+					}
+
+					if (!has_newgrf_rating) {
+						int speed = goods_entry->last_speed - 15;
+						int speed_rating = (speed >= 0) ? (speed >> 2) : 0;
+
+						SetDParam(param_count++, std::round(speed_rating * 100.0 / 255.0));
+						total_rating += speed_rating;
+
+						byte waittime = goods_entry->time_since_pickup;
+						int waittime_rating = 0;
+
+						if (st->last_vehicle_type == VEH_SHIP) waittime >>= 2;
+
+						(waittime > 21) ||
+							(waittime_rating += 25, waittime > 12) ||
+							(waittime_rating += 25, waittime > 6) ||
+							(waittime_rating += 45, waittime > 3) ||
+							(waittime_rating += 35, true);
+
+						SetDParam(param_count++, std::round(waittime_rating * 100.0 / 255.0));
+						total_rating += waittime_rating;
+
+						int cargo_waiting_rating = 0;
+
+						(cargo_waiting_rating -= 90, goods_entry->max_waiting_cargo > 1500) ||
+							(cargo_waiting_rating += 55, goods_entry->max_waiting_cargo > 1000) ||
+							(cargo_waiting_rating += 35, goods_entry->max_waiting_cargo > 600) ||
+							(cargo_waiting_rating += 10, goods_entry->max_waiting_cargo > 300) ||
+							(cargo_waiting_rating += 20, goods_entry->max_waiting_cargo > 100) ||
+							(cargo_waiting_rating += 10, true);
+
+						SetDParam(param_count++, std::round(cargo_waiting_rating * 100.0 / 255.0));
+						total_rating += cargo_waiting_rating;
+					}
+
+					int age_rating = 0;
+
+					byte age = goods_entry->last_age;
+					(age >= 30) ||
+						(age_rating += 10, age >= 20) ||
+						(age_rating += 10, age >= 10) ||
+						(age_rating += 13, true);
+
+					SetDParam(param_count++, std::round(age_rating * 100.0 / 255.0));
+					total_rating += age_rating;
+
+					int authority_rating = (Company::IsValidID(st->owner) && HasBit(st->town->statues, st->owner)) ? 26 : 0;
+
+					SetDParam(param_count++, std::round(authority_rating * 100.0 / 255.0));
+					total_rating += authority_rating;
+
+					SetDParam(param_count++, std::round(goods_entry->rating * 100.0 / 255.0));
+					SetDParam(param_count++, Clamp(std::round(total_rating * 100.0 / 255.0), 0, 100));
+
+					if (goods_entry->punishment_in_effect) {
+						if (has_newgrf_rating) {
+							GuiShowTooltips(this, STR_STATION_VIEW_DETAILED_CUSTOM_RATING_PUNISHED);
+						}
+						else {
+							GuiShowTooltips(this, STR_STATION_VIEW_DETAILED_RATING_PUNISHED);
+						}
+					}
+					else {
+						if (has_newgrf_rating) {
+							GuiShowTooltips(this, STR_STATION_VIEW_DETAILED_CUSTOM_RATING);
+						}
+						else {
+							GuiShowTooltips(this, STR_STATION_VIEW_DETAILED_RATING);
+						}
+					}
+				}
+				break;
+		}
+	}
 
 	virtual void OnPaint()
 	{
@@ -1417,7 +1561,8 @@ struct StationViewWindow : public Window {
 					this->ReInit();
 					return;
 				}
-			} else {
+			}
+			else {
 				int lines = this->DrawCargoRatings(r);
 				if (lines > this->rating_lines) { // Resize the widget, and perform re-initialization of the window.
 					this->rating_lines = lines;

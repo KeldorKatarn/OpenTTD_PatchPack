@@ -3342,6 +3342,11 @@ STR_STATION_VIEW_RATINGS_TOOLTIP                                :{BLACK}Show sta
 STR_STATION_VIEW_SUPPLY_RATINGS_TITLE                           :{BLACK}Monthly supply and local rating:
 STR_STATION_VIEW_CARGO_SUPPLY_RATING                            :{WHITE}{STRING}: {YELLOW}{COMMA} / {STRING} ({COMMA}%)
 
+STR_STATION_VIEW_DETAILED_RATING                                :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Max speed of last vehicle:{}{RED}{COMMA}% (max. +24%){}{BLACK}Time since last pickup:{}{RED}{COMMA}% (max. +51%){}{BLACK}Units waiting:{}{RED}{COMMA}% (max. +16%){}{BLACK}Age of last vehicle:{}{RED}{COMMA}% (max. +13%){}{BLACK}Statue in town:{}{RED}{COMMA}% (max. +10%){}{}{BLACK}Total target rating:{}{RED}{COMMA}% --> {COMMA}%
+STR_STATION_VIEW_DETAILED_RATING_PUNISHED                       :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Max speed of last vehicle:{}{RED}{COMMA}% (max. +24%){}{BLACK}Time since last pickup:{}{RED}{COMMA}% (max. +51%){}{BLACK}Units waiting:{}{RED}(Punished by destination!){}{RED}{COMMA}% (max. +16%){}{BLACK}Age of last vehicle:{}{RED}{COMMA}% (max. +13%){}{BLACK}Statue in town:{}{RED}{COMMA}% (max. +10%){}{}{BLACK}Total target rating:{}{RED}{COMMA}% --> {COMMA}%
+STR_STATION_VIEW_DETAILED_CUSTOM_RATING                         :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Industry NewGRF:{}{RED}{COMMA}%{}{BLACK}Age of last vehicle:{}{RED}{COMMA}% (max. +13%){}{BLACK}Statue in town:{}{RED}{COMMA}% (max. +10%){}{}{BLACK}Total target rating:{}{RED}{COMMA}% --> {COMMA}%
+STR_STATION_VIEW_DETAILED_CUSTOM_RATING_PUNISHED                :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Industry NewGRF:{}{RED}(Punished by destination!){}{RED}{COMMA}%{}{BLACK}Age of last vehicle:{}{RED}{COMMA}% (max. +13%){}{BLACK}Statue in town:{}{RED}{COMMA}% (max. +10%){}{}{BLACK}Total target rating:{}{RED}{COMMA}% --> {COMMA}%
+
 STR_STATION_VIEW_GROUP                                          :{BLACK}Group by
 STR_STATION_VIEW_WAITING_STATION                                :Station: Waiting
 STR_STATION_VIEW_WAITING_AMOUNT                                 :Amount: Waiting
@@ -3583,8 +3588,8 @@ STR_GROUP_DELETE_TOOLTIP                                        :{BLACK}Delete t
 STR_GROUP_RENAME_TOOLTIP                                        :{BLACK}Rename the selected group
 STR_GROUP_COLLAPSE                                              :{BLACK}Collapse
 STR_GROUP_EXPAND                                                :{BLACK}Expand
-STR_GROUP_EXPAND_ALL                                           :{BLACK}Expand all
-STR_GROUP_COLLAPSE_ALL                                         :{BLACK}Collapse all
+STR_GROUP_EXPAND_ALL                                            :{BLACK}Expand all
+STR_GROUP_COLLAPSE_ALL                                          :{BLACK}Collapse all
 STR_GROUP_COLLAPSE_TOOLTIP                                      :{BLACK}Click to collapse the selected group
 STR_GROUP_EXPAND_TOOLTIP                                        :{BLACK}Click to expand the selected group
 STR_GROUP_REPLACE_PROTECTION_TOOLTIP                            :{BLACK}Click to protect this group from global autoreplace

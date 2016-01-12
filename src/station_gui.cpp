@@ -1452,7 +1452,7 @@ struct StationViewWindow : public Window {
 							/* Simulate a 15 bit signed value */
 							if (HasBit(callback, 14)) custom_rating -= 0x4000;
 
-							SetDParam(param_count++, std::round(custom_rating * 100.0 / 255.0));
+							SetDParam(param_count++, min(100, std::round(custom_rating * 100.0 / 255.0)));
 							total_rating += custom_rating;
 						}
 					}
@@ -1508,7 +1508,7 @@ struct StationViewWindow : public Window {
 					total_rating += authority_rating;
 
 					SetDParam(param_count++, std::round(goods_entry->rating * 100.0 / 255.0));
-					SetDParam(param_count++, std::round(total_rating * 100.0 / 255.0));
+					SetDParam(param_count++, Clamp(std::round(total_rating * 100.0 / 255.0), 0, 100));
 
 					if (goods_entry->punishment_in_effect) {
 						if (has_newgrf_rating) {

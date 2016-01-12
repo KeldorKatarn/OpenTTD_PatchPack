@@ -1510,7 +1510,7 @@ struct StationViewWindow : public Window {
 					SetDParam(param_count++, std::round(goods_entry->rating * 100.0 / 255.0));
 					SetDParam(param_count++, std::round(total_rating * 100.0 / 255.0));
 
-					if (goods_entry->was_punished) {
+					if (goods_entry->punishment_in_effect) {
 						if (has_newgrf_rating) {
 							GuiShowTooltips(this, STR_STATION_VIEW_DETAILED_CUSTOM_RATING_PUNISHED);
 						}

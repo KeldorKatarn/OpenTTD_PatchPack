@@ -3429,6 +3429,7 @@ static void TruncateCargo(const CargoSpec *cs, GoodsEntry *ge, uint amount = UIN
 
 		GoodsEntry &source_ge = source_station->goods[cs->Index()];
 		source_ge.max_waiting_cargo = max(source_ge.max_waiting_cargo, i->second);
+		source_ge.was_punished = true;
 	}
 }
 
@@ -3467,15 +3468,15 @@ static void UpdateStationRating(Station *st)
 			/* num_dests is at least 1 if there is any cargo as
 			 * INVALID_STATION is also a destination.
 			 */
-			uint num_dests = (uint)ge->cargo.Packets()->MapSize();
+			uint num_dests = max(1u, (uint)ge->cargo.Packets()->MapSize());
 
 			/* Average amount of cargo per next hop, but prefer solitary stations
 			 * with only one or two next hops. They are allowed to have more
 			 * cargo waiting per next hop.
-			 * With manual cargo distribution waiting_avg = waiting / 2 as then
+			 * With manual cargo distribution waiting_avg = waiting / 1 as then
 			 * INVALID_STATION is the only destination.
 			 */
-			uint waiting_avg = waiting / (num_dests + 1);
+			uint waiting_avg = waiting / num_dests;
 
 			if (HasBit(cs->callback_mask, CBM_CARGO_STATION_RATING_CALC)) {
 				/* Perform custom station rating. If it succeeds the speed, days in transit and
@@ -3570,11 +3571,15 @@ static void UpdateStationRating(Station *st)
 				if (waiting_changed && waiting < ge->cargo.AvailableCount()) {
 					/* Feed back the exact own waiting cargo at this station for the
 					 * next rating calculation. */
-					ge->max_waiting_cargo = 0;
-
 					TruncateCargo(cs, ge, ge->cargo.AvailableCount() - waiting);
-				} else {
-					/* If the average number per next hop is low, be more forgiving. */
+				}
+				
+				if (ge->was_punished) {
+					// We were punished by another station. Delay the update of waiting cargo until next rating.
+					ge->was_punished = false;
+				}
+				else
+				{
 					ge->max_waiting_cargo = waiting_avg;
 				}
 			}

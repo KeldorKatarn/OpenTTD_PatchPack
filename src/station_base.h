@@ -220,7 +220,8 @@ struct GoodsEntry {
 		amount_fract(0),
 		link_graph(INVALID_LINK_GRAPH),
 		node(INVALID_NODE),
-		max_waiting_cargo(0)
+		max_waiting_cargo(0),
+		was_punished(false)
 	{}
 
 	byte status; ///< Status of this cargo, see #GoodsEntryStatus.
@@ -258,6 +259,7 @@ struct GoodsEntry {
 	NodeID node;            ///< ID of node in link graph referring to this goods entry.
 	FlowStatMap flows;      ///< Planned flows through this station.
 	uint max_waiting_cargo; ///< Max cargo from this station waiting at any station.
+	bool was_punished;      ///< The station was punished because the cargo is not being transported further at a destination.
 
 	/**
 	 * Reports whether a vehicle has ever tried to load the cargo at this station.

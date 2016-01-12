@@ -1542,6 +1542,7 @@ void VehicleEnterDepot(Vehicle *v)
 			t->force_proceed = TFP_NONE;
 			ClrBit(t->flags, VRF_TOGGLE_REVERSE);
 			t->ConsistChanged(CCF_ARRANGE);
+			t->reverse_distance = 0;
 			break;
 		}
 
@@ -2690,6 +2691,8 @@ static void SpawnAdvancedVisualEffect(const Vehicle *v)
 	}
 }
 
+uint16 ReversingDistanceTargetSpeed(const Train *v);
+
 /**
  * Draw visual effects (smoke and/or sparks) for a vehicle chain.
  * @pre this->IsPrimaryVehicle()
@@ -2718,10 +2721,12 @@ void Vehicle::ShowVisualEffect() const
 		/* For trains, do not show any smoke when:
 		 * - the train is reversing
 		 * - is entering a station with an order to stop there and its speed is equal to maximum station entering speed
+		 * - is approaching a reversing point and its speed is equal to maximum approach speed
 		 */
 		if (HasBit(t->flags, VRF_REVERSING) ||
 				(IsRailStationTile(t->tile) && t->IsFrontEngine() && t->current_order.ShouldStopAtStation(t, GetStationIndex(t->tile)) &&
-				t->cur_speed >= max_speed)) {
+				t->cur_speed >= max_speed) ||
+				(t->reverse_distance >= 1 && t->cur_speed >= ReversingDistanceTargetSpeed(t))) {
 			return;
 		}
 	}

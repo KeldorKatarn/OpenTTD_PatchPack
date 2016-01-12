@@ -346,8 +346,8 @@ void GenerateClearTile()
 	if (_settings_game.construction.trees_around_snow_line_enabled) {
 		SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i + MapSize());
 
-		uint8 range = _settings_game.construction.trees_around_snow_line_range;
-		uint8 snow_line_height = HighestSnowLine() + range;
+		uint16 range = _settings_game.construction.trees_around_snow_line_range;
+		uint16 snow_line_height = HighestSnowLine() + range;
 
 		for (TileIndex possible_mountain_tile = 0; possible_mountain_tile < MapSize(); ++possible_mountain_tile) {
 			uint8 tile_z = GetTileZ(possible_mountain_tile);

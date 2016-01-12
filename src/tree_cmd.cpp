@@ -73,7 +73,7 @@ static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
 		case MP_CLEAR: {
 			bool snow_line_enabled = _settings_game.construction.trees_around_snow_line_enabled;
 			uint8 range = _settings_game.construction.trees_around_snow_line_range;
-			bool is_above_final_snow_line = GetTileZ(tile) > HighestSnowLine() + range;
+			bool is_above_final_snow_line = GetTileZ(tile) > (HighestSnowLine() + range);
 
 			return !(snow_line_enabled && is_above_final_snow_line) && !IsBridgeAbove(tile) && !IsClearGround(tile, CLEAR_FIELDS) && GetRawClearGround(tile) != CLEAR_ROCKS &&
 				(allow_desert || !IsClearGround(tile, CLEAR_DESERT));

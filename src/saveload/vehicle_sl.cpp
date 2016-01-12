@@ -756,6 +756,7 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		SLE_CONDNULL(2, 2, 19),
 		 SLE_CONDVAR(Train, gv_flags,            SLE_UINT16,                 139, SL_MAX_VERSION),
 		SLE_CONDNULL(11, 2, 143), // old reserved space
+		 SLE_CONDVAR(Train, reverse_distance,    SLE_UINT16,  SL_PATCH_PACK_1_12, SL_MAX_VERSION),
 
 		     SLE_END()
 	};

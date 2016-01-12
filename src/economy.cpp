@@ -1066,7 +1066,7 @@ static SmallIndustryList _cargo_delivery_destinations;
 
 /**
  * Transfer goods from station to industry.
- * All cargo is delivered to the nearest (Manhattan) industry to the station sign, which is inside the acceptance rectangle and actually accepts the cargo.
+ * The cargo is delivered to all accepting industries in a round-robin way.
  * @param st The station that accepted the cargo
  * @param cargo_type Type of cargo delivered
  * @param num_pieces Amount of cargo delivered
@@ -1075,16 +1075,18 @@ static SmallIndustryList _cargo_delivery_destinations;
  */
 static uint DeliverGoodsToIndustry(const Station *st, CargoID cargo_type, uint num_pieces, IndustryID source)
 {
-	/* Find the nearest industrytile to the station sign inside the catchment area, whose industry accepts the cargo.
+	/* Find any industry tile inside the catchment area, whose industry accepts the cargo.
 	 * This fails in three cases:
 	 *  1) The station accepts the cargo because there are enough houses around it accepting the cargo.
 	 *  2) The industries in the catchment area temporarily reject the cargo, and the daily station loop has not yet updated station acceptance.
-	 *  3) The results of callbacks CBID_INDUSTRY_REFUSE_CARGO and CBID_INDTILE_CARGO_ACCEPTANCE are inconsistent. (documented behaviour)
+	 *  3) The results of callbacks CBID_INDUSTRY_REFUSE_CARGO and CBID_INDTILE_CARGO_ACCEPTANCE are inconsistent. (documented behavior)
 	 */
 
 	uint accepted = 0;
 
-	for (uint i = 0; i < st->industries_near.Length() && num_pieces != 0; i++) {
+	std::vector<std::tuple<Industry*, uint, bool> > accepting_industries;
+
+	for (uint i = 0; i < st->industries_near.Length(); i++) {
 		Industry *ind = st->industries_near[i];
 		if (ind->index == source) continue;
 
@@ -1101,10 +1103,33 @@ static uint DeliverGoodsToIndustry(const Station *st, CargoID cargo_type, uint n
 		/* Insert the industry into _cargo_delivery_destinations, if not yet contained */
 		_cargo_delivery_destinations.Include(ind);
 
-		uint amount = min(num_pieces, 0xFFFFU - ind->incoming_cargo_waiting[cargo_index]);
-		ind->incoming_cargo_waiting[cargo_index] += amount;
-		num_pieces -= amount;
-		accepted += amount;
+		accepting_industries.push_back(std::tuple<Industry*, uint, bool>(ind, cargo_index, true));
+	}
+
+	int num_accepting_industries = (int)accepting_industries.size();
+	int ind_index = 0;
+
+	// Do a round-robin for all industries and mark all industries that are no longer accepting because their maximum stockpile is full.
+	while (num_accepting_industries > 0 && num_pieces > 0) {
+		// Check if the current industry still accepts cargo
+		if (std::get<2>(accepting_industries[ind_index])) {
+			Industry* ind = std::get<0>(accepting_industries[ind_index]);
+			uint cargo_index = std::get<1>(accepting_industries[ind_index]);
+
+			if ((0xFFFFU - ind->incoming_cargo_waiting[cargo_index]) == 0) {
+				// The maximum stockpile limit is reached. Mark the industry as no longer accepting.
+				std::get<2>(accepting_industries[ind_index]) = false;
+				--num_accepting_industries;
+			}
+			else {
+				// The industry still accepts cargo.
+				++ind->incoming_cargo_waiting[cargo_index];
+				--num_pieces;
+				++accepted;
+			}
+		}
+
+		ind_index = (++ind_index) % accepting_industries.size();
 	}
 
 	return accepted;

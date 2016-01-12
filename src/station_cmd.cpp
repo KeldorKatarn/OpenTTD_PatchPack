@@ -3423,7 +3423,7 @@ static void TruncateCargo(const CargoSpec *cs, GoodsEntry *ge, uint amount = UIN
 
 		GoodsEntry &source_ge = source_station->goods[cs->Index()];
 		source_ge.max_waiting_cargo = max(source_ge.max_waiting_cargo, i->second);
-		source_ge.was_punished = true;
+		source_ge.punishment_triggered = true;
 	}
 }
 
@@ -3568,12 +3568,14 @@ static void UpdateStationRating(Station *st)
 					TruncateCargo(cs, ge, ge->cargo.AvailableCount() - waiting);
 				}
 				
-				if (ge->was_punished) {
+				if (ge->punishment_triggered) {
 					// We were punished by another station. Delay the update of waiting cargo until next rating.
-					ge->was_punished = false;
+					ge->punishment_in_effect = true;
+					ge->punishment_triggered = false;
 				}
 				else
 				{
+					ge->punishment_in_effect = false;
 					ge->max_waiting_cargo = waiting_avg;
 				}
 			}

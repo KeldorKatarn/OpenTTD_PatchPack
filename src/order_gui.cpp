@@ -1448,6 +1448,7 @@ public:
 				ShowDropDownList(this, lst, value, WID_O_COND_CARGO, 0, true);
 				break;
 			}
+
 			case WID_O_REVERSE: {
 				VehicleOrderID sel_ord = this->OrderGetSel();
 				const Order *order = this->vehicle->GetOrder(sel_ord);

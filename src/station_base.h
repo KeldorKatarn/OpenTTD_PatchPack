@@ -216,6 +216,8 @@ struct GoodsEntry {
 		time_since_pickup(255),
 		rating(INITIAL_STATION_RATING),
 		last_speed(0),
+		last_unprocessed_speed(0),
+		last_vehicle_type(VEH_INVALID),
 		last_age(255),
 		amount_fract(0),
 		link_graph(INVALID_LINK_GRAPH),
@@ -246,6 +248,16 @@ struct GoodsEntry {
 	 *  - Aircraft: 8 * mph
 	 */
 	byte last_speed;
+
+	/**
+	 * Speed of the last vehicle without the vehicle type postprocessing. Used to display in the detailed station rating tooltip.
+	 */
+	uint16 last_unprocessed_speed;
+
+	/**
+	* Type of the last vehicle.
+	*/
+	byte last_vehicle_type;
 
 	/**
 	 * Age in years (up to 255) of the last vehicle that tried to load this cargo.

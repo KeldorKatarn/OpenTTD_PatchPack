@@ -613,8 +613,6 @@ private:
 	Scrollbar *vscroll;
 	bool can_do_refit;     ///< Vehicle chain can be refitted in depot.
 	bool can_do_autorefit; ///< Vehicle chain can be auto-refitted.
-	StringID cargo_names_list[NUM_CARGO + 1];
-	uint32 cargo_bitmask;
 	uint32 index_vehicle_share; ///< index of vehicle to share
 
 	/**
@@ -954,19 +952,6 @@ public:
 				break;
 			}
 		}
-
-		/* Create cargo bitmask */
-		assert_compile(NUM_CARGO <= 32);
-		for (CargoID c = 0; c < NUM_CARGO; c++) {
-			if (CargoSpec::Get(c)->IsValid()) {
-				this->cargo_names_list[c] = CargoSpec::Get(c)->name;
-				SetBit(this->cargo_bitmask, c);
-			}
-			
-		}
-
-		this->cargo_bitmask = ~this->cargo_bitmask;
-		this->cargo_names_list[NUM_CARGO] = INVALID_STRING_ID;
 	}
 
 	/**
@@ -1172,17 +1157,18 @@ public:
 					break;
 
 				case OT_CONDITIONAL: {
-					if (row_sel != NULL) {
+					if (row_sel != nullptr) {
 						row_sel->SetDisplayedPlane(DP_ROW_CONDITIONAL);
 					} else {
 						train_row_sel->SetDisplayedPlane(DP_GROUNDVEHICLE_ROW_CONDITIONAL);
 					}
 					
-					OrderConditionVariable ocv = (order == NULL) ? OCV_LOAD_PERCENTAGE : order->GetConditionVariable();
+					OrderConditionVariable ocv = (order == nullptr) ? OCV_LOAD_PERCENTAGE : order->GetConditionVariable();
 					bool is_cargo = ocv == OCV_CARGO_ACCEPTANCE || ocv == OCV_CARGO_WAITING;
 
 					if (is_cargo) {
-						this->GetWidget<NWidgetCore>(WID_O_COND_CARGO)->widget_data = cargo_names_list[order == NULL ? 0 : order->GetConditionValue()];
+						CargoSpec* cargo_spec = CargoSpec::Get(order != nullptr ? order->GetConditionValue() : 0);
+						this->GetWidget<NWidgetCore>(WID_O_COND_CARGO)->widget_data = cargo_spec->name;
 						this->GetWidget<NWidgetStacked>(WID_O_SEL_COND_VALUE)->SetDisplayedPlane(DP_COND_VALUE_CARGO);
 					}
 					else {
@@ -1443,8 +1429,18 @@ public:
 				break;
  
 			case WID_O_COND_CARGO: {
+				DropDownList *lst = new DropDownList();
+				const CargoSpec *cs;
+				FOR_ALL_SORTED_STANDARD_CARGOSPECS(cs) {
+					*lst->Append() = new DropDownListStringItem(cs->name, cs->Index(), false);
+				}
+				if (lst->Length() == 0) {
+					delete lst;
+					break;
+				}
+
 				uint value = this->vehicle->GetOrder(this->OrderGetSel())->GetConditionValue();
-				ShowDropDownMenu(this, cargo_names_list, value, WID_O_COND_CARGO, 0, cargo_bitmask);
+				ShowDropDownList(this, lst, value, WID_O_COND_CARGO, 0, true);
 				break;
 			}
 

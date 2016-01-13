@@ -1832,6 +1832,8 @@ static void LoadUnloadVehicle(Vehicle *front)
 
 		/* if last speed is 0, we treat that as if no vehicle has ever visited the station. */
 		ge->last_speed = min(t, 255);
+		ge->last_unprocessed_speed = front->vcache.cached_max_speed;
+		ge->last_vehicle_type = front->type;
 		ge->last_age = min(_cur_year - front->build_year, 255);
 		ge->time_since_pickup = 0;
 

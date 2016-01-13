@@ -599,11 +599,11 @@ private:
 		/* WID_O_SEL_TOP_ROW */
 		DP_ROW_LOAD        = 0, ///< Display 'load' / 'unload' / 'refit' buttons in the top row of the ship/airplane order window.
 		DP_ROW_DEPOT       = 1, ///< Display 'refit' / 'service' buttons in the top row of the ship/airplane order window.
+		DP_ROW_CONDITIONAL = 2, ///< Display the conditional order buttons in the top row of the ship/airplane order window.
 
 		/* WID_O_SEL_COND_VALUE */
 		DP_COND_VALUE_NUMBER = 0, ///< Display number widget
 		DP_COND_VALUE_CARGO  = 1, ///< Display dropdown widget cargo types
-		DP_ROW_CONDITIONAL   = 2, ///< Display the conditional order buttons in the top row of the ship/airplane order window.
 
 		/* WID_O_SEL_BOTTOM_MIDDLE */
 		DP_BOTTOM_MIDDLE_DELETE       = 0, ///< Display 'delete' in the middle button of the bottom row of the vehicle order window.
@@ -617,8 +617,6 @@ private:
 	Scrollbar *vscroll;
 	bool can_do_refit;     ///< Vehicle chain can be refitted in depot.
 	bool can_do_autorefit; ///< Vehicle chain can be auto-refitted.
-	StringID cargo_names_list[NUM_CARGO + 1];
-	uint32 cargo_bitmask;
 	uint32 index_vehicle_share; ///< index of vehicle to share
 
 	/**
@@ -958,19 +956,6 @@ public:
 				break;
 			}
 		}
-
-		/* Create cargo bitmask */
-		assert_compile(NUM_CARGO <= 32);
-		for (CargoID c = 0; c < NUM_CARGO; c++) {
-			if (CargoSpec::Get(c)->IsValid()) {
-				this->cargo_names_list[c] = CargoSpec::Get(c)->name;
-				SetBit(this->cargo_bitmask, c);
-			}
-			
-		}
-
-		this->cargo_bitmask = ~this->cargo_bitmask;
-		this->cargo_names_list[NUM_CARGO] = INVALID_STRING_ID;
 	}
 
 	/**
@@ -1177,17 +1162,18 @@ public:
 					break;
 
 				case OT_CONDITIONAL: {
-					if (row_sel != NULL) {
+					if (row_sel != nullptr) {
 						row_sel->SetDisplayedPlane(DP_ROW_CONDITIONAL);
 					} else {
 						train_row_sel->SetDisplayedPlane(DP_GROUNDVEHICLE_ROW_CONDITIONAL);
 					}
 					
-					OrderConditionVariable ocv = (order == NULL) ? OCV_LOAD_PERCENTAGE : order->GetConditionVariable();
+					OrderConditionVariable ocv = (order == nullptr) ? OCV_LOAD_PERCENTAGE : order->GetConditionVariable();
 					bool is_cargo = ocv == OCV_CARGO_ACCEPTANCE || ocv == OCV_CARGO_WAITING;
 
 					if (is_cargo) {
-						this->GetWidget<NWidgetCore>(WID_O_COND_CARGO)->widget_data = cargo_names_list[order == NULL ? 0 : order->GetConditionValue()];
+						CargoSpec* cargo_spec = CargoSpec::Get(order != nullptr ? order->GetConditionValue() : 0);
+						this->GetWidget<NWidgetCore>(WID_O_COND_CARGO)->widget_data = cargo_spec->name;
 						this->GetWidget<NWidgetStacked>(WID_O_SEL_COND_VALUE)->SetDisplayedPlane(DP_COND_VALUE_CARGO);
 					}
 					else {
@@ -1448,8 +1434,18 @@ public:
 				break;
  
 			case WID_O_COND_CARGO: {
+				DropDownList *lst = new DropDownList();
+				const CargoSpec *cs;
+				FOR_ALL_SORTED_STANDARD_CARGOSPECS(cs) {
+					*lst->Append() = new DropDownListStringItem(cs->name, cs->Index(), false);
+				}
+				if (lst->Length() == 0) {
+					delete lst;
+					break;
+				}
+
 				uint value = this->vehicle->GetOrder(this->OrderGetSel())->GetConditionValue();
-				ShowDropDownMenu(this, cargo_names_list, value, WID_O_COND_CARGO, 0, cargo_bitmask);
+				ShowDropDownList(this, lst, value, WID_O_COND_CARGO, 0, true);
 				break;
 			}
 
@@ -1895,8 +1891,12 @@ static const NWidgetPart _nested_orders_widgets[] = {
 													SetDataTip(STR_NULL, STR_ORDER_CONDITIONAL_VARIABLE_TOOLTIP), SetResize(1, 0),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_O_COND_COMPARATOR), SetMinimalSize(124, 12), SetFill(1, 0),
 													SetDataTip(STR_NULL, STR_ORDER_CONDITIONAL_COMPARATOR_TOOLTIP), SetResize(1, 0),
-				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_O_COND_VALUE), SetMinimalSize(124, 12), SetFill(1, 0),
+				NWidget(NWID_SELECTION, INVALID_COLOUR, WID_O_SEL_COND_VALUE),
+					NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_O_COND_VALUE), SetMinimalSize(124, 12), SetFill(1, 0),
 													SetDataTip(STR_BLACK_COMMA, STR_ORDER_CONDITIONAL_VALUE_TOOLTIP), SetResize(1, 0),
+					NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_O_COND_CARGO), SetMinimalSize(124, 12), SetFill(1, 0),
+													SetDataTip(STR_NULL, STR_ORDER_CONDITIONAL_CARGO_TOOLTIP), SetResize(1, 0),
+				EndContainer(),
 			EndContainer(),
 		EndContainer(),
 

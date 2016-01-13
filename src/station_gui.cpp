@@ -1457,36 +1457,45 @@ struct StationViewWindow : public Window {
 						}
 					}
 
-					if (!has_newgrf_rating) {
-						int speed = goods_entry->last_speed - 15;
-						int speed_rating = (speed >= 0) ? (speed >> 2) : 0;
+					int speed = goods_entry->last_speed - 15;
+					int speed_rating = (speed >= 0) ? (speed >> 2) : 0;
 
+					SetDParam(param_count++, goods_entry->last_unprocessed_speed);
+					if (!has_newgrf_rating) {
 						SetDParam(param_count++, std::round(speed_rating * 100.0 / 255.0));
 						total_rating += speed_rating;
+					}
 
-						byte waittime = goods_entry->time_since_pickup;
-						int waittime_rating = 0;
+					byte waittime = goods_entry->time_since_pickup;
+					int waittime_rating = 0;
 
-						if (st->last_vehicle_type == VEH_SHIP) waittime >>= 2;
+					if (goods_entry->last_vehicle_type == VEH_SHIP) waittime >>= 2;
 
-						(waittime > 21) ||
-							(waittime_rating += 25, waittime > 12) ||
-							(waittime_rating += 25, waittime > 6) ||
-							(waittime_rating += 45, waittime > 3) ||
-							(waittime_rating += 35, true);
+					(waittime > 21) ||
+						(waittime_rating += 25, waittime > 12) ||
+						(waittime_rating += 25, waittime > 6) ||
+						(waittime_rating += 45, waittime > 3) ||
+						(waittime_rating += 35, true);
 
+					SetDParam(param_count++, goods_entry->time_since_pickup * STATION_RATING_TICKS / DAY_TICKS);
+
+					if (!has_newgrf_rating) {
 						SetDParam(param_count++, std::round(waittime_rating * 100.0 / 255.0));
 						total_rating += waittime_rating;
+					}
 
-						int cargo_waiting_rating = 0;
+					int cargo_waiting_rating = 0;
 
-						(cargo_waiting_rating -= 90, goods_entry->max_waiting_cargo > 1500) ||
-							(cargo_waiting_rating += 55, goods_entry->max_waiting_cargo > 1000) ||
-							(cargo_waiting_rating += 35, goods_entry->max_waiting_cargo > 600) ||
-							(cargo_waiting_rating += 10, goods_entry->max_waiting_cargo > 300) ||
-							(cargo_waiting_rating += 20, goods_entry->max_waiting_cargo > 100) ||
-							(cargo_waiting_rating += 10, true);
+					(cargo_waiting_rating -= 90, goods_entry->max_waiting_cargo > 1500) ||
+						(cargo_waiting_rating += 55, goods_entry->max_waiting_cargo > 1000) ||
+						(cargo_waiting_rating += 35, goods_entry->max_waiting_cargo > 600) ||
+						(cargo_waiting_rating += 10, goods_entry->max_waiting_cargo > 300) ||
+						(cargo_waiting_rating += 20, goods_entry->max_waiting_cargo > 100) ||
+						(cargo_waiting_rating += 10, true);
 
+					SetDParam(param_count++, goods_entry->max_waiting_cargo);
+
+					if (!has_newgrf_rating) {
 						SetDParam(param_count++, std::round(cargo_waiting_rating * 100.0 / 255.0));
 						total_rating += cargo_waiting_rating;
 					}
@@ -1499,11 +1508,13 @@ struct StationViewWindow : public Window {
 						(age_rating += 10, age >= 10) ||
 						(age_rating += 13, true);
 
+					SetDParam(param_count++, goods_entry->last_age);
 					SetDParam(param_count++, std::round(age_rating * 100.0 / 255.0));
 					total_rating += age_rating;
 
-					int authority_rating = (Company::IsValidID(st->owner) && HasBit(st->town->statues, st->owner)) ? 26 : 0;
-
+					bool town_has_statue = (Company::IsValidID(st->owner) && HasBit(st->town->statues, st->owner));
+					int authority_rating = town_has_statue ? 26 : 0;
+					SetDParam(param_count++, town_has_statue ? STR_STATION_VIEW_TOWN_HAS_STATUE : STR_STATION_VIEW_TOWN_HAS_NO_STATUE);
 					SetDParam(param_count++, std::round(authority_rating * 100.0 / 255.0));
 					total_rating += authority_rating;
 

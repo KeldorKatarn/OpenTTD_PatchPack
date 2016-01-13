@@ -3302,6 +3302,11 @@ static VehicleEnterTileStatus VehicleEnter_Station(Vehicle *v, TileIndex tile, i
 {
 	if (v->type == VEH_TRAIN) {
 		StationID station_id = GetStationIndex(tile);
+		if (v->current_order.IsType(OT_GOTO_WAYPOINT) && v->current_order.GetDestination() == station_id && v->current_order.GetWaypointFlags() & OWF_REVERSE) {
+			Train *t = Train::From(v);
+			// reverse at waypoint
+			if (t->reverse_distance == 0) t->reverse_distance = t->gcache.cached_total_length;
+		}
 		if (!v->current_order.ShouldStopAtStation(v, station_id)) return VETSB_CONTINUE;
 		if (!IsRailStation(tile) || !v->IsFrontEngine()) return VETSB_CONTINUE;
 
@@ -3423,6 +3428,7 @@ static void TruncateCargo(const CargoSpec *cs, GoodsEntry *ge, uint amount = UIN
 
 		GoodsEntry &source_ge = source_station->goods[cs->Index()];
 		source_ge.max_waiting_cargo = max(source_ge.max_waiting_cargo, i->second);
+		source_ge.punishment_triggered = true;
 	}
 }
 
@@ -3461,15 +3467,15 @@ static void UpdateStationRating(Station *st)
 			/* num_dests is at least 1 if there is any cargo as
 			 * INVALID_STATION is also a destination.
 			 */
-			uint num_dests = (uint)ge->cargo.Packets()->MapSize();
+			uint num_dests = max(1u, (uint)ge->cargo.Packets()->MapSize());
 
 			/* Average amount of cargo per next hop, but prefer solitary stations
 			 * with only one or two next hops. They are allowed to have more
 			 * cargo waiting per next hop.
-			 * With manual cargo distribution waiting_avg = waiting / 2 as then
+			 * With manual cargo distribution waiting_avg = waiting / 1 as then
 			 * INVALID_STATION is the only destination.
 			 */
-			uint waiting_avg = waiting / (num_dests + 1);
+			uint waiting_avg = waiting / num_dests;
 
 			if (HasBit(cs->callback_mask, CBM_CARGO_STATION_RATING_CALC)) {
 				/* Perform custom station rating. If it succeeds the speed, days in transit and
@@ -3496,7 +3502,8 @@ static void UpdateStationRating(Station *st)
 				if (b >= 0) rating += b >> 2;
 
 				byte waittime = ge->time_since_pickup;
-				if (st->last_vehicle_type == VEH_SHIP) waittime >>= 2;
+				if (ge->last_vehicle_type == VEH_SHIP) waittime >>= 2;
+
 				(waittime > 21) ||
 				(rating += 25, waittime > 12) ||
 				(rating += 25, waittime > 6) ||
@@ -3564,11 +3571,17 @@ static void UpdateStationRating(Station *st)
 				if (waiting_changed && waiting < ge->cargo.AvailableCount()) {
 					/* Feed back the exact own waiting cargo at this station for the
 					 * next rating calculation. */
-					ge->max_waiting_cargo = 0;
-
 					TruncateCargo(cs, ge, ge->cargo.AvailableCount() - waiting);
-				} else {
-					/* If the average number per next hop is low, be more forgiving. */
+				}
+				
+				if (ge->punishment_triggered) {
+					// We were punished by another station. Delay the update of waiting cargo until next rating.
+					ge->punishment_in_effect = true;
+					ge->punishment_triggered = false;
+				}
+				else
+				{
+					ge->punishment_in_effect = false;
 					ge->max_waiting_cargo = waiting_avg;
 				}
 			}

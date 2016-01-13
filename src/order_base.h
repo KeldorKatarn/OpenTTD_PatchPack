@@ -44,6 +44,8 @@ private:
 
 	CargoID refit_cargo;  ///< Refit CargoID
 
+	int8 jump_counter;    ///< Counter for the 'jump xx% of times' option
+
 	uint16 wait_time;    ///< How long in ticks to wait at the destination.
 	uint16 travel_time;  ///< How long in ticks the journey to this destination should take.
 	uint16 max_speed;    ///< How fast the vehicle may go on the way to the destination.
@@ -126,6 +128,14 @@ public:
 	inline CargoID GetRefitCargo() const { return this->refit_cargo; }
 
 	void SetRefit(CargoID cargo);
+ 
+	/**
+	 * Update the jump_counter of this order.
+	 * @param the jump chance in %.
+	 * @return whether to jump or not.
+	 * @pre IsType(OT_CONDITIONAL) && this->GetConditionVariable() == OCV_PERCENT.
+	 */
+	bool UpdateJumpCounter(uint8 percent);
 
 	/** How must the consist be loaded? */
 	inline OrderLoadFlags GetLoadType() const { return (OrderLoadFlags)GB(this->flags, 4, 3); }
@@ -139,6 +149,8 @@ public:
 	inline OrderDepotTypeFlags GetDepotOrderType() const { return (OrderDepotTypeFlags)GB(this->flags, 0, 3); }
 	/** What are we going to do when in the depot. */
 	inline OrderDepotActionFlags GetDepotActionType() const { return (OrderDepotActionFlags)GB(this->flags, 4, 3); }
+	/** What waypoint flags? */
+	inline OrderWaypointFlags GetWaypointFlags() const { return (OrderWaypointFlags)GB(this->flags, 0, 8); }
 	/** What variable do we have to compare? */
 	inline OrderConditionVariable GetConditionVariable() const { return (OrderConditionVariable)GB(this->dest, 11, 5); }
 	/** What is the comparator to use? */
@@ -160,6 +172,8 @@ public:
 	inline void SetDepotOrderType(OrderDepotTypeFlags depot_order_type) { SB(this->flags, 0, 3, depot_order_type); }
 	/** Set what we are going to do in the depot. */
 	inline void SetDepotActionType(OrderDepotActionFlags depot_service_type) { SB(this->flags, 4, 3, depot_service_type); }
+	/** Set waypoint flags. */
+	inline void SetWaypointFlags(OrderWaypointFlags waypoint_flags) { SB(this->flags, 0, 8, waypoint_flags); }
 	/** Set variable we have to compare. */
 	inline void SetConditionVariable(OrderConditionVariable condition_variable) { SB(this->dest, 11, 5, condition_variable); }
 	/** Set the comparator to use. */

@@ -29,9 +29,12 @@ enum OrderWidgets {
 	WID_O_SERVICE,                   ///< Select service (at depot).
 	WID_O_EMPTY,                     ///< Placeholder for refit dropdown when not owner.
 	WID_O_REFIT_DROPDOWN,            ///< Open refit options.
+	WID_O_REVERSE,                   ///< Select waypoint reverse type
 	WID_O_COND_VARIABLE,             ///< Choose condition variable.
 	WID_O_COND_COMPARATOR,           ///< Choose condition type.
 	WID_O_COND_VALUE,                ///< Choose condition value.
+	WID_O_COND_CARGO,                ///< Choose condition cargo.
+	WID_O_SEL_COND_VALUE,            ///< Widget for conditional value or conditional cargo type.
 	WID_O_SEL_TOP_LEFT,              ///< #NWID_SELECTION widget for left part of the top row of the 'your train' order window.
 	WID_O_SEL_TOP_MIDDLE,            ///< #NWID_SELECTION widget for middle part of the top row of the 'your train' order window.
 	WID_O_SEL_TOP_RIGHT,             ///< #NWID_SELECTION widget for right part of the top row of the 'your train' order window.

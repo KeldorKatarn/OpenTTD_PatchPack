@@ -1455,6 +1455,8 @@ STR_CONFIG_SETTING_DEFAULT_RAIL_TYPE_LAST                       :Last available
 STR_CONFIG_SETTING_DEFAULT_RAIL_TYPE_MOST_USED                  :Most used
 STR_CONFIG_SETTING_SHOW_TRACK_RESERVATION                       :Show path reservations for tracks: {STRING2}
 STR_CONFIG_SETTING_SHOW_TRACK_RESERVATION_HELPTEXT              :Give reserved tracks a different colour to assist in problems with trains refusing to enter path-based blocks
+STR_CONFIG_SETTING_SHOW_TRACK_OVERGROWTH                        :Show track overgrowth: {STRING2}
+STR_CONFIG_SETTING_SHOW_TRACK_OVERGROWTH_HELPTEXT               :Shows overgrowing grass depending on the time the track has not been in use by any train
 STR_CONFIG_SETTING_PERSISTENT_BUILDINGTOOLS                     :Keep building tools active after usage: {STRING2}
 STR_CONFIG_SETTING_PERSISTENT_BUILDINGTOOLS_HELPTEXT            :Keep the building tools for bridges, tunnels, etc. open after use
 STR_CONFIG_SETTING_EXPENSES_LAYOUT                              :Group expenses in company finance window: {STRING2}
@@ -3340,6 +3342,13 @@ STR_STATION_VIEW_RATINGS_TOOLTIP                                :{BLACK}Show sta
 STR_STATION_VIEW_SUPPLY_RATINGS_TITLE                           :{BLACK}Monthly supply and local rating:
 STR_STATION_VIEW_CARGO_SUPPLY_RATING                            :{WHITE}{STRING}: {YELLOW}{COMMA} / {STRING} ({COMMA}%)
 
+STR_STATION_VIEW_DETAILED_RATING                                :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Max speed of last vehicle{}{BLUE}{VELOCITY} ({NUM}%/+24%){}{BLACK}Time since last pickup{}{BLUE}{COMMA}{NBSP}day{P "" s} ({NUM}%/+51%){}{BLACK}Cargo waiting per dest.{}{BLUE}{COMMA} ({NUM}%/+16%){}{BLACK}Age of last vehicle{}{BLUE}{COMMA}{NBSP}year{P "" s} ({NUM}%/+13%){}{BLACK}Statue in town{}{BLUE}{STRING} ({NUM}%/+10%){}{}{BLACK}Total target rating{}{BLUE}{NUM}% --> {NUM}%
+STR_STATION_VIEW_DETAILED_RATING_PUNISHED                       :{BLACK}Rating details - {STRING}:{}{TINY_FONT}Max speed of last vehicle{}{BLUE}{VELOCITY} ({NUM}%/+24%){}{BLACK}Time since last pickup{}{BLUE}{COMMA}{NBSP}day{P "" s} ({NUM}%/+51%){}{BLACK}Cargo waiting per dest.{}{RED}(Punished by destination!){}{BLUE}{COMMA} ({NUM}%/+16%){}{BLACK}Age of last vehicle{}{BLUE}{COMMA}{NBSP}year{P "" s} ({NUM}%/+13%){}{BLACK}Statue in town{}{BLUE}{STRING} ({NUM}%/+10%){}{}{BLACK}Total target rating{}{BLUE}{NUM}% --> {NUM}%
+STR_STATION_VIEW_DETAILED_CUSTOM_RATING                         :{BLACK}Rating details - {STRING}:{}{TINY_FONT}{BLACK}Industry NewGRF rating{}{BLUE}({NUM}%){}{BLACK}Based on:{}Max speed of last vehicle{}{BLUE}{VELOCITY}{}{BLACK}Time since last pickup{}{BLUE}{COMMA}{NBSP}day{P "" s}{}{BLACK}Cargo waiting per dest.{}{BLUE}{COMMA}{}{BLACK}Age of last vehicle{}{BLUE}{COMMA}{NBSP}year{P "" s} ({NUM}%/+13%){}{BLACK}Statue in town{}{BLUE}{STRING} ({NUM}%/+10%){}{}{BLACK}Total target rating{}{BLUE}{NUM}% --> {NUM}%
+STR_STATION_VIEW_DETAILED_CUSTOM_RATING_PUNISHED                :{BLACK}Rating details - {STRING}:{}{TINY_FONT}{BLACK}Industry NewGRF rating{}{BLUE}({NUM}%){}{BLACK}Based on:{}Max speed of last vehicle{}{BLUE}{VELOCITY}{}{BLACK}Time since last pickup{}{BLUE}{COMMA}{NBSP}day{P "" s}{}{BLACK}Cargo waiting per dest.{}{RED}(Punished by destination!){}{BLUE}{COMMA}{}{BLACK}Age of last vehicle{}{BLUE}{COMMA}{NBSP}year{P "" s} ({NUM}%/+13%){}{BLACK}Statue in town{}{BLUE}{STRING} ({NUM}%/+10%){}{}{BLACK}Total target rating{}{BLUE}{NUM}% --> {NUM}%
+STR_STATION_VIEW_TOWN_HAS_STATUE                                :Yes
+STR_STATION_VIEW_TOWN_HAS_NO_STATUE                             :No
+
 STR_STATION_VIEW_GROUP                                          :{BLACK}Group by
 STR_STATION_VIEW_WAITING_STATION                                :Station: Waiting
 STR_STATION_VIEW_WAITING_AMOUNT                                 :Amount: Waiting
@@ -3581,8 +3590,8 @@ STR_GROUP_DELETE_TOOLTIP                                        :{BLACK}Delete t
 STR_GROUP_RENAME_TOOLTIP                                        :{BLACK}Rename the selected group
 STR_GROUP_COLLAPSE                                              :{BLACK}Collapse
 STR_GROUP_EXPAND                                                :{BLACK}Expand
-STR_GROUP_EXPAND_ALL                                           :{BLACK}Expand all
-STR_GROUP_COLLAPSE_ALL                                         :{BLACK}Collapse all
+STR_GROUP_EXPAND_ALL                                            :{BLACK}Expand all
+STR_GROUP_COLLAPSE_ALL                                          :{BLACK}Collapse all
 STR_GROUP_COLLAPSE_TOOLTIP                                      :{BLACK}Click to collapse the selected group
 STR_GROUP_EXPAND_TOOLTIP                                        :{BLACK}Click to expand the selected group
 STR_GROUP_REPLACE_PROTECTION_TOOLTIP                            :{BLACK}Click to protect this group from global autoreplace
@@ -4024,6 +4033,9 @@ STR_ORDER_REFIT_AUTO                                            :{BLACK}Refit at
 STR_ORDER_REFIT_AUTO_TOOLTIP                                    :{BLACK}Select what cargo type to refit to in this order. Ctrl+Click to remove refit instruction. Refitting at stations will only be done if the vehicle allows it
 STR_ORDER_DROP_REFIT_AUTO                                       :Fixed cargo
 STR_ORDER_DROP_REFIT_AUTO_ANY                                   :Available cargo
+ 
+STR_ORDER_REVERSE                                               :{BLACK}Reverse
+STR_ORDER_REVERSE_TOOLTIP                                       :{BLACK}Change the reversing behaviour of the highlighted order.
 
 STR_ORDER_SERVICE                                               :{BLACK}Service
 STR_ORDER_DROP_GO_ALWAYS_DEPOT                                  :Always go
@@ -4041,6 +4053,18 @@ STR_ORDER_CONDITIONAL_AGE                                       :Age (years)
 STR_ORDER_CONDITIONAL_REQUIRES_SERVICE                          :Requires service
 STR_ORDER_CONDITIONAL_UNCONDITIONALLY                           :Always
 STR_ORDER_CONDITIONAL_REMAINING_LIFETIME                        :Remaining lifetime (years)
+STR_ORDER_CONDITIONAL_CARGO_WAITING                             :Waiting cargo
+STR_ORDER_CONDITIONAL_ACCEPTANCE_DROPDOWN                       :Accepted cargo
+STR_ORDER_CONDITIONAL_FREE_PLATFORMS                            :Free platforms
+STR_ORDER_CONDITIONAL_PERCENT                                   :Percent of times
+
+STR_ORDER_CONDITIONAL_REQUIRES_SERVICE_ORDER                    :Requires service {STRING}
+STR_ORDER_CONDITIONAL_CARGO_WAITING_ORDER                       :Next station {STRING} {STRING} waiting
+STR_ORDER_CONDITIONAL_ACCEPTANCE                                :Next station {STRING} {STRING}
+STR_CONDITIONAL_FREE_PLATFORMS                                  :Jump to order {COMMA} when Next station {STRING} {COMMA} free platform{P "" s}
+STR_CONDITIONAL_PERCENT                                         :Jump to order {COMMA} {COMMA} percent of times
+
+STR_ORDER_CONDITIONAL_NEXT_STATION                              :Next station
 
 STR_ORDER_CONDITIONAL_COMPARATOR_TOOLTIP                        :{BLACK}How to compare the vehicle data to the given value
 STR_ORDER_CONDITIONAL_COMPARATOR_EQUALS                         :is equal to
@@ -4053,7 +4077,17 @@ STR_ORDER_CONDITIONAL_COMPARATOR_IS_TRUE                        :is true
 STR_ORDER_CONDITIONAL_COMPARATOR_IS_FALSE                       :is false
 
 STR_ORDER_CONDITIONAL_VALUE_TOOLTIP                             :{BLACK}The value to compare the vehicle data against
+STR_ORDER_CONDITIONAL_CARGO_TOOLTIP                             :{BLACK}The cargo to compare the station data against
 STR_ORDER_CONDITIONAL_VALUE_CAPT                                :{WHITE}Enter value to compare against
+ 
+STR_ORDER_CONDITIONAL_COMPARATOR_ACCEPTS                        :accepts
+STR_ORDER_CONDITIONAL_COMPARATOR_DOES_NOT_ACCEPT                :does not accept
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS                            :has
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS_NO                         :does not have
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS_LESS_THAN                  :has less than
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS_LESS_EQUALS                :has less than or exactly
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS_MORE_THAN                  :has more than
+STR_ORDER_CONDITIONAL_COMPARATOR_HAS_MORE_EQUALS                :has more than or exactly
 
 STR_ORDERS_SKIP_BUTTON                                          :{BLACK}Skip
 STR_ORDERS_SKIP_TOOLTIP                                         :{BLACK}Skip the current order, and start the next. Ctrl+Click skips to the selected order
@@ -4076,6 +4110,8 @@ STR_ORDERS_VEH_WITH_SHARED_ORDERS_LIST_TOOLTIP                  :{BLACK}Show all
 # String parts to build the order string
 STR_ORDER_GO_TO_WAYPOINT                                        :Go via {WAYPOINT}
 STR_ORDER_GO_NON_STOP_TO_WAYPOINT                               :Go non-stop via {WAYPOINT}
+STR_ORDER_GO_TO_WAYPOINT_REVERSE                                :Go via and reverse at {WAYPOINT}
+STR_ORDER_GO_NON_STOP_TO_WAYPOINT_REVERSE                       :Go non-stop via and reverse at {WAYPOINT}
 
 STR_ORDER_SERVICE_AT                                            :Service at
 STR_ORDER_SERVICE_NON_STOP_AT                                   :Service non-stop at
@@ -4135,6 +4171,7 @@ STR_ORDER_OUT_OF_RANGE                                          :{RED} (Next des
 
 STR_ORDER_CONDITIONAL_UNCONDITIONAL                             :Jump to order {COMMA}
 STR_ORDER_CONDITIONAL_NUM                                       :Jump to order {COMMA} when {STRING} {STRING} {COMMA}
+STR_ORDER_CONDITIONAL_CARGO                                     :Jump to order {COMMA} when {STRING} {STRING} {STRING}
 STR_ORDER_CONDITIONAL_TRUE_FALSE                                :Jump to order {COMMA} when {STRING} {STRING}
 
 STR_INVALID_ORDER                                               :{RED} (Invalid Order)

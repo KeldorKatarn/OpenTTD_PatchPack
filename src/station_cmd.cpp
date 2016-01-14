@@ -3427,8 +3427,12 @@ static void TruncateCargo(const CargoSpec *cs, GoodsEntry *ge, uint amount = UIN
 		if (source_station == NULL) continue;
 
 		GoodsEntry &source_ge = source_station->goods[cs->Index()];
-		source_ge.max_waiting_cargo = max(source_ge.max_waiting_cargo, i->second);
-		source_ge.punishment_triggered = true;
+		uint source_avg_waiting = source_ge.cargo.AvailableCount() / max(1u, (uint)source_ge.cargo.Packets()->MapSize());
+
+		if (i->second > source_avg_waiting) {
+			source_ge.max_waiting_cargo = i->second;
+			source_ge.punishment_triggered = true;
+		}
 	}
 }
 

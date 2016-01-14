@@ -451,7 +451,7 @@ static inline bool HasSignalOnTrack(TileIndex tile, Track track)
  */
 static inline bool HasSignalOnTrackdir(TileIndex tile, Trackdir trackdir)
 {
-	//assert (IsValidTrackdir(trackdir));
+	assert (IsValidTrackdir(trackdir));
 	return GetRailTileType(tile) == RAIL_TILE_SIGNALS && GetPresentSignals(tile) & SignalAlongTrackdir(trackdir);
 }
 

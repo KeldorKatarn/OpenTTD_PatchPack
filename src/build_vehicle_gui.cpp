@@ -867,7 +867,7 @@ static int CDECL TrainEngineCapacitySorterWagon(const EngineID *a, const EngineI
 	return _internal_sort_order_wagon ? -r : r;
 }
 
-static EngList_SortTypeFunction * const _engine_sort_functions[][11] = { {
+EngList_SortTypeFunction * const _engine_sort_functions[][11] = { {
 	/* Trains */
 	&EngineNumberSorter,
 	&EngineCostSorter,

@@ -44,14 +44,17 @@ void FreeAllSignalPrograms()
  */
 inline SignalState DetermineSignalState(TileIndex tile, Track track)
 {
-	/* uint red_signals = SignalOnTrack(track) & ~GetSignalStates(tile); */
-	/* uint green_signals = SignalOnTrack(track) & GetSignalStates(tile); */
+	assert(HasSignalOnTrack(tile, track));
 
-	if ((SignalOnTrack(track) & ~GetSignalStates(tile)) != 0) {
-		return SIGNAL_STATE_RED;
-	} else {
-		return SIGNAL_STATE_GREEN;
-	}
+	uint signal_states = GetSignalStates(tile);
+	byte signal_mask_for_track = SignalOnTrack(track);
+	byte present_signals_on_tile = GetPresentSignals(tile);
+
+	byte present_signals_on_track = signal_mask_for_track & present_signals_on_tile;
+	byte signal_states_on_track = present_signals_on_track & signal_states;
+
+	// We return red if one of the two possibly present signals is red. Both need to be green for us to accept the tile as green.
+	return (signal_states_on_track == present_signals_on_track) ? SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;
 }
 
 /**
@@ -63,10 +66,14 @@ inline SignalState DetermineSignalState(TileIndex tile, Track track)
  */
 inline void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state)
 {
-	if (state == SIGNAL_STATE_RED) {
-		SetSignalStates(tile, GetSignalStates(tile) & ~SignalOnTrack(track));
-	} else {
-		SetSignalStates(tile, GetSignalStates(tile) | SignalOnTrack(track));
+	byte signal_mask_for_track = SignalOnTrack(track);
+	byte present_signals_on_tile = GetPresentSignals(tile);
+
+	if (state == SIGNAL_STATE_GREEN) {
+		SetSignalStates(tile, GetSignalStates(tile) | present_signals_on_tile);
+	}
+	else {
+		SetSignalStates(tile, GetSignalStates(tile) & ~present_signals_on_tile);
 	}
 }
 
@@ -235,8 +242,8 @@ void DeleteSignalProgram(TileIndex tile, Track track)
 
 /**
  * Used to create or delete signal programs at the given tile when the signal type changes.
- * @param tile The tile where the change occured.
- * @param track The track where the change occured.
+ * @param tile The tile where the change occurred.
+ * @param track The track where the change occurred.
  * @param old_type The old type of the changed signal
  * @param new_type The new type of the changed signal
  */
@@ -248,8 +255,8 @@ inline void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, 
 
 /**
  * Executed whenever signal state has changed by the main program.
- * @param tile Tile where the change occured
- * @param track Track where the change occured
+ * @param tile Tile where the change occurred
+ * @param track Track where the change occurred
  * @param depth Recursion depth, starts at 1.
  */
 inline void SignalStateChanged(TileIndex tile, Track track, int depth)

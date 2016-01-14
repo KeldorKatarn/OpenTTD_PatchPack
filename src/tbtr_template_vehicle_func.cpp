@@ -55,19 +55,19 @@ void pav() {
 void ptv(TemplateVehicle* tv) {
 	if (!tv) return;
 	while (tv->Next() ) {
-		printf("eid:%3d  st:%2d  tv:%x  next:%x  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, (uint32)tv, (uint32)tv->Next(), tv->cargo_type, tv->cargo_subtype);
+		printf("eid:%3d  st:%2d  tv:%p  next:%p  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, tv, tv->Next(), tv->cargo_type, tv->cargo_subtype);
 		tv = tv->Next();
 	}
-	printf("eid:%3d  st:%2d  tv:%x  next:%x  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, (uint32)tv, (uint32)tv->Next(),  tv->cargo_type, tv->cargo_subtype);
+	printf("eid:%3d  st:%2d  tv:%p  next:%p  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, tv, tv->Next(),  tv->cargo_type, tv->cargo_subtype);
 }
 
 void pvt (const Train *printme) {
 	for ( const Train *tmp = printme; tmp; tmp=tmp->Next() ) {
 		if ( tmp->index <= 0 ) {
-			printf("train has weird index: %d %d %x\n", tmp->index, tmp->engine_type, (uint)tmp);
+			printf("train has weird index: %d %d %p\n", tmp->index, tmp->engine_type, tmp);
 			return;
 		}
-		printf("eid:%3d  index:%2d  subtype:%2d  vehstat: %d  cargo_t: %d   cargo_sub: %d  ref:%x\n", tmp->engine_type, tmp->index, tmp->subtype, tmp->vehstatus, tmp->cargo_type, tmp->cargo_subtype, (uint32)tmp);
+		printf("eid:%3d  index:%2d  subtype:%2d  vehstat: %d  cargo_t: %d   cargo_sub: %d  ref:%p\n", tmp->engine_type, tmp->index, tmp->subtype, tmp->vehstatus, tmp->cargo_type, tmp->cargo_subtype, tmp);
 	}
 }
 

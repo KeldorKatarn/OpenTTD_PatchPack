@@ -1231,6 +1231,11 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 			SetPresentSignals(tile, (GetPresentSignals(tile) & ~SignalOnTrack(track)) | (p2 & SignalOnTrack(track)));
 			SetSignalVariant(tile, track, sigvar);
 			SetSignalType(tile, track, sigtype);
+
+			/* logic signals: create a new signal program */
+			if (sigtype == SIGTYPE_LOGIC) {
+				CreateSignalProgram(tile, track);
+			}
 		}
 
 		/* Add new signal infrastructure count. */

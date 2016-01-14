@@ -42,7 +42,7 @@ void FreeAllSignalPrograms()
  * @param track The track where the tested signal is located.
  * @return Red if either of the two possible signals is red.
  */
-inline SignalState DetermineSignalState(TileIndex tile, Track track)
+SignalState DetermineSignalState(TileIndex tile, Track track)
 {
 	assert(HasSignalOnTrack(tile, track));
 
@@ -64,7 +64,7 @@ inline SignalState DetermineSignalState(TileIndex tile, Track track)
  * @param track Track where the changed signal is located.
  * @param state The new state to set to the signals.
  */
-inline void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state)
+void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state)
 {
 	byte signal_mask_for_track = SignalOnTrack(track);
 	byte present_signals_on_tile = GetPresentSignals(tile);
@@ -86,7 +86,7 @@ inline void SetSignalStateForTrack(TileIndex tile, Track track, SignalState stat
  * @param tile The tile where to read the Track from.
  * @return The read Track
  */
-inline Track SignalTrackFromTile(TileIndex tile)
+Track SignalTrackFromTile(TileIndex tile)
 {
 	TrackBits trackbits = TrackStatusToTrackBits(GetTileTrackStatus(tile, TRANSPORT_RAIL, 0));
 
@@ -107,7 +107,7 @@ inline Track SignalTrackFromTile(TileIndex tile)
  * @param track The track to get a signal reference from
  * @return The signal reference made up of the given tile and track
  */
-inline SignalReference GetSignalReference(TileIndex tile, Track track)
+SignalReference GetSignalReference(TileIndex tile, Track track)
 {
 	return tile | (((uint32) track) << 22);
 }
@@ -117,7 +117,7 @@ inline SignalReference GetSignalReference(TileIndex tile, Track track)
  * @param key The signal reference to extract a TileIndex from
  * @return The TileIndex component of the given signal reference
  */
-inline TileIndex GetTileFromSignalReference(SignalReference key)
+TileIndex GetTileFromSignalReference(SignalReference key)
 {
 	return GB(key, 0, 22);
 }
@@ -127,7 +127,7 @@ inline TileIndex GetTileFromSignalReference(SignalReference key)
  * @param key The signal reference to extract a Track from
  * @return The Track component of the given signal reference
  */
-inline Track GetTrackFromSignalReference(SignalReference key)
+Track GetTrackFromSignalReference(SignalReference key)
 {
 	return (Track) (key >> 22);
 }
@@ -247,7 +247,7 @@ void DeleteSignalProgram(TileIndex tile, Track track)
  * @param old_type The old type of the changed signal
  * @param new_type The new type of the changed signal
  */
-inline void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalType new_type)
+void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalType new_type)
 {
 	if (old_type == SIGTYPE_LOGIC) DeleteSignalProgram(tile, track);
 	if (new_type == SIGTYPE_LOGIC) CreateSignalProgram(tile, track);
@@ -259,7 +259,7 @@ inline void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, 
  * @param track Track where the change occurred
  * @param depth Recursion depth, starts at 1.
  */
-inline void SignalStateChanged(TileIndex tile, Track track, int depth)
+void SignalStateChanged(TileIndex tile, Track track, int depth)
 {
 	SignalReference link = FindSignalLink(tile, track);
 	if (link != NULL) {

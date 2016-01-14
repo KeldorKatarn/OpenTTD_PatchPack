@@ -307,8 +307,6 @@ public:
 		 */
 		 WC_VEHICLE_TRIP_HISTORY                         = ::WC_VEHICLE_TRIP_HISTORY,
 
-		 /**
-
 		/**
 		 * Company colour selection; %Window numbers:
 		 *   - #CompanyID = #SelectCompanyLiveryWidgets

@@ -590,7 +590,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		Station *station_first = Station::GetIfValid(first->GetDestination());
 		Station *station_last = Station::GetIfValid(last->GetDestination());
 				
-		if(station_last->IsValidID == false || station_first->IsValidID == false) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+		if(station_last == NULL || station_first == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 		Town *town_first = station_first->town;
 		Town *town_last = station_last->town;

@@ -79,18 +79,18 @@ extern SignalLinkList _signal_link_list;
 
 // Global functions in logic_signals.cpp
 extern void FreeAllSignalPrograms();
-extern inline SignalState DetermineSignalState(TileIndex tile, Track track);
-extern inline void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state);
-extern inline Track SignalTrackFromTile(TileIndex tile);
-extern inline SignalReference GetSignalReference(TileIndex tile, Track track);
-extern inline TileIndex GetTileFromSignalReference(SignalReference key);
-extern inline Track GetTrackFromSignalReference(SignalReference key);
+extern SignalState DetermineSignalState(TileIndex tile, Track track);
+extern void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state);
+extern Track SignalTrackFromTile(TileIndex tile);
+extern SignalReference GetSignalReference(TileIndex tile, Track track);
+extern TileIndex GetTileFromSignalReference(SignalReference key);
+extern Track GetTrackFromSignalReference(SignalReference key);
 extern SignalProgram * FindSignalProgram(TileIndex tile, Track track);
 extern void RemoveSignalLink(TileIndex tile, Track track);
 extern SignalProgram * CreateSignalProgram(TileIndex tile, Track track);
 extern void DeleteSignalProgram(TileIndex tile, Track track);
-extern inline void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalType new_type);
-extern inline void SignalStateChanged(TileIndex tile, Track track, int depth);
+extern void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalType new_type);
+extern void SignalStateChanged(TileIndex tile, Track track, int depth);
 
 // Global functions in logic_signals_gui.cpp
 extern void ShowSignalProgramWindow(SignalProgram *program);

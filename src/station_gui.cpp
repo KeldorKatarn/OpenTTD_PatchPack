@@ -41,6 +41,7 @@
 
 #include <set>
 #include <vector>
+#include <cmath>
 
 #include "safeguards.h"
 

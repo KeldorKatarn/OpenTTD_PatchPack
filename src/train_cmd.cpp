@@ -179,6 +179,8 @@ void Train::ConsistChanged(ConsistChangeFlags allowed_changes)
 		/* Reset colour map */
 		u->colourmap = PAL_NONE;
 
+		RailType rt = u->railtype;
+
 		/* Update powered-wagon-status and visual effect */
 		u->UpdateVisualEffect(true);
 
@@ -4611,6 +4613,9 @@ Train* CmdBuildVirtualRailWagon(const Engine *e)
 
 	Train *v = new Train();
 
+	/* The GVSF_VIRTUAL flag is used to prevent depot-tile sanity checks */
+	SetBit(v->subtype, GVSF_VIRTUAL);
+
 	v->x_pos = 0;
 	v->y_pos = 0;
 
@@ -4650,9 +4655,6 @@ Train* CmdBuildVirtualRailWagon(const Engine *e)
 
 	CheckConsistencyOfArticulatedVehicle(v);
 
-	/* The GVSF_VIRTUAL flag is used to prevent depot-tile sanity checks */
-	SetBit(v->subtype, GVSF_VIRTUAL);
-
 	return v;
 }
 
@@ -4681,6 +4683,8 @@ Train* CmdBuildVirtualRailVehicle(EngineID eid)
 		return CmdBuildVirtualRailWagon(e);
 
 	Train *v = new Train();
+
+	SetBit(v->subtype, GVSF_VIRTUAL);
 
 	v->x_pos = 0;
 	v->y_pos = 0;
@@ -4724,8 +4728,6 @@ Train* CmdBuildVirtualRailVehicle(EngineID eid)
 	v->ConsistChanged(CCF_ARRANGE);
 
 	CheckConsistencyOfArticulatedVehicle(v);
-
-	SetBit(v->subtype, GVSF_VIRTUAL);
 
 	return v;
 }

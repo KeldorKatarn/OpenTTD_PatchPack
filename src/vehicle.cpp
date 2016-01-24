@@ -1060,9 +1060,7 @@ void CallVehicleTicks()
 		bool stayInDepot = it->second;
 
 		it->first->vehstatus |= VS_STOPPED;
-		CmdTemplateReplaceVehicle(t, stayInDepot, DC_EXEC);
-		/* Redraw main gui for changed statistics */
-		SetWindowClassesDirty(WC_TEMPLATEGUI_MAIN);
+		DoCommand(t->tile, t->index, stayInDepot ? 1 : 0, DC_EXEC, CMD_TEMPLATE_REPLACE_VEHICLE);
 	}
 	tmpl_cur_company.Restore();
 }
@@ -2539,7 +2537,7 @@ void Vehicle::UpdateVisualEffect(bool allow_power_change)
 	}
 
 	/* Check powered wagon / visual effect callback */
-	if (HasBit(e->info.callback_mask, CBM_VEHICLE_VISUAL_EFFECT)) {
+	if (HasBit(e->info.callback_mask, CBM_VEHICLE_VISUAL_EFFECT) && !HasBit(this->subtype, GVSF_VIRTUAL)) {
 		uint16 callback = GetVehicleCallback(CBID_VEHICLE_VISUAL_EFFECT, 0, 0, this->engine_type, this);
 
 		if (callback != CALLBACK_FAILED) {

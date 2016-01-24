@@ -496,7 +496,7 @@ public:
 			this->sel = INVALID_VEHICLE;
 			TrainDepotMoveVehicle(v, sel, gdvp.head);			
 		} else if (v != NULL) {
-			int image = v->GetImage(_current_text_dir == TD_RTL ? DIR_E : DIR_W, EIT_PURCHASE);
+			int image = v->GetImage(_current_text_dir == TD_RTL ? DIR_E : DIR_W, EIT_IN_DEPOT);
 			SetObjectToPlaceWnd(image, GetVehiclePalette(v), HT_DRAG, this);
 
 			this->sel = v->index;

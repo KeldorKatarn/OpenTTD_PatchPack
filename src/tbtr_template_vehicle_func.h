@@ -55,13 +55,21 @@ Train* DepotContainsEngine(TileIndex, EngineID, Train*);
 
 int NumTrainsNeedTemplateReplacement(GroupID, TemplateVehicle*);
 
-CommandCost TestBuyAllTemplateVehiclesInChain(Train*);
 CommandCost CalculateTemplateReplacementCost(Train*);
+CommandCost TestBuyAllTemplateVehiclesInChain(TemplateVehicle *tv, TileIndex tile);
+
+void CmdRefitTrainFromTemplate(Train *t, TemplateVehicle *tv, DoCommandFlag);
+void BreakUpRemainders(Train *t);
 
 short CountEnginesInChain(Train*);
 
 bool TemplateVehicleContainsEngineOfRailtype(const TemplateVehicle*, RailType);
 
 void TransferCargoForTrain(Train*, Train*);
+
+void NeutralizeStatus(Train *t);
+
+bool TrainMatchesTemplate(const Train *t, TemplateVehicle *tv);
+bool TrainMatchesTemplateRefit(const Train *t, TemplateVehicle *tv);
 
 #endif

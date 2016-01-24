@@ -4624,10 +4624,7 @@ Train* CmdBuildVirtualRailWagon(const Engine *e)
 	const RailVehicleInfo *rvi = &e->u.rail;
 
 	Train *v = new Train();
-
-	/* The GVSF_VIRTUAL flag is used to prevent depot-tile sanity checks */
-	SetBit(v->subtype, GVSF_VIRTUAL);
-
+	
 	v->x_pos = 0;
 	v->y_pos = 0;
 
@@ -4658,6 +4655,11 @@ Train* CmdBuildVirtualRailWagon(const Engine *e)
 	v->group_id = DEFAULT_GROUP;
 
 	AddArticulatedParts(v);
+
+	// Make sure we set EVERYTHING to virtual, even articulated parts.
+	for (Train* train_part = v; train_part != NULL; train_part = train_part->Next()) {
+		train_part->SetVirtual();
+	}
 
 	_new_vehicle_id = v->index;
 
@@ -4696,8 +4698,6 @@ Train* CmdBuildVirtualRailVehicle(EngineID eid)
 
 	Train *v = new Train();
 
-	SetBit(v->subtype, GVSF_VIRTUAL);
-
 	v->x_pos = 0;
 	v->y_pos = 0;
 
@@ -4735,6 +4735,11 @@ Train* CmdBuildVirtualRailVehicle(EngineID eid)
 		AddRearEngineToMultiheadedTrain(v);
 	} else {
 		AddArticulatedParts(v);
+	}
+
+	// Make sure we set EVERYTHING to virtual, even articulated parts.
+	for (Train* train_part = v; train_part != NULL; train_part = train_part->Next()) {
+		train_part->SetVirtual();
 	}
 
 	v->ConsistChanged(CCF_ARRANGE);

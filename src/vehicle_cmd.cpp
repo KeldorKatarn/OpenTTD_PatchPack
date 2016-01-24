@@ -1027,7 +1027,7 @@ CommandCost CmdDeleteVirtualTrain(TileIndex tile, DoCommandFlag flags, uint32 p1
 }
 
 /**
- * /// Replace a template vehicle with another one based on a virtual train.
+ * Replace a template vehicle with another one based on a virtual train.
  * @param tile unused
  * @param flags type of operation
  * @param p1 the template vehicle's index

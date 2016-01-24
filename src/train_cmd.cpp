@@ -36,6 +36,8 @@
 #include "zoom_func.h"
 #include "newgrf_debug.h"
 #include "tracerestrict.h"
+#include "tbtr_template_vehicle_func.h"
+#include "autoreplace_func.h"
 
 #include "table/strings.h"
 #include "table/train_cmd.h"
@@ -4756,4 +4758,210 @@ CommandCost CmdBuildVirtualRailVehicle(TileIndex tile, DoCommandFlag flags, uint
 	}
 
 	return CommandCost();
+}
+
+/**
+* Replace a vehicle based on a template replacement order.
+* @param tile unused
+* @param flags type of operation
+* @param p1 the ID of the vehicle to replace.
+* @param p2 whether the vehicle should stay in the depot.
+* @param text unused
+* @return the cost of this operation or an error
+*/
+CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	VehicleID vehicle_id = p1;
+
+	Vehicle* vehicle = Vehicle::GetIfValid(vehicle_id);
+
+	if (vehicle == nullptr || vehicle->type != VEH_TRAIN)
+		return CMD_ERROR;
+
+	bool should_execute = (flags & DC_EXEC) != 0;
+
+	if (!should_execute)
+		return CommandCost();
+
+	Train* incoming = Train::From(vehicle);
+	bool stayInDepot = p2 != 0;
+
+	Train	*new_chain = 0,
+		*remainder_chain = 0,
+		*tmp_chain = 0;
+	TemplateVehicle *tv = GetTemplateVehicleByGroupID(incoming->group_id);
+	EngineID eid = tv->engine_type;
+
+	CommandCost buy(EXPENSES_NEW_VEHICLES);
+	CommandCost move_cost(EXPENSES_NEW_VEHICLES);
+	CommandCost tmp_result(EXPENSES_NEW_VEHICLES);
+
+
+	/* first some tests on necessity and sanity */
+	if (!tv)
+		return buy;
+	bool need_replacement = !TrainMatchesTemplate(incoming, tv);
+	bool need_refit = !TrainMatchesTemplateRefit(incoming, tv);
+	bool use_refit = tv->refit_as_template;
+	CargoID store_refit_ct = CT_INVALID;
+	short store_refit_csubt = 0;
+	// if a train shall keep its old refit, store the refit setting of its first vehicle
+	if (!use_refit) {
+		for (Train *getc = incoming; getc; getc = getc->GetNextUnit())
+			if (getc->cargo_type != CT_INVALID) {
+				store_refit_ct = getc->cargo_type;
+				break;
+			}
+	}
+
+	// TODO: set result status to success/no success before returning
+	if (!need_replacement) {
+		if (!need_refit || !use_refit) {
+			/* before returning, release incoming train first if 2nd param says so */
+			if (!stayInDepot) incoming->vehstatus &= ~VS_STOPPED;
+			return buy;
+		}
+	}
+	else {
+		CommandCost buyCost = TestBuyAllTemplateVehiclesInChain(tv, tile);
+		if (!buyCost.Succeeded() || !CheckCompanyHasMoney(buyCost)) {
+			if (!stayInDepot) incoming->vehstatus &= ~VS_STOPPED;
+			return buy;
+		}
+	}
+
+	/* define replacement behavior */
+	bool reuseDepot = tv->IsSetReuseDepotVehicles();
+	bool keepRemainders = tv->IsSetKeepRemainingVehicles();
+
+	if (need_replacement) {
+		/// step 1: generate primary for newchain and generate remainder_chain
+		// 1. primary of incoming might already fit the template
+		// leave incoming's primary as is and move the rest to a free chain = remainder_chain
+		// 2. needed primary might be one of incoming's member vehicles
+		// 3. primary might be available as orphan vehicle in the depot
+		// 4. we need to buy a new engine for the primary
+		// all options other than 1. need to make sure to copy incoming's primary's status
+		if (eid == incoming->engine_type) {													// 1
+			new_chain = incoming;
+			remainder_chain = incoming->GetNextUnit();
+			if (remainder_chain)
+				move_cost.AddCost(CmdMoveRailVehicle(tile, flags, remainder_chain->index | (1 << 20), INVALID_VEHICLE, 0));
+		}
+		else if ((tmp_chain = ChainContainsEngine(eid, incoming)) && tmp_chain != NULL)	{		// 2
+			// new_chain is the needed engine, move it to an empty spot in the depot
+			new_chain = tmp_chain;
+			move_cost.AddCost(DoCommand(tile, new_chain->index, INVALID_VEHICLE, flags, CMD_MOVE_RAIL_VEHICLE));
+			remainder_chain = incoming;
+		}
+		else if (reuseDepot && (tmp_chain = DepotContainsEngine(tile, eid, incoming)) && tmp_chain != NULL) {	// 3
+			new_chain = tmp_chain;
+			move_cost.AddCost(DoCommand(tile, new_chain->index, INVALID_VEHICLE, flags, CMD_MOVE_RAIL_VEHICLE));
+			remainder_chain = incoming;
+		}
+		else {																				// 4
+			tmp_result = DoCommand(tile, eid, 0, flags, CMD_BUILD_VEHICLE);
+			/* break up in case buying the vehicle didn't succeed */
+			if (!tmp_result.Succeeded())
+				return tmp_result;
+			buy.AddCost(tmp_result);
+			new_chain = Train::Get(_new_vehicle_id);
+			/* make sure the newly built engine is not attached to any free wagons inside the depot */
+			move_cost.AddCost(DoCommand(tile, new_chain->index, INVALID_VEHICLE, flags, CMD_MOVE_RAIL_VEHICLE));
+			/* prepare the remainder chain */
+			remainder_chain = incoming;
+		}
+		// If we bought a new engine or reused one from the depot, copy some parameters from the incoming primary engine
+		if (incoming != new_chain && flags == DC_EXEC) {
+			CopyHeadSpecificThings(incoming, new_chain, flags);
+			NeutralizeStatus(incoming);
+
+
+			// additionally, if we don't want to use the template refit, refit as incoming
+			// the template refit will be set further down, if we use it at all
+			if (!use_refit) {
+				uint32 cb = GetCmdRefitVeh(new_chain);
+				DoCommand(new_chain->tile, new_chain->index, store_refit_ct | store_refit_csubt << 8 | 1 << 16 | (1 << 5), flags, cb);
+			}
+
+		}
+
+		/// step 2: fill up newchain according to the template
+		// foreach member of template (after primary):
+		// 1. needed engine might be within remainder_chain already
+		// 2. needed engine might be orphaned within the depot (copy status)
+		// 3. we need to buy (again)						   (copy status)
+		TemplateVehicle *cur_tmpl = tv->GetNextUnit();
+		Train *last_veh = new_chain;
+		while (cur_tmpl) {
+			// 1. engine contained in remainder chain
+			if ((tmp_chain = ChainContainsEngine(cur_tmpl->engine_type, remainder_chain)) && tmp_chain != NULL)	{
+				// advance remainder_chain (if necessary) to not lose track of it
+				if (tmp_chain == remainder_chain)
+					remainder_chain = remainder_chain->GetNextUnit();
+				move_cost.AddCost(CmdMoveRailVehicle(tile, flags, tmp_chain->index, last_veh->index, 0));
+			}
+			// 2. engine contained somewhere else in the depot
+			else if (reuseDepot && (tmp_chain = DepotContainsEngine(tile, cur_tmpl->engine_type, new_chain)) && tmp_chain != NULL) {
+				move_cost.AddCost(CmdMoveRailVehicle(tile, flags, tmp_chain->index, last_veh->index, 0));
+			}
+			// 3. must buy new engine
+			else {
+				tmp_result = DoCommand(tile, cur_tmpl->engine_type, 0, flags, CMD_BUILD_VEHICLE);
+				if (!tmp_result.Succeeded())
+					return tmp_result;
+				buy.AddCost(tmp_result);
+				tmp_chain = Train::Get(_new_vehicle_id);
+				move_cost.AddCost(CmdMoveRailVehicle(tile, flags, tmp_chain->index, last_veh->index, 0));
+			}
+			// TODO: is this enough ? might it be that we bought a new wagon here and it now has std refit ?
+			if (need_refit && flags == DC_EXEC) {
+				if (use_refit) {
+					uint32 cb = GetCmdRefitVeh(tmp_chain);
+					DoCommand(tmp_chain->tile, tmp_chain->index, cur_tmpl->cargo_type | cur_tmpl->cargo_subtype << 8 | 1 << 16 | (1 << 5), flags, cb);
+					// old
+					// CopyWagonStatus(cur_tmpl, tmp_chain);
+				}
+				else {
+					uint32 cb = GetCmdRefitVeh(tmp_chain);
+					DoCommand(tmp_chain->tile, tmp_chain->index, store_refit_ct | store_refit_csubt << 8 | 1 << 16 | (1 << 5), flags, cb);
+				}
+			}
+			cur_tmpl = cur_tmpl->GetNextUnit();
+			last_veh = tmp_chain;
+		}
+	}
+	/* no replacement done */
+	else {
+		new_chain = incoming;
+	}
+	/// step 3: reorder and neutralize the remaining vehicles from incoming
+	// wagons remaining from remainder_chain should be filled up in as few freewagonchains as possible
+	// each locos might be left as singular in the depot
+	// neutralize each remaining engine's status
+
+	// refit, only if the template option is set so
+	if (use_refit && (need_refit || need_replacement)) {
+		CmdRefitTrainFromTemplate(new_chain, tv, flags);
+	}
+
+	if (new_chain && remainder_chain)
+		for (Train *ct = remainder_chain; ct; ct = ct->GetNextUnit())
+			TransferCargoForTrain(ct, new_chain);
+
+	// point incoming to the newly created train so that starting/stopping from the calling function can be done
+	incoming = new_chain;
+	if (!stayInDepot && flags == DC_EXEC)
+		new_chain->vehstatus &= ~VS_STOPPED;
+
+	if (remainder_chain && keepRemainders && flags == DC_EXEC)
+		BreakUpRemainders(remainder_chain);
+	else if (remainder_chain) {
+		buy.AddCost(DoCommand(tile, remainder_chain->index | (1 << 20), 0, flags, CMD_SELL_VEHICLE));
+	}
+
+	/* Redraw main gui for changed statistics */
+	SetWindowClassesDirty(WC_TEMPLATEGUI_MAIN);
+
+	return buy;
 }

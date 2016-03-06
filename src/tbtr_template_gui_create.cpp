@@ -234,7 +234,9 @@ public:
 				break;
 			}
 			case TCW_REFIT: {
-				ShowVehicleRefitWindow(virtual_train, INVALID_VEH_ORDER_ID, this, false, true);
+				if (virtual_train != nullptr) {
+					ShowVehicleRefitWindow(virtual_train, INVALID_VEH_ORDER_ID, this, false, true);
+				}
 				break;
 			}
 		}

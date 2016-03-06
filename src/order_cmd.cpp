@@ -2299,7 +2299,7 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 		}
 		case OCV_CARGO_ACCEPTANCE: {
 			StationID next_station = GetNextRealStation(v, order);
-			if (Station::IsValidID(next_station)) skip_order = OrderConditionCompare(occ, HasBit(Station::Get(next_station)->goods[value].GES_ACCEPTANCE, GoodsEntry::GES_ACCEPTANCE), value);
+			if (Station::IsValidID(next_station)) skip_order = OrderConditionCompare(occ, HasBit(Station::Get(next_station)->goods[value].status, GoodsEntry::GES_ACCEPTANCE), value);
 			break;
 		}
 		case OCV_FREE_PLATFORMS: {

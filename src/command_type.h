@@ -204,6 +204,7 @@ enum Commands {
 	CMD_BUILD_ROAD_DEPOT,             ///< build a road depot
 
 	CMD_BUILD_AIRPORT,                ///< build an airport
+	CMD_BUILD_SEAPLANE_AIRPORT,       ///< build a seaplane airport
 
 	CMD_BUILD_DOCK,                   ///< build a dock
 

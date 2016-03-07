@@ -149,6 +149,7 @@ public:
 		HELICOPTERS = 0x2,                     ///< Can helicopters land on this airport type?
 		ALL         = AIRPLANES | HELICOPTERS, ///< Mask to check for both planes and helicopters.
 		SHORT_STRIP = 0x4,                     ///< This airport has a short landing strip, dangerous for fast aircraft.
+		SEAPLANES   = 0x8,                     ///< Can seaplanes land on this airport type?
 	};
 
 	AirportFTAClass(

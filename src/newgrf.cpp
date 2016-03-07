@@ -1970,7 +1970,7 @@ static ChangeInfoResult StationChangeInfo(uint stid, int numinfo, int prop, Byte
 
 						statspec->layouts = ReallocT(statspec->layouts, length);
 						memset(statspec->layouts + statspec->lengths, 0,
-						       (length - statspec->lengths) * sizeof(*statspec->layouts));
+							   (length - statspec->lengths) * sizeof(*statspec->layouts));
 
 						statspec->lengths = length;
 					}
@@ -1980,7 +1980,7 @@ static ChangeInfoResult StationChangeInfo(uint stid, int numinfo, int prop, Byte
 						statspec->layouts[l] = ReallocT(statspec->layouts[l], number);
 						/* We expect NULL being 0 here, but C99 guarantees that. */
 						memset(statspec->layouts[l] + statspec->platforms[l], 0,
-						       (number - statspec->platforms[l]) * sizeof(**statspec->layouts));
+							   (number - statspec->platforms[l]) * sizeof(**statspec->layouts));
 
 						statspec->platforms[l] = number;
 					}
@@ -3834,6 +3834,14 @@ static ChangeInfoResult AirportChangeInfo(uint airport, int numinfo, int prop, B
 			case 0x11: // Maintenance cost factor
 				as->maintenance_cost = buf->ReadWord();
 				break;
+ 
+			case 0x12: { // Accept seaplanes
+				byte is_seaplane = buf->ReadByte();
+				if (is_seaplane == 0x01){
+					as->cls_id = APC_SEA;
+				}
+				break;
+			}
 
 			default:
 				ret = CIR_UNKNOWN;
@@ -4397,7 +4405,7 @@ static void FeatureChangeInfo(ByteReader *buf)
 	uint engine   = buf->ReadExtendedByte();
 
 	grfmsg(6, "FeatureChangeInfo: feature %d, %d properties, to apply to %d+%d",
-	               feature, numprops, engine, numinfo);
+				   feature, numprops, engine, numinfo);
 
 	if (feature >= lengthof(handler) || handler[feature] == NULL) {
 		if (feature != GSF_CARGOES) grfmsg(1, "FeatureChangeInfo: Unsupported feature %d, skipping", feature);
@@ -5453,7 +5461,7 @@ static void FeatureNewName(ByteReader *buf)
 	uint16 endid = id + num;
 
 	grfmsg(6, "FeatureNewName: About to rename engines %d..%d (feature %d) in language 0x%02X",
-	               id, endid, feature, lang);
+				   id, endid, feature, lang);
 
 	for (; id < endid && buf->HasData(); id++) {
 		const char *name = buf->ReadString();
@@ -7798,85 +7806,85 @@ static void GRFUnsafe(ByteReader *buf)
 static void InitializeGRFSpecial()
 {
 	_ttdpatch_flags[0] = ((_settings_game.station.never_expire_airports ? 1 : 0) << 0x0C)  // keepsmallairport
-	                   |                                                      (1 << 0x0D)  // newairports
-	                   |                                                      (1 << 0x0E)  // largestations
-	                   | ((_settings_game.construction.max_bridge_length > 16 ? 1 : 0) << 0x0F)  // longbridges
-	                   |                                                      (0 << 0x10)  // loadtime
-	                   |                                                      (1 << 0x12)  // presignals
-	                   |                                                      (1 << 0x13)  // extpresignals
-	                   | ((_settings_game.vehicle.never_expire_vehicles ? 1 : 0) << 0x16)  // enginespersist
-	                   |                                                      (1 << 0x1B)  // multihead
-	                   |                                                      (1 << 0x1D)  // lowmemory
-	                   |                                                      (1 << 0x1E); // generalfixes
+					   |                                                      (1 << 0x0D)  // newairports
+					   |                                                      (1 << 0x0E)  // largestations
+					   | ((_settings_game.construction.max_bridge_length > 16 ? 1 : 0) << 0x0F)  // longbridges
+					   |                                                      (0 << 0x10)  // loadtime
+					   |                                                      (1 << 0x12)  // presignals
+					   |                                                      (1 << 0x13)  // extpresignals
+					   | ((_settings_game.vehicle.never_expire_vehicles ? 1 : 0) << 0x16)  // enginespersist
+					   |                                                      (1 << 0x1B)  // multihead
+					   |                                                      (1 << 0x1D)  // lowmemory
+					   |                                                      (1 << 0x1E); // generalfixes
 
 	_ttdpatch_flags[1] =   ((_settings_game.economy.station_noise_level ? 1 : 0) << 0x07)  // moreairports - based on units of noise
-	                   |                                                      (1 << 0x08)  // mammothtrains
-	                   |                                                      (1 << 0x09)  // trainrefit
-	                   |                                                      (0 << 0x0B)  // subsidiaries
-	                   |         ((_settings_game.order.gradual_loading ? 1 : 0) << 0x0C)  // gradualloading
-	                   |                                                      (1 << 0x12)  // unifiedmaglevmode - set bit 0 mode. Not revelant to OTTD
-	                   |                                                      (1 << 0x13)  // unifiedmaglevmode - set bit 1 mode
-	                   |                                                      (1 << 0x14)  // bridgespeedlimits
-	                   |                                                      (1 << 0x16)  // eternalgame
-	                   |                                                      (1 << 0x17)  // newtrains
-	                   |                                                      (1 << 0x18)  // newrvs
-	                   |                                                      (1 << 0x19)  // newships
-	                   |                                                      (1 << 0x1A)  // newplanes
-	                   | ((_settings_game.construction.train_signal_side == 1 ? 1 : 0) << 0x1B)  // signalsontrafficside
-	                   |       ((_settings_game.vehicle.disable_elrails ? 0 : 1) << 0x1C); // electrifiedrailway
+					   |                                                      (1 << 0x08)  // mammothtrains
+					   |                                                      (1 << 0x09)  // trainrefit
+					   |                                                      (0 << 0x0B)  // subsidiaries
+					   |         ((_settings_game.order.gradual_loading ? 1 : 0) << 0x0C)  // gradualloading
+					   |                                                      (1 << 0x12)  // unifiedmaglevmode - set bit 0 mode. Not revelant to OTTD
+					   |                                                      (1 << 0x13)  // unifiedmaglevmode - set bit 1 mode
+					   |                                                      (1 << 0x14)  // bridgespeedlimits
+					   |                                                      (1 << 0x16)  // eternalgame
+					   |                                                      (1 << 0x17)  // newtrains
+					   |                                                      (1 << 0x18)  // newrvs
+					   |                                                      (1 << 0x19)  // newships
+					   |                                                      (1 << 0x1A)  // newplanes
+					   | ((_settings_game.construction.train_signal_side == 1 ? 1 : 0) << 0x1B)  // signalsontrafficside
+					   |       ((_settings_game.vehicle.disable_elrails ? 0 : 1) << 0x1C); // electrifiedrailway
 
 	_ttdpatch_flags[2] =                                                      (1 << 0x01)  // loadallgraphics - obsolote
-	                   |                                                      (1 << 0x03)  // semaphores
-	                   |                                                      (1 << 0x0A)  // newobjects
-	                   |                                                      (0 << 0x0B)  // enhancedgui
-	                   |                                                      (0 << 0x0C)  // newagerating
-	                   |  ((_settings_game.construction.build_on_slopes ? 1 : 0) << 0x0D)  // buildonslopes
-	                   |                                                      (1 << 0x0E)  // fullloadany
-	                   |                                                      (1 << 0x0F)  // planespeed
-	                   |                                                      (0 << 0x10)  // moreindustriesperclimate - obsolete
-	                   |                                                      (0 << 0x11)  // moretoylandfeatures
-	                   |                                                      (1 << 0x12)  // newstations
-	                   |                                                      (1 << 0x13)  // tracktypecostdiff
-	                   |                                                      (1 << 0x14)  // manualconvert
-	                   |  ((_settings_game.construction.build_on_slopes ? 1 : 0) << 0x15)  // buildoncoasts
-	                   |                                                      (1 << 0x16)  // canals
-	                   |                                                      (1 << 0x17)  // newstartyear
-	                   |    ((_settings_game.vehicle.freight_trains > 1 ? 1 : 0) << 0x18)  // freighttrains
-	                   |                                                      (1 << 0x19)  // newhouses
-	                   |                                                      (1 << 0x1A)  // newbridges
-	                   |                                                      (1 << 0x1B)  // newtownnames
-	                   |                                                      (1 << 0x1C)  // moreanimation
-	                   |    ((_settings_game.vehicle.wagon_speed_limits ? 1 : 0) << 0x1D)  // wagonspeedlimits
-	                   |                                                      (1 << 0x1E)  // newshistory
-	                   |                                                      (0 << 0x1F); // custombridgeheads
+					   |                                                      (1 << 0x03)  // semaphores
+					   |                                                      (1 << 0x0A)  // newobjects
+					   |                                                      (0 << 0x0B)  // enhancedgui
+					   |                                                      (0 << 0x0C)  // newagerating
+					   |  ((_settings_game.construction.build_on_slopes ? 1 : 0) << 0x0D)  // buildonslopes
+					   |                                                      (1 << 0x0E)  // fullloadany
+					   |                                                      (1 << 0x0F)  // planespeed
+					   |                                                      (0 << 0x10)  // moreindustriesperclimate - obsolete
+					   |                                                      (0 << 0x11)  // moretoylandfeatures
+					   |                                                      (1 << 0x12)  // newstations
+					   |                                                      (1 << 0x13)  // tracktypecostdiff
+					   |                                                      (1 << 0x14)  // manualconvert
+					   |  ((_settings_game.construction.build_on_slopes ? 1 : 0) << 0x15)  // buildoncoasts
+					   |                                                      (1 << 0x16)  // canals
+					   |                                                      (1 << 0x17)  // newstartyear
+					   |    ((_settings_game.vehicle.freight_trains > 1 ? 1 : 0) << 0x18)  // freighttrains
+					   |                                                      (1 << 0x19)  // newhouses
+					   |                                                      (1 << 0x1A)  // newbridges
+					   |                                                      (1 << 0x1B)  // newtownnames
+					   |                                                      (1 << 0x1C)  // moreanimation
+					   |    ((_settings_game.vehicle.wagon_speed_limits ? 1 : 0) << 0x1D)  // wagonspeedlimits
+					   |                                                      (1 << 0x1E)  // newshistory
+					   |                                                      (0 << 0x1F); // custombridgeheads
 
 	_ttdpatch_flags[3] =                                                      (0 << 0x00)  // newcargodistribution
-	                   |                                                      (1 << 0x01)  // windowsnap
-	                   | ((_settings_game.economy.allow_town_roads || _generating_world ? 0 : 1) << 0x02)  // townbuildnoroad
-	                   |                                                      (1 << 0x03)  // pathbasedsignalling
-	                   |                                                      (0 << 0x04)  // aichoosechance
-	                   |                                                      (1 << 0x05)  // resolutionwidth
-	                   |                                                      (1 << 0x06)  // resolutionheight
-	                   |                                                      (1 << 0x07)  // newindustries
-	                   |           ((_settings_game.order.improved_load ? 1 : 0) << 0x08)  // fifoloading
-	                   |                                                      (0 << 0x09)  // townroadbranchprob
-	                   |                                                      (0 << 0x0A)  // tempsnowline
-	                   |                                                      (1 << 0x0B)  // newcargo
-	                   |                                                      (1 << 0x0C)  // enhancemultiplayer
-	                   |                                                      (1 << 0x0D)  // onewayroads
-	                   |                                                      (1 << 0x0E)  // irregularstations
-	                   |                                                      (1 << 0x0F)  // statistics
-	                   |                                                      (1 << 0x10)  // newsounds
-	                   |                                                      (1 << 0x11)  // autoreplace
-	                   |                                                      (1 << 0x12)  // autoslope
-	                   |                                                      (0 << 0x13)  // followvehicle
-	                   |                                                      (1 << 0x14)  // trams
-	                   |                                                      (0 << 0x15)  // enhancetunnels
-	                   |                                                      (1 << 0x16)  // shortrvs
-	                   |                                                      (1 << 0x17)  // articulatedrvs
-	                   |       ((_settings_game.vehicle.dynamic_engines ? 1 : 0) << 0x18)  // dynamic engines
-	                   |                                                      (1 << 0x1E)  // variablerunningcosts
-	                   |                                                      (1 << 0x1F); // any switch is on
+					   |                                                      (1 << 0x01)  // windowsnap
+					   | ((_settings_game.economy.allow_town_roads || _generating_world ? 0 : 1) << 0x02)  // townbuildnoroad
+					   |                                                      (1 << 0x03)  // pathbasedsignalling
+					   |                                                      (0 << 0x04)  // aichoosechance
+					   |                                                      (1 << 0x05)  // resolutionwidth
+					   |                                                      (1 << 0x06)  // resolutionheight
+					   |                                                      (1 << 0x07)  // newindustries
+					   |           ((_settings_game.order.improved_load ? 1 : 0) << 0x08)  // fifoloading
+					   |                                                      (0 << 0x09)  // townroadbranchprob
+					   |                                                      (0 << 0x0A)  // tempsnowline
+					   |                                                      (1 << 0x0B)  // newcargo
+					   |                                                      (1 << 0x0C)  // enhancemultiplayer
+					   |                                                      (1 << 0x0D)  // onewayroads
+					   |                                                      (1 << 0x0E)  // irregularstations
+					   |                                                      (1 << 0x0F)  // statistics
+					   |                                                      (1 << 0x10)  // newsounds
+					   |                                                      (1 << 0x11)  // autoreplace
+					   |                                                      (1 << 0x12)  // autoslope
+					   |                                                      (0 << 0x13)  // followvehicle
+					   |                                                      (1 << 0x14)  // trams
+					   |                                                      (0 << 0x15)  // enhancetunnels
+					   |                                                      (1 << 0x16)  // shortrvs
+					   |                                                      (1 << 0x17)  // articulatedrvs
+					   |       ((_settings_game.vehicle.dynamic_engines ? 1 : 0) << 0x18)  // dynamic engines
+					   |                                                      (1 << 0x1E)  // variablerunningcosts
+					   |                                                      (1 << 0x1F); // any switch is on
 }
 
 /** Reset and clear all NewGRF stations */

@@ -2670,6 +2670,7 @@ STR_AIRPORT_CLASS_SMALL                                         :Small airports
 STR_AIRPORT_CLASS_LARGE                                         :Large airports
 STR_AIRPORT_CLASS_HUB                                           :Hub airports
 STR_AIRPORT_CLASS_HELIPORTS                                     :Helicopter airports
+STR_AIRPORT_CLASS_SEA                                           :Seaplane airports
 
 STR_STATION_BUILD_NOISE                                         :{BLACK}Noise generated: {GOLD}{COMMA}
 
@@ -4557,6 +4558,7 @@ STR_ERROR_CAN_T_BUILD_PASSENGER_TRAM_STATION                    :{WHITE}Can't bu
 STR_ERROR_CAN_T_BUILD_CARGO_TRAM_STATION                        :{WHITE}Can't build freight tram station...
 STR_ERROR_CAN_T_BUILD_DOCK_HERE                                 :{WHITE}Can't build dock here...
 STR_ERROR_CAN_T_BUILD_AIRPORT_HERE                              :{WHITE}Can't build airport here...
+STR_ERROR_CAN_T_BUILD_SEA_AIRPORT_HERE                          :{WHITE}Can't build seaplane airport here...
 
 STR_ERROR_ADJOINS_MORE_THAN_ONE_EXISTING                        :{WHITE}Adjoins more than one existing station/loading area
 STR_ERROR_STATION_TOO_SPREAD_OUT                                :{WHITE}... station too spread out

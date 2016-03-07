@@ -73,6 +73,7 @@ enum AirportClassID {
 	APC_LARGE,          ///< id for large airports class
 	APC_HUB,            ///< id for hub airports class
 	APC_HELIPORT,       ///< id for heliports
+	APC_SEA,            ///< id for seaplane airports class
 	APC_MAX       = 16, ///< maximum number of airport classes
 };
 

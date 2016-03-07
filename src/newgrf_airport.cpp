@@ -74,6 +74,7 @@ template <typename Tspec, typename Tid, Tid Tmax>
 	AirportClass::Get(AirportClass::Allocate('LARG'))->name = STR_AIRPORT_CLASS_LARGE;
 	AirportClass::Get(AirportClass::Allocate('HUB_'))->name = STR_AIRPORT_CLASS_HUB;
 	AirportClass::Get(AirportClass::Allocate('HELI'))->name = STR_AIRPORT_CLASS_HELIPORTS;
+	AirportClass::Get(AirportClass::Allocate('SEAP'))->name = STR_AIRPORT_CLASS_SEA;
 }
 
 template <typename Tspec, typename Tid, Tid Tmax>

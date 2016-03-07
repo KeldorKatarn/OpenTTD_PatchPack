@@ -583,18 +583,18 @@ bool IsWateredTile(TileIndex tile, Direction from)
 				 * Note: There is no easy way to detect the industry of an oilrig tile. */
 				TileIndex src_tile = tile + TileOffsByDir(from);
 				if ((IsTileType(src_tile, MP_STATION) && IsOilRig(src_tile)) ||
-				    (IsTileType(src_tile, MP_INDUSTRY))) return true;
+					(IsTileType(src_tile, MP_INDUSTRY))) return true;
 
 				return IsTileOnWater(tile);
 			}
-			return (IsDock(tile) && IsTileFlat(tile)) || IsBuoy(tile);
+			return (IsDock(tile) && IsTileFlat(tile)) || IsBuoy(tile) || IsSeaplanePort(tile);
 
 		case MP_INDUSTRY: {
 			/* Do not draw waterborders inside of industries.
 			 * Note: There is no easy way to detect the industry of an oilrig tile. */
 			TileIndex src_tile = tile + TileOffsByDir(from);
 			if ((IsTileType(src_tile, MP_STATION) && IsOilRig(src_tile)) ||
-			    (IsTileType(src_tile, MP_INDUSTRY) && GetIndustryIndex(src_tile) == GetIndustryIndex(tile))) return true;
+				(IsTileType(src_tile, MP_INDUSTRY) && GetIndustryIndex(src_tile) == GetIndustryIndex(tile))) return true;
 
 			return IsTileOnWater(tile);
 		}
@@ -1164,6 +1164,9 @@ void TileLoop_Water(TileIndex tile)
 
 				/* TREE_GROUND_SHORE is the sign of a previous flood. */
 				if (IsTileType(dest, MP_TREES) && GetTreeGround(dest) == TREE_GROUND_SHORE) continue;
+ 
+				/* Prevent station on water flooding */
+				if (IsTileType(dest, MP_STATION) && GetWaterClass(dest) != WATER_CLASS_INVALID) continue;
 
 				int z_dest;
 				Slope slope_dest = GetFoundationSlope(dest, &z_dest) & ~SLOPE_HALFTILE_MASK & ~SLOPE_STEEP;

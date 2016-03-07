@@ -851,6 +851,26 @@ CommandCost CheckFlatLand(TileArea tile_area, DoCommandFlag flags)
 
 	return cost;
 }
+ 
+ /**
+ * Checks given water area for obstacles.
+ * @param tile_area Area to check.
+ * @param flags Operation to perform.
+ * @return The cost in case of success, or an error code if it failed.
+ */
+CommandCost CheckClearWater(TileArea tile_area, DoCommandFlag flags)
+{
+	CommandCost cost(EXPENSES_CONSTRUCTION);
+
+	TILE_AREA_LOOP(tile_cur, tile_area) {
+		if (!IsWaterTile(tile_cur) || GetTileSlope(tile_cur) != SLOPE_FLAT) return_cmd_error(STR_ERROR_SITE_UNSUITABLE);
+		if (IsBridgeAbove(tile_cur)) return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+		CommandCost ret = EnsureNoVehicleOnGround(tile_cur);
+		if (ret.Failed()) return ret;
+	}
+
+	return cost;
+}
 
 /**
  * Checks if a rail station can be built at the given area.
@@ -2505,6 +2525,150 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 
 	return cost;
 }
+ 
+ /**
+ * Place a Seaplane Airport.
+ * @param tile tile where airport will be built
+ * @param flags operation to perform
+ * @param p1
+ * - p1 = (bit  0- 7) - airport type, @see airport.h
+ * - p1 = (bit  8-15) - airport layout
+ * @param p2 various bitstuffed elements
+ * - p2 = (bit     0) - allow airports directly adjacent to other airports.
+ * - p2 = (bit 16-31) - station ID to join (NEW_STATION if build new one)
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdBuildSeaplaneAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+
+	StationID station_to_join = GB(p2, 16, 16);
+	bool reuse = (station_to_join != NEW_STATION);
+	if (!reuse) station_to_join = INVALID_STATION;
+	bool distant_join = (station_to_join != INVALID_STATION);
+	byte airport_type = GB(p1, 0, 8);
+	byte layout = GB(p1, 8, 8);
+
+	if (distant_join && (!_settings_game.station.distant_join_stations || !Station::IsValidID(station_to_join))) return CMD_ERROR;
+
+	if (airport_type >= NUM_AIRPORTS) return CMD_ERROR;
+
+
+	CommandCost ret = CheckIfAuthorityAllowsNewStation(tile, flags);
+	if (ret.Failed()) return ret;
+
+	/* Check if a valid, buildable airport was chosen for construction */
+	const AirportSpec *as = AirportSpec::Get(airport_type);
+	if (!as->IsAvailable() || layout >= as->num_table) return CMD_ERROR;
+
+	Direction rotation = as->rotation[layout];
+	int w = as->size_x;
+	int h = as->size_y;
+	if (rotation == DIR_E || rotation == DIR_W) Swap(w, h);
+	TileArea airport_area = TileArea(tile, w, h);
+
+	if (w > _settings_game.station.station_spread || h > _settings_game.station.station_spread) {
+		return_cmd_error(STR_ERROR_STATION_TOO_SPREAD_OUT);
+	}
+
+	CommandCost cost = CheckClearWater(airport_area, flags);
+	if (cost.Failed()) return cost;
+
+	/* The noise level is the noise from the airport and reduce it to account for the distance to the town center. */
+	AirportTileTableIterator iter(as->table[layout], tile);
+	Town *nearest = AirportGetNearestTown(as, iter);
+	uint newnoise_level = GetAirportNoiseLevelForTown(as, iter, nearest->xy);
+
+	/* Check if local auth would allow a new airport */
+	StringID authority_refuse_message = STR_NULL;
+	Town *authority_refuse_town = NULL;
+
+	if (_settings_game.economy.station_noise_level) {
+		/* do not allow to build a new airport if this raise the town noise over the maximum allowed by town */
+		if ((nearest->noise_reached + newnoise_level) > nearest->MaxTownNoise()) {
+			authority_refuse_message = STR_ERROR_LOCAL_AUTHORITY_REFUSES_NOISE;
+			authority_refuse_town = nearest;
+		}
+	} else {
+		Town *t = ClosestTownFromTile(tile, UINT_MAX);
+		uint num = 0;
+		const Station *st;
+		FOR_ALL_STATIONS(st) {
+			if (st->town == t && (st->facilities & FACIL_AIRPORT) && st->airport.type != AT_OILRIG) num++;
+		}
+		if (num >= 2) {
+			authority_refuse_message = STR_ERROR_LOCAL_AUTHORITY_REFUSES_AIRPORT;
+			authority_refuse_town = t;
+		}
+	}
+
+	if (authority_refuse_message != STR_NULL) {
+		SetDParam(0, authority_refuse_town->index);
+		return_cmd_error(authority_refuse_message);
+	}
+
+	Station *st = NULL;
+	ret = FindJoiningStation(INVALID_STATION, station_to_join, HasBit(p2, 0), airport_area, &st);
+	if (ret.Failed()) return ret;
+
+	/* Distant join */
+	if (st == NULL && distant_join) st = Station::GetIfValid(station_to_join);
+
+	ret = BuildStationPart(&st, flags, reuse, airport_area, STATIONNAMING_AIRPORT);
+	if (ret.Failed()) return ret;
+
+	if (st != NULL && st->airport.tile != INVALID_TILE) {
+		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_ANOTHER_AIRPORT);
+	}
+
+	for (AirportTileTableIterator iter(as->table[layout], tile); iter != INVALID_TILE; ++iter) {
+		cost.AddCost(_price[PR_BUILD_STATION_AIRPORT]);
+	}
+
+	if (flags & DC_EXEC) {
+		/* Always add the noise, so there will be no need to recalculate when option toggles */
+		nearest->noise_reached += newnoise_level;
+
+		st->AddFacility(FACIL_AIRPORT, tile);
+		st->airport.type = airport_type;
+		st->airport.layout = layout;
+		st->airport.flags = 0;
+		st->airport.rotation = rotation;
+
+		st->rect.BeforeAddRect(tile, w, h, StationRect::ADD_TRY);
+
+		for (AirportTileTableIterator iter(as->table[layout], tile); iter != INVALID_TILE; ++iter) {
+			MakeAirport(iter, st->owner, st->index, iter.GetStationGfx(), GetWaterClass(iter));
+			SetStationTileRandomBits(iter, GB(Random(), 0, 4));
+			st->airport.Add(iter);
+
+			if (AirportTileSpec::Get(GetTranslatedAirportTileID(iter.GetStationGfx()))->animation.status != ANIM_STATUS_NO_ANIMATION) AddAnimatedTile(iter);
+		}
+
+		/* Only call the animation trigger after all tiles have been built */
+		for (AirportTileTableIterator iter(as->table[layout], tile); iter != INVALID_TILE; ++iter) {
+			AirportTileAnimationTrigger(st, iter, AAT_BUILT);
+		}
+
+		UpdateAirplanesOnNewStation(st);
+
+		Company::Get(st->owner)->infrastructure.airport++;
+		DirtyCompanyInfrastructureWindows(st->owner);
+
+		st->UpdateVirtCoord();
+		UpdateStationAcceptance(st, false);
+		st->RecomputeIndustriesNear();
+		InvalidateWindowData(WC_SELECT_STATION, 0, 0);
+		InvalidateWindowData(WC_STATION_LIST, st->owner, 0);
+		InvalidateWindowData(WC_STATION_VIEW, st->index, -1);
+
+		if (_settings_game.economy.station_noise_level) {
+			SetWindowDirty(WC_TOWN_VIEW, st->town->index);
+		}
+	}
+
+	return cost;
+}
 
 /**
  * Remove an airport
@@ -2536,7 +2700,17 @@ static CommandCost RemoveAirport(TileIndex tile, DoCommandFlag flags)
 		TILE_AREA_LOOP(tile_cur, st->airport) {
 			if (IsHangarTile(tile_cur)) OrderBackup::Reset(tile_cur, false);
 			DeleteAnimatedTile(tile_cur);
+			WaterClass wc = GetWaterClass(tile_cur);
 			DoClearSquare(tile_cur);
+
+			if (wc != WATER_CLASS_INVALID){
+				SetTileType(tile_cur, MP_WATER);
+				SetWaterClass(tile_cur, wc);
+				if (wc == WATER_CLASS_CANAL) {
+					SetTileOwner(tile_cur, st->owner);
+				}
+			}
+
 			DeleteNewGRFInspectWindow(GSF_AIRPORTTILES, tile_cur);
 		}
 

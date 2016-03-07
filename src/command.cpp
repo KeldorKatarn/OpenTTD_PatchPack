@@ -69,6 +69,7 @@ CommandProc CmdBuildRoad;
 CommandProc CmdBuildRoadDepot;
 
 CommandProc CmdBuildAirport;
+CommandProc CmdBuildSeaplaneAirport;
 
 CommandProc CmdBuildDock;
 
@@ -266,6 +267,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdBuildRoadDepot,           CMD_NO_WATER | CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_ROAD_DEPOT
 
 	DEF_CMD(CmdBuildAirport,             CMD_NO_WATER | CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_AIRPORT
+	DEF_CMD(CmdBuildSeaplaneAirport,                    CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_SEAPLANE_AIRPORT
 	DEF_CMD(CmdBuildDock,                               CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_DOCK
 	DEF_CMD(CmdBuildShipDepot,                          CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_SHIP_DEPOT
 	DEF_CMD(CmdBuildBuoy,                               CMD_AUTO, CMDT_LANDSCAPE_CONSTRUCTION), // CMD_BUILD_BUOY

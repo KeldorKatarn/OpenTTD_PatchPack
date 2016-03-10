@@ -694,7 +694,7 @@ reverse_direction:
 
 bool Ship::Tick()
 {
-	if (!(this->vehstatus & VS_STOPPED)) this->running_ticks++;
+	if (!((this->vehstatus & VS_STOPPED) || this->IsChainInDepot())) this->running_ticks++;
 
 	ShipController(this);
 

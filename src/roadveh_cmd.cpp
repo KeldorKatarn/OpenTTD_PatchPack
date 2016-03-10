@@ -1641,7 +1641,7 @@ bool RoadVehicle::Tick()
 	this->tick_counter++;
 
 	if (this->IsFrontEngine()) {
-		if (!(this->vehstatus & VS_STOPPED)) this->running_ticks++;
+		if (!((this->vehstatus & VS_STOPPED) || this->IsChainInDepot())) this->running_ticks++;
 		return RoadVehController(this);
 	}
 

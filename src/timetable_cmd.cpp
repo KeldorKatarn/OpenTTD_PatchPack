@@ -452,7 +452,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 			(autofilling && !HasBit(v->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME));
 
 	if (travelling && remeasure_wait_time) {
-		/* We just finished travelling and want to remeasure the loading time,
+		/* We just finished traveling and want to remeasure the loading time,
 		 * so do not apply any restrictions for the loading to finish. */
 		v->current_order.SetWaitTime(0);
 	}
@@ -495,7 +495,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	 * when this happens. */
 	if (timetabled == 0 && (travelling || v->lateness_counter >= 0)) return;
 
-	v->lateness_counter -= (timetabled - time_taken); v->lateness_counter -= (timetabled - time_taken);
+	v->lateness_counter -= (timetabled - time_taken);
 
 	/* When we are more late than this timetabled bit takes we (somewhat expensively)
 	 * check how many ticks the (fully filled) timetable has. If a timetable cycle is

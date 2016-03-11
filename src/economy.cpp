@@ -1036,7 +1036,7 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 	const int days2 = cs->transit_days[1];
 
 	const float inv_vt1 =days1/(200*TILE2KM);  // reciprocal of first threshold velocity
-	const float inv_vt2 =days2/(200*TILE2KM);  // reciprocal of second threshold velocity
+	const float inv_vt2 = (days1 + days2) / (200 * TILE2KM);  // reciprocal of second threshold velocity
 	const float v_avg = d*TILE2KM/(transitdays); //average transit velocity
 	const float inv_v_avg = 1/max<float>(v_avg, 0.1f); //reciprocal of average transit velocity
 	const float max_1v_1vt1 = max<float>(inv_v_avg,inv_vt1); //threshold 1 

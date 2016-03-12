@@ -1022,7 +1022,7 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 	static const float DECAY1 = 40.0f;
 	static const float DECAY2 = 5.0f;
 	static const float TILE2KM = 28.66f;
-	static const float INCOME_DIVISOR = 9000.0f;
+	static const float INCOME_DIVISOR = 7500.0f;
 	const float d = dist;
 	float transitdays = transit_days;
 	transitdays = 2.5f * max<float>(transitdays, 1.0f);

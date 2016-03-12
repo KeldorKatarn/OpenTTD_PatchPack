@@ -1319,6 +1319,22 @@ public:
 					ResetObjectToPlace();
 					break;
 				}
+				
+				if (_ctrl_pressed && _shift_pressed) {
+					const Order* selected_order = this->vehicle->GetOrder(this->selected_order);
+
+					if (selected_order != NULL && selected_order->IsType(OrderType::OT_CONDITIONAL)) {
+						VehicleOrderID order_id = this->GetOrderFromPt(_cursor.pos.y - this->top);
+						if (order_id != INVALID_VEH_ORDER_ID) {
+							DoCommandP(this->vehicle->tile, this->vehicle->index | (this->selected_order << 20),
+								MOF_COND_DESTINATION | (order_id << 4),
+								CMD_MODIFY_ORDER | CMD_MSG(STR_ERROR_CAN_T_MODIFY_THIS_ORDER));
+							MarkAllRoutePathsDirty(this->vehicle);
+							MarkAllRouteStepsDirty(this);
+						}
+					}
+					break;
+				}
 
 				VehicleOrderID sel = this->GetOrderFromPt(pt.y);
 

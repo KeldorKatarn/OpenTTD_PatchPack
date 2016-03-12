@@ -1021,7 +1021,7 @@ struct PaymentRatesGraphWindow : BaseGraphWindow {
 		int i = 0;
 		const CargoSpec *cs;
 		byte ctt = 0; //cargo transfer time a 200 tile 
-		float factor = 200.0f * 28.57f * 0.4f;
+		const float factor = 200.0f * 28.57f * 0.4f;
 		FOR_ALL_SORTED_STANDARD_CARGOSPECS(cs) {
 			this->colours[i] = cs->legend_colour;
 			// velocity instead of time

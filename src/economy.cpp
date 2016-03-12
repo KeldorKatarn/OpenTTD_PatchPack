@@ -1020,14 +1020,10 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 		}
 	}
 
-	static const int DECAY1 = 10;
-	static const int DECAY2 = 40;
-	static const float INV_VA = 1/330.0f;
-	static const int EXP2_AMPL = 80;
-	static const int INCOME_DIVIDER = 900;
-	static const int LOW_SPEED_DIVIDER = 200;
-	static const int LOW_SPEED_OFFSET = 50;
+	static const float DECAY1 = 40.0f;
+	static const float DECAY2 = 5.0f;
 	static const float TILE2KM = 28.66f;
+	static const float INCOME_DIVISOR = 9753.15f;
 	const float d = dist;
 	float transitdays = transit_days;
 	transitdays = 2.5f * max<float>(transitdays, 1.0f);
@@ -1038,10 +1034,9 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 
 	const float inv_vt1 =days1/(200*TILE2KM);  // reciprocal of first threshold velocity
 	const float inv_vt2 = (days1 + days2) / (200 * TILE2KM);  // reciprocal of second threshold velocity
+	const float vt1 = inv_vt1 > 0.0f ? (1.0f / inv_vt1) : 1.0f;
+	const float vt2 = inv_vt2 > 0.0f ? (1.0f / inv_vt2) : 1.0f;
 	const float v_avg = d*TILE2KM/(transitdays); //average transit velocity
-	const float inv_v_avg = 1/max<float>(v_avg, 0.1f); //reciprocal of average transit velocity
-	const float max_1v_1vt1 = max<float>(inv_v_avg,inv_vt1); //threshold 1 
-	const float max_1v_1vt2 = max<float>(inv_v_avg,inv_vt2); //threshold 2 
 
 	/*
 	 * The income factor is calculated based on the average velocity
@@ -1049,16 +1044,15 @@ Money GetTransportedGoodsIncome(uint num_pieces, uint dist, byte transit_days, C
 	 * Formula is divided into three parts:
 	 *
 	 *  - fast exponential growth limited by 1st threshold velocity
-	 *  - slow exponential growth which can be negative or positive, depending on 2nd threshold
-	 *  - residual correction for very slow local transit
+	 *  - slow exponential growth depending on 2nd threshold
 	 *
 	 */
-	const float exp1 = (1-exp(d*(-max_1v_1vt1-INV_VA)/DECAY1))/(max_1v_1vt2);
-	const float exp2 = (inv_vt2-inv_v_avg)*EXP2_AMPL*(1-exp(d*(-max_1v_1vt2-INV_VA)/DECAY2))/max_1v_1vt2;
+	const float exp1 = (1.0f - exp((-v_avg) / (vt1 / DECAY1)));
+	const float exp2 = (1.0f - exp((-v_avg) / (vt2 / DECAY2)));
 	
-	const Money test1 = static_cast<Money>(cargo_payment * num_pieces * max<float>(exp1+exp2, min(d/LOW_SPEED_DIVIDER,v_avg/LOW_SPEED_OFFSET))/ INCOME_DIVIDER);
+	const Money income = static_cast<Money>(dist * cargo_payment * num_pieces * exp1 * exp2 / INCOME_DIVISOR);
 	
-	return test1;  
+	return income;
 }
 
 /** The industries we've currently brought cargo to. */

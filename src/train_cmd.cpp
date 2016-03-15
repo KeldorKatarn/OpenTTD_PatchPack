@@ -419,8 +419,8 @@ int Train::GetCurrentMaxSpeed() const
 			do {
 				old_td = ft.m_old_td;
 
-				/* If we are on a depot tile stop searching */
-				if (IsDepotTile(ft.m_new_tile))
+				/* If we are on a depot or rail station tile stop searching */
+				if (IsDepotTile(ft.m_new_tile) || IsRailStationTile(ft.m_new_tile))
 					break;
 
 				/* Increment signal counter if we're on a signal */

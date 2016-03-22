@@ -109,7 +109,7 @@ Track SignalTrackFromTile(TileIndex tile)
  */
 SignalReference GetSignalReference(TileIndex tile, Track track)
 {
-	return tile | (((uint32) track) << 22);
+	return tile | (((uint32) track) << 29);
 }
 
 /**
@@ -119,7 +119,7 @@ SignalReference GetSignalReference(TileIndex tile, Track track)
  */
 TileIndex GetTileFromSignalReference(SignalReference key)
 {
-	return GB(key, 0, 22);
+	return GB(key, 0, 29);
 }
 
 /**
@@ -129,7 +129,7 @@ TileIndex GetTileFromSignalReference(SignalReference key)
  */
 Track GetTrackFromSignalReference(SignalReference key)
 {
-	return (Track) (key >> 22);
+	return (Track) (key >> 29);
 }
 
 /**

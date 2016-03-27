@@ -24,6 +24,7 @@
 #include "roadstop_base.h"
 #include "industry.h"
 #include "core/random_func.hpp"
+#include "overlay_cmd.h"
 #include "linkgraph/linkgraph.h"
 #include "linkgraph/linkgraphschedule.h"
 #include "tracerestrict.h"
@@ -133,6 +134,10 @@ Station::~Station()
 		InvalidateWindowData(WC_STATION_LIST, this->owner, 0);
 	}
 
+	if (Overlays::Instance()->HasStation(Station::Get(this->index))) {
+		Overlays::Instance()->ToggleStation(Station::Get(this->index));
+	};
+
 	DeleteWindowById(WC_STATION_VIEW, index);
 
 	/* Now delete all orders that go to the station */
@@ -148,6 +153,26 @@ Station::~Station()
 	}
 
 	CargoPacket::InvalidateAllFrom(this->index);
+}
+
+/**
+ * Evaluate if a tile is in station catchment area.
+ * @param ti the tile info
+ * @param type the catchment type of the station
+ * @return true/false if the tile is in catchment
+ */
+bool Station::IsTileInCatchmentArea(const TileInfo* ti, CatchmentType type) const
+{
+	switch (type) {
+		case ACCEPTANCE:
+			return this->rect.PtInExtendedRect(TileX(ti->tile),TileY(ti->tile),this->GetCatchmentRadius());
+		case PRODUCTION:
+			return this->catchment.IsTileInCatchment(ti->tile);
+		case INDUSTRY:
+			return false;
+		default:
+			NOT_REACHED();
+	}
 }
 
 
@@ -227,6 +252,23 @@ void Station::MarkTilesDirty(bool cargo_change) const
 			tile += TileDiffXY(1, 0);
 		}
 		tile += TileDiffXY(-w, 1);
+	}
+}
+
+/**
+ * Marks the acceptance tiles of the station as dirty.
+ *
+ * @ingroup dirty
+ */
+void Station::MarkAcceptanceTilesDirty() const
+{
+	Rect rec = this->GetCatchmentRect();
+	TileIndex top_left = TileXY(rec.left, rec.top);
+	int width = rec.right - rec.left + 1;
+	int height = rec.bottom - rec.top + 1;
+
+	TILE_AREA_LOOP(tile, TileArea(top_left, width, height) ) {
+		MarkTileDirtyByTile(tile);
 	}
 }
 
@@ -570,4 +612,89 @@ Money AirportMaintenanceCost(Owner owner)
 	}
 	/* 3 bits fraction for the maintenance cost factor. */
 	return total_cost >> 3;
+}
+
+/************************************************************************/
+/*                   StationCatchment implementation                    */
+/************************************************************************/
+
+StationCatchment::StationCatchment()
+{
+}
+
+/**
+ * Determines whether a given point (x, y) is within the station catchment area
+ * @param tile TileIndex to test
+ * @return true if the point is within the station catchment area
+ */
+bool StationCatchment::IsTileInCatchment(TileIndex tile) const
+{
+	return this->catchmentTiles.find(tile) != this->catchmentTiles.end();
+}
+
+bool StationCatchment::IsEmpty() const
+{
+	return this->catchmentTiles.empty();
+}
+
+void StationCatchment::BeforeAddTile(TileIndex tile, uint catchmentRadius)
+{
+	int x = TileX(tile);
+	int y = TileY(tile);
+	TileIndex top_left = TileXY(max<int>(x - catchmentRadius,0),max<int>(y - catchmentRadius, 0));
+	int w = min<int>(x + catchmentRadius, MapMaxX()) - TileX(top_left) + 1;
+	int h = min<int>(y + catchmentRadius, MapMaxY()) - TileY(top_left) + 1;
+	if (IsEmpty()) {
+		/* we are adding the first station tile */
+		TILE_AREA_LOOP(t, TileArea(top_left, w, h) ) {
+			std::set<TileIndex> fromSet;
+			fromSet.insert(tile);
+			this->catchmentTiles[t] = fromSet;
+		}
+	} else {		
+		TILE_AREA_LOOP(t, TileArea(top_left, w, h) ) {
+			std::map<TileIndex, std::set<TileIndex> >::iterator found = this->catchmentTiles.find(t);
+			if ( found == this->catchmentTiles.end()) {
+				std::set<TileIndex> fromSet;
+				fromSet.insert(tile);
+				this->catchmentTiles[t] = fromSet;
+			} else if ((*found).second.find(tile) == (*found).second.end()) {
+				(*found).second.insert(tile);
+			}
+		}
+	}
+}
+
+void StationCatchment::BeforeAddRect(TileIndex tile, int w, int h, uint catchmentRadius)
+{
+	TILE_AREA_LOOP(t, TileArea(tile, w, h) ) {
+		this->BeforeAddTile(t, catchmentRadius);
+	}
+}
+
+void StationCatchment::AfterRemoveTile(TileIndex tile, uint catchmentRadius)
+{
+	int x = TileX(tile);
+	int y = TileY(tile);
+	TileIndex top_left = TileXY(max<int>(x - catchmentRadius,0),max<int>(y - catchmentRadius, 0));
+	int w = min<int>(x + catchmentRadius, MapMaxX()) - TileX(top_left) + 1;
+	int h = min<int>(y + catchmentRadius, MapMaxY()) - TileY(top_left) + 1;
+	TILE_AREA_LOOP(t, TileArea(top_left, w, h)) {
+		std::map<TileIndex, std::set<TileIndex> >::iterator found = this->catchmentTiles.find(t);
+		assert(found != this->catchmentTiles.end());
+		std::set<TileIndex>::iterator stTileIter = (*found).second.find(tile);
+		assert(stTileIter != (*found).second.end());
+		(*found).second.erase(stTileIter);
+		if ((*found).second.empty()) {
+			// tile t is no longer in StationCatchment
+			this->catchmentTiles.erase(found);
+		}
+	}
+}
+
+void StationCatchment::AfterRemoveRect(TileIndex tile, int w, int h, uint catchmentRadius)
+{
+	TILE_AREA_LOOP(t, TileArea(tile, w, h)) {
+		this->AfterRemoveTile(t, catchmentRadius);
+	}
 }

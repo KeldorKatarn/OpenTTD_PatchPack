@@ -558,6 +558,8 @@ static void DrawTile_Trees(TileInfo *ti)
 		default: DrawGroundSprite(_clear_land_sprites_snow_desert[GetTreeDensity(ti->tile)] + SlopeToSpriteOffset(ti->tileh), PAL_NONE); break;
 	}
 
+	DrawOverlay(ti, MP_TREES);
+
 	/* Do not draw trees when the invisible trees setting is set */
 	if (IsInvisibilitySet(TO_TREES)) return;
 

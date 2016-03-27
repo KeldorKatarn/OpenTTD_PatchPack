@@ -895,6 +895,9 @@ bool AfterLoadGame()
 				if (!Station::IsExpected(bst)) break;
 				Station *st = Station::From(bst);
 
+				/* Set up station catchment */
+				st->catchment.BeforeAddTile(t, st->GetCatchmentRadius());
+
 				switch (GetStationType(t)) {
 					case STATION_TRUCK:
 					case STATION_BUS:

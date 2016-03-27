@@ -86,6 +86,8 @@
 #include "blitter/factory.hpp"
 #include "strings_func.h"
 #include "zoom_func.h"
+#include "overlay.h"
+#include "overlay_cmd.h"
 #include "vehicle_func.h"
 #include "company_func.h"
 #include "waypoint_func.h"
@@ -4751,6 +4753,15 @@ Point GetViewportStationMiddle(const ViewPort *vp, const Station *st)
 	p.x = UnScaleByZoom(p.x - vp->virtual_left, vp->zoom) + vp->left;
 	p.y = UnScaleByZoom(p.y - vp->virtual_top, vp->zoom) + vp->top;
 	return p;
+}
+
+void DrawOverlay(const TileInfo *ti, TileType tt) 
+{
+	if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
+		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_BLUE);
+	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, ACCEPTANCE)) { 
+		DrawTileSelectionRect(ti, PAL_NONE);
+	}
 }
 
 /** Helper class for getting the best sprite sorter. */

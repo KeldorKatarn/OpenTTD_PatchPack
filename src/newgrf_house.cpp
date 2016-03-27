@@ -470,6 +470,8 @@ static void DrawTileLayout(const TileInfo *ti, const TileLayoutSpriteGroup *grou
 		DrawGroundSprite(image, GroundSpritePaletteTransform(image, pal, palette));
 	}
 
+	DrawOverlay(ti, MP_HOUSE);
+
 	DrawNewGRFTileSeq(ti, dts, TO_HOUSES, stage, palette);
 }
 

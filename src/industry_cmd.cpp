@@ -343,6 +343,8 @@ static void DrawTile_Industry(TileInfo *ti)
 		DrawGroundSprite(image, GroundSpritePaletteTransform(image, dits->ground.pal, GENERAL_SPRITE_COLOUR(ind->random_colour)));
 	}
 
+	DrawOverlay(ti, MP_INDUSTRY);
+
 	/* If industries are transparent and invisible, do not draw the upper part */
 	if (IsInvisibilitySet(TO_INDUSTRIES)) return;
 

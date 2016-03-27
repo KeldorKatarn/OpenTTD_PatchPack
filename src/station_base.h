@@ -19,7 +19,9 @@
 #include "industry_type.h"
 #include "linkgraph/linkgraph_type.h"
 #include "newgrf_storage.h"
+#include "core/smallvec_type.hpp"
 #include <map>
+#include <set>
 
 typedef Pool<BaseStation, StationID, 32, 64000> StationPool;
 extern StationPool _station_pool;
@@ -317,6 +319,25 @@ struct GoodsEntry {
 	}
 };
 
+enum CatchmentType {
+	ACCEPTANCE = 0,
+	PRODUCTION = 1,
+	INDUSTRY = 2
+};
+
+struct StationCatchment {
+	std::map<TileIndex, std::set<TileIndex> > catchmentTiles;
+public:
+	StationCatchment();
+	void MakeEmpty();
+	bool IsTileInCatchment(TileIndex tile) const;
+	bool IsEmpty() const;
+	void BeforeAddTile(TileIndex tile, uint catchmentRadius);
+	void BeforeAddRect(TileIndex tile, int w, int h, uint catchmentRadius);
+	void AfterRemoveTile(TileIndex tile, uint catchmentRadius);
+	void AfterRemoveRect(TileIndex tile, int w, int h, uint catchmentRadius);
+};
+
 /** All airport-related information. Only valid if tile != INVALID_TILE. */
 struct Airport : public TileArea {
 	Airport() : TileArea(INVALID_TILE, 0, 0) {}
@@ -490,6 +511,8 @@ public:
 
 	IndustryVector industries_near; ///< Cached list of industries near the station that can accept cargo, @see DeliverGoodsToIndustry()
 
+	StationCatchment catchment;
+
 	Station(TileIndex tile = INVALID_TILE);
 	~Station();
 
@@ -505,6 +528,11 @@ public:
 	static void RecomputeIndustriesNearForAll();
 
 	uint GetCatchmentRadius() const;
+
+	bool IsTileInCatchmentArea(const TileInfo* ti, CatchmentType type) const;
+
+	void MarkAcceptanceTilesDirty() const;
+
 	Rect GetCatchmentRect() const;
 
 	/* virtual */ inline bool TileBelongsToRailStation(TileIndex tile) const

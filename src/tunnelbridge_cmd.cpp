@@ -659,9 +659,9 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 
 		if (start_z == end_z) break;
 
-		if (!_cheats.crossing_tunnels.value && IsTunnelInWayDir(end_tile, start_z, tunnel_in_way_dir)) {
-			return_cmd_error(STR_ERROR_ANOTHER_TUNNEL_IN_THE_WAY);
-		}
+		//if (!_cheats.crossing_tunnels.value && IsTunnelInWayDir(end_tile, start_z, tunnel_in_way_dir)) {
+		//	return_cmd_error(STR_ERROR_ANOTHER_TUNNEL_IN_THE_WAY);
+		//}
 
 		tiles++;
 		if (tiles == tiles_bump) {

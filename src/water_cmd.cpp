@@ -863,6 +863,8 @@ static void DrawTile_Water(TileInfo *ti)
 			DrawWaterDepot(ti);
 			break;
 	}
+
+	DrawOverlay(ti, MP_WATER);
 }
 
 void DrawShipDepotSprite(int x, int y, Axis axis, DepotPart part)

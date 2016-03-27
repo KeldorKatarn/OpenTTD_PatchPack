@@ -252,6 +252,8 @@ static void DrawTile_Town(TileInfo *ti)
 
 	DrawGroundSprite(dcts->ground.sprite, dcts->ground.pal);
 
+	DrawOverlay(ti, MP_HOUSE);
+
 	/* If houses are invisible, do not draw the upper part */
 	if (IsInvisibilitySet(TO_HOUSES)) return;
 

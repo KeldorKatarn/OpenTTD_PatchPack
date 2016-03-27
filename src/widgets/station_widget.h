@@ -23,6 +23,7 @@ enum StationViewWidgets {
 	WID_SV_SCROLLBAR,          ///< Scrollbar.
 	WID_SV_ACCEPT_RATING_LIST, ///< List of accepted cargoes / rating of cargoes.
 	WID_SV_LOCATION,           ///< 'Location' button.
+	WID_SV_COVERAGE,           ///< Show area coverage button
 	WID_SV_ACCEPTS_RATINGS,    ///< 'Accepts' / 'Ratings' button.
 	WID_SV_RENAME,             ///< 'Rename' button.
 	WID_SV_CLOSE_AIRPORT,      ///< 'Close airport' button.

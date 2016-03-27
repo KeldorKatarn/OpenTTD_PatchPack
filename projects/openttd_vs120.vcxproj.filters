@@ -3126,6 +3126,9 @@
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\overlay_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
@@ -3167,6 +3170,12 @@
     </ClInclude>
     <ClInclude Include="..\src\table\darklight_colours.h">
       <Filter>Tables</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay_cmd.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

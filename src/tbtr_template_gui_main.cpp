@@ -746,7 +746,7 @@ public:
 		SetDParam(1, tmp->power);
 		SetDParam(0, tmp->weight);
 		SetDParam(3, tmp->max_te);
-		DrawString(8, r.right, 4 - this->vscroll[2]->GetPosition(), STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE);
+		DrawString(8, r.right, 4 - this->vscroll[2]->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
 
 		/* Draw cargo summary */
 		short top = 30 - this->vscroll[2]->GetPosition();

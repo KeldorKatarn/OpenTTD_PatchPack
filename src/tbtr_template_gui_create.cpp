@@ -281,12 +281,19 @@ public:
 					_cur_dpi = &tmp_dpi;
 
 					/* Draw vehicle performance info */
+
+					uint16 loaded_weight = 0;
+
+					for (const Vehicle *u = this->virtual_train; u != NULL; u = u->Next()) {
+						loaded_weight += Train::From(u)->GetLoadedWeight();
+					}
+
 					const GroundVehicleCache *gcache = this->virtual_train->GetGroundVehicleCache();
-					SetDParam(2, this->virtual_train->GetDisplayMaxSpeed());
+					SetDParam(0, loaded_weight);
 					SetDParam(1, gcache->cached_power);
-					SetDParam(0, gcache->cached_weight);
+					SetDParam(2, this->virtual_train->GetDisplayMaxSpeed());
 					SetDParam(3, gcache->cached_max_te / 1000);
-					DrawString(8, r.right, 4 - this->vscroll->GetPosition(), STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE);
+					DrawString(8, r.right, 4 - this->vscroll->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
 					/* Draw cargo summary */
 					CargoArray cargo_caps;
 					for ( const Train *tmp=this->virtual_train; tmp; tmp=tmp->Next() )

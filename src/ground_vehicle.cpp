@@ -107,6 +107,7 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 {
 	/* Templated class used for function calls for performance reasons. */
 	const T *v = T::From(this);
+
 	int64 speed = (v->GetCurrentSpeed() * 5) / 18; // [m/s-ish]
 
 	/* Weight is stored in tonnes. */
@@ -148,7 +149,8 @@ int GroundVehicle<T, Type>::GetAcceleration() const
 	AccelStatus mode = v->GetAccelerationStatus();
 
 	int max_te = this->gcache.cached_max_te; // [N]
-	/* Constructued from power, with need to multiply by 18 and assuming
+
+	/* Constructed from power, with need to multiply by 18 and assuming
 	 * low speed, it needs to be a 64 bit integer too. */
 	int64 force;
 	if (speed > 0) {

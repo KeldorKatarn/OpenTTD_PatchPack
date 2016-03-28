@@ -133,7 +133,12 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	const GroundVehicleCache *gcache = virt->GetGroundVehicleCache();
 	tmp->max_speed = virt->GetDisplayMaxSpeed();
 	tmp->power = gcache->cached_power;
-	tmp->weight = gcache->cached_weight;
+	tmp->weight = 0;
+
+	for (const Train *u = virt; u != NULL; u = u->Next()) {
+		tmp->weight += u->GetLoadedWeight();
+	}
+
 	tmp->max_te = gcache->cached_max_te / 1000;
 
 	tmp->spritenum = virt->spritenum;

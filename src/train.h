@@ -188,6 +188,48 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 		return this->gcache.cached_veh_length / 2 + (this->Next() != NULL ? this->Next()->gcache.cached_veh_length + 1 : 0) / 2;
 	}
 
+	/**
+	* Allows to know the weight value that this vehicle will use.
+	* @return Empty weight value from the engine in tonnes.
+	*/
+	inline uint16 GetEmptyWeight() const
+	{
+		uint16 weight = 0;
+
+		/* Vehicle weight is not added for articulated parts. */
+		if (!this->IsArticulatedPart()) {
+			weight += GetVehicleProperty(this, PROP_TRAIN_WEIGHT, RailVehInfo(this->engine_type)->weight);
+		}
+
+		/* Powered wagons have extra weight added. */
+		if (HasBit(this->flags, VRF_POWEREDWAGON)) {
+			weight += RailVehInfo(this->gcache.first_engine)->pow_wag_weight;
+		}
+
+		return weight * (this->IsWagon() ? FreightWagonMult(this->cargo_type) : 1);
+	}
+
+	/**
+	* Allows to know the weight value that this vehicle will use.
+	* @return Loaded weight value from the engine in tonnes.
+	*/
+	inline uint16 GetLoadedWeight() const
+	{
+		uint16 weight = (CargoSpec::Get(this->cargo_type)->weight * this->cargo_cap) / 16;
+
+		/* Vehicle weight is not added for articulated parts. */
+		if (!this->IsArticulatedPart()) {
+			weight += GetVehicleProperty(this, PROP_TRAIN_WEIGHT, RailVehInfo(this->engine_type)->weight);
+		}
+
+		/* Powered wagons have extra weight added. */
+		if (HasBit(this->flags, VRF_POWEREDWAGON)) {
+			weight += RailVehInfo(this->gcache.first_engine)->pow_wag_weight;
+		}
+
+		return weight * (this->IsWagon() ? FreightWagonMult(this->cargo_type) : 1);
+	}
+
 protected: // These functions should not be called outside acceleration code.
 
 	/**
@@ -227,7 +269,7 @@ protected: // These functions should not be called outside acceleration code.
 	 */
 	inline uint16 GetWeight() const
 	{
-		uint16 weight = (CargoSpec::Get(this->cargo_type)->weight * this->cargo.StoredCount() * FreightWagonMult(this->cargo_type)) / 16;
+		uint16 weight = (CargoSpec::Get(this->cargo_type)->weight * this->cargo.StoredCount()) / 16;
 
 		/* Vehicle weight is not added for articulated parts. */
 		if (!this->IsArticulatedPart()) {
@@ -238,8 +280,8 @@ protected: // These functions should not be called outside acceleration code.
 		if (HasBit(this->flags, VRF_POWEREDWAGON)) {
 			weight += RailVehInfo(this->gcache.first_engine)->pow_wag_weight;
 		}
-
-		return weight;
+		
+		return weight * (this->IsWagon() ? FreightWagonMult(this->cargo_type) : 1);
 	}
 
 	/**

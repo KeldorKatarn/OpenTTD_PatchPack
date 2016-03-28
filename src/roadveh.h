@@ -169,6 +169,40 @@ protected: // These functions should not be called outside acceleration code.
 	}
 
 	/**
+	* Allows to know the weight value that this vehicle will use.
+	* @return Empty weight value from the engine in tonnes.
+	*/
+	inline uint16 GetEmptyWeight() const
+	{
+		uint16 weight = 0;
+
+		/* Vehicle weight is not added for articulated parts. */
+		if (!this->IsArticulatedPart()) {
+			/* Road vehicle weight is in units of 1/4 t. */
+			weight += GetVehicleProperty(this, PROP_ROADVEH_WEIGHT, RoadVehInfo(this->engine_type)->weight) / 4;
+		}
+
+		return weight;
+	}
+
+	/**
+	* Allows to know the weight value that this vehicle will use.
+	* @return Loaded weight value from the engine in tonnes.
+	*/
+	inline uint16 GetLoadedWeight() const
+	{
+		uint16 weight = (CargoSpec::Get(this->cargo_type)->weight * this->cargo_cap) / 16;
+
+		/* Vehicle weight is not added for articulated parts. */
+		if (!this->IsArticulatedPart()) {
+			/* Road vehicle weight is in units of 1/4 t. */
+			weight += GetVehicleProperty(this, PROP_ROADVEH_WEIGHT, RoadVehInfo(this->engine_type)->weight) / 4;
+		}
+
+		return weight;
+	}
+
+	/**
 	 * Allows to know the tractive effort value that this vehicle will use.
 	 * @return Tractive effort value from the engine.
 	 */

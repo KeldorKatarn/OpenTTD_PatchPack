@@ -219,12 +219,16 @@ static void TrainDetailsInfoTab(const Vehicle *v, int left, int right, int y)
 	if (RailVehInfo(v->engine_type)->railveh_type == RAILVEH_WAGON) {
 		SetDParam(0, v->engine_type);
 		SetDParam(1, v->value);
-		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_WAGON_VALUE);
+		SetDParam(2, Train::From(v)->GetEmptyWeight());
+		SetDParam(3, Train::From(v)->GetLoadedWeight());
+		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_WAGON_VALUE_EXT);
 	} else {
 		SetDParam(0, v->engine_type);
 		SetDParam(1, v->build_year);
 		SetDParam(2, v->value);
-		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_ENGINE_BUILT_AND_VALUE);
+		SetDParam(3, Train::From(v)->GetEmptyWeight());
+		SetDParam(4, Train::From(v)->GetLoadedWeight());
+		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_ENGINE_BUILT_AND_VALUE_EXT);
 	}
 }
 
@@ -437,14 +441,26 @@ void DrawTrainDetails(const Train *v, int left, int right, int y, int vscroll_po
 		CargoArray act_cargo;
 		CargoArray max_cargo;
 		Money feeder_share = 0;
+		uint16 empty_weight = 0;
+		uint16 loaded_weight = 0;
 
 		for (const Vehicle *u = v; u != NULL; u = u->Next()) {
 			act_cargo[u->cargo_type] += u->cargo.StoredCount();
 			max_cargo[u->cargo_type] += u->cargo_cap;
 			feeder_share             += u->cargo.FeederShare();
+			empty_weight             += Train::From(u)->GetEmptyWeight();
+			loaded_weight            += Train::From(u)->GetLoadedWeight();
 		}
 
 		/* draw total cargo tab */
+		SetDParam(0, empty_weight);
+		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_EMPTY_WEIGHT);
+		y += line_height;
+		
+		SetDParam(0, loaded_weight);
+		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_LOADED_WEIGHT);
+		y += line_height;
+
 		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_CAPACITY_TEXT);
 		y += line_height;
 

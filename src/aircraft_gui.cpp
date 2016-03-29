@@ -65,9 +65,6 @@ void DrawAircraftDetails(const Aircraft *v, int left, int right, int y)
 			}
 		}
 	}
-
-	SetDParam(0, feeder_share);
-	DrawString(left, right, y + 3 * FONT_HEIGHT_NORMAL + 3 + y_offset, STR_VEHICLE_INFO_FEEDER_CARGO_VALUE);
 }
 
 

@@ -221,6 +221,8 @@ static void TrainDetailsInfoTab(const Vehicle *v, int left, int right, int y)
 		SetDParam(1, v->value);
 		SetDParam(2, Train::From(v)->GetEmptyWeight());
 		SetDParam(3, Train::From(v)->GetLoadedWeight());
+		SetDParam(4, CeilDiv(Train::From(v)->gcache.cached_veh_length * 100, TILE_SIZE));
+		SetDParam(5, 2);
 		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_WAGON_VALUE_EXT);
 	} else {
 		SetDParam(0, v->engine_type);
@@ -228,6 +230,16 @@ static void TrainDetailsInfoTab(const Vehicle *v, int left, int right, int y)
 		SetDParam(2, v->value);
 		SetDParam(3, Train::From(v)->GetEmptyWeight());
 		SetDParam(4, Train::From(v)->GetLoadedWeight());
+
+		const Vehicle* u = v;
+		uint16 length = 0;
+
+		do {
+			length += CeilDiv(Train::From(u)->gcache.cached_veh_length * 100, TILE_SIZE);
+		} while ((u = u->Next()) != NULL && u->IsArticulatedPart());
+
+		SetDParam(5, length);
+		SetDParam(6, 2);
 		DrawString(left, right, y, STR_VEHICLE_DETAILS_TRAIN_ENGINE_BUILT_AND_VALUE_EXT);
 	}
 }
@@ -329,7 +341,7 @@ int GetTrainDetailsWndVScroll(VehicleID veh_id, TrainDetailsWindowTabs det_tab)
 		for (CargoID i = 0; i < NUM_CARGO; i++) {
 			if (max_cargo[i] > 0) num++; // only count carriages that the train has
 		}
-		num++; // needs one more because first line is description string
+		num += 10; // needs seven more because first line is description string and we have the weight and speed info
 	} else {
 		for (const Train *v = Train::Get(veh_id); v != NULL; v = v->GetNextVehicle()) {
 			GetCargoSummaryOfArticulatedVehicle(v, &_cargo_summary);
@@ -443,6 +455,8 @@ void DrawTrainDetails(const Train *v, int left, int right, int y, int vscroll_po
 		Money feeder_share = 0;
 		uint16 empty_weight = 0;
 		uint16 loaded_weight = 0;
+		uint16 empty_max_speed = 0;
+		uint16 loaded_max_speed = 0;
 
 		for (const Vehicle *u = v; u != NULL; u = u->Next()) {
 			act_cargo[u->cargo_type] += u->cargo.StoredCount();
@@ -452,17 +466,61 @@ void DrawTrainDetails(const Train *v, int left, int right, int y, int vscroll_po
 			loaded_weight            += Train::From(u)->GetLoadedWeight();
 		}
 
-		/* draw total cargo tab */
-		SetDParam(0, empty_weight);
-		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_EMPTY_WEIGHT);
-		y += line_height;
-		
-		SetDParam(0, loaded_weight);
-		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_LOADED_WEIGHT);
-		y += line_height;
+		double tractive_effort_empty = empty_weight * v->GetRollingFriction();
+		double tractive_effort_loaded = loaded_weight * v->GetRollingFriction();
+		double power = v->gcache.cached_power * 746ll;
+		double max_te = v->gcache.cached_max_te;
+		empty_max_speed = min(v->GetDisplayMaxSpeed(), (tractive_effort_empty == 0 || tractive_effort_empty > max_te) ? 0 : (3.6 * (power / tractive_effort_empty)));
+		loaded_max_speed = min(v->GetDisplayMaxSpeed(), (tractive_effort_loaded == 0 || tractive_effort_loaded > max_te) ? 0 : (3.6 * (power / tractive_effort_loaded)));
 
-		DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_CAPACITY_TEXT);
-		y += line_height;
+		/* draw performance tab */
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			SetDParam(0, CeilDiv(Train::From(v)->gcache.cached_total_length * 100, TILE_SIZE));
+			SetDParam(1, 2);
+			DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_LENGTH);
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			SetDParam(0, empty_weight);
+			DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_EMPTY_WEIGHT);
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			SetDParam(0, loaded_weight);
+			DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_LOADED_WEIGHT);
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			SetDParam(0, empty_max_speed);
+			DrawString(left, right, y + text_y_offset, empty_max_speed > 0 ? STR_VEHICLE_DETAILS_TRAIN_MAX_EMPTY_SPEED : STR_VEHICLE_DETAILS_TRAIN_MAX_EMPTY_SPEED_ZERO);
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			SetDParam(0, loaded_max_speed);
+			DrawString(left, right, y + text_y_offset, loaded_max_speed > 0 ? STR_VEHICLE_DETAILS_TRAIN_MAX_LOADED_SPEED : STR_VEHICLE_DETAILS_TRAIN_MAX_LOADED_SPEED_ZERO);
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			y += line_height;
+		}
+
+		if (--vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
+			DrawString(left, right, y + text_y_offset, STR_VEHICLE_DETAILS_TRAIN_TOTAL_CAPACITY_TEXT);
+			y += line_height;
+		}
 
 		for (CargoID i = 0; i < NUM_CARGO; i++) {
 			if (max_cargo[i] > 0 && --vscroll_pos < 0 && vscroll_pos > -vscroll_cap) {
@@ -475,7 +533,5 @@ void DrawTrainDetails(const Train *v, int left, int right, int y, int vscroll_po
 				y += line_height;
 			}
 		}
-		SetDParam(0, feeder_share);
-		DrawString(left, right, y + text_y_offset, STR_VEHICLE_INFO_FEEDER_CARGO_VALUE);
 	}
 }

@@ -289,9 +289,14 @@ public:
 					}
 
 					const GroundVehicleCache *gcache = this->virtual_train->GetGroundVehicleCache();
+					double tractive_effort_loaded = loaded_weight * this->virtual_train->GetRollingFriction();
+					double power = gcache->cached_power * 746ll;
+					double max_te = gcache->cached_max_te;
+					uint16 loaded_max_speed = min(this->virtual_train->GetDisplayMaxSpeed(), (tractive_effort_loaded == 0 || tractive_effort_loaded > max_te) ? 0 : (3.6 * (power / tractive_effort_loaded)));
+
 					SetDParam(0, loaded_weight);
 					SetDParam(1, gcache->cached_power);
-					SetDParam(2, this->virtual_train->GetDisplayMaxSpeed());
+					SetDParam(2, loaded_max_speed);
 					SetDParam(3, gcache->cached_max_te / 1000);
 					DrawString(8, r.right, 4 - this->vscroll->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
 					/* Draw cargo summary */

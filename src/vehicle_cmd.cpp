@@ -802,7 +802,7 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	tmp->max_speed = virt->GetDisplayMaxSpeed();
 	tmp->power = gcache->cached_power;
 	tmp->weight = gcache->cached_weight;
-	tmp->max_te = gcache->cached_max_te / 1000;
+	tmp->max_te = gcache->cached_max_te;
 
 	tmp->spritenum = virt->spritenum;
 	tmp->cur_image = virt->GetImage(DIR_W, EIT_PURCHASE);

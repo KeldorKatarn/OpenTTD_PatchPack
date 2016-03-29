@@ -740,12 +740,17 @@ public:
 		_cur_dpi = &tmp_dpi;
 
 		const TemplateVehicle *tmp = this->templates[this->selected_template_index];
+		
+		double tractive_effort_loaded = tmp->weight * 17;
+		double power = tmp->power * 746ll;
+		double max_te = tmp->max_te;
+		uint16 loaded_max_speed = min(tmp->max_speed, (tractive_effort_loaded == 0 || tractive_effort_loaded > max_te) ? 0 : (3.6 * (power / tractive_effort_loaded)));
 
 		/* Draw vehicle performance info */
-		SetDParam(2, tmp->max_speed);
-		SetDParam(1, tmp->power);
 		SetDParam(0, tmp->weight);
-		SetDParam(3, tmp->max_te);
+		SetDParam(1, tmp->power);
+		SetDParam(2, loaded_max_speed);
+		SetDParam(3, tmp->max_te / 1000);
 		DrawString(8, r.right, 4 - this->vscroll[2]->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
 
 		/* Draw cargo summary */

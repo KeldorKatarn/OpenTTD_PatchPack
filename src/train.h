@@ -230,6 +230,20 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 		return weight * (this->IsWagon() ? FreightWagonMult(this->cargo_type) : 1);
 	}
 
+	/**
+	* Returns the rolling friction coefficient of this vehicle.
+	* @return Rolling friction coefficient in [1e-4].
+	*/
+	inline uint32 GetRollingFriction() const
+	{
+		/* Roughly 1000 * 9.81 * 0.002
+		* 1000 for tonnes to kg
+		* 9.81 for g
+		* 0.0017 for track to wheel friction
+		*/
+		return 17;
+	}
+
 protected: // These functions should not be called outside acceleration code.
 
 	/**
@@ -328,20 +342,6 @@ protected: // These functions should not be called outside acceleration code.
 	inline uint16 GetCurrentSpeed() const
 	{
 		return this->cur_speed;
-	}
-
-	/**
-	 * Returns the rolling friction coefficient of this vehicle.
-	 * @return Rolling friction coefficient in [1e-4].
-	 */
-	inline uint32 GetRollingFriction() const
-	{
-		/* Roughly 1000 * 9.81 * 0.002
-		 * 1000 for tonnes to kg
-		 * 9.81 for g
-		 * 0.0017 for track to wheel friction
-		 */
-		return 17;
 	}
 
 	/**

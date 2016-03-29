@@ -1859,7 +1859,7 @@ static const NWidgetPart _nested_train_vehicle_details_widgets[] = {
 	EndContainer(),
 	NWidget(WWT_PANEL, COLOUR_GREY, WID_VD_TOP_DETAILS), SetResize(1, 0), SetMinimalSize(405, 42), EndContainer(),
 	NWidget(NWID_HORIZONTAL),
-		NWidget(WWT_MATRIX, COLOUR_GREY, WID_VD_MATRIX), SetResize(1, 1), SetMinimalSize(393, 45), SetMatrixDataTip(1, 0, STR_NULL), SetFill(1, 0), SetScrollbar(WID_VD_SCROLLBAR),
+		NWidget(WWT_MATRIX, COLOUR_GREY, WID_VD_MATRIX), SetResize(1, 1), SetMinimalSize(420, 45), SetMatrixDataTip(1, 0, STR_NULL), SetFill(1, 0), SetScrollbar(WID_VD_SCROLLBAR),
 		NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_VD_SCROLLBAR),
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),
@@ -1879,7 +1879,7 @@ static const NWidgetPart _nested_train_vehicle_details_widgets[] = {
 		NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VD_DETAILS_CAPACITY_OF_EACH), SetMinimalSize(99, 12),
 				SetDataTip(STR_VEHICLE_DETAIL_TAB_CAPACITIES, STR_VEHICLE_DETAILS_TRAIN_CAPACITIES_TOOLTIP), SetFill(1, 0), SetResize(1, 0),
 		NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VD_DETAILS_TOTAL_CARGO), SetMinimalSize(99, 12),
-				SetDataTip(STR_VEHICLE_DETAIL_TAB_TOTAL_CARGO, STR_VEHICLE_DETAILS_TRAIN_TOTAL_CARGO_TOOLTIP), SetFill(1, 0), SetResize(1, 0),
+		        SetDataTip(STR_VEHICLE_DETAIL_TAB_PERFORMANCE, STR_VEHICLE_DETAILS_TRAIN_PERFORMANCE_TOOLTIP), SetFill(1, 0), SetResize(1, 0),
 		NWidget(WWT_RESIZEBOX, COLOUR_GREY),
 	EndContainer(),
 };

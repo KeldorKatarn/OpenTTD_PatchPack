@@ -113,10 +113,6 @@ void DrawRoadVehDetails(const Vehicle *v, int left, int right, int y)
 		}
 		DrawString(left, right, y + 2 * FONT_HEIGHT_NORMAL + 1 + y_offset, str);
 	}
-
-	/* Draw Transfer credits text */
-	SetDParam(0, feeder_share);
-	DrawString(left, right, y + 3 * FONT_HEIGHT_NORMAL + 3 + y_offset, STR_VEHICLE_INFO_FEEDER_CARGO_VALUE);
 }
 
 /**

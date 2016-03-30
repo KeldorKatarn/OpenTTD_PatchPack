@@ -487,8 +487,7 @@ public:
 	/** Marks timetable separation invalid so it has to be initialized again. */
 	void MarkSeparationInvalid()
 	{
-		if ((this->current_sep_mode == TTS_MODE_AUTO) || (this->current_sep_mode == TTS_MODE_BUFFERED_AUTO))
-			this->is_separation_valid = false;
+		this->is_separation_valid = false;
 	}
 
 	/**

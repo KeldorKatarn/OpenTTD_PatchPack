@@ -292,6 +292,8 @@ public:
 	void CancelReservation(StationID next, Station *st);
 	void LeaveStation();
 
+	void HandleAutomaticTimetableSeparation();
+
 	GroundVehicleCache *GetGroundVehicleCache();
 	const GroundVehicleCache *GetGroundVehicleCache() const;
 

@@ -663,7 +663,9 @@ int OrderList::GetNumRunningVehicles()
 	int num_running_vehicles = 0;
 
 	for (const Vehicle *v = this->first_shared; v != NULL; v = v->NextShared()) {
-		if (!(v->vehstatus & (VS_STOPPED | VS_CRASHED))) num_running_vehicles++;
+		if (!(v->vehstatus & (VS_STOPPED | VS_CRASHED)) || v->current_order.IsType(OT_WAITING)) {
+			num_running_vehicles++;
+		}
 	}
 
 	return num_running_vehicles;
@@ -728,7 +730,10 @@ Ticks OrderList::SeparateVehicle()
 		return INVALID_TICKS;
 
 	Ticks result = GetCurrentTickCount() - (this->separation_counter * this->current_separation + this->last_timetable_init);
-	this->separation_counter++;
+	this->IncreaseSeparationCounter();
+	if (this->separation_counter == UINT16_MAX) {
+		this->MarkSeparationInvalid();
+	}
 
 	return result;
 }

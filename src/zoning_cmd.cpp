@@ -23,6 +23,7 @@
 #include "table/sprites.h"
 #include "station_func.h"
 #include "station_map.h"
+#include "tracerestrict.h"
 #include "town.h"
 #include "zoning.h"
 
@@ -288,6 +289,23 @@ SpriteID TileZoneCheckUnservedIndustriesEvaluation(TileIndex tile, Owner owner)
 }
 
 /**
+* Detect whether a tile is a restricted signal tile
+*
+* @param TileIndex tile
+* @param Owner owner
+* @return red if a restricted signal, nothing otherwise
+*/
+SpriteID TileZoneCheckTraceRestrictEvaluation(TileIndex tile, Owner owner)
+{
+	if (IsTileType(tile, MP_RAILWAY) && HasSignals(tile) && IsRestrictedSignal(tile)) {
+		return SPR_ZONING_INNER_HIGHLIGHT_RED;
+	}
+
+	return ZONING_INVALID_SPRITE_ID;
+}
+
+
+/**
  * General evaluation function; calls all the other functions depending on
  * evaluation mode.
  *
@@ -302,12 +320,13 @@ SpriteID TileZoneCheckUnservedIndustriesEvaluation(TileIndex tile, Owner owner)
 SpriteID TileZoningSpriteEvaluation(TileIndex tile, Owner owner, ZoningEvaluationMode ev_mode)
 {
 	switch (ev_mode) {
-		case ZEM_CAN_BUILD:  return TileZoneCheckBuildEvaluation(tile, owner);
-		case ZEM_AUTHORITY:  return TileZoneCheckOpinionEvaluation(tile, owner);
-		case ZEM_STA_CATCH:  return TileZoneCheckStationCatchmentEvaluation(tile, owner);
-		case ZEM_BUL_UNSER:  return TileZoneCheckUnservedBuildingsEvaluation(tile, owner);
-		case ZEM_IND_UNSER:  return TileZoneCheckUnservedIndustriesEvaluation(tile, owner);
-		default:             return ZONING_INVALID_SPRITE_ID;
+		case ZEM_CAN_BUILD:     return TileZoneCheckBuildEvaluation(tile, owner);
+		case ZEM_AUTHORITY:     return TileZoneCheckOpinionEvaluation(tile, owner);
+		case ZEM_STA_CATCH:     return TileZoneCheckStationCatchmentEvaluation(tile, owner);
+		case ZEM_BUL_UNSER:     return TileZoneCheckUnservedBuildingsEvaluation(tile, owner);
+		case ZEM_IND_UNSER:     return TileZoneCheckUnservedIndustriesEvaluation(tile, owner);
+		case ZEM_TRACERESTRICT: return TileZoneCheckTraceRestrictEvaluation(tile, owner);
+		default:                return ZONING_INVALID_SPRITE_ID;
 	}
 }
 

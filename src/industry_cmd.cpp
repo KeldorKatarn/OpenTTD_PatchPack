@@ -1954,10 +1954,20 @@ static Industry *CreateNewIndustry(TileIndex tile, IndustryType type, IndustryAv
 
 	uint32 seed = Random();
 	uint32 seed2 = Random();
-	Industry *i = NULL;
-	CommandCost ret = CreateNewIndustryHelper(tile, type, DC_EXEC, indspec, RandomRange(indspec->num_table), seed, GB(seed2, 0, 16), OWNER_NONE, creation_type, &i);
-	assert(i != NULL || ret.Failed());
-	return i;
+	Industry *ind = NULL;
+	CommandCost ret;
+
+	int layout = RandomRange(indspec->num_table);
+
+	/* Check subsequently each layout, starting with the given layout in p1 */
+	for (int i = 0; i < indspec->num_table; i++) {
+		layout = (layout + 1) % indspec->num_table;
+		ret = CreateNewIndustryHelper(tile, type, DC_EXEC, indspec, layout, seed, GB(seed2, 0, 16), OWNER_NONE, creation_type, &ind);
+		if (ret.Succeeded()) break;
+	}
+
+	assert(ind != NULL || ret.Failed());
+	return ind;
 }
 
 /**
@@ -2042,7 +2052,7 @@ static uint GetNumberOfIndustries()
  */
 static Industry *PlaceIndustry(IndustryType type, IndustryAvailabilityCallType creation_type, bool try_hard)
 {
-	uint tries = try_hard ? 10000u : 2000u;
+	uint tries = try_hard ? 25000u : 10000u;
 	for (; tries > 0; tries--) {
 		Industry *ind = CreateNewIndustry(RandomTile(), type, creation_type);
 		if (ind != NULL) return ind;
@@ -2311,7 +2321,7 @@ void IndustryBuildData::TryBuildNewIndustry()
 		}
 
 		/* Try to create the industry. */
-		const Industry *ind = PlaceIndustry(it, IACT_RANDOMCREATION, false);
+		const Industry *ind = PlaceIndustry(it, IACT_RANDOMCREATION, forced_build != NUM_INDUSTRYTYPES);
 		if (ind == NULL) {
 			this->builddata[it].wait_count = this->builddata[it].max_wait + 1; // Compensate for decrementing below.
 			this->builddata[it].max_wait = min(1000, this->builddata[it].max_wait + 2);

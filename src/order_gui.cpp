@@ -1136,7 +1136,7 @@ public:
 						this->EnableWidget(WID_O_NON_STOP);
 						this->SetWidgetLoweredState(WID_O_NON_STOP, order->GetNonStopType() & ONSF_NO_STOP_AT_INTERMEDIATE_STATIONS);
 						this->EnableWidget(WID_O_REVERSE);
-						this->SetWidgetLoweredState(WID_O_REVERSE, order->GetWaypointFlags() & OWF_REVERSE);
+						this->SetWidgetLoweredState(WID_O_REVERSE, (order->GetWaypointFlags() & OWF_REVERSE) != 0);
 					}
 					this->DisableWidget(WID_O_UNLOAD);
 					this->DisableWidget(WID_O_REFIT_DROPDOWN);
@@ -1690,6 +1690,8 @@ public:
 				share_order ? CMD_CLONE_ORDER | CMD_MSG(STR_ERROR_CAN_T_SHARE_ORDER_LIST) : CMD_CLONE_ORDER | CMD_MSG(STR_ERROR_CAN_T_COPY_ORDER_LIST))) {
 			this->selected_order = -1;
 			ResetObjectToPlace();
+			MarkAllRoutePathsDirty(this->vehicle);
+			MarkAllRouteStepsDirty(this);
 		}
 	}
 

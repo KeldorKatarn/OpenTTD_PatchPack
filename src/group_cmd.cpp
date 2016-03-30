@@ -142,7 +142,7 @@ void GroupStatistics::Clear()
 /* static */ void GroupStatistics::CountVehicle(const Vehicle *v, int delta)
 {
 	/* make virtual trains group-neutral */
-	if ( HasBit(v->subtype, GVSF_VIRTUAL) ) return;
+	if (HasBit(v->subtype, GVSF_VIRTUAL)) return;
 
 	assert(delta == 1 || delta == -1);
 
@@ -167,6 +167,9 @@ void GroupStatistics::Clear()
  */
 /* static */ void GroupStatistics::CountEngine(const Vehicle *v, int delta)
 {
+	/* make virtual trains group-neutral */
+	if (HasBit(v->subtype, GVSF_VIRTUAL)) return;
+
 	assert(delta == 1 || delta == -1);
 	GroupStatistics::GetAllGroup(v).num_engines[v->engine_type] += delta;
 	GroupStatistics::Get(v).num_engines[v->engine_type] += delta;

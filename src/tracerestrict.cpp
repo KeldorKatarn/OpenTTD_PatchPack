@@ -66,11 +66,6 @@ INSTANTIATE_POOL_METHODS(TraceRestrictProgram)
 TraceRestrictMapping _tracerestrictprogram_mapping;
 
 /**
- * Default value for pathfinder penalty instructions
- */
-static const uint16 _tracerestrict_penalty_item_default_value = 500;
-
-/**
  * List of pre-defined pathfinder penalty values
  * This is indexed by TraceRestrictPathfinderPenaltyPresetIndex
  */
@@ -1015,15 +1010,15 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 	switch (type) {
 		case TRDCT_PROG_COPY: {
 			TraceRestrictRemoveProgramMapping(self);
-			TraceRestrictProgram *prog = GetTraceRestrictProgram(self, true);
-			if (!prog) {
-				// allocation failed
-				return CMD_ERROR;
-			}
-
 			TraceRestrictProgram *source_prog = GetTraceRestrictProgram(source, false);
-			if (source_prog) {
+			if (source_prog && !source_prog->items.empty()) {
+				TraceRestrictProgram *prog = GetTraceRestrictProgram(self, true);
+				if (!prog) {
+					// allocation failed
+					return CMD_ERROR;
+				}
 				prog->items = source_prog->items; // copy
+				prog->Validate();
 			}
 			break;
 		}
@@ -1059,6 +1054,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 				}
 
 				new_prog->items.swap(items);
+				new_prog->Validate();
 			}
 			break;
 		}
@@ -1097,6 +1093,7 @@ void TraceRestrictRemoveDestinationID(TraceRestrictOrderCondAuxField type, uint1
 					SetTraceRestrictValueDefault(item, TRVT_ORDER); // this updates the instruction in-place
 				}
 			}
+			if (IsTraceRestrictDoubleItem(item)) i++;
 		}
 	}
 

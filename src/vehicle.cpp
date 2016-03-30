@@ -1637,6 +1637,7 @@ void VehicleEnterDepot(Vehicle *v)
 			UpdateVehicleTimetable(v, true);
 			if (v->current_order.IsWaitTimetabled()) {
 				v->current_order.MakeWaiting();
+				v->HandleAutomaticTimetableSeparation();
 				v->current_order.SetNonStopType(ONSF_NO_STOP_AT_ANY_STATION);
 				return;
 			}
@@ -2233,31 +2234,7 @@ void Vehicle::BeginLoading()
 		this->current_order.MakeLoading(false);
 	}
 
-	/* If all requirements for separation are met, we can initialize it. */
-	if (_settings_game.order.automatic_timetable_separation) {
-		int first_load_order_index = -1;
-
-		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
-			Order* order = this->orders.list->GetOrderAt(i);
-
-			if (order->IsType(OT_GOTO_STATION) && !order->IsType(OT_IMPLICIT)) {
-				first_load_order_index = i;
-				break;
-			}
-		}
-
-		if (this->IsOrderListShared() &&
-			this->orders.list->IsCompleteTimetable() &&
-			(this->cur_implicit_order_index == first_load_order_index)) {
-
-			if (!this->orders.list->IsSeparationValid()) {
-				this->orders.list->InitializeSeparation();
-				SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
-			}
-			this->lateness_counter = this->orders.list->SeparateVehicle();
-
-		}
-	}
+	this->HandleAutomaticTimetableSeparation();
 
 	if (this->last_loading_station != INVALID_STATION &&
 			this->last_loading_station != this->last_station_visited &&
@@ -2276,6 +2253,38 @@ void Vehicle::BeginLoading()
 	Station::Get(this->last_station_visited)->MarkTilesDirty(true);
 	this->cur_speed = 0;
 	this->MarkDirty();
+}
+
+/**
+* Handles the automatic timetable separation from initialization to setting of the lateness counter at the correct first order.
+*/
+void Vehicle::HandleAutomaticTimetableSeparation()
+{
+	/* If all requirements for separation are met, we can initialize it. */
+	if (_settings_game.order.automatic_timetable_separation) {
+		int first_wait_index = -1;
+
+		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+			Order* order = this->orders.list->GetOrderAt(i);
+
+			if (order->IsWaitTimetabled() && !order->IsType(OT_IMPLICIT)) {
+				first_wait_index = i;
+				break;
+			}
+		}
+
+		if (this->IsOrderListShared() &&
+			this->orders.list->IsCompleteTimetable() &&
+			(this->cur_implicit_order_index == first_wait_index)) {
+
+			if (!this->orders.list->IsSeparationValid()) {
+				this->orders.list->InitializeSeparation();
+				SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
+			}
+			this->lateness_counter = this->orders.list->SeparateVehicle();
+
+		}
+	}
 }
 
 /**

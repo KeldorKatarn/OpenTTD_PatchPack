@@ -30,6 +30,8 @@ enum RailTileType {
 };
 
 static const RailTypeLabel _planning_tracks_label = 1347174734u;
+static const RailTypeLabel _pipeline_tracks_label = 1346981957u;
+static const RailTypeLabel _wires_tracks_label    = 1413827653u;
 
 RailType GetTileRailType(TileIndex tile);
 
@@ -519,11 +521,6 @@ static inline byte GetRailAge(TileIndex ti)
 {
 	assert(IsPlainRailTile(ti));
 
-	if (GetRailTypeInfo(GetTileRailType(ti))->label == _planning_tracks_label) {
-		// Never age planning tracks.
-		return 0;
-	}
-
 	/* using high bits of m2: (ok for depots and clear tracks only) */
 	/* m2 used by PBS/YAPP, shifting to m7 -Phazorx */
 	return GB(_me[ti].m7,0,8);
@@ -556,11 +553,6 @@ static inline void SetRestrictedSignal(TileIndex tile, bool is_restricted)
 static inline void SetRailAge(TileIndex ti, byte new_age)
 {
 	assert(IsPlainRailTile(ti));
-
-	if (GetRailTypeInfo(GetTileRailType(ti))->label == _planning_tracks_label) {
-		// Never age planning tracks.
-		SB(_me[ti].m7, 0, 8, 0);
-	}
 
 	/* using high bits of m2: (ok for depots and clear tracks only) */
 	/* m2 used by PBS/YAPP, shifting to m7 -Phazorx */

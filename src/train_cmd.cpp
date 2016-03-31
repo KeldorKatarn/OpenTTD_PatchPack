@@ -1799,7 +1799,14 @@ static void UpdateLevelCrossingTile(TileIndex tile, bool sound, bool force_state
 
 	if (new_state != IsCrossingBarred(tile)) {
 		if (new_state && sound) {
-			if (_settings_client.sound.ambient) SndPlayTileFx(SND_0E_LEVEL_CROSSING, tile);
+			RailTypeLabel railTypeLabel = GetRailTypeInfo(GetTileRailType(tile))->label;
+
+			if (railTypeLabel != _planning_tracks_label &&
+				railTypeLabel != _pipeline_tracks_label &&
+				railTypeLabel != _wires_tracks_label &&
+				_settings_client.sound.ambient) {
+				SndPlayTileFx(SND_0E_LEVEL_CROSSING, tile);
+			}
 		}
 		SetCrossingBarred(tile, new_state);
 		MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);

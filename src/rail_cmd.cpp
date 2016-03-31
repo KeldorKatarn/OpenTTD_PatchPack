@@ -2240,6 +2240,14 @@ void DrawTrackGrowth(TileInfo* ti, TrackBits track)
 {
 	SpriteID pal, base;
 	TileIndex tile = ti->tile;
+	RailTypeLabel railTypeLabel = GetRailTypeInfo(GetTileRailType(ti->tile))->label;
+
+	if (railTypeLabel == _planning_tracks_label ||
+		railTypeLabel == _pipeline_tracks_label ||
+		railTypeLabel == _wires_tracks_label) {
+		// Never age these specialized tracks.
+		return;
+	}
 
 	if (!GetTrackGrowthPalette(tile, pal)) return;
 

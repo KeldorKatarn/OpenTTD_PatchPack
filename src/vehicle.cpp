@@ -155,6 +155,11 @@ bool Vehicle::NeedsServicing() const
 		return true;
 	}
 
+	/* Is vehicle old and renewing is enabled */
+	if (this->NeedsAutorenewing(c, true)) {
+		return true;
+	}
+
 	/* Test whether there is some pending autoreplace.
 	 * Note: We do this after the service-interval test.
 	 * There are a lot more reasons for autoreplace to fail than we can test here reasonably. */
@@ -2944,6 +2949,7 @@ void VehiclesYearlyLoop()
 			}
 
 			v->profit_last_year = v->profit_this_year;
+			v->profit_lifetime += v->profit_this_year;
 			v->profit_this_year = 0;
 			SetWindowDirty(WC_VEHICLE_DETAILS, v->index);
 		}

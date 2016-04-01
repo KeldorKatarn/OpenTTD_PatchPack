@@ -3008,6 +3008,12 @@ bool AfterLoadGame()
 			}
 		}
 	}
+ 
+	/* Set lifetime vehicle profit to 0 if save game before 195 */
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_14)) {
+		Vehicle *v;
+		FOR_ALL_VEHICLES(v) v->profit_lifetime = 0;
+	}
 
 	/* Road stops is 'only' updating some caches */
 	AfterLoadRoadStops();

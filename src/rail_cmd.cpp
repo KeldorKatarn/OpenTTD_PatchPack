@@ -1137,11 +1137,14 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 						SetBitTunnelBridgeSignal(tile_exit);
 						SetBitTunnelBridgeExit(tile);
 					}
-				}	
-				SetTunnelBridgeSemaphore(tile, sigvar == SIG_SEMAPHORE);
-				SetTunnelBridgeSemaphore(tile_exit, sigvar == SIG_SEMAPHORE);
-				SetTunnelBridgePBS(tile, is_pbs);
-				SetTunnelBridgePBS(tile_exit, is_pbs);
+				}
+
+				if (p2 == 0 || p2 == 4 || p2 == 8) {
+					SetTunnelBridgeSemaphore(tile, sigvar == SIG_SEMAPHORE);
+					SetTunnelBridgeSemaphore(tile_exit, sigvar == SIG_SEMAPHORE);
+					SetTunnelBridgePBS(tile, is_pbs);
+					SetTunnelBridgePBS(tile_exit, is_pbs);
+				}
 			}
 			
 			if (IsTunnelBridgeExit(tile) && IsTunnelBridgePBS(tile) && !HasTunnelBridgeReservation(tile)) SetTunnelBridgeExitGreen(tile, false);

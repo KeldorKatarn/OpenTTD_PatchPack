@@ -123,7 +123,7 @@ static inline bool IsRailDepotTile(TileIndex t)
  */
 static inline RailType GetRailType(TileIndex t)
 {
-	return (RailType)GB(_m[t].m3, 0, 4);
+	return (RailType)((GB(_m[t].m1, 7, 1) << 4) | GB(_m[t].m3, 0, 4));
 }
 
 /**
@@ -133,7 +133,8 @@ static inline RailType GetRailType(TileIndex t)
  */
 static inline void SetRailType(TileIndex t, RailType r)
 {
-	SB(_m[t].m3, 0, 4, r);
+	SB(_m[t].m1, 7, 1, GB(r, 4, 1));
+	SB(_m[t].m3, 0, 4, GB(r, 0, 4));
 }
 
 
@@ -599,7 +600,7 @@ static inline void MakeRailNormal(TileIndex t, Owner o, TrackBits b, RailType r)
 	SetTileType(t, MP_RAILWAY);
 	SetTileOwner(t, o);
 	_m[t].m2 = 0;
-	_m[t].m3 = r;
+	SetRailType(t, r);
 	_m[t].m4 = 0;
 	_m[t].m5 = RAIL_TILE_NORMAL << 6 | b;
 	SetRailAge(t, 0);
@@ -613,35 +614,11 @@ static inline void MakeRailDepot(TileIndex t, Owner o, DepotID did, DiagDirectio
 	SetTileType(t, MP_RAILWAY);
 	SetTileOwner(t, o);
 	_m[t].m2 = did;
-	_m[t].m3 = r;
+	SetRailType(t, r);
 	_m[t].m4 = 0;
 	_m[t].m5 = RAIL_TILE_DEPOT << 6 | d;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = 0;
-}
-
-
-static inline void IncreaseStuckCounter(TileIndex t)
-{
-	//if (!IsTileType(t, MP_RAILWAY)) return;
-	//if (_me[t].m7 == 255) return;
-	//_me[t].m7++;
-}
-
-
-static inline void ReduceStuckCounter(TileIndex t)
-{
-	//if (!IsTileType(t, MP_RAILWAY)) return;
-	//_me[t].m7 -= _me[t].m7/4;
-}
-
-
-static inline byte GetStuckCounter(TileIndex t)
-{
-	return 0;
-	//if (!IsTileType(t, MP_RAILWAY)) return 0;
-	//return _me[t].m7;
-
 }
 
 static inline byte GetTrackGrowthPhase(TileIndex ti)

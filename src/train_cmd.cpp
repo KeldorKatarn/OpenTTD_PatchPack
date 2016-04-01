@@ -3719,10 +3719,6 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 						/* Don't handle stuck trains here. */
 						if (HasBit(v->flags, VRF_TRAIN_STUCK)) return false;
 
-						/* this codepath seems to be run every 5 ticks, so increase counter twice every 20 ticks */
-						IncreaseStuckCounter(v->tile);
-						if (v->tick_counter % 4 == 0) IncreaseStuckCounter(v->tile);
-
 						if (!HasSignalOnTrackdir(gp.new_tile, ReverseTrackdir(i))) {
 							v->cur_speed = 0;
 							v->subspeed = 0;
@@ -4447,7 +4443,6 @@ static bool TrainLocoHandler(Train *v, bool mode)
 	/* Handle stuck trains. */
 	if (!mode && HasBit(v->flags, VRF_TRAIN_STUCK)) {
 		++v->wait_counter;
-		if (v->tick_counter % 4 == 0) IncreaseStuckCounter(v->tile);
 
 		/* Should we try reversing this tick if still stuck? */
 		bool turn_around = v->wait_counter % (_settings_game.pf.wait_for_pbs_path * DAY_TICKS) == 0 && _settings_game.pf.reverse_at_signals;

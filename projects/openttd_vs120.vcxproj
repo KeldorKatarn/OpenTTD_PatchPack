@@ -341,7 +341,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\overlay_cmd.cpp" />
-    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
@@ -349,7 +348,6 @@
     <ClInclude Include="..\src\overlay.h" />
     <ClInclude Include="..\src\overlay_cmd.h" />
     <ClInclude Include="..\src\table\darklight_colours.h" />
-    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h" />
     <ClInclude Include="..\src\tbtr_template_gui_main.h" />
     <ClInclude Include="..\src\tbtr_template_gui_create.h" />
     <ClInclude Include="..\src\tbtr_template_vehicle.h" />

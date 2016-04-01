@@ -3024,6 +3024,9 @@ bool AfterLoadGame()
 	AfterLoadLinkGraphs();
 
 	AfterLoadTraceRestrict();
+
+	AfterLoadTemplateVehiclesUpdateImage();
+
 	return true;
 }
 
@@ -3061,4 +3064,5 @@ void ReloadNewGRFData()
 	/* redraw the whole screen */
 	MarkWholeScreenDirty();
 	CheckTrainsLengths();
+	AfterLoadTemplateVehiclesUpdateImage();
 }

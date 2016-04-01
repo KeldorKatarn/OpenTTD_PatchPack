@@ -806,8 +806,7 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 
 	tmp->spritenum = virt->spritenum;
 	tmp->cur_image = virt->GetImage(DIR_W, EIT_PURCHASE);
-	Point *p = new Point();
-	tmp->image_width = virt->GetDisplayImageWidth(p);
+	tmp->image_width = virt->GetDisplayImageWidth();
 }
 
 /**
@@ -1124,7 +1123,7 @@ CommandCost CmdTemplateVehicleFromTrain(TileIndex tile, DoCommandFlag flags, uin
 	if (!TemplateVehicle::CanAllocateItem(len))
 		return CMD_ERROR;
 
-	for (Train *v = clicked; v != NULL; v = v->Next()) {
+	for (Train *v = clicked; v != NULL; v = v->GetNextUnit()) {
 		if (!IsEngineBuildable(v->engine_type, VEH_TRAIN, _current_company)) {
 			return_cmd_error(STR_ERROR_RAIL_VEHICLE_NOT_AVAILABLE + VEH_TRAIN);
 		}
@@ -1179,6 +1178,7 @@ CommandCost CmdDeleteTemplateVehicle(TileIndex tile, DoCommandFlag flags, uint32
 
 		delete del;
 
+		InvalidateWindowClassesData(WC_CREATE_TEMPLATE, 0);
 		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN, 0);
 	}
 

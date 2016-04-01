@@ -2998,6 +2998,19 @@ bool AfterLoadGame()
 		FOR_ALL_STATIONS(st) UpdateStationAcceptance(st, false);
 	}
 
+	// Before this version we didn't store the 5th bit of the tracktype here.
+	// So set it to 0 just in case there was garbage in there.
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_14)) {
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (_m[t].type == MP_RAILWAY ||
+				_m[t].type == MP_ROAD ||
+				_m[t].type == MP_STATION ||
+				_m[t].type == MP_TUNNELBRIDGE) {
+				SB(_m[t].m1, 7, 1, 0);
+			}
+		}
+	}
+
 	/* Road stops is 'only' updating some caches */
 	AfterLoadRoadStops();
 	AfterLoadLabelMaps();

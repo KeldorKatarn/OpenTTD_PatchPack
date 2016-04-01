@@ -51,6 +51,7 @@ static GUIVehicleList::SortFunction VehicleNameSorter;
 static GUIVehicleList::SortFunction VehicleAgeSorter;
 static GUIVehicleList::SortFunction VehicleProfitThisYearSorter;
 static GUIVehicleList::SortFunction VehicleProfitLastYearSorter;
+static GUIVehicleList::SortFunction VehicleProfitLifetimeSorter;
 static GUIVehicleList::SortFunction VehicleCargoSorter;
 static GUIVehicleList::SortFunction VehicleReliabilitySorter;
 static GUIVehicleList::SortFunction VehicleMaxSpeedSorter;
@@ -66,6 +67,7 @@ GUIVehicleList::SortFunction * const BaseVehicleListWindow::vehicle_sorter_funcs
 	&VehicleAgeSorter,
 	&VehicleProfitThisYearSorter,
 	&VehicleProfitLastYearSorter,
+	&VehicleProfitLifetimeSorter,
 	&VehicleCargoSorter,
 	&VehicleReliabilitySorter,
 	&VehicleMaxSpeedSorter,
@@ -82,6 +84,7 @@ const StringID BaseVehicleListWindow::vehicle_sorter_names[] = {
 	STR_SORT_BY_AGE,
 	STR_SORT_BY_PROFIT_THIS_YEAR,
 	STR_SORT_BY_PROFIT_LAST_YEAR,
+	STR_SORT_BY_PROFIT_LIFETIME,
 	STR_SORT_BY_TOTAL_CAPACITY_PER_CARGOTYPE,
 	STR_SORT_BY_RELIABILITY,
 	STR_SORT_BY_MAX_SPEED,
@@ -1171,6 +1174,13 @@ static int CDECL VehicleProfitLastYearSorter(const Vehicle * const *a, const Veh
 	return (r != 0) ? r : VehicleNumberSorter(a, b);
 }
 
+/** Sort vehicles by lifetime profit */
+static int CDECL VehicleProfitLifetimeSorter(const Vehicle * const *a, const Vehicle * const *b)
+{
+	int r = ClampToI32((*a)->GetDisplayProfitLifetime() - (*b)->GetDisplayProfitLifetime());
+	return (r != 0) ? r : VehicleNumberSorter(a, b);
+}
+
 /** Sort vehicles by their cargo */
 static int CDECL VehicleCargoSorter(const Vehicle * const *a, const Vehicle * const *b)
 {
@@ -1434,7 +1444,7 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 
 		SetDParam(0, v->GetDisplayProfitThisYear());
 		SetDParam(1, v->GetDisplayProfitLastYear());
-
+		
 		DrawVehicleImage(v, image_left, image_right, y + FONT_HEIGHT_SMALL - 1, selected_vehicle, EIT_IN_LIST, 0);
 		DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR);
 
@@ -1996,12 +2006,14 @@ struct VehicleDetailsWindow : Window {
 					STR_VEHICLE_INFO_MAX_SPEED,
 					STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED,
 					STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE,
-					STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR,
 					STR_VEHICLE_INFO_RELIABILITY_BREAKDOWNS
 				};
 				for (uint i = 0; i < lengthof(info_strings); i++) {
 					dim = maxdim(dim, GetStringBoundingBox(info_strings[i]));
 				}
+				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				for (uint i = 1; i < 4; i++) SetDParamMaxValue(i, 1 << 24);
+				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME));
 				SetDParam(0, STR_VEHICLE_INFO_AGE);
 				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_AGE_RUNNING_COST_YR));
 				size->width = dim.width + WD_FRAMERECT_LEFT + WD_FRAMERECT_RIGHT;
@@ -2142,9 +2154,11 @@ struct VehicleDetailsWindow : Window {
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw profit */
-				SetDParam(0, v->GetDisplayProfitThisYear());
-				SetDParam(1, v->GetDisplayProfitLastYear());
-				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				SetDParam(1, v->GetDisplayProfitThisYear());
+				SetDParam(2, v->GetDisplayProfitLastYear());
+				SetDParam(3, v->GetDisplayProfitLifetime());
+				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw breakdown & reliability */

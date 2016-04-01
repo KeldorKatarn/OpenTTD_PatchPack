@@ -1,6 +1,10 @@
 #include "../stdafx.h"
 
 #include "../tbtr_template_vehicle.h"
+#include "../tbtr_template_vehicle_func.h"
+#include "../train.h"
+#include "../core/backup_type.hpp"
+#include "../core/random_func.hpp"
 
 #include "saveload.h"
 
@@ -92,6 +96,44 @@ void AfterLoadTemplateVehicles()
 			}
 		}
 	}
+}
+ 
+void AfterLoadTemplateVehiclesUpdateImage()
+{
+	TemplateVehicle *tv;
+
+	SavedRandomSeeds saved_seeds;
+	SaveRandomSeeds(&saved_seeds);
+
+	FOR_ALL_TEMPLATES(tv) {
+		if (tv->Prev() == NULL) {
+			Backup<CompanyByte> cur_company(_current_company, tv->owner, FILE_LINE);
+			StringID err;
+			Train* t = VirtualTrainFromTemplateVehicle(tv, err);
+			if (t != NULL) {
+				int tv_len = 0;
+				for (TemplateVehicle *u = tv; u != NULL; u = u->Next()) {
+					tv_len++;
+				}
+				int t_len = 0;
+				for (Train *u = t; u != NULL; u = u->Next()) {
+					t_len++;
+				}
+				if (t_len == tv_len) {
+					Train *v = t;
+					for (TemplateVehicle *u = tv; u != NULL; u = u->Next(), v = v->Next()) {
+						u->spritenum = v->spritenum;
+						u->cur_image = v->GetImage(DIR_W, EIT_PURCHASE);
+						u->image_width = v->GetDisplayImageWidth();
+					}
+				}
+				delete t;
+			}
+			cur_company.Restore();
+		}
+	}
+
+	RestoreRandomSeeds(saved_seeds);
 }
 
 extern const ChunkHandler _template_vehicle_chunk_handlers[] = {

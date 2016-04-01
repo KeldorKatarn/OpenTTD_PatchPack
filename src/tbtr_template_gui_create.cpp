@@ -92,6 +92,8 @@ static WindowDesc _template_create_window_desc(
 	_widgets, lengthof(_widgets)	// widgets + num widgets
 );
 
+void ShowTemplateTrainBuildVehicleWindow(Train **virtual_train);
+
 static void TrainDepotMoveVehicle(const Vehicle *wagon, VehicleID sel, const Vehicle *head)
 {
 	const Vehicle *v = Vehicle::Get(sel);
@@ -117,15 +119,13 @@ private:
 	int line_height;
 	Train* virtual_train;
 	bool editMode;
-	bool *noticeParent;
 	bool *createWindowOpen;			/// used to notify main window of progress (dummy way of disabling 'delete' while editing a template)
-	bool virtualTrainChangedNotice;
 	VehicleID sel;
 	VehicleID vehicle_over;
 	TemplateVehicle *editTemplate;
 
 public:
-	TemplateCreateWindow(WindowDesc* _wdesc, TemplateVehicle *to_edit, bool *notice, bool *windowOpen, int step_h) : Window(_wdesc)
+	TemplateCreateWindow(WindowDesc* _wdesc, TemplateVehicle *to_edit, bool *windowOpen, int step_h) : Window(_wdesc)
 	{
 		this->line_height = step_h;
 		this->CreateNestedTree(_wdesc != NULL);
@@ -137,9 +137,7 @@ public:
 
 		this->owner = _local_company;
 
-		noticeParent = notice;
 		createWindowOpen = windowOpen;
-		virtualTrainChangedNotice = false;
 		this->editTemplate = to_edit;
 
 		if (to_edit) editMode = true;
@@ -169,7 +167,7 @@ public:
 		/* more cleanup */
 		*createWindowOpen = false;
 		DeleteWindowById(WC_BUILD_VIRTUAL_TRAIN, this->window_number);
-
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	void SetVirtualTrain(Train* const train)
@@ -194,7 +192,7 @@ public:
 
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
-		virtualTrainChangedNotice = true;
+		this->SetDirty();
 		UpdateButtonState();
 	}
 
@@ -207,7 +205,7 @@ public:
 				break;
 			}
 			case TCW_NEW: {
-				ShowBuildVirtualTrainWindow(&virtual_train, &virtualTrainChangedNotice);
+				ShowTemplateTrainBuildVehicleWindow(&virtual_train);
 				break;
 			}
 			case TCW_CLONE: {
@@ -331,14 +329,7 @@ public:
 				break;
 		}
 	}
-	virtual void OnTick()
-	{
-		if (virtualTrainChangedNotice) {
-			this->SetDirty();
-			virtualTrainChangedNotice = false;
-			UpdateButtonState();
-		}
-	}
+
 	virtual void OnDragDrop(Point pt, int widget)
 	{
 		switch (widget) {
@@ -543,10 +534,10 @@ public:
 	}
 };
 
-void ShowTemplateCreateWindow(TemplateVehicle *to_edit, bool *noticeParent, bool *createWindowOpen, int step_h)
+void ShowTemplateCreateWindow(TemplateVehicle *to_edit, bool *createWindowOpen, int step_h)
 {
 	if ( BringWindowToFrontById(WC_CREATE_TEMPLATE, VEH_TRAIN) != NULL ) return;
-	new TemplateCreateWindow(&_template_create_window_desc, to_edit, noticeParent, createWindowOpen, step_h);
+	new TemplateCreateWindow(&_template_create_window_desc, to_edit, createWindowOpen, step_h);
 }
 
 void CcSetVirtualTrain(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)

@@ -32,6 +32,7 @@
 #include "cargotype.h"
 #include "core/geometry_func.hpp"
 #include "autoreplace_func.h"
+#include "train.h"
 
 #include "widgets/build_vehicle_widget.h"
 
@@ -2042,11 +2043,19 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 	CargoID cargo_filter_wagon[NUM_CARGO + 2];        ///< Available cargo filters; CargoID or CF_ANY or CF_NONE
 	StringID cargo_filter_texts_wagon[NUM_CARGO + 3]; ///< Texts for filter_cargo, terminated by INVALID_STRING_ID
 
-	BuildVehicleWindowTrainAdvanced(WindowDesc *desc, TileIndex tile, VehicleType type) : Window(desc)
+
+	bool virtual_train_mode;                          ///< Are we building a virtual train?
+	Train **virtual_train_out;                        ///< Virtual train ptr
+
+	BuildVehicleWindowTrainAdvanced(WindowDesc *desc, TileIndex tile, VehicleType type, Train **virtual_train_out) : Window(desc)
 	{
 
 		this->vehicle_type = type;
-		this->window_number = tile == INVALID_TILE ? (int)type : tile;		
+		this->window_number = tile == INVALID_TILE ? (int)type : tile;	
+
+		this->virtual_train_out = virtual_train_out;
+		this->virtual_train_mode = (virtual_train_out != NULL);
+		if (this->virtual_train_mode) this->window_number = 0;
 
 		this->sel_engine_loco            = INVALID_ENGINE;
 		this->sort_criteria_loco         = _last_sort_criteria_loco;
@@ -2059,7 +2068,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		this->show_hidden_locos           = _engine_sort_show_hidden_locos;
 
 		this->railtype = (tile == INVALID_TILE) ? RAILTYPE_END : GetRailType(tile);
-		this->listview_mode = (this->window_number <= VEH_END);
+		this->listview_mode = !(this->virtual_train_mode) && (this->window_number <= VEH_END);
 
 		this->CreateNestedTree();
 
@@ -2080,8 +2089,14 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		widget_loco->tool_tip = STR_BUY_VEHICLE_TRAIN_HIDE_SHOW_TOGGLE_TOOLTIP + type;
 
 		widget_loco = this->GetWidget<NWidgetCore>(WID_BV_BUILD_LOCO);
-		widget_loco->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_LOCOMOTIVE_BUTTON;
-		widget_loco->tool_tip    = STR_BUY_VEHICLE_TRAIN_BUY_LOCOMOTIVE_TOOLTIP;
+		if (this->virtual_train_mode) {
+			widget_loco->widget_data = STR_TMPL_CONFIRM;
+			widget_loco->tool_tip = STR_TMPL_CONFIRM;
+		}
+		else {
+			widget_loco->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_LOCOMOTIVE_BUTTON;
+			widget_loco->tool_tip = STR_BUY_VEHICLE_TRAIN_BUY_LOCOMOTIVE_TOOLTIP;
+		}
 
 		widget_loco = this->GetWidget<NWidgetCore>(WID_BV_RENAME_LOCO);
 		widget_loco->widget_data = STR_BUY_VEHICLE_TRAIN_RENAME_LOCOMOTIVE_BUTTON;
@@ -2102,8 +2117,13 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		widget_wagon->tool_tip = STR_BUY_VEHICLE_TRAIN_HIDE_SHOW_TOGGLE_TOOLTIP + type;
 
 		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_BUILD_WAGON);
-		widget_wagon->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_WAGON_BUTTON;
-		widget_wagon->tool_tip    = STR_BUY_VEHICLE_TRAIN_BUY_WAGON_TOOLTIP;
+		if (this->virtual_train_mode) {
+			widget_wagon->widget_data = STR_TMPL_CONFIRM;
+			widget_wagon->tool_tip = STR_TMPL_CONFIRM;
+		} else {
+			widget_wagon->widget_data = STR_BUY_VEHICLE_TRAIN_BUY_WAGON_BUTTON;
+			widget_wagon->tool_tip = STR_BUY_VEHICLE_TRAIN_BUY_WAGON_TOOLTIP;
+		}
 
 		widget_wagon = this->GetWidget<NWidgetCore>(WID_BV_RENAME_WAGON);
 		widget_wagon->widget_data = STR_BUY_VEHICLE_TRAIN_RENAME_WAGON_BUTTON;
@@ -2118,7 +2138,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		this->details_height_loco = ((this->vehicle_type == VEH_TRAIN) ? 10 : 9) * FONT_HEIGHT_NORMAL + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 		this->details_height_wagon = ((this->vehicle_type == VEH_TRAIN) ? 10 : 9) * FONT_HEIGHT_NORMAL + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 
-		this->FinishInitNested(tile == INVALID_TILE ? (int)type : tile);
+		this->FinishInitNested(this->window_number);
 
 		this->owner = (tile != INVALID_TILE) ? GetTileOwner(tile) : _local_company;
 
@@ -2259,8 +2279,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 	/* Figure out what train EngineIDs to put in the list */
 	void GenerateBuildTrainList()
 	{
-
-		this->railtype = (this->listview_mode) ? RAILTYPE_END : GetRailType(this->window_number);
+		this->railtype = (this->listview_mode || this->virtual_train_mode) ? RAILTYPE_END : GetRailType(this->window_number);
 
 		/* Locomotives */
 
@@ -2424,8 +2443,13 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			case WID_BV_BUILD_LOCO: {
 				EngineID sel_eng = this->sel_engine_loco;
 				if (sel_eng != INVALID_ENGINE) {
-					CommandCallback *callback = (this->vehicle_type == VEH_TRAIN && RailVehInfo(sel_eng)->railveh_type == RAILVEH_WAGON) ? CcBuildWagon : CcBuildPrimaryVehicle;
-					DoCommandP(this->window_number, sel_eng, 0, GetCmdBuildVeh(this->vehicle_type), callback);
+					if (this->virtual_train_mode) {
+						DoCommandP(0, sel_eng, 0, CMD_BUILD_VIRTUAL_RAIL_VEHICLE, CcAddVirtualEngine);
+					}
+					else {
+						CommandCallback *callback = (this->vehicle_type == VEH_TRAIN && RailVehInfo(sel_eng)->railveh_type == RAILVEH_WAGON) ? CcBuildWagon : CcBuildPrimaryVehicle;
+						DoCommandP(this->window_number, sel_eng, 0, GetCmdBuildVeh(this->vehicle_type), callback);
+					}
 				}
 				break;
 			}
@@ -2502,8 +2526,13 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			case WID_BV_BUILD_WAGON: {
 				EngineID sel_eng = this->sel_engine_wagon;
 				if (sel_eng != INVALID_ENGINE) {
-					CommandCallback *callback = (this->vehicle_type == VEH_TRAIN && RailVehInfo(sel_eng)->railveh_type == RAILVEH_WAGON) ? CcBuildWagon : CcBuildPrimaryVehicle;
-					DoCommandP(this->window_number, sel_eng, 0, GetCmdBuildVeh(this->vehicle_type), callback);
+					if (this->virtual_train_mode) {
+						DoCommandP(0, sel_eng, 0, CMD_BUILD_VIRTUAL_RAIL_VEHICLE, CcAddVirtualEngine);
+					}
+					else {
+						CommandCallback *callback = (this->vehicle_type == VEH_TRAIN && RailVehInfo(sel_eng)->railveh_type == RAILVEH_WAGON) ? CcBuildWagon : CcBuildPrimaryVehicle;
+						DoCommandP(this->window_number, sel_eng, 0, GetCmdBuildVeh(this->vehicle_type), callback);
+					}
 				}
 				break;
 			}
@@ -2539,7 +2568,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 	{
 		switch (widget) {
 			case WID_BV_CAPTION: {
-				if (this->vehicle_type == VEH_TRAIN && !this->listview_mode) {
+				if (this->vehicle_type == VEH_TRAIN && !this->listview_mode && !this->virtual_train_mode) {
 					const RailtypeInfo *rti = GetRailTypeInfo(this->railtype);
 					SetDParam(0, rti->strings.build_caption);
 				} else {
@@ -2802,7 +2831,33 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		this->vscroll_loco->SetCapacityFromWidget(this, WID_BV_LIST_LOCO);
 		this->vscroll_wagon->SetCapacityFromWidget(this, WID_BV_LIST_WAGON);
 	}
+
+	void AddVirtualEngine(Train *toadd)
+	{
+		if (this->virtual_train_out == NULL) return;
+
+		if (*(this->virtual_train_out) == NULL) {
+			*(this->virtual_train_out) = toadd;
+		} else {
+			VehicleID target = (*(this->virtual_train_out))->GetLastUnit()->index;
+
+			DoCommandP(0, (1 << 21) | toadd->index, target, CMD_MOVE_RAIL_VEHICLE);
+		}
+		InvalidateWindowClassesData(WC_CREATE_TEMPLATE);
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+	}
 };
+ 
+void CcAddVirtualEngine(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)
+{
+	if (result.Failed()) return;
+
+	Window* window = FindWindowById(WC_BUILD_VEHICLE, 0);
+	if (window) {
+		Train* train = Train::From(Vehicle::Get(_new_vehicle_id));
+		((BuildVehicleWindowTrainAdvanced*) window)->AddVirtualEngine(train);
+	}
+}
 
 static WindowDesc _build_vehicle_desc(
 	WDP_AUTO, "build_vehicle", 240, 268,
@@ -2816,6 +2871,13 @@ static WindowDesc _build_vehicle_desc_train_advanced(
 	WC_BUILD_VEHICLE, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_build_vehicle_widgets_train_advanced, lengthof(_nested_build_vehicle_widgets_train_advanced)
+);
+ 
+static WindowDesc _build_template_vehicle_desc(
+	WDP_AUTO, "build_vehicle", 240, 268,
+	WC_BUILD_VIRTUAL_TRAIN, WC_CREATE_TEMPLATE,
+	WDF_CONSTRUCTION,
+	_nested_build_vehicle_widgets, lengthof(_nested_build_vehicle_widgets_train_advanced)
 );
 
 void ShowBuildVehicleWindow(TileIndex tile, VehicleType type)
@@ -2832,10 +2894,19 @@ void ShowBuildVehicleWindow(TileIndex tile, VehicleType type)
 
 	if(type == VEH_TRAIN && _settings_client.gui.advanced_train_purchase_window)
 	{
-		new BuildVehicleWindowTrainAdvanced(&_build_vehicle_desc_train_advanced, tile, type);
+		new BuildVehicleWindowTrainAdvanced(&_build_vehicle_desc_train_advanced, tile, type, NULL);
 	}
 	else
 	{
 		new BuildVehicleWindow(&_build_vehicle_desc, tile, type);
 	}
+}
+
+void ShowTemplateTrainBuildVehicleWindow(Train **virtual_train)
+{
+	assert(IsCompanyBuildableVehicleType(VEH_TRAIN));
+
+	DeleteWindowById(WC_BUILD_VIRTUAL_TRAIN, 0);
+
+	new BuildVehicleWindowTrainAdvanced(&_build_template_vehicle_desc, INVALID_TILE, VEH_TRAIN, virtual_train);
 }

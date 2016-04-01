@@ -83,8 +83,6 @@ enum TemplateReplaceWindowWidgets {
 	TRW_WIDGET_TMPL_BUTTONS_EDIT,
 	TRW_WIDGET_TMPL_BUTTONS_CLONE,
 	TRW_WIDGET_TMPL_BUTTONS_DELETE,
-	//TRW_WIDGET_TMPL_BUTTONS_RPLALL,
-	TRW_WIDGET_TMPL_BUTTON_FLUFF,
 	TRW_WIDGET_TMPL_BUTTONS_EDIT_RIGHTPANEL,
 
 	TRW_WIDGET_TITLE_INFO_GROUP,
@@ -233,6 +231,8 @@ public:
 		this->matrixContentLeftMargin = 40;
 		this->selected_template_index = -1;
 		this->selected_group_index = -1;
+
+		this->UpdateButtonState();
 
 		this->templateNotice = false;
 		this->editInProgress = false;
@@ -447,6 +447,7 @@ public:
 				else if ((newindex >= 0) && (newindex < this->groups.Length())) {
 					this->selected_group_index = newindex;
 				}
+				this->UpdateButtonState();
 				break;
 			}
 			case TRW_WIDGET_BOTTOM_MATRIX: {
@@ -457,6 +458,7 @@ public:
 				else if ((newindex >= 0) && (newindex < templates.Length())) {
 					this->selected_template_index = newindex;
 				}
+				this->UpdateButtonState();
 				break;
 			}
 			case TRW_WIDGET_START: {
@@ -466,6 +468,7 @@ public:
 					int current_group_index = (this->groups)[this->selected_group_index]->index;
 
 					DoCommandP(0, current_group_index, tv_index, CMD_ISSUE_TEMPLATE_REPLACEMENT, NULL);
+					this->UpdateButtonState();
 				}
 				break;
 			}
@@ -476,6 +479,7 @@ public:
 				int current_group_index = (this->groups)[this->selected_group_index]->index;
 
 				DoCommandP(0, current_group_index, 0, CMD_DELETE_TEMPLATE_REPLACEMENT, NULL);
+				this->UpdateButtonState();
 				break;
 		}
 		this->SetDirty();
@@ -483,7 +487,7 @@ public:
 
 	virtual bool OnVehicleSelect(const Vehicle *v)
 	{
-		bool succeeded = DoCommandP(0, v->index, 0, CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN, NULL);
+		bool succeeded = DoCommandP(0, v->index, 0, CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN | CMD_MSG(STR_TMPL_CANT_CREATE), NULL);
 
 		if (!succeeded)	return false;
 
@@ -493,6 +497,11 @@ public:
 		this->SetDirty();
 
 		return true;
+	}
+
+	virtual void OnPlaceObjectAbort()
+	{
+		this->RaiseButtons();
 	}
 
 	virtual void OnDropdownSelect(int widget, int index)
@@ -536,6 +545,7 @@ public:
 	{
 		this->groups.ForceRebuild();
 		this->templates.ForceRebuild();
+		this->UpdateButtonState();
 	}
 
 	/** For a given group (id) find the template that is issued for template replacement for this group and return this template's index
@@ -713,13 +723,13 @@ public:
 			TextColour color;
 			if ( v->IsSetReuseDepotVehicles() ) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+300, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
-			if ( v->IsSetKeepRemainingVehicles() ) color = TC_LIGHT_BLUE;
+			DrawString(right - 225, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
+			if (v->IsSetKeepRemainingVehicles()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+400, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
-			if ( v->IsSetRefitAsTemplate() ) color = TC_LIGHT_BLUE;
+			DrawString(right - 150, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
+			if (v->IsSetRefitAsTemplate()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+500, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_REFIT, color, SA_LEFT);
+			DrawString(right - 75, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_REFIT, color, SA_LEFT);
 
 			y += line_height;
 		}
@@ -779,6 +789,27 @@ public:
 		}
 
 		_cur_dpi = old_dpi;
+	}
+
+	void UpdateButtonState()
+	{
+		bool selected_ok = (this->selected_template_index >= 0) && (this->selected_template_index < (short)this->templates.Length());
+		bool group_ok = (this->selected_group_index >= 0) && (this->selected_group_index < (short)this->groups.Length());
+
+		short g_id = -1;
+		if (group_ok) {
+			const Group *g = (this->groups)[this->selected_group_index];
+			g_id = g->index;
+		}
+
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_EDIT, !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_DELETE, !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_REUSE, !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_KEEP, !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_REFIT, !selected_ok);
+
+		this->SetWidgetDisabledState(TRW_WIDGET_START, !(selected_ok && group_ok && FindTemplateIndexForGroup(g_id) != this->selected_template_index));
+		this->SetWidgetDisabledState(TRW_WIDGET_STOP, !(group_ok && GetTemplateReplacementByGroupID(g_id) != NULL));
 	}
 };
 

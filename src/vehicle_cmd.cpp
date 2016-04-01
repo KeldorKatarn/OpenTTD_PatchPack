@@ -456,7 +456,7 @@ CommandCost CmdRefitVehicle(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 	if (v != front && (v->type == VEH_SHIP || v->type == VEH_AIRCRAFT)) return CMD_ERROR;
 
 	/* Allow auto-refitting only during loading and normal refitting only in a depot. */
-	if ( ! is_virtual_train ) {
+	if (!is_virtual_train) {
 		if ((flags & DC_QUERY_COST) == 0 && // used by the refit GUI, including the order refit GUI.
 				!free_wagon && // used by autoreplace/renew
 				(!auto_refit || !front->current_order.IsType(OT_LOADING)) && // refit inside stations
@@ -919,35 +919,42 @@ CommandCost CmdVirtualTrainFromTemplateVehicle(TileIndex tile, DoCommandFlag fla
 	bool should_execute = (flags & DC_EXEC) != 0;
 
 	if (should_execute) {
-		Train* train = VirtualTrainFromTemplateVehicle(tv);
+		StringID err = INVALID_STRING_ID;
+		Train* train = VirtualTrainFromTemplateVehicle(tv, err);
 
 		if (train == nullptr)
-			return CMD_ERROR;
+			return_cmd_error(err);
 	}
 
 	return CommandCost();
 }
 
-Train* VirtualTrainFromTemplateVehicle(TemplateVehicle* tv)
+CommandCost CmdDeleteVirtualTrain(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text);
+
+Train* VirtualTrainFromTemplateVehicle(TemplateVehicle* tv, StringID &err)
 {
 	CommandCost c;
 	Train *tmp, *head, *tail;
 
 	assert(tv->owner == _current_company);
 
-	head = CmdBuildVirtualRailVehicle(tv->engine_type);
+	head = CmdBuildVirtualRailVehicle(tv->engine_type, true, err);
 	if ( !head ) return nullptr;
 
 	tail = head;
 	tv = tv->GetNextUnit();
 	while ( tv ) {
-		tmp = CmdBuildVirtualRailVehicle(tv->engine_type);
-		if ( tmp ) {
-			tmp->cargo_type = tv->cargo_type;
-			tmp->cargo_subtype = tv->cargo_subtype;
-			CmdMoveRailVehicle(INVALID_TILE, DC_EXEC, (1<<21) | tmp->index, tail->index, 0);
-			tail = tmp;
+		tmp = CmdBuildVirtualRailVehicle(tv->engine_type, true, err);
+		if (!tmp) {
+			CmdDeleteVirtualTrain(INVALID_TILE, DC_EXEC, head->index, 0, NULL);
+			return NULL;
 		}
+
+		tmp->cargo_type = tv->cargo_type;
+		tmp->cargo_subtype = tv->cargo_subtype;
+		CmdMoveRailVehicle(INVALID_TILE, DC_EXEC, (1 << 21) | tmp->index, tail->index, 0);
+		tail = tmp;
+
 		tv = tv->GetNextUnit();
 	}
 
@@ -980,20 +987,25 @@ CommandCost CmdVirtualTrainFromTrain(TileIndex tile, DoCommandFlag flags, uint32
 	if (should_execute) {
 		CommandCost c;
 		Train *tmp, *head, *tail;
+		StringID err = INVALID_STRING_ID;
 
-		head = CmdBuildVirtualRailVehicle(train->engine_type);
-		if ( !head ) return CMD_ERROR;
+		head = CmdBuildVirtualRailVehicle(train->engine_type, false, err);
+		if (!head) return_cmd_error(err);
 
 		tail = head;
 		train = train->GetNextUnit();
 		while ( train ) {
-			tmp = CmdBuildVirtualRailVehicle(train->engine_type);
-			if ( tmp ) {
-				tmp->cargo_type = train->cargo_type;
-				tmp->cargo_subtype = train->cargo_subtype;
-				CmdMoveRailVehicle(0, DC_EXEC, (1<<21) | tmp->index, tail->index, 0);
-				tail = tmp;
+			tmp = CmdBuildVirtualRailVehicle(train->engine_type, false, err);
+			if (!tmp) {
+				CmdDeleteVirtualTrain(tile, flags, head->index, 0, NULL);
+				return_cmd_error(err);
 			}
+
+			tmp->cargo_type = train->cargo_type;
+			tmp->cargo_subtype = train->cargo_subtype;
+			CmdMoveRailVehicle(0, DC_EXEC, (1 << 21) | tmp->index, tail->index, 0);
+			tail = tmp;
+
 			train = train->GetNextUnit();
 		}
 
@@ -1111,6 +1123,12 @@ CommandCost CmdTemplateVehicleFromTrain(TileIndex tile, DoCommandFlag flags, uin
 	int len = CountVehiclesInChain(clicked);
 	if (!TemplateVehicle::CanAllocateItem(len))
 		return CMD_ERROR;
+
+	for (Train *v = clicked; v != NULL; v = v->Next()) {
+		if (!IsEngineBuildable(v->engine_type, VEH_TRAIN, _current_company)) {
+			return_cmd_error(STR_ERROR_RAIL_VEHICLE_NOT_AVAILABLE + VEH_TRAIN);
+		}
+	}
 
 	bool should_execute = (flags & DC_EXEC) != 0;
 

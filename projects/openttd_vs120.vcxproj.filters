@@ -3114,13 +3114,7 @@
     <ClCompile Include="..\src\plans.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
@@ -3128,6 +3122,9 @@
     </ClCompile>
     <ClCompile Include="..\src\overlay_cmd.cpp">
       <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp">
+      <Filter>GUI Source Code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3156,12 +3153,6 @@
     <ClInclude Include="..\src\tbtr_template_gui_main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_replaceall.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\tbtr_template_vehicle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -3175,6 +3166,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\overlay_cmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

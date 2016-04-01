@@ -3123,9 +3123,6 @@
     <ClCompile Include="..\src\overlay_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
@@ -3166,9 +3163,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\overlay_cmd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create_virtualtrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

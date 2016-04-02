@@ -640,11 +640,11 @@ public:
 			short template_in_use = FindTemplateIndexForGroup(g_id);
 			if ( template_in_use >= 0 ) {
 				SetDParam(0, template_in_use);
-				DrawString(left, right, text_y, STR_TMPL_GROUP_USES_TEMPLATE, TC_BLACK, SA_HOR_CENTER);
+				DrawString(right - ScaleGUITrad(600), right, text_y, STR_TMPL_GROUP_USES_TEMPLATE, TC_BLACK, SA_HOR_CENTER);
 			}
 			/* If there isn't a template applied from the current group, check if there is one for another rail type */
 			else if ( GetTemplateReplacementByGroupID(g_id) ) {
-				DrawString(left, right, text_y, STR_TMPL_TMPLRPL_EX_DIFF_RAILTYPE, TC_SILVER, SA_HOR_CENTER);
+				DrawString(right - ScaleGUITrad(600), right, text_y, STR_TMPL_TMPLRPL_EX_DIFF_RAILTYPE, TC_SILVER, SA_HOR_CENTER);
 			}
 
 			/* Draw the number of trains that still need to be treated by the currently selected template replacement */
@@ -719,11 +719,11 @@ public:
 			TextColour color;
 			if ( v->IsSetReuseDepotVehicles() ) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(right - ScaleGUITrad(225), right, bottom_edge, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
+			DrawString(right - ScaleGUITrad(275), right, bottom_edge, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
 
 			if (v->IsSetKeepRemainingVehicles()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(right - ScaleGUITrad(150), right, bottom_edge, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
+			DrawString(right - ScaleGUITrad(175), right, bottom_edge, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
 
 			if (v->IsSetRefitAsTemplate()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;

@@ -3552,6 +3552,7 @@ STR_VEHICLE_LIST_SHIP_TOOLTIP                                   :{BLACK}Ships - 
 STR_VEHICLE_LIST_AIRCRAFT_TOOLTIP                               :{BLACK}Aircraft - click on aircraft for information
 
 STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR                     :{TINY_FONT}{BLACK}Profit this year: {CURRENCY_LONG} (last year: {CURRENCY_LONG})
+STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME            :{STRING2} (lifetime: {CURRENCY_LONG})
 
 STR_VEHICLE_LIST_AVAILABLE_TRAINS                               :Available Trains
 STR_VEHICLE_LIST_AVAILABLE_ROAD_VEHICLES                        :Available Vehicles
@@ -3610,6 +3611,7 @@ STR_GROUP_SPECIFIC_NAME_TOWN_LOCAL                              :Local {TOWN}
 
 STR_GROUP_PROFIT_THIS_YEAR                                      :{BLACK}Profit this year:
 STR_GROUP_PROFIT_LAST_YEAR                                      :{BLACK}Profit last year:
+STR_GROUP_LIFETIME_PROFIT                                       :{BLACK}Lifetime profit:
 STR_GROUP_OCCUPANCY                                             :Current usage:
 STR_GROUP_OCCUPANCY_VALUE                                       :{NUM}%
 

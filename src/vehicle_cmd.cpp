@@ -1069,17 +1069,31 @@ CommandCost CmdReplaceTemplateVehicle(TileIndex tile, DoCommandFlag flags, uint3
 
 	if (should_execute) {
 		VehicleID old_ID = INVALID_VEHICLE;
+		bool old_keep_remaining_vehicles = true;
+		bool old_reuse_depot_vehicles = true;
+		bool old_refit_as_template = true;
 
 		if (template_vehicle != nullptr) {
 			old_ID = template_vehicle->index;
+			old_keep_remaining_vehicles = template_vehicle->keep_remaining_vehicles;
+			old_reuse_depot_vehicles = template_vehicle->reuse_depot_vehicles;
+			old_refit_as_template = template_vehicle->refit_as_template;
+			
 			delete template_vehicle;
+			
 			template_vehicle = nullptr;
 		}
 
 		template_vehicle = TemplateVehicleFromVirtualTrain(train);
 
-		if (template_vehicle == nullptr)
+		if (template_vehicle == nullptr) {
 			return CMD_ERROR;
+		}
+		else {
+			template_vehicle->keep_remaining_vehicles = old_keep_remaining_vehicles;
+			template_vehicle->reuse_depot_vehicles = old_reuse_depot_vehicles;
+			template_vehicle->refit_as_template = old_refit_as_template;
+		}
 
 		// Make sure our replacements still point to the correct thing.
 		if (old_ID != template_vehicle->index) {

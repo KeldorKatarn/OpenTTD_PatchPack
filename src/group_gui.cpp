@@ -53,7 +53,7 @@ static const NWidgetPart _nested_group_widgets[] = {
 						SetFill(1, 0), SetResize(0, 1), SetScrollbar(WID_GL_LIST_GROUP_SCROLLBAR),
 				NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_GL_LIST_GROUP_SCROLLBAR),
 			EndContainer(),
-			NWidget(WWT_PANEL, COLOUR_GREY, WID_GL_INFO), SetMinimalSize(200, 70), SetFill(1, 0), EndContainer(),
+			NWidget(WWT_PANEL, COLOUR_GREY, WID_GL_INFO), SetMinimalSize(200, 80), SetFill(1, 0), EndContainer(),
 			NWidget(NWID_HORIZONTAL),
 				NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_GL_CREATE_GROUP), SetFill(0, 1),
 						SetDataTip(SPR_GROUP_CREATE_TRAIN, STR_GROUP_CREATE_TOOLTIP),
@@ -411,7 +411,7 @@ public:
 				max_icon_height = max(max_icon_height, GetSpriteSize(this->GetWidget<NWidgetCore>(WID_GL_REPLACE_PROTECTION)->widget_data).height);
 
 				/* ... minus the height of the group info ... */
-				max_icon_height += 50;
+				max_icon_height += 60;
 				
 				/* Get a multiple of tiny_step_height of that amount */
 				size->height = Ceil(size->height - max_icon_height, tiny_step_height);
@@ -439,7 +439,7 @@ public:
 				break;
 
 			case WID_GL_MANAGE_VEHICLES_DROPDOWN: {
-				Dimension d = this->GetActionDropdownSize(true, true);
+				Dimension d = this->GetActionDropdownSize(true, true, this->vli.vtype == VEH_TRAIN);
 				d.height += padding.height;
 				d.width  += padding.width;
 				*size = maxdim(*size, d);
@@ -591,6 +591,7 @@ public:
 			case WID_GL_INFO: {
 				Money this_year = 0;
 				Money last_year = 0;
+				Money lifetime = 0;
 				uint32 occupancy = 0;
 				uint32 group_vehicles = 0;
 
@@ -601,6 +602,7 @@ public:
 
 					this_year += v->GetDisplayProfitThisYear();
 					last_year += v->GetDisplayProfitLastYear();
+					lifetime  += v->GetDisplayProfitLifetime();
 
 					if (v->trip_occupancy >= 0)
 					{
@@ -617,16 +619,20 @@ public:
 				SetDParam(0, last_year);
 				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + FONT_HEIGHT_NORMAL + 2, STR_JUST_CURRENCY_LONG, TC_BLACK, SA_RIGHT);
 
-				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_OCCUPANCY, TC_BLACK);
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_LIFETIME_PROFIT, TC_BLACK);
+				SetDParam(0, lifetime);
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_JUST_CURRENCY_LONG, TC_BLACK, SA_RIGHT);
+
+				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_GROUP_OCCUPANCY, TC_BLACK);
 
 				if (group_vehicles > 0)
 				{
 					SetDParam(0, occupancy / group_vehicles);
-					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_OCCUPANCY_VALUE, TC_BLACK, SA_RIGHT);
+					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_GROUP_OCCUPANCY_VALUE, TC_BLACK, SA_RIGHT);
 				}
 				else
 				{
-					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_QUANTITY_N_A, TC_BLACK, SA_RIGHT);
+					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_QUANTITY_N_A, TC_BLACK, SA_RIGHT);
 				}
 
 				break;
@@ -792,7 +798,7 @@ public:
 				break;
 
 			case WID_GL_MANAGE_VEHICLES_DROPDOWN: {
-				DropDownList *list = this->BuildActionDropdownList(true, Group::IsValidID(this->vli.index));
+				DropDownList *list = this->BuildActionDropdownList(true, Group::IsValidID(this->vli.index), this->vli.vtype == VEH_TRAIN);
 				ShowDropDownList(this, list, 0, WID_GL_MANAGE_VEHICLES_DROPDOWN);
 				break;
 			}

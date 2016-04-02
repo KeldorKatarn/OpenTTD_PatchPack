@@ -248,7 +248,7 @@ CommandCost CheckBridgeAvailability(BridgeType bridge_type, uint bridge_len, DoC
  * @param p1 packed start tile coords (~ dx)
  * @param p2 various bitstuffed elements
  * - p2 = (bit  0- 7) - bridge type (hi bh)
- * - p2 = (bit  8-11) - rail type or road types.
+ * - p2 = (bit  8-12) - rail type or road types.
  * - p2 = (bit 15-16) - transport type.
  * @param text unused
  * @return the cost of this operation or an error
@@ -275,7 +275,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			break;
 
 		case TRANSPORT_RAIL:
-			railtype = Extract<RailType, 8, 4>(p2);
+			railtype = Extract<RailType, 8, 5>(p2);
 			if (!ValParamRailtype(railtype)) return CMD_ERROR;
 			break;
 
@@ -590,7 +590,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
  * Build Tunnel.
  * @param start_tile start tile of tunnel
  * @param flags type of operation
- * @param p1 bit 0-3 railtype or roadtypes
+ * @param p1 bit 0-4 railtype or roadtypes
  *           bit 8-9 transport type
  * @param p2 unused
  * @param text unused
@@ -607,7 +607,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	_build_tunnel_endtile = 0;
 	switch (transport_type) {
 		case TRANSPORT_RAIL:
-			railtype = Extract<RailType, 0, 4>(p1);
+			railtype = Extract<RailType, 0, 5>(p1);
 			if (!ValParamRailtype(railtype)) return CMD_ERROR;
 			break;
 
@@ -1190,14 +1190,23 @@ static void DrawTunnelBridgeRampSignal(const TileInfo *ti)
 
 	if (ti->tileh != SLOPE_FLAT && IsBridge(ti->tile)) z += 8; // sloped bridge head
 	SignalVariant variant = IsTunnelBridgeSemaphore(ti->tile) ? SIG_SEMAPHORE : SIG_ELECTRIC;
+	const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));
 
-	SpriteID sprite;
-	if (variant == SIG_ELECTRIC && type == SIGTYPE_NORMAL) {
-		/* Normal electric signals are picked from original sprites. */
-		sprite = SPR_ORIGINAL_SIGNALS_BASE + ((position << 1) + is_green);
-	} else {
-		/* All other signals are picked from add on sprites. */
-		sprite = SPR_SIGNALS_BASE + ((type - 1) * 16 + variant * 64 + (position << 1) + is_green) + (type > SIGTYPE_LAST_NOPBS ? 64 : 0);
+	SpriteID sprite = GetCustomSignalSprite(rti, ti->tile, type, variant, is_green ? SIGNAL_STATE_GREEN : SIGNAL_STATE_RED);
+	bool is_custom_sprite = (sprite != 0);
+
+	if (is_custom_sprite) {
+		sprite += position;
+	}
+	else {
+		if (variant == SIG_ELECTRIC && type == SIGTYPE_NORMAL) {
+			/* Normal electric signals are picked from original sprites. */
+			sprite = SPR_ORIGINAL_SIGNALS_BASE + ((position << 1) + is_green);
+		}
+		else {
+			/* All other signals are picked from add on sprites. */
+			sprite = SPR_SIGNALS_BASE + ((type - 1) * 16 + variant * 64 + (position << 1) + is_green) + (type > SIGTYPE_LAST_NOPBS ? 64 : 0);
+		}
 	}
 
 	AddSortableSpriteToDraw(sprite, PAL_NONE, x, y, 1, 1, TILE_HEIGHT, z, false, 0, 0, BB_Z_SEPARATOR);

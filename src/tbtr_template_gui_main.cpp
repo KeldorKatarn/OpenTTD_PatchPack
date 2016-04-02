@@ -25,6 +25,7 @@
 #include "core/geometry_func.hpp"
 #include "rail_gui.h"
 #include "network/network.h"
+#include "zoom_func.h"
 
 #include "table/sprites.h"
 #include "table/strings.h"
@@ -83,8 +84,6 @@ enum TemplateReplaceWindowWidgets {
 	TRW_WIDGET_TMPL_BUTTONS_EDIT,
 	TRW_WIDGET_TMPL_BUTTONS_CLONE,
 	TRW_WIDGET_TMPL_BUTTONS_DELETE,
-	//TRW_WIDGET_TMPL_BUTTONS_RPLALL,
-	TRW_WIDGET_TMPL_BUTTON_FLUFF,
 	TRW_WIDGET_TMPL_BUTTONS_EDIT_RIGHTPANEL,
 
 	TRW_WIDGET_TITLE_INFO_GROUP,
@@ -201,7 +200,6 @@ private:
 	short selected_template_index;
 	short selected_group_index;
 
-	bool templateNotice;
 	bool editInProgress;
 
 public:
@@ -234,7 +232,8 @@ public:
 		this->selected_template_index = -1;
 		this->selected_group_index = -1;
 
-		this->templateNotice = false;
+		this->UpdateButtonState();
+
 		this->editInProgress = false;
 
 		//this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_RPLALL, _networking);
@@ -272,6 +271,9 @@ public:
 				*size = maxdim(*size, d);
 				break;
 			}
+			default:
+				size->width = ScaleGUITrad(size->width);
+				break;
 		}
 	}
 
@@ -320,11 +322,6 @@ public:
 
 		this->BuildGroupList(_local_company);
 
-		if ( templateNotice ) {
-			BuildTemplateGuiList(&this->templates, vscroll[1], _local_company, this->sel_railtype);
-			templateNotice = false;
-			this->SetDirty();
-		}
 		/* sets the colour of that art thing */
 		this->GetWidget<NWidgetCore>(TRW_WIDGET_TRAIN_FLUFF_LEFT)->colour  = _company_colours[_local_company];
 		this->GetWidget<NWidgetCore>(TRW_WIDGET_TRAIN_FLUFF_RIGHT)->colour = _company_colours[_local_company];
@@ -395,14 +392,17 @@ public:
 				break;
 			}
 			case TRW_WIDGET_TMPL_BUTTONS_DEFINE: {
-				ShowTemplateCreateWindow(0, &templateNotice, &editInProgress, this->line_height);
+				editInProgress = true;
+				ShowTemplateCreateWindow(0, &editInProgress, this->line_height);
+				UpdateButtonState();
 				break;
 			}
 			case TRW_WIDGET_TMPL_BUTTONS_EDIT: {
 				if ((this->selected_template_index >= 0) && (this->selected_template_index < (short)this->templates.Length())) {
 					editInProgress = true;
 					TemplateVehicle *sel = TemplateVehicle::Get(((this->templates)[selected_template_index])->index);
-					ShowTemplateCreateWindow(sel, &templateNotice, &editInProgress, this->line_height);
+					ShowTemplateCreateWindow(sel, &editInProgress, this->line_height);
+					UpdateButtonState();
 				}
 				break;
 			}
@@ -447,6 +447,7 @@ public:
 				else if ((newindex >= 0) && (newindex < this->groups.Length())) {
 					this->selected_group_index = newindex;
 				}
+				this->UpdateButtonState();
 				break;
 			}
 			case TRW_WIDGET_BOTTOM_MATRIX: {
@@ -457,6 +458,7 @@ public:
 				else if ((newindex >= 0) && (newindex < templates.Length())) {
 					this->selected_template_index = newindex;
 				}
+				this->UpdateButtonState();
 				break;
 			}
 			case TRW_WIDGET_START: {
@@ -466,6 +468,7 @@ public:
 					int current_group_index = (this->groups)[this->selected_group_index]->index;
 
 					DoCommandP(0, current_group_index, tv_index, CMD_ISSUE_TEMPLATE_REPLACEMENT, NULL);
+					this->UpdateButtonState();
 				}
 				break;
 			}
@@ -476,6 +479,7 @@ public:
 				int current_group_index = (this->groups)[this->selected_group_index]->index;
 
 				DoCommandP(0, current_group_index, 0, CMD_DELETE_TEMPLATE_REPLACEMENT, NULL);
+				this->UpdateButtonState();
 				break;
 		}
 		this->SetDirty();
@@ -483,7 +487,7 @@ public:
 
 	virtual bool OnVehicleSelect(const Vehicle *v)
 	{
-		bool succeeded = DoCommandP(0, v->index, 0, CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN, NULL);
+		bool succeeded = DoCommandP(0, v->index, 0, CMD_CLONE_TEMPLATE_VEHICLE_FROM_TRAIN | CMD_MSG(STR_TMPL_CANT_CREATE), NULL);
 
 		if (!succeeded)	return false;
 
@@ -493,6 +497,11 @@ public:
 		this->SetDirty();
 
 		return true;
+	}
+
+	virtual void OnPlaceObjectAbort()
+	{
+		this->RaiseButtons();
 	}
 
 	virtual void OnDropdownSelect(int widget, int index)
@@ -522,20 +531,12 @@ public:
 		this->vscroll[2]->SetCapacity(nwi3->current_y);
 	}
 
-	virtual void OnTick()
-	{
-		if ( templateNotice ) {
-			BuildTemplateGuiList(&this->templates, this->vscroll[1], this->owner, this->sel_railtype);
-			this->SetDirty();
-			templateNotice = false;
-		}
-
-	}
-
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
 		this->groups.ForceRebuild();
 		this->templates.ForceRebuild();
+		this->UpdateButtonState();
+		this->SetDirty();
 	}
 
 	/** For a given group (id) find the template that is issued for template replacement for this group and return this template's index
@@ -626,22 +627,24 @@ public:
 
 			/* Fill the background of the current cell in a darker tone for the currently selected template */
 			if ( this->selected_group_index == i ) {
-				GfxFillRect(left, y, right, y+(this->line_height)/2, _colour_gradient[COLOUR_GREY][3]);
+				GfxFillRect(r.left + 1, y, r.right, y + (this->line_height) / 2, _colour_gradient[COLOUR_GREY][3]);
 			}
+
+			int text_y = y + ScaleGUITrad(3);
 
 			SetDParam(0, g_id);
 			StringID str = STR_GROUP_NAME;
-			DrawString(left+30+ this->indents[i] * 10, right, y+2, str, TC_BLACK);
+			DrawString(left + ScaleGUITrad(30 + this->indents[i] * 10), right, text_y, str, TC_BLACK);
 
 			/* Draw the template in use for this group, if there is one */
 			short template_in_use = FindTemplateIndexForGroup(g_id);
 			if ( template_in_use >= 0 ) {
 				SetDParam(0, template_in_use);
-				DrawString ( left, right, y+2, STR_TMPL_GROUP_USES_TEMPLATE, TC_BLACK, SA_HOR_CENTER);
+				DrawString(right - ScaleGUITrad(600), right, text_y, STR_TMPL_GROUP_USES_TEMPLATE, TC_BLACK, SA_HOR_CENTER);
 			}
 			/* If there isn't a template applied from the current group, check if there is one for another rail type */
 			else if ( GetTemplateReplacementByGroupID(g_id) ) {
-				DrawString ( left, right, y+2, STR_TMPL_TMPLRPL_EX_DIFF_RAILTYPE, TC_SILVER, SA_HOR_CENTER);
+				DrawString(right - ScaleGUITrad(600), right, text_y, STR_TMPL_TMPLRPL_EX_DIFF_RAILTYPE, TC_SILVER, SA_HOR_CENTER);
 			}
 
 			/* Draw the number of trains that still need to be treated by the currently selected template replacement */
@@ -652,12 +655,12 @@ public:
 				// Draw text
 				TextColour color = TC_GREY;
 				if ( num_trains ) color = TC_BLACK;
-				DrawString(left, right-16, y+2, STR_TMPL_NUM_TRAINS_NEED_RPL, color, SA_RIGHT);
+				DrawString(left, right - ScaleGUITrad(16), text_y, STR_TMPL_NUM_TRAINS_NEED_RPL, color, SA_RIGHT);
 				// Draw number
 				if ( num_trains ) color = TC_ORANGE;
 				else color = TC_GREY;
 				SetDParam(0, num_trains);
-				DrawString(left, right-4, y+2, STR_JUST_INT, color, SA_RIGHT);
+				DrawString(left, right - ScaleGUITrad(4), text_y, STR_JUST_INT, color, SA_RIGHT);
 			}
 
 			y+=line_height / 2;
@@ -680,46 +683,51 @@ public:
 
 			/* Fill the background of the current cell in a darker tone for the currently selected template */
 			if ( this->selected_template_index == (int32)i ) {
-				GfxFillRect(left, y, right, y+this->line_height, _colour_gradient[COLOUR_GREY][3]);
+				GfxFillRect(left + 1, y, right, y + this->line_height, _colour_gradient[COLOUR_GREY][3]);
 			}
+ 
+			/* Draw the template */
+			DrawTemplate(v, left + ScaleGUITrad(36), right - ScaleGUITrad(24), y);
 
 			/* Draw a notification string for chains that are not runnable */
 			if ( v->IsFreeWagonChain() ) {
-				DrawString(left, right-2, y+line_height-FONT_HEIGHT_SMALL-WD_FRAMERECT_BOTTOM - 2, STR_TMPL_WARNING_FREE_WAGON, TC_RED, SA_RIGHT);
+				DrawString(left, right - ScaleGUITrad(24), y + ScaleGUITrad(2), STR_TMPL_WARNING_FREE_WAGON, TC_RED, SA_RIGHT);
 			}
 
 			/* Draw the template's length in tile-units */
 			SetDParam(0, v->GetRealLength());
 			SetDParam(1, 1);
-			DrawString(left, right-4, y+2, STR_TINY_BLACK_DECIMAL, TC_BLACK, SA_RIGHT);
+			DrawString(left, right - ScaleGUITrad(4), y + ScaleGUITrad(2), STR_TINY_BLACK_DECIMAL, TC_BLACK, SA_RIGHT);
 
-			/* Draw the template */
-			DrawTemplate(v, left+50, right, y);
+			int bottom_edge = y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - ScaleGUITrad(4);
 
 			/* Buying cost */
 			SetDParam(0, CalculateOverallTemplateCost(v));
-			DrawString(left+35, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_TEMPLATE_OVR_VALUE_notinyfont, TC_BLUE, SA_LEFT);
+			DrawString(left + ScaleGUITrad(35), right, bottom_edge, STR_TMPL_TEMPLATE_OVR_VALUE_notinyfont, TC_BLUE, SA_LEFT);
 
 			/* Index of current template vehicle in the list of all templates for its company */
 			SetDParam(0, i);
-			DrawString(left+5, left+25, y + 2, STR_BLACK_INT, TC_BLACK, SA_RIGHT);
+			DrawString(left + ScaleGUITrad(5), left + ScaleGUITrad(25), y + ScaleGUITrad(2), STR_BLACK_INT, TC_BLACK, SA_RIGHT);
 
 			/* Draw whether the current template is in use by any group */
 			if ( v->NumGroupsUsingTemplate() > 0 ) {
-				DrawString(left+35, right, y + line_height - FONT_HEIGHT_SMALL * 2 - 4 - WD_FRAMERECT_BOTTOM - 2, STR_TMP_TEMPLATE_IN_USE, TC_GREEN, SA_LEFT);
+				DrawString(left + ScaleGUITrad(35), right, bottom_edge - FONT_HEIGHT_SMALL - ScaleGUITrad(3),
+					STR_TMP_TEMPLATE_IN_USE, TC_GREEN, SA_LEFT);
 			}
 
 			/* Draw information about template configuration settings */
 			TextColour color;
 			if ( v->IsSetReuseDepotVehicles() ) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+300, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
-			if ( v->IsSetKeepRemainingVehicles() ) color = TC_LIGHT_BLUE;
+			DrawString(right - ScaleGUITrad(275), right, bottom_edge, STR_TMPL_CONFIG_USEDEPOT, color, SA_LEFT);
+
+			if (v->IsSetKeepRemainingVehicles()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+400, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
-			if ( v->IsSetRefitAsTemplate() ) color = TC_LIGHT_BLUE;
+			DrawString(right - ScaleGUITrad(175), right, bottom_edge, STR_TMPL_CONFIG_KEEPREMAINDERS, color, SA_LEFT);
+
+			if (v->IsSetRefitAsTemplate()) color = TC_LIGHT_BLUE;
 			else color = TC_GREY;
-			DrawString(left+500, right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 2, STR_TMPL_CONFIG_REFIT, color, SA_LEFT);
+			DrawString(right - ScaleGUITrad(75), right, bottom_edge, STR_TMPL_CONFIG_REFIT, color, SA_LEFT);
 
 			y += line_height;
 		}
@@ -751,11 +759,11 @@ public:
 		SetDParam(1, tmp->power);
 		SetDParam(2, loaded_max_speed);
 		SetDParam(3, tmp->max_te / 1000);
-		DrawString(8, r.right, 4 - this->vscroll[2]->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
+		DrawString(8, r.right, ScaleGUITrad(4) - this->vscroll[2]->GetPosition(), STR_VEHICLE_INFO_LOADED_WEIGHT_POWER_MAX_SPEED_MAX_TE);
 
 		/* Draw cargo summary */
-		short top = 30 - this->vscroll[2]->GetPosition();
-		short left = 8;
+		short top = ScaleGUITrad(30) - this->vscroll[2]->GetPosition();
+		short left = ScaleGUITrad(8);
 		short count_columns = 0;
 		short max_columns = 2;
 
@@ -770,7 +778,7 @@ public:
 				SetDParam(1, cargo_caps[i]);
 				SetDParam(2, _settings_game.vehicle.freight_trains);
 				DrawString(x, r.right, top, FreightWagonMult(i) > 1 ? STR_TMPL_CARGO_SUMMARY_MULTI : STR_TMPL_CARGO_SUMMARY, TC_LIGHT_BLUE, SA_LEFT);
-				x += 250;
+				x += ScaleGUITrad(250);
 				if ( count_columns % max_columns == 0 ) {
 					x = left;
 					top += this->line_height/3;
@@ -779,6 +787,31 @@ public:
 		}
 
 		_cur_dpi = old_dpi;
+	}
+
+	void UpdateButtonState()
+	{
+		bool selected_ok = (this->selected_template_index >= 0) && (this->selected_template_index < (short)this->templates.Length());
+		bool group_ok = (this->selected_group_index >= 0) && (this->selected_group_index < (short)this->groups.Length());
+
+		short g_id = -1;
+		if (group_ok) {
+			const Group *g = (this->groups)[this->selected_group_index];
+			g_id = g->index;
+		}
+
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_EDIT, this->editInProgress || !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_DELETE, this->editInProgress || !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_REUSE, this->editInProgress || !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_KEEP, this->editInProgress || !selected_ok);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CONFIGTMPL_REFIT, this->editInProgress || !selected_ok);
+		
+		this->SetWidgetDisabledState(TRW_WIDGET_START, this->editInProgress || !(selected_ok && group_ok && FindTemplateIndexForGroup(g_id) != this->selected_template_index));
+		this->SetWidgetDisabledState(TRW_WIDGET_STOP, this->editInProgress || !(group_ok && GetTemplateReplacementByGroupID(g_id) != NULL));
+
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_DEFINE, this->editInProgress);
+		this->SetWidgetDisabledState(TRW_WIDGET_TMPL_BUTTONS_CLONE, this->editInProgress);
+		this->SetWidgetDisabledState(TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN, this->editInProgress);
 	}
 };
 

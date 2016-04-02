@@ -11,6 +11,7 @@
 #include "vehicle_func.h"
 #include "core/geometry_type.hpp"
 #include "debug.h"
+#include "zoom_func.h"
 
 #include "table/sprites.h"
 #include "table/strings.h"
@@ -34,42 +35,49 @@
 Vehicle *vhead, *vtmp;
 static const uint MAX_ARTICULATED_PARTS = 100;
 
-
+#ifdef _DEBUG
 // debugging printing functions for convenience, usually called from gdb
-void pat() {
+void tbtr_debug_pat()
+{
 	TemplateVehicle *tv;
 	FOR_ALL_TEMPLATES(tv) {
-		if ( tv->Prev() ) continue;
-		ptv(tv);
+		if (tv->Prev()) continue;
+		tbtr_debug_ptv(tv);
 		printf("__________\n");
 	}
 }
-void pav() {
+
+void tbtr_debug_pav()
+{
 	Train *t;
 	FOR_ALL_TRAINS(t) {
-		if ( t->Previous() ) continue;
-		pvt(t);
+		if (t->Previous()) continue;
+		tbtr_debug_pvt(t);
 		printf("__________\n");
 	}
 }
-void ptv(TemplateVehicle* tv) {
+
+void tbtr_debug_ptv(TemplateVehicle* tv)
+{
 	if (!tv) return;
 	while (tv->Next() ) {
 		printf("eid:%3d  st:%2d  tv:%p  next:%p  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, tv, tv->Next(), tv->cargo_type, tv->cargo_subtype);
 		tv = tv->Next();
 	}
-	printf("eid:%3d  st:%2d  tv:%p  next:%p  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, tv, tv->Next(),  tv->cargo_type, tv->cargo_subtype);
+	printf("eid:%3d  st:%2d  tv:%p  next:%p  cargo: %d  cargo_sub: %d\n", tv->engine_type, tv->subtype, tv, tv->Next(), tv->cargo_type, tv->cargo_subtype);
 }
 
-void pvt (const Train *printme) {
-	for ( const Train *tmp = printme; tmp; tmp=tmp->Next() ) {
-		if ( tmp->index <= 0 ) {
+void tbtr_debug_pvt(const Train *printme)
+{
+	for (const Train *tmp = printme; tmp; tmp = tmp->Next()) {
+		if (tmp->index <= 0) {
 			printf("train has weird index: %d %d %p\n", tmp->index, tmp->engine_type, tmp);
 			return;
 		}
 		printf("eid:%3d  index:%2d  subtype:%2d  vehstat: %d  cargo_t: %d   cargo_sub: %d  ref:%p\n", tmp->engine_type, tmp->index, tmp->subtype, tmp->vehstatus, tmp->cargo_type, tmp->cargo_subtype, tmp);
 	}
 }
+#endif
 
 void BuildTemplateGuiList(GUITemplateList *list, Scrollbar *vscroll, Owner oid, RailType railtype)
 {
@@ -99,16 +107,26 @@ void DrawTemplate(const TemplateVehicle *tv, int left, int right, int y)
 {
 	if ( !tv ) return;
 
+	DrawPixelInfo tmp_dpi, *old_dpi;
+	int max_width = right - left + 1;
+	int height = ScaleGUITrad(14);
+	if (!FillDrawPixelInfo(&tmp_dpi, left, y, max_width, height)) return;
+
+	old_dpi = _cur_dpi;
+	_cur_dpi = &tmp_dpi;
+
 	const TemplateVehicle *t = tv;
-	int offset=left;
+	int offset = 0;
 
 	while (t) {
 		PaletteID pal = GetEnginePalette(t->engine_type, _current_company);
-		DrawSprite(t->cur_image, pal, offset, y+12);
+		DrawSprite(t->cur_image, pal, offset + t->image_width / 2, ScaleGUITrad(11));
 
 		offset += t->image_width;
 		t = t->Next();
 	}
+
+	_cur_dpi = old_dpi;
 }
 
 // copy important stuff from the virtual vehicle to the template

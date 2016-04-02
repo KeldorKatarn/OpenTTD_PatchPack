@@ -2996,6 +2996,28 @@ bool AfterLoadGame()
 		FOR_ALL_STATIONS(st) UpdateStationAcceptance(st, false);
 	}
 
+	// Before this version we didn't store the 5th bit of the tracktype here.
+	// So set it to 0 just in case there was garbage in there.
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_14)) {
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (GetTileType(t) == MP_RAILWAY ||
+				IsLevelCrossingTile(t) ||
+				IsRailStationTile(t) ||
+				IsRailWaypointTile(t) ||
+				IsRailTunnelBridgeTile(t)) {
+				ClrBit(_m[t].m1, 7);
+			}
+		}
+	}
+ 
+	/* Set lifetime vehicle profit to 0 if save game before 195 */
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_14)) {
+		Vehicle *v;
+		FOR_ALL_VEHICLES(v) {
+			v->profit_lifetime = v->profit_last_year;
+		}
+	}
+
 	/* Road stops is 'only' updating some caches */
 	AfterLoadRoadStops();
 	AfterLoadLabelMaps();
@@ -3011,6 +3033,9 @@ bool AfterLoadGame()
 	AfterLoadLinkGraphs();
 
 	AfterLoadTraceRestrict();
+
+	AfterLoadTemplateVehiclesUpdateImage();
+
 	return true;
 }
 
@@ -3024,6 +3049,21 @@ bool AfterLoadGame()
  */
 void ReloadNewGRFData()
 {
+	TileIndex map_size = MapSize();
+
+	/* Backup railtype labels for all rail tiles. The railtype info array will be resorted. */
+	std::map<TileIndex, RailTypeLabel> rail_type_label_backups;
+
+	for (TileIndex t = 0; t < map_size; t++) {
+		if (GetTileType(t) == MP_RAILWAY ||
+			IsLevelCrossingTile(t) ||
+			IsRailStationTile(t) ||
+			IsRailWaypointTile(t) ||
+			IsRailTunnelBridgeTile(t)) {
+			rail_type_label_backups[t] = GetRailTypeInfo(GetRailType(t))->label;
+		}
+	}
+
 	/* reload grf data */
 	GfxLoadSprites();
 	LoadStringWidthTable();
@@ -3048,4 +3088,17 @@ void ReloadNewGRFData()
 	/* redraw the whole screen */
 	MarkWholeScreenDirty();
 	CheckTrainsLengths();
+	AfterLoadTemplateVehiclesUpdateImage();
+
+	/* Restore correct railtype for all rail tiles.*/
+	for (TileIndex t = 0; t < map_size; t++) {
+		if (GetTileType(t) == MP_RAILWAY ||
+			IsLevelCrossingTile(t) ||
+			IsRailStationTile(t) ||
+			IsRailWaypointTile(t) ||
+			IsRailTunnelBridgeTile(t)) {
+			RailType old_type = GetRailTypeByLabel(rail_type_label_backups[t]);
+			SetRailType(t, (old_type == INVALID_RAILTYPE) ? RAILTYPE_RAIL : old_type);
+		}
+	}
 }

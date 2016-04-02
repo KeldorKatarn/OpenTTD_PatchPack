@@ -51,6 +51,7 @@ static GUIVehicleList::SortFunction VehicleNameSorter;
 static GUIVehicleList::SortFunction VehicleAgeSorter;
 static GUIVehicleList::SortFunction VehicleProfitThisYearSorter;
 static GUIVehicleList::SortFunction VehicleProfitLastYearSorter;
+static GUIVehicleList::SortFunction VehicleProfitLifetimeSorter;
 static GUIVehicleList::SortFunction VehicleCargoSorter;
 static GUIVehicleList::SortFunction VehicleReliabilitySorter;
 static GUIVehicleList::SortFunction VehicleMaxSpeedSorter;
@@ -66,6 +67,7 @@ GUIVehicleList::SortFunction * const BaseVehicleListWindow::vehicle_sorter_funcs
 	&VehicleAgeSorter,
 	&VehicleProfitThisYearSorter,
 	&VehicleProfitLastYearSorter,
+	&VehicleProfitLifetimeSorter,
 	&VehicleCargoSorter,
 	&VehicleReliabilitySorter,
 	&VehicleMaxSpeedSorter,
@@ -82,6 +84,7 @@ const StringID BaseVehicleListWindow::vehicle_sorter_names[] = {
 	STR_SORT_BY_AGE,
 	STR_SORT_BY_PROFIT_THIS_YEAR,
 	STR_SORT_BY_PROFIT_LAST_YEAR,
+	STR_SORT_BY_PROFIT_LIFETIME,
 	STR_SORT_BY_TOTAL_CAPACITY_PER_CARGOTYPE,
 	STR_SORT_BY_RELIABILITY,
 	STR_SORT_BY_MAX_SPEED,
@@ -142,13 +145,17 @@ void BaseVehicleListWindow::BuildVehicleList()
  * Compute the size for the Action dropdown.
  * @param show_autoreplace If true include the autoreplace item.
  * @param show_group If true include group-related stuff.
+ * @param show_template_replace If true include the template replace item.
  * @return Required size.
  */
-Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bool show_group)
+Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bool show_group, bool show_template_replace)
 {
 	Dimension d = {0, 0};
 
 	if (show_autoreplace) d = maxdim(d, GetStringBoundingBox(STR_VEHICLE_LIST_REPLACE_VEHICLES));
+	if (show_autoreplace && show_template_replace) {
+		d = maxdim(d, GetStringBoundingBox(STR_TMPL_TEMPLATE_REPLACEMENT));
+	}
 	d = maxdim(d, GetStringBoundingBox(STR_VEHICLE_LIST_SEND_FOR_SERVICING));
 	d = maxdim(d, GetStringBoundingBox(this->vehicle_depot_name[this->vli.vtype]));
 
@@ -164,14 +171,18 @@ Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bo
  * Display the Action dropdown window.
  * @param show_autoreplace If true include the autoreplace item.
  * @param show_group If true include group-related stuff.
+ * @param show_template_replace If true include template replace item.
  * @return Itemlist for dropdown
  */
-DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autoreplace, bool show_group)
+DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace)
 {
 	DropDownList *list = new DropDownList();
 
-	*list->Append() = new DropDownListStringItem(STR_TMPL_TEMPLATE_REPLACEMENT, ADI_TEMPLATE_REPLACE, false);
 	if (show_autoreplace) *list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_REPLACE_VEHICLES, ADI_REPLACE, false);
+	if (show_autoreplace && show_template_replace) {
+		*list->Append() = new DropDownListStringItem(STR_TMPL_TEMPLATE_REPLACEMENT, ADI_TEMPLATE_REPLACE, false);
+	}
+
 	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SEND_FOR_SERVICING, ADI_SERVICE, false);
 	*list->Append() = new DropDownListStringItem(this->vehicle_depot_name[this->vli.vtype], ADI_DEPOT, false);
 
@@ -1163,6 +1174,13 @@ static int CDECL VehicleProfitLastYearSorter(const Vehicle * const *a, const Veh
 	return (r != 0) ? r : VehicleNumberSorter(a, b);
 }
 
+/** Sort vehicles by lifetime profit */
+static int CDECL VehicleProfitLifetimeSorter(const Vehicle * const *a, const Vehicle * const *b)
+{
+	int r = ClampToI32((*a)->GetDisplayProfitLifetime() - (*b)->GetDisplayProfitLifetime());
+	return (r != 0) ? r : VehicleNumberSorter(a, b);
+}
+
 /** Sort vehicles by their cargo */
 static int CDECL VehicleCargoSorter(const Vehicle * const *a, const Vehicle * const *b)
 {
@@ -1424,11 +1442,13 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 		const Vehicle *v = this->vehicles[i];
 		StringID str;
 
-		SetDParam(0, v->GetDisplayProfitThisYear());
-		SetDParam(1, v->GetDisplayProfitLastYear());
-
+		SetDParam(0, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR);
+		SetDParam(1, v->GetDisplayProfitThisYear());
+		SetDParam(2, v->GetDisplayProfitLastYear());
+		SetDParam(3, v->GetDisplayProfitLifetime());
+		
 		DrawVehicleImage(v, image_left, image_right, y + FONT_HEIGHT_SMALL - 1, selected_vehicle, EIT_IN_LIST, 0);
-		DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR);
+		DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
 
 		if (v->name != NULL) {
 			/* The vehicle got a name so we will print it */
@@ -1544,7 +1564,7 @@ public:
 			}
 
 			case WID_VL_MANAGE_VEHICLES_DROPDOWN: {
-				Dimension d = this->GetActionDropdownSize(this->vli.type == VL_STANDARD, false);
+				Dimension d = this->GetActionDropdownSize(this->vli.type == VL_STANDARD, false, this->vli.vtype == VEH_TRAIN);
 				d.height += padding.height;
 				d.width  += padding.width;
 				*size = maxdim(*size, d);
@@ -1669,7 +1689,8 @@ public:
 				break;
 
 			case WID_VL_MANAGE_VEHICLES_DROPDOWN: {
-				DropDownList *list = this->BuildActionDropdownList(VehicleListIdentifier(this->window_number).type == VL_STANDARD, false);
+				DropDownList *list = this->BuildActionDropdownList(VehicleListIdentifier(this->window_number).type == VL_STANDARD,
+					false, this->vli.vtype == VEH_TRAIN);
 				ShowDropDownList(this, list, 0, WID_VL_MANAGE_VEHICLES_DROPDOWN);
 				break;
 			}
@@ -1695,7 +1716,9 @@ public:
 						ShowReplaceGroupVehicleWindow(ALL_GROUP, this->vli.vtype);
 						break;
 					case ADI_TEMPLATE_REPLACE:
-						ShowTemplateReplaceWindow(this->unitnumber_digits, this->resize.step_height);
+						if (vli.vtype == VEH_TRAIN) {
+							ShowTemplateReplaceWindow(this->unitnumber_digits, this->resize.step_height);
+						}
 						break;
 					case ADI_SERVICE: // Send for servicing
 					case ADI_DEPOT: // Send to Depots
@@ -1985,12 +2008,14 @@ struct VehicleDetailsWindow : Window {
 					STR_VEHICLE_INFO_MAX_SPEED,
 					STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED,
 					STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE,
-					STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR,
 					STR_VEHICLE_INFO_RELIABILITY_BREAKDOWNS
 				};
 				for (uint i = 0; i < lengthof(info_strings); i++) {
 					dim = maxdim(dim, GetStringBoundingBox(info_strings[i]));
 				}
+				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				for (uint i = 1; i < 4; i++) SetDParamMaxValue(i, 1 << 24);
+				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME));
 				SetDParam(0, STR_VEHICLE_INFO_AGE);
 				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_AGE_RUNNING_COST_YR));
 				size->width = dim.width + WD_FRAMERECT_LEFT + WD_FRAMERECT_RIGHT;
@@ -2126,9 +2151,11 @@ struct VehicleDetailsWindow : Window {
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw profit */
-				SetDParam(0, v->GetDisplayProfitThisYear());
-				SetDParam(1, v->GetDisplayProfitLastYear());
-				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+				SetDParam(1, v->GetDisplayProfitThisYear());
+				SetDParam(2, v->GetDisplayProfitLastYear());
+				SetDParam(3, v->GetDisplayProfitLifetime());
+				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw breakdown & reliability */

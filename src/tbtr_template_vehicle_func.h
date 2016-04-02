@@ -10,7 +10,7 @@
 //void DrawTemplateVehicle(TemplateVehicle*, int, const Rect&);
 
 
-Train* VirtualTrainFromTemplateVehicle(TemplateVehicle* tv);
+Train* VirtualTrainFromTemplateVehicle(TemplateVehicle* tv, StringID &err);
 
 void DrawTemplateVehicle(const TemplateVehicle*, int, int, int, VehicleID, int, VehicleID);
 
@@ -43,11 +43,14 @@ Train* DeleteVirtualTrain(Train*, Train *);
 
 CommandCost CmdTemplateReplaceVehicle(Train*, bool, DoCommandFlag);
 
-void pat();
-void pav();
-void ptv(TemplateVehicle*);
-void pvt(const Train*);
+#ifdef _DEBUG
 // for testing
+void tbtr_debug_pat();
+void tbtr_debug_pav();
+void tbtr_debug_ptv(TemplateVehicle*);
+void tbtr_debug_pvt(const Train*);
+#endif
+
 TemplateVehicle* GetTemplateVehicleByGroupID(GroupID);
 bool ChainContainsVehicle(Train*, Train*);
 Train* ChainContainsEngine(EngineID, Train*);

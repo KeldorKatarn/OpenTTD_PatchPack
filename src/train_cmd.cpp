@@ -3709,10 +3709,6 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 						/* Don't handle stuck trains here. */
 						if (HasBit(v->flags, VRF_TRAIN_STUCK)) return false;
 
-						/* this codepath seems to be run every 5 ticks, so increase counter twice every 20 ticks */
-						IncreaseStuckCounter(v->tile);
-						if (v->tick_counter % 4 == 0) IncreaseStuckCounter(v->tile);
-
 						if (!HasSignalOnTrackdir(gp.new_tile, ReverseTrackdir(i))) {
 							v->cur_speed = 0;
 							v->subspeed = 0;
@@ -4437,7 +4433,6 @@ static bool TrainLocoHandler(Train *v, bool mode)
 	/* Handle stuck trains. */
 	if (!mode && HasBit(v->flags, VRF_TRAIN_STUCK)) {
 		++v->wait_counter;
-		if (v->tick_counter % 4 == 0) IncreaseStuckCounter(v->tile);
 
 		/* Should we try reversing this tick if still stuck? */
 		bool turn_around = v->wait_counter % (_settings_game.pf.wait_for_pbs_path * DAY_TICKS) == 0 && _settings_game.pf.reverse_at_signals;
@@ -4750,26 +4745,30 @@ Train* CmdBuildVirtualRailWagon(const Engine *e)
 	return v;
 }
 
-/**
- * Build a railroad vehicle.
- * @param tile     tile of the depot where rail-vehicle is built.
- * @param flags    type of operation.
- * @param e        the engine to build.
- * @param data     bit 0 prevents any free cars from being added to the train.
- * @param ret[out] the vehicle that has been built.
- * @return the cost of this operation or an error.
- */
-Train* CmdBuildVirtualRailVehicle(EngineID eid)
+Train* CmdBuildVirtualRailVehicle(EngineID eid, bool lax_engine_check, StringID &error)
 {
-	if (!IsEngineBuildable(eid, VEH_TRAIN, _current_company))
-		return nullptr;
+	if (lax_engine_check) {
+		const Engine *e = Engine::GetIfValid(eid);
+		if (e == NULL || e->type != VEH_TRAIN) {
+			error = STR_ERROR_RAIL_VEHICLE_NOT_AVAILABLE + VEH_TRAIN;
+			return NULL;
+		}
+	}
+	else {
+		if (!IsEngineBuildable(eid, VEH_TRAIN, _current_company)) {
+			error = STR_ERROR_RAIL_VEHICLE_NOT_AVAILABLE + VEH_TRAIN;
+			return NULL;
+		}
+	}
 
 	const Engine* e = Engine::Get(eid);
 	const RailVehicleInfo *rvi = &e->u.rail;
 
 	int num_vehicles = (e->u.rail.railveh_type == RAILVEH_MULTIHEAD ? 2 : 1) + CountArticulatedParts(eid, false);
-	if (!Train::CanAllocateItem(num_vehicles))
+	if (!Train::CanAllocateItem(num_vehicles)) {
+		error = STR_ERROR_TOO_MANY_VEHICLES_IN_GAME;
 		return nullptr;
+	}
 
 	if (rvi->railveh_type == RAILVEH_WAGON)
 		return CmdBuildVirtualRailWagon(e);
@@ -4839,15 +4838,20 @@ Train* CmdBuildVirtualRailVehicle(EngineID eid)
 CommandCost CmdBuildVirtualRailVehicle(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	EngineID eid = p1;
-	CommandCost cost = CommandCost();
+
+	if (!IsEngineBuildable(eid, VEH_TRAIN, _current_company)) {
+		return_cmd_error(STR_ERROR_RAIL_VEHICLE_NOT_AVAILABLE + VEH_TRAIN);
+	}
 
 	bool should_execute = (flags & DC_EXEC) != 0;
 
 	if (should_execute) {
-		Train* train = CmdBuildVirtualRailVehicle(eid);
+		StringID err = INVALID_STRING_ID;
+		Train* train = CmdBuildVirtualRailVehicle(eid, false, err);
 
-		if (train == nullptr)
-			return CMD_ERROR;
+		if (train == nullptr) {
+			return_cmd_error(err);
+		}
 	}
 
 	return CommandCost();
@@ -4900,11 +4904,12 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 	short store_refit_csubt = 0;
 	// if a train shall keep its old refit, store the refit setting of its first vehicle
 	if (!use_refit) {
-		for (Train *getc = incoming; getc; getc = getc->GetNextUnit())
+		for (Train *getc = incoming; getc != NULL; getc = getc->GetNextUnit()) {
 			if (getc->cargo_type != CT_INVALID) {
 				store_refit_ct = getc->cargo_type;
 				break;
 			}
+		}
 	}
 
 	// TODO: set result status to success/no success before returning
@@ -4919,7 +4924,12 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 		CommandCost buyCost = TestBuyAllTemplateVehiclesInChain(tv, tile);
 		if (!buyCost.Succeeded() || !CheckCompanyHasMoney(buyCost)) {
 			if (!stayInDepot) incoming->vehstatus &= ~VS_STOPPED;
-			return buy;
+
+			if (!buyCost.Succeeded() && buyCost.GetErrorMessage() != INVALID_STRING_ID) {
+				return buyCost;
+			} else {
+				return_cmd_error(STR_ERROR_NOT_ENOUGH_CASH_REQUIRES_CURRENCY);
+			}
 		}
 	}
 
@@ -5001,8 +5011,9 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 			// 3. must buy new engine
 			else {
 				tmp_result = DoCommand(tile, cur_tmpl->engine_type, 0, flags, CMD_BUILD_VEHICLE);
-				if (!tmp_result.Succeeded())
+				if (!tmp_result.Succeeded()) {
 					return tmp_result;
+				}
 				buy.AddCost(tmp_result);
 				tmp_chain = Train::Get(_new_vehicle_id);
 				move_cost.AddCost(CmdMoveRailVehicle(tile, flags, tmp_chain->index, last_veh->index, 0));
@@ -5014,8 +5025,7 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 					DoCommand(tmp_chain->tile, tmp_chain->index, cur_tmpl->cargo_type | cur_tmpl->cargo_subtype << 8 | 1 << 16 | (1 << 5), flags, cb);
 					// old
 					// CopyWagonStatus(cur_tmpl, tmp_chain);
-				}
-				else {
+				} else {
 					uint32 cb = GetCmdRefitVeh(tmp_chain);
 					DoCommand(tmp_chain->tile, tmp_chain->index, store_refit_ct | store_refit_csubt << 8 | 1 << 16 | (1 << 5), flags, cb);
 				}

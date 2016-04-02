@@ -92,6 +92,8 @@ static WindowDesc _template_create_window_desc(
 	_widgets, lengthof(_widgets)	// widgets + num widgets
 );
 
+void ShowTemplateTrainBuildVehicleWindow(Train **virtual_train);
+
 static void TrainDepotMoveVehicle(const Vehicle *wagon, VehicleID sel, const Vehicle *head)
 {
 	const Vehicle *v = Vehicle::Get(sel);
@@ -116,16 +118,13 @@ private:
 	Scrollbar *vscroll;
 	int line_height;
 	Train* virtual_train;
-	bool editMode;
-	bool *noticeParent;
-	bool *createWindowOpen;			/// used to notify main window of progress (dummy way of disabling 'delete' while editing a template)
-	bool virtualTrainChangedNotice;
+	bool *create_window_open;         /// used to notify main window of progress (dummy way of disabling 'delete' while editing a template)
 	VehicleID sel;
 	VehicleID vehicle_over;
-	TemplateVehicle *editTemplate;
+	uint32 template_index;
 
 public:
-	TemplateCreateWindow(WindowDesc* _wdesc, TemplateVehicle *to_edit, bool *notice, bool *windowOpen, int step_h) : Window(_wdesc)
+	TemplateCreateWindow(WindowDesc* _wdesc, TemplateVehicle *to_edit, bool *window_open, int step_h) : Window(_wdesc)
 	{
 		this->line_height = step_h;
 		this->CreateNestedTree(_wdesc != NULL);
@@ -137,22 +136,19 @@ public:
 
 		this->owner = _local_company;
 
-		noticeParent = notice;
-		createWindowOpen = windowOpen;
-		virtualTrainChangedNotice = false;
-		this->editTemplate = to_edit;
-
-		if (to_edit) editMode = true;
-		else editMode = false;
+		this->create_window_open = window_open;
+		this->template_index = (to_edit != NULL) ? to_edit->index : INVALID_VEHICLE;
 
 		this->sel = INVALID_VEHICLE;
 		this->vehicle_over = INVALID_VEHICLE;
 
-		if (to_edit) {
-			DoCommandP(0, to_edit->index, 0, CMD_VIRTUAL_TRAIN_FROM_TEMPLATE_VEHICLE, CcSetVirtualTrain);
+		if (to_edit != NULL) {
+			DoCommandP(0, to_edit->index, 0, CMD_VIRTUAL_TRAIN_FROM_TEMPLATE_VEHICLE | CMD_MSG(STR_TMPL_CANT_CREATE), CcSetVirtualTrain);
 		}
 
 		this->resize.step_height = 1;
+
+		UpdateButtonState();
 	}
 
 	~TemplateCreateWindow()
@@ -165,9 +161,9 @@ public:
 		SetWindowClassesDirty(WC_TRAINS_LIST);
 
 		/* more cleanup */
-		*createWindowOpen = false;
+		*create_window_open = false;
 		DeleteWindowById(WC_BUILD_VIRTUAL_TRAIN, this->window_number);
-
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
 	}
 
 	void SetVirtualTrain(Train* const train)
@@ -177,6 +173,7 @@ public:
 		}
 
 		virtual_train = train;
+		UpdateButtonState();
 	}
 
 	virtual void OnResize()
@@ -191,7 +188,16 @@ public:
 
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
-		virtualTrainChangedNotice = true;
+		if(!gui_scope) return;
+
+		if (this->template_index != INVALID_VEHICLE) {
+			if (TemplateVehicle::GetIfValid(this->template_index) == NULL) {
+				delete this;
+				return;
+			}
+		}
+		this->SetDirty();
+		UpdateButtonState();
 	}
 
 	virtual void OnClick(Point pt, int widget, int click_count)
@@ -203,7 +209,7 @@ public:
 				break;
 			}
 			case TCW_NEW: {
-				ShowBuildVirtualTrainWindow(&virtual_train, &virtualTrainChangedNotice);
+				ShowTemplateTrainBuildVehicleWindow(&virtual_train);
 				break;
 			}
 			case TCW_CLONE: {
@@ -218,13 +224,11 @@ public:
 				break;
 			}
 			case TCW_OK: {
-				uint32 templateIndex = (editTemplate != nullptr) ? editTemplate->index : INVALID_VEHICLE;
-				
 				if (virtual_train != nullptr) {
-					DoCommandP(0, templateIndex, virtual_train->index, CMD_REPLACE_TEMPLATE_VEHICLE);
+					DoCommandP(0, this->template_index, virtual_train->index, CMD_REPLACE_TEMPLATE_VEHICLE);
 					virtual_train = nullptr;
-				} else if (templateIndex != INVALID_VEHICLE) {
-					DoCommandP(0, templateIndex, 0, CMD_DELETE_TEMPLATE_VEHICLE);
+				} else if (this->template_index != INVALID_VEHICLE) {
+					DoCommandP(0, this->template_index, 0, CMD_DELETE_TEMPLATE_VEHICLE);
 				}
 				delete this;
 				break;
@@ -251,12 +255,17 @@ public:
 		}
 
 		// create a new one
-		DoCommandP(0, v->index, 0, CMD_VIRTUAL_TRAIN_FROM_TRAIN, CcSetVirtualTrain);
+		DoCommandP(0, v->index, 0, CMD_VIRTUAL_TRAIN_FROM_TRAIN | CMD_MSG(STR_TMPL_CANT_CREATE), CcSetVirtualTrain);
 		this->ToggleWidgetLoweredState(TCW_CLONE);
 		ResetObjectToPlace();
 		this->SetDirty();
 
 		return true;
+	}
+
+	virtual void OnPlaceObjectAbort()
+	{
+		this->RaiseButtons();
 	}
 
 	virtual void DrawWidget(const Rect &r, int widget) const
@@ -322,13 +331,7 @@ public:
 				break;
 		}
 	}
-	virtual void OnTick()
-	{
-		if (virtualTrainChangedNotice) {
-			this->SetDirty();
-			virtualTrainChangedNotice = false;
-		}
-	}
+
 	virtual void OnDragDrop(Point pt, int widget)
 	{
 		switch (widget) {
@@ -361,11 +364,12 @@ public:
 				if (virtual_train == train_to_delete)
 					virtual_train = (_ctrl_pressed) ? nullptr : virtual_train->GetNextUnit();
 
-				DoCommandP(0, this->sel | sell_cmd << 20 | 1 << 21, 0, GetCmdSellVeh(VEH_TRAIN));
+				DoCommandP(0, this->sel | sell_cmd << 20 | 1 << 21, 0, GetCmdSellVeh(VEH_TRAIN), CcDeleteVirtualTrain);
 
 				this->sel = INVALID_VEHICLE;
 
 				this->SetDirty();
+				UpdateButtonState();
 				break;
 			}
 			default:
@@ -525,12 +529,17 @@ public:
 	{
 		virtual_train = virtual_train->First();
 	}
+
+	void UpdateButtonState()
+	{
+		this->SetWidgetDisabledState(TCW_REFIT, virtual_train == NULL);
+	}
 };
 
-void ShowTemplateCreateWindow(TemplateVehicle *to_edit, bool *noticeParent, bool *createWindowOpen, int step_h)
+void ShowTemplateCreateWindow(TemplateVehicle *to_edit, bool *create_window_open, int step_h)
 {
 	if ( BringWindowToFrontById(WC_CREATE_TEMPLATE, VEH_TRAIN) != NULL ) return;
-	new TemplateCreateWindow(&_template_create_window_desc, to_edit, noticeParent, createWindowOpen, step_h);
+	new TemplateCreateWindow(&_template_create_window_desc, to_edit, create_window_open, step_h);
 }
 
 void CcSetVirtualTrain(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)
@@ -558,6 +567,10 @@ void CcVirtualTrainWaggonsMoved(const CommandCost &result, TileIndex tile, uint3
 
 void CcDeleteVirtualTrain(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)
 {
-	VehicleID virtual_train_id = p2;
-	DoCommandP(0, virtual_train_id, 0, CMD_DELETE_VIRTUAL_TRAIN);
+	if (result.Failed()) return;
+
+	Window* window = FindWindowById(WC_CREATE_TEMPLATE, 0);
+	if (window) {
+		window->InvalidateData();
+	}
 }

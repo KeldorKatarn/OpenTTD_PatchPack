@@ -105,25 +105,34 @@ Money CalculateOverallTemplateCost(const TemplateVehicle *tv)
 
 void DrawTemplate(const TemplateVehicle *tv, int left, int right, int y)
 {
-	if ( !tv ) return;
+	if (!tv) return;
+
+	bool rtl = _current_text_dir == TD_RTL;
+	Direction dir = rtl ? DIR_E : DIR_W;
 
 	DrawPixelInfo tmp_dpi, *old_dpi;
+	/* Position of highlight box */
+	int highlight_l = 0;
+	int highlight_r = 0;
 	int max_width = right - left + 1;
 	int height = ScaleGUITrad(14);
+
 	if (!FillDrawPixelInfo(&tmp_dpi, left, y, max_width, height)) return;
 
 	old_dpi = _cur_dpi;
 	_cur_dpi = &tmp_dpi;
 
-	const TemplateVehicle *t = tv;
-	int offset = 0;
+	int px = rtl ? max_width : 0;
+	bool sel_articulated = false;
+	for (; tv != NULL && (rtl ? px > 0 : px < max_width); tv = tv->Next()) {
+		int width = tv->image_width;
 
-	while (t) {
-		PaletteID pal = GetEnginePalette(t->engine_type, _current_company);
-		DrawSprite(t->cur_image, pal, offset + t->image_width / 2, ScaleGUITrad(11));
+		if (rtl ? px + width > 0 : px - width < max_width) {
+			PaletteID pal = GetEnginePalette(tv->engine_type, _current_company);
+			DrawSprite(tv->cur_image, pal, px + (rtl ? -tv->image_offset.x : tv->image_offset.x), height / 2 + tv->image_offset.y);
+		}
 
-		offset += t->image_width;
-		t = t->Next();
+		px += rtl ? -width : width;
 	}
 
 	_cur_dpi = old_dpi;
@@ -160,9 +169,8 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	tmp->max_te = gcache->cached_max_te;
 
 	tmp->spritenum = virt->spritenum;
-	tmp->cur_image = virt->GetImage(DIR_W, EIT_PURCHASE);
-	Point *p = new Point();
-	tmp->image_width = virt->GetDisplayImageWidth(p);
+	tmp->cur_image = virt->GetImage(DIR_W, EIT_IN_DEPOT);
+	tmp->image_width = virt->GetDisplayImageWidth(&tmp->image_offset);
 }
 
 // create a full TemplateVehicle based train according to a virtual train

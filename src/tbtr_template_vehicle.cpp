@@ -53,6 +53,8 @@ TemplateVehicle::TemplateVehicle(VehicleType ty, EngineID eid, byte subtypeflag,
 	this->owner_b = _current_company;
 
 	this->cur_image = SPR_IMG_QUERY;
+	this->image_offset.x = 0;
+	this->image_offset.y = 0;
 
 	this->owner = current_owner;
 

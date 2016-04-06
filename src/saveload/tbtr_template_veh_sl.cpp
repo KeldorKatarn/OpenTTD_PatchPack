@@ -123,8 +123,8 @@ void AfterLoadTemplateVehiclesUpdateImage()
 					Train *v = t;
 					for (TemplateVehicle *u = tv; u != NULL; u = u->Next(), v = v->Next()) {
 						u->spritenum = v->spritenum;
-						u->cur_image = v->GetImage(DIR_W, EIT_PURCHASE);
-						u->image_width = v->GetDisplayImageWidth();
+						u->cur_image = v->GetImage(DIR_W, EIT_IN_DEPOT);
+						u->image_width = v->GetDisplayImageWidth(&u->image_offset);
 					}
 				}
 				delete t;

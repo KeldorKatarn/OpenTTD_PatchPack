@@ -81,6 +81,7 @@ public:
 	byte spritenum;
 	SpriteID cur_image;
 	uint32 image_width;
+	Point image_offset;
 
 	TemplateVehicle(VehicleType type=VEH_INVALID,  EngineID e=INVALID_ENGINE, byte B=0, Owner=_local_company);
 	TemplateVehicle(EngineID, RailVehicleInfo*);
@@ -135,10 +136,6 @@ public:
 	inline void SetRealLength(uint16 len) { this->real_consist_length = len; }
 
 	int Length() const;
-
-	SpriteID GetImage(Direction) const;
-	//int GetDisplayImageWidth(Point *offset = NULL) const;
-	SpriteID GetSpriteID() const;
 
 	short NumGroupsUsingTemplate() const;
 

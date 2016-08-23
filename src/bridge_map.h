@@ -117,6 +117,29 @@ static inline void SetBridgeMiddle(TileIndex t, Axis a)
 }
 
 /**
+ * Set wether a bridge has a catenary or not.
+ * @param t the tile with the bridge
+ * @pre IsBridgeTile(t)
+ */
+static inline void SetBridgeRoadTramCatenary(TileIndex t, bool b)
+{
+	assert(IsBridgeTile(t));
+	SB(_m[t].m1, 7, 1, b ? 1 : 0);
+}
+
+/**
+ * Checks if given bridge has catenary bit.
+ * @param t the bridge ramp tile
+ * @pre IsBridgeTile(t)
+ * @return True if bridge has catenary bit set
+ */
+static inline bool HasBridgeRoadTramCatenary(TileIndex t)
+{
+	assert(IsBridgeTile(t));
+	return GB(_m[t].m1, 7, 1) != 0;
+}
+
+/**
  * Generic part to make a bridge ramp for both roads and rails.
  * @param t          the tile to make a bridge ramp
  * @param o          the new owner of the bridge ramp
@@ -148,12 +171,13 @@ static inline void MakeBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, D
  * @param d          the direction this ramp must be facing
  * @param r          the road type of the bridge
  */
-static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r)
+static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r, bool catenary_flag = false)
 {
 	MakeBridgeRamp(t, o, bridgetype, d, TRANSPORT_ROAD, 0);
 	SetRoadOwner(t, ROADTYPE_ROAD, owner_road);
 	if (owner_tram != OWNER_TOWN) SetRoadOwner(t, ROADTYPE_TRAM, owner_tram);
 	SetRoadTypes(t, r);
+	SetBridgeRoadTramCatenary(t, catenary_flag);
 }
 
 /**

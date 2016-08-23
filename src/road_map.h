@@ -287,6 +287,28 @@ static inline void SetDisallowedRoadDirections(TileIndex t, DisallowedRoadDirect
 }
 
 /**
+ * Sets the catenary bit on a tile
+ * @param t the tile to set the catenary bit to
+ * @param b the value of the catenary bit
+ * @pre IsNormalRoad(t)
+ */
+static inline void SetCatenary(TileIndex t, bool b)
+{
+	assert(IsNormalRoad(t));
+	SB(_m[t].m1, 7, 1, b ? 1 : 0);
+}
+
+/**
+* Checks if given tile has catenary bit.
+* @param t tile to check
+* @return True if tile has catenary bit set
+*/
+static inline bool HasCatenary(TileIndex t)
+{
+	return GB(_m[t].m1, 7, 1) != 0;
+}
+
+/**
  * Get the road axis of a level crossing.
  * @param t The tile to query.
  * @pre IsLevelCrossing(t)
@@ -549,8 +571,9 @@ RoadBits GetAnyRoadBits(TileIndex tile, RoadType rt, bool straight_tunnel_bridge
  * @param town Town ID if the road is a town-owned road.
  * @param road New owner of road.
  * @param tram New owner of tram tracks.
+ * @param catenary_flag Then new value for the catenary flag.
  */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, TownID town, Owner road, Owner tram)
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, TownID town, Owner road, Owner tram, bool catenary_flag = false)
 {
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, road);
@@ -561,6 +584,7 @@ static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, Tow
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = rot << 6;
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
+	SetCatenary(t, catenary_flag);
 }
 
 /**

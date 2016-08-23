@@ -522,6 +522,28 @@ static inline byte GetStationTileRandomBits(TileIndex t)
 }
 
 /**
+ * Set the catenary bit of a station tile
+ * @param t the station tile to set the catenary bit to
+ * @param b the value of the catenary bit
+ * @pre IsTileType(t, MP_STATION)
+ */
+static inline void SetRoadTramCatenary(TileIndex t, bool b)
+{
+	assert(IsTileType(t, MP_STATION));
+	SB(_m[t].m1, 7, 1, b ? 1 : 0);
+}
+
+/**
+ * Get the catenary bit of a station tile
+ * @param t the station tile to get the catenary bit from
+ * @return True if the station tile has a catenary
+ */
+static inline bool HasRoadTramCatenary(TileIndex t)
+{
+	return GB(_m[t].m1, 7, 1) != 0;
+}
+
+/**
  * Make the given tile a station tile.
  * @param t the tile to make a station tile
  * @param o the owner of the station
@@ -604,12 +626,13 @@ static inline void MakeRoadStop(TileIndex t, Owner o, StationID sid, RoadStopTyp
  * @param rt the roadtypes on this tile
  * @param a the direction of the roadstop
  */
-static inline void MakeDriveThroughRoadStop(TileIndex t, Owner station, Owner road, Owner tram, StationID sid, RoadStopType rst, RoadTypes rt, Axis a)
+static inline void MakeDriveThroughRoadStop(TileIndex t, Owner station, Owner road, Owner tram, StationID sid, RoadStopType rst, RoadTypes rt, Axis a, bool catenary_flag)
 {
 	MakeStation(t, station, sid, (rst == ROADSTOP_BUS ? STATION_BUS : STATION_TRUCK), GFX_TRUCK_BUS_DRIVETHROUGH_OFFSET + a);
 	SetRoadTypes(t, rt);
 	SetRoadOwner(t, ROADTYPE_ROAD, road);
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
+	SetRoadTramCatenary(t, catenary_flag);
 }
 
 /**

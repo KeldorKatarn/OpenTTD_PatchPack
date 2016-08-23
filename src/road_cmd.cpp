@@ -477,6 +477,7 @@ static CommandCost CheckRoadSlope(Slope tileh, RoadBits *pieces, RoadBits existi
  * @param p1 bit 0..3 road pieces to build (RoadBits)
  *           bit 4..5 road type
  *           bit 6..7 disallowed directions to toggle
+ *           bit 8 catenary
  * @param p2 the town that is building the road (0 if not applicable)
  * @param text unused
  * @return the cost of this operation or an error
@@ -515,6 +516,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 6, 2>(p1);
+	bool _catenary_flag = HasBit(p1, 8);
 
 	Slope tileh = GetTileSlope(tile);
 
@@ -749,6 +751,7 @@ do_clear:;
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
 				}
 				if (rtt != ROAD_TILE_CROSSING) SetRoadBits(tile, existing | pieces, rt);
+				SetCatenary(tile, _catenary_flag);
 				break;
 			}
 
@@ -777,7 +780,7 @@ do_clear:;
 				break;
 
 			default:
-				MakeRoadNormal(tile, pieces, RoadTypeToRoadTypes(rt), p2, company, company);
+				MakeRoadNormal(tile, pieces, RoadTypeToRoadTypes(rt), p2, company, company, _catenary_flag);
 				break;
 		}
 
@@ -827,6 +830,7 @@ static bool CanConnectToRoad(TileIndex tile, RoadType rt, DiagDirection dir)
  * - p2 = (bit 6) - defines two different behaviors for this command:
  *      - 0 = Build up to an obstacle. Do not build the first and last roadbits unless they can be connected to something, or if we are building a single tile
  *      - 1 = Fail if an obstacle is found. Always take into account bit 0 and 1. This behavior is used for scripts
+ *   p2 = (bit 7) - catenary
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -887,6 +891,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 			if (tile == start_tile && HasBit(p2, 0)) bits &= DiagDirToRoadBits(dir);
 		}
 
+		bool _has_catenary = HasBit(p2, 7);
 		CommandCost ret = DoCommand(tile, drd << 6 | rt << 4 | bits, 0, flags, CMD_BUILD_ROAD);
 		if (ret.Failed()) {
 			last_error = ret;
@@ -1298,7 +1303,7 @@ static void DrawRoadBits(TileInfo *ti)
 		return;
 	}
 
-	if (tram != ROAD_NONE) DrawTramCatenary(ti, tram);
+	if (HasCatenary(ti->tile)) DrawTramCatenary(ti, tram);
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */
 	if (!HasBit(_display_opt, DO_FULL_DETAIL) || _cur_dpi->zoom > ZOOM_LVL_DETAIL) return;
@@ -1388,7 +1393,7 @@ static void DrawTile_Road(TileInfo *ti)
 
 			if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
 				DrawGroundSprite(SPR_TRAMWAY_OVERLAY + (GetCrossingRoadAxis(ti->tile) ^ 1), pal);
-				DrawTramCatenary(ti, GetCrossingRoadBits(ti->tile));
+				if (HasCatenary(ti->tile)) DrawTramCatenary(ti, GetCrossingRoadBits(ti->tile));
 			}
 			if (HasCatenaryDrawn(GetRailType(ti->tile))) DrawCatenary(ti);
 			break;

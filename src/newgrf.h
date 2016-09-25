@@ -83,6 +83,7 @@ enum GrfSpecFeature {
 	GSF_OBJECTS,
 	GSF_RAILTYPES,
 	GSF_AIRPORTTILES,
+	GSF_ROADTYPES,
 	GSF_END,
 
 	GSF_FAKE_TOWNS = GSF_END, ///< Fake town GrfSpecFeature for NewGRF debugging (parent scope)

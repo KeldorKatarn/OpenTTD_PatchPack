@@ -8063,6 +8063,7 @@ void ResetNewGRFData()
 
 	/* Reset rail type information */
 	ResetRailTypes();
+	ResetRoadTypes();
 
 	/* Allocate temporary refit/cargo class data */
 	_gted = CallocT<GRFTempEngineData>(Engine::GetPoolSize());
@@ -9172,6 +9173,7 @@ static void AfterLoadGRFs()
 
 	/* Set up custom rail types */
 	InitRailTypes();
+	InitRoadTypes();
 
 	Engine *e;
 	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {

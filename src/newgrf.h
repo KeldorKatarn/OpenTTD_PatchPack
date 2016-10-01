@@ -14,6 +14,7 @@
 
 #include "cargotype.h"
 #include "rail_type.h"
+#include "road_type.h"
 #include "fileio_type.h"
 #include "core/bitmath_func.hpp"
 #include "core/alloc_type.hpp"
@@ -129,6 +130,9 @@ struct GRFFile : ZeroedMemoryAllocator {
 
 	SmallVector<RailTypeLabel, 4> railtype_list;    ///< Railtype translation table
 	RailTypeByte railtype_map[RAILTYPE_END];
+
+	SmallVector<RoadTypeLabel, 4> roadtype_list;    ///< Roadtype translation table
+	RoadTypeByte roadtype_map[ROADTYPE_END];
 
 	CanalProperties canal_local_properties[CF_END]; ///< Canal properties as set by this NewGRF
 

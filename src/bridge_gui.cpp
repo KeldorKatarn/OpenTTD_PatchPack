@@ -13,6 +13,7 @@
 #include "error.h"
 #include "command_func.h"
 #include "rail.h"
+#include "road.h"
 #include "strings_func.h"
 #include "window_func.h"
 #include "sound_func.h"

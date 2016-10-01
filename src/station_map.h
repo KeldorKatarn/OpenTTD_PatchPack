@@ -17,6 +17,7 @@
 #include "water_map.h"
 #include "station_func.h"
 #include "rail.h"
+#include "road.h"
 
 typedef byte StationGfx; ///< Index of station graphics. @see _station_display_datas
 

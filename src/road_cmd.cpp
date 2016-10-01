@@ -31,14 +31,103 @@
 #include "town.h"
 #include "company_base.h"
 #include "core/random_func.hpp"
+#include "newgrf_debug.h"
 #include "newgrf_railtype.h"
+#include "newgrf_roadtype.h"
 #include "date_func.h"
 #include "genworld.h"
 #include "company_gui.h"
+#include "road.h"
 
 #include "table/strings.h"
+#include "table/roadtypes.h"
 
 #include "safeguards.h"
+
+
+RoadtypeInfo _roadtypes[ROADTYPE_END];
+RoadType _sorted_roadtypes[ROADTYPE_END];
+uint8 _sorted_roadtypes_size;
+
+assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));
+
+/**
+ * Reset all road type information to its default values.
+ */
+void ResetRoadTypes()
+{
+	memset(_roadtypes, 0, sizeof(_roadtypes));
+	memcpy(_roadtypes, _original_roadtypes, sizeof(_original_roadtypes));
+}
+
+/**
+ * Compare roadtypes based on their sorting order.
+ * @param first  The roadtype to compare to.
+ * @param second The roadtype to compare.
+ * @return True iff the first should be sorted before the second.
+ */
+static int CDECL CompareRoadTypes(const RoadType *first, const RoadType *second)
+{
+	return GetRoadTypeInfo(*first)->sorting_order - GetRoadTypeInfo(*second)->sorting_order;
+}
+
+/**
+ * Resolve sprites of custom road types
+ * TODO: Sprite structure
+ */
+void InitRoadTypes()
+{
+	//for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
+	//	RoadtypeInfo *rti = &_roadtypes[rt];
+	//	ResolveRoadTypeGUISprites(rti);
+	//}
+
+	_sorted_roadtypes_size = 0;
+	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
+		if (_roadtypes[rt].label != 0) {
+			_sorted_roadtypes[_sorted_roadtypes_size++] = rt;
+		}
+	}
+	QSortT(_sorted_roadtypes, _sorted_roadtypes_size, CompareRoadTypes);
+}
+
+/**
+ * Allocate a new road type label
+ * TODO: newgrf.cpp function RoadTypeReserveInfo
+ */
+RoadType AllocateRoadType(RoadTypeLabel label)
+{
+	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
+		RoadtypeInfo *rti = &_roadtypes[rt];
+
+		if (rti->label == 0) {
+			/* Set up new road type */
+			memcpy(rti, &_roadtypes[ROADTYPE_ROAD], sizeof(*rti));
+			rti->label = label;
+			/* Clear alternate label list. Can't use Reset() here as that would free
+			 * the data pointer of ROADTYPE_ROAD and not our new road type. */
+			new (&rti->alternate_labels) RoadTypeLabelList;
+
+			/* Make us compatible with ourself. */
+			rti->powered_roadtypes    = (RoadTypes)(1 << rt);
+			rti->compatible_roadtypes = (RoadTypes)(1 << rt);
+
+			/* We also introduce ourself. */
+			rti->introduces_roadtypes = (RoadTypes)(1 << rt);
+
+			/* Default sort order; order of allocation, but with some
+			 * offsets so it's easier for NewGRF to pick a spot without
+			 * changing the order of other (original) road types.
+			 * The << is so you can place other roadtypes in between the
+			 * other roadtypes, the 7 is to be able to place something
+			 * before the first (default) road type. */
+			rti->sorting_order = rt << 4 | 7;
+			return rt;
+		}
+	}
+
+	return INVALID_ROADTYPE;
+}
 
 /**
  * Verify whether a road vehicle is available.

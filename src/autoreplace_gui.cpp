@@ -14,6 +14,7 @@
 #include "vehicle_gui.h"
 #include "newgrf_engine.h"
 #include "rail.h"
+#include "road.h"
 #include "strings_func.h"
 #include "window_func.h"
 #include "autoreplace_func.h"

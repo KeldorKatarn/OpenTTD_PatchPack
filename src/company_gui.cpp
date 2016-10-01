@@ -30,6 +30,7 @@
 #include "core/geometry_func.hpp"
 #include "object_type.h"
 #include "rail.h"
+#include "road.h"
 #include "engine_base.h"
 #include "window_func.h"
 #include "road_func.h"

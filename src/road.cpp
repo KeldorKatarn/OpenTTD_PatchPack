@@ -19,6 +19,7 @@
 #include "engine_base.h"
 #include "date_func.h"
 #include "landscape.h"
+#include "road.h"
 
 #include "safeguards.h"
 
@@ -151,4 +152,30 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 	}
 
 	return rt;
+}
+
+/**
+ * Get the road type for a given label.
+ * @param label the roadtype label.
+ * @param allow_alternate_labels Search in the alternate label lists as well.
+ * @return the roadtype.
+ */
+RoadType GetRoadTypeByLabel(RoadTypeLabel label, bool allow_alternate_labels)
+{
+	/* Loop through each road type until the label is found */
+	for (RoadType r = ROADTYPE_BEGIN; r != ROADTYPE_END; r++) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(r);
+		if (rti->label == label) return r;
+	}
+
+	if (allow_alternate_labels) {
+		/* Test if any road type defines the label as an alternate. */
+		for (RoadType r = ROADTYPE_BEGIN; r != ROADTYPE_END; r++) {
+			const RoadtypeInfo *rti = GetRoadTypeInfo(r);
+			if (rti->alternate_labels.Contains(label)) return r;
+		}
+	}
+
+	/* No matching label was found, so it is invalid */
+	return INVALID_ROADTYPE;
 }

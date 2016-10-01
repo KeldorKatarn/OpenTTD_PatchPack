@@ -54,6 +54,9 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		/* maintenance cost multiplier */
 		8,
 
+		/* acceleration type */
+		0,
+
 		/* max speed */
 		0,
 
@@ -115,6 +118,9 @@ static const RoadtypeInfo _original_roadtypes[] = {
 
 		/* maintenance cost multiplier */
 		8,
+
+		/* acceleration type */
+		0,
 
 		/* max speed */
 		0,

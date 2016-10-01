@@ -99,6 +99,11 @@ struct RoadtypeInfo {
 	uint16 maintenance_multiplier;
 
 	/**
+	* Acceleration type of this road type
+	*/
+	uint8 acceleration_type;
+
+	/**
 	 * Maximum speed for vehicles travelling on this road type
 	 */
 	uint16 max_speed;

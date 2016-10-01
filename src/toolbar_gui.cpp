@@ -887,7 +887,6 @@ static CallBackFunction MenuClickBuildRail(int index)
 
 static CallBackFunction ToolbarBuildRoadClick(Window *w)
 {
-
 	ShowDropDownList(w, GetRoadTypeDropDownList(), _last_built_roadtype, WID_TN_ROADS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;

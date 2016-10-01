@@ -605,7 +605,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 6, 2>(p1);
-	bool _catenary_flag = HasBit(p1, 8);
+	bool _catenary_flag = HasCatenary(rt);
 
 	Slope tileh = GetTileSlope(tile);
 

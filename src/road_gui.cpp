@@ -1120,11 +1120,10 @@ void InitializeRoadGui()
 
 DropDownList *GetRoadTypeDropDownList()
 {
-	const Company *c = Company::Get(_local_company);
-	DropDownList *list = new DropDownList();
+	RoadTypes used_roadtypes = ROADTYPES_NONE;
 
 	/* Road is always visible and available. */
-	*list->Append() = new DropDownListStringItem(STR_ROAD_MENU_ROAD_CONSTRUCTION, ROADTYPE_ROAD, false);
+	used_roadtypes |= ROADTYPES_ROAD;
 
 	/* Tram is only visible when there will be a tram, and available when that has been introduced. */
 	Engine *e;
@@ -1132,8 +1131,21 @@ DropDownList *GetRoadTypeDropDownList()
 		if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
 		if (!HasBit(e->info.misc_flags, EF_ROAD_TRAM)) continue;
 
-		*list->Append() = new DropDownListStringItem(STR_ROAD_MENU_TRAM_CONSTRUCTION, ROADTYPE_TRAM, !HasBit(c->avail_roadtypes, ROADTYPE_TRAM));
+		used_roadtypes |= ROADTYPES_TRAM;
 		break;
+	}
+
+	const Company *c = Company::Get(_local_company);
+	DropDownList *list = new DropDownList();
+	RoadType rt;
+	FOR_ALL_SORTED_ROADTYPES(rt) {
+		/* If it's not used ever, don't show it to the user. */
+		if (!HasBit(used_roadtypes, rt)) continue;
+
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rt);
+
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rt, !HasBit(c->avail_roadtypes, rt));
+		*list->Append() = item;
 	}
 
 	return list;

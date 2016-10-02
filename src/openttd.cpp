@@ -947,7 +947,7 @@ static void MakeNewGameDone()
 	SetLocalCompany(COMPANY_FIRST);
 
 	InitializeRailGUI();
-	InitializeRailGUI();
+	InitializeRoadGUI();
 
 #ifdef ENABLE_NETWORK
 	/* We are the server, we start a new company (not dedicated),

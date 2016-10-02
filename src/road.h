@@ -52,6 +52,30 @@ enum RoadTypeSpriteGroup {
 typedef SmallVector<RoadTypeLabel, 4> RoadTypeLabelList;
 
 struct RoadtypeInfo {
+	/**
+	* struct containing the sprites for the rail GUI. @note only sprites referred to
+	* directly in the code are listed
+	*/
+	struct {
+		SpriteID build_x_road;        ///< button for building single rail in X direction
+		SpriteID build_y_road;        ///< button for building single rail in Y direction
+		SpriteID auto_road;           ///< button for the autoroad construction
+		SpriteID build_depot;         ///< button for building depots
+		SpriteID build_bus_station;   ///< button for building bus stations
+		SpriteID build_truck_station; ///< button for building truck stations
+		SpriteID build_tunnel;        ///< button for building a tunnel
+	} gui_sprites;
+
+	struct {
+		CursorID road_swne;     ///< Cursor for building rail in X direction
+		CursorID road_nwse;     ///< Cursor for building rail in Y direction
+		CursorID autoroad;      ///< Cursor for autorail tool
+		CursorID depot;         ///< Cursor for building a depot
+		CursorID bus_station;   ///< Cursor for building a bus station
+		CursorID truck_station; ///< Cursor for building a truck station
+		CursorID tunnel;        ///< Cursor for building a tunnel
+	} cursor;                       ///< Cursors associated with the road type.
+
 	struct {
 		StringID name;            ///< Name of this rail type.
 		StringID toolbar_caption; ///< Caption in the construction toolbar GUI for this rail type.
@@ -60,7 +84,6 @@ struct RoadtypeInfo {
 		StringID replace_text;    ///< Text used in the autoreplace GUI.
 		StringID new_loco;        ///< Name of an engine for this type of rail in the engine preview GUI.
 	} strings;                        ///< Strings associated with the rail type.
-
 
 	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype generates power */
 	RoadTypes powered_roadtypes;

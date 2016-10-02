@@ -60,6 +60,27 @@ void ResetRoadTypes()
 	memcpy(_roadtypes, _original_roadtypes, sizeof(_original_roadtypes));
 }
 
+void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
+{
+	SpriteID cursors_base = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_CURSORS);
+	if (cursors_base != 0) {
+		rti->gui_sprites.build_x_road = cursors_base + 0;
+		rti->gui_sprites.build_y_road = cursors_base + 1;
+		rti->gui_sprites.auto_road = cursors_base + 2;
+		rti->gui_sprites.build_depot = cursors_base + 3;
+		rti->gui_sprites.build_bus_station = cursors_base + 4;
+		rti->gui_sprites.build_truck_station = cursors_base + 5;
+		rti->gui_sprites.build_tunnel = cursors_base + 6;
+		rti->cursor.road_swne = cursors_base + 8;
+		rti->cursor.road_nwse = cursors_base + 9;
+		rti->cursor.autoroad = cursors_base + 10;
+		rti->cursor.depot = cursors_base + 11;
+		rti->cursor.bus_station = cursors_base + 12;
+		rti->cursor.truck_station = cursors_base + 13;
+		rti->cursor.tunnel = cursors_base + 14;
+	}
+}
+
 /**
  * Compare roadtypes based on their sorting order.
  * @param first  The roadtype to compare to.
@@ -77,10 +98,10 @@ static int CDECL CompareRoadTypes(const RoadType *first, const RoadType *second)
  */
 void InitRoadTypes()
 {
-	//for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-	//	RoadtypeInfo *rti = &_roadtypes[rt];
-	//	ResolveRoadTypeGUISprites(rti);
-	//}
+	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
+		RoadtypeInfo *rti = &_roadtypes[rt];
+		ResolveRoadTypeGUISprites(rti);
+	}
 
 	_sorted_roadtypes_size = 0;
 	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
@@ -93,7 +114,6 @@ void InitRoadTypes()
 
 /**
  * Allocate a new road type label
- * TODO: newgrf.cpp function RoadTypeReserveInfo
  */
 RoadType AllocateRoadType(RoadTypeLabel label)
 {

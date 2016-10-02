@@ -53,6 +53,7 @@
 #include "engine_func.h"
 #include "core/random_func.hpp"
 #include "rail_gui.h"
+#include "road_gui.h"
 #include "core/backup_type.hpp"
 #include "hotkeys.h"
 #include "newgrf.h"
@@ -945,6 +946,7 @@ static void MakeNewGameDone()
 
 	SetLocalCompany(COMPANY_FIRST);
 
+	InitializeRailGUI();
 	InitializeRailGUI();
 
 #ifdef ENABLE_NETWORK

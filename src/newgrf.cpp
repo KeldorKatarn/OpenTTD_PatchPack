@@ -4450,7 +4450,7 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				break;
 		}
 
-		grfmsg(0, "RoadTypeReserveInfo: Road type property found %u, num info %u", prop, numinfo);
+		grfmsg(0, "RoadTypeReserveInfo: Road type property found 0x%02X, num info %u", prop, numinfo);
 	}
 
 	return ret;
@@ -5483,6 +5483,36 @@ static void RailTypeMapSpriteGroup(ByteReader *buf, uint8 idcount)
 	buf->ReadWord();
 }
 
+static void RoadTypeMapSpriteGroup(ByteReader *buf, uint8 idcount)
+{
+	uint8 *roadtypes = AllocaM(uint8, idcount);
+	for (uint i = 0; i < idcount; i++) {
+		roadtypes[i] = _cur.grffile->roadtype_map[buf->ReadByte()];
+	}
+
+	uint8 cidcount = buf->ReadByte();
+	for (uint c = 0; c < cidcount; c++) {
+		uint8 ctype = buf->ReadByte();
+		uint16 groupid = buf->ReadWord();
+		if (!IsValidGroupID(groupid, "RoadTypeMapSpriteGroup")) continue;
+
+		if (ctype >= ROTSG_END) continue;
+
+		extern RoadtypeInfo _roadtypes[ROADTYPE_END];
+		for (uint i = 0; i < idcount; i++) {
+			if (roadtypes[i] != INVALID_ROADTYPE) {
+				RoadtypeInfo *rti = &_roadtypes[roadtypes[i]];
+
+				rti->grffile[ctype] = _cur.grffile;
+				rti->group[ctype] = _cur.spritegroups[groupid];
+			}
+		}
+	}
+
+	/* Roadtypes do not use the default group. */
+	buf->ReadWord();
+}
+
 static void AirportMapSpriteGroup(ByteReader *buf, uint8 idcount)
 {
 	uint8 *airports = AllocaM(uint8, idcount);
@@ -5626,6 +5656,10 @@ static void FeatureMapSpriteGroup(ByteReader *buf)
 
 		case GSF_RAILTYPES:
 			RailTypeMapSpriteGroup(buf, idcount);
+			break;
+
+		case GSF_ROADTYPES:
+			RoadTypeMapSpriteGroup(buf, idcount);
 			break;
 
 		case GSF_AIRPORTTILES:
@@ -8272,7 +8306,6 @@ static void ResetNewGRFErrors()
 
 /**
  * Reset all NewGRF loaded data
- * TODO
  */
 void ResetNewGRFData()
 {

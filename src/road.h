@@ -182,16 +182,29 @@ struct RoadtypeInfo {
 	const SpriteGroup *group[ROTSG_END];
 };
 
+struct RoadTypeIdentifier {
+	RoadType basetype;
+	RoadType subtype;
+
+	uint32 Pack() const;
+	bool Unpack(uint32 data);
+
+	RoadTypeIdentifier(RoadType basetype, RoadType subtype) : basetype(basetype), subtype(subtype) {}
+	RoadTypeIdentifier(uint32 data = 0);
+};
+
 /**
  * Returns a pointer to the Roadtype information for a given roadtype
  * @param roadtype the road type which the information is requested for
  * @return The pointer to the RoadtypeInfo
  */
-static inline const RoadtypeInfo *GetRoadTypeInfo(RoadType roadtype)
+static inline const RoadtypeInfo *GetRoadTypeInfo(uint32 roadtype_identifier)
 {
-	extern RoadtypeInfo _roadtypes[ROADTYPE_END];
-	assert(roadtype < ROADTYPE_END);
-	return &_roadtypes[roadtype];
+	RoadTypeIdentifier *rti = new RoadTypeIdentifier(roadtype_identifier);
+	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+	assert(rti->basetype < ROADTYPE_END);
+	assert(rti->subtype < ROADSUBTYPE_END);
+	return &_roadtypes[rti->basetype][rti->subtype];
 }
 
 /**
@@ -202,9 +215,12 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadType roadtype)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool IsCompatibleRoad(RoadType vehicletype, RoadType tiletype)
+static inline bool IsCompatibleRoad(uint32 roadtype_identifier)
 {
-	return HasBit(GetRoadTypeInfo(vehicletype)->compatible_roadtypes, tiletype);
+	uint8 a = GetRoadTypeInfo(roadtype_identifier)->compatible_roadtypes;
+	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
+
+	return HasBit(a, b);
 }
 
 /**
@@ -215,24 +231,27 @@ static inline bool IsCompatibleRoad(RoadType vehicletype, RoadType tiletype)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(RoadType vehicletype, RoadType tiletype)
+static inline bool HasPowerOnRoad(uint32 roadtype_identifier)
 {
-	return HasBit(GetRoadTypeInfo(vehicletype)->powered_roadtypes, tiletype);
+	uint8 a = GetRoadTypeInfo(roadtype_identifier)->powered_roadtypes;
+	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
+
+	return HasBit(a, b);
 }
 
-RoadType GetRoadTypeByLabel(RoadTypeLabel label, bool allow_alternate_labels = true);
+RoadType GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);
 
 void ResetRoadTypes();
 void InitRoadTypes();
-RoadType AllocateRoadType(RoadTypeLabel label);
+RoadType AllocateRoadType(RoadTypeLabel label, RoadType subtype);
 
-extern RoadType _sorted_roadtypes[ROADTYPE_END];
-extern uint8 _sorted_roadtypes_size;
+extern uint32 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+extern uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 /**
  * Loop header for iterating over roadtypes, sorted by sortorder.
  * @param var Roadtype.
  */
-#define FOR_ALL_SORTED_ROADTYPES(var) for (uint8 index = 0; index < _sorted_roadtypes_size && (var = _sorted_roadtypes[index], true) ; index++)
+#define FOR_ALL_SORTED_ROADTYPES(var, type) for (uint8 index = 0; index < _sorted_roadtypes_size[type] && (var = RoadTypeIdentifier(_sorted_roadtypes[index][type]).subtype, true) ; index++)
 
 #endif /* ROAD_H */

@@ -45,9 +45,9 @@
 #include "safeguards.h"
 
 
-RoadtypeInfo _roadtypes[ROADTYPE_END];
-RoadType _sorted_roadtypes[ROADTYPE_END];
-uint8 _sorted_roadtypes_size;
+RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+uint32 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));
 
@@ -56,8 +56,13 @@ assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));
  */
 void ResetRoadTypes()
 {
-	memset(_roadtypes, 0, sizeof(_roadtypes));
-	memcpy(_roadtypes, _original_roadtypes, sizeof(_original_roadtypes));
+	/* Road type */
+	memset(_roadtypes[ROADTYPE_ROAD], 0, sizeof(_roadtypes[ROADTYPE_ROAD]));
+	memcpy(_roadtypes[ROADTYPE_ROAD], _original_roadtypes, sizeof(_original_roadtypes));
+
+	/* Tram type */
+	memset(_roadtypes[ROADTYPE_TRAM], 0, sizeof(_roadtypes[ROADTYPE_TRAM]));
+	memcpy(_roadtypes[ROADTYPE_TRAM], _original_tramtypes, sizeof(_original_tramtypes));
 }
 
 void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
@@ -87,9 +92,9 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
  * @param second The roadtype to compare.
  * @return True iff the first should be sorted before the second.
  */
-static int CDECL CompareRoadTypes(const RoadType *first, const RoadType *second)
+static int CDECL CompareRoadTypes(const uint32 first, const uint32 second)
 {
-	return GetRoadTypeInfo(*first)->sorting_order - GetRoadTypeInfo(*second)->sorting_order;
+	return GetRoadTypeInfo(first)->sorting_order - GetRoadTypeInfo(second)->sorting_order;
 }
 
 /**
@@ -99,30 +104,32 @@ static int CDECL CompareRoadTypes(const RoadType *first, const RoadType *second)
 void InitRoadTypes()
 {
 	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-		RoadtypeInfo *rti = &_roadtypes[rt];
-		ResolveRoadTypeGUISprites(rti);
-	}
-
-	_sorted_roadtypes_size = 0;
-	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-		if (_roadtypes[rt].label != 0) {
-			_sorted_roadtypes[_sorted_roadtypes_size++] = rt;
+		for (RoadType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
+			RoadtypeInfo *rti = &_roadtypes[rt][rst];
+			ResolveRoadTypeGUISprites(rti);
 		}
+
+		_sorted_roadtypes_size[rt] = 0;
+		for (RoadType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
+			if (_roadtypes[rt][rst].label != 0) {
+				_sorted_roadtypes[rt][_sorted_roadtypes_size[rt]++] = RoadTypeIdentifier(rt, rst).Pack();
+			}
+		}
+		//QSortT(_sorted_roadtypes[rt], _sorted_roadtypes_size[rt], CompareRoadTypes);
 	}
-	QSortT(_sorted_roadtypes, _sorted_roadtypes_size, CompareRoadTypes);
 }
 
 /**
  * Allocate a new road type label
  */
-RoadType AllocateRoadType(RoadTypeLabel label)
+RoadType AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 {
-	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-		RoadtypeInfo *rti = &_roadtypes[rt];
+	for (RoadType rt = ROADSUBTYPE_BEGIN; rt != ROADSUBTYPE_END; rt++) {
+		RoadtypeInfo *rti = &_roadtypes[basetype][rt];
 
 		if (rti->label == 0) {
 			/* Set up new road type */
-			memcpy(rti, &_roadtypes[ROADTYPE_ROAD], sizeof(*rti));
+			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_FIRST], sizeof(*rti));
 			rti->label = label;
 			/* Clear alternate label list. Can't use Reset() here as that would free
 			 * the data pointer of ROADTYPE_ROAD and not our new road type. */

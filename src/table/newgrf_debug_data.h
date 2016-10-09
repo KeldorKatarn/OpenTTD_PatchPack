@@ -563,6 +563,13 @@ static const NIFeature _nif_roadtype = {
 	new NIHRoadType(),
 };
 
+static const NIFeature _nif_tramtype = {
+	NULL,
+	NULL,
+	_niv_roadtypes,
+	new NIHRoadType(),
+};
+
 /** Table with all NIFeatures. */
 static const NIFeature * const _nifeatures[] = {
 	&_nif_vehicle,      // GSF_TRAINS
@@ -584,6 +591,7 @@ static const NIFeature * const _nifeatures[] = {
 	&_nif_railtype,     // GSF_RAILTYPES
 	&_nif_airporttile,  // GSF_AIRPORTTILES
 	&_nif_roadtype,     // GSF_ROADTYPES
+	&_nif_tramtype,     // GSF_TRAMTYPES
 	&_nif_town,         // GSF_FAKE_TOWNS
 };
 assert_compile(lengthof(_nifeatures) == GSF_FAKE_END);

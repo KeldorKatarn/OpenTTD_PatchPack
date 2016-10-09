@@ -160,22 +160,49 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
  * @param allow_alternate_labels Search in the alternate label lists as well.
  * @return the roadtype.
  */
-RoadType GetRoadTypeByLabel(RoadTypeLabel label, bool allow_alternate_labels)
+RoadType GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bool allow_alternate_labels)
 {
+	RoadTypeIdentifier rtid;
+
+	rtid.basetype = basetype;
+
 	/* Loop through each road type until the label is found */
-	for (RoadType r = ROADTYPE_BEGIN; r != ROADTYPE_END; r++) {
-		const RoadtypeInfo *rti = GetRoadTypeInfo(r);
+	for (RoadType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
+		rtid.subtype = r;
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
 		if (rti->label == label) return r;
 	}
 
 	if (allow_alternate_labels) {
 		/* Test if any road type defines the label as an alternate. */
-		for (RoadType r = ROADTYPE_BEGIN; r != ROADTYPE_END; r++) {
-			const RoadtypeInfo *rti = GetRoadTypeInfo(r);
+		for (RoadType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
+			rtid.subtype = r;
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
 			if (rti->alternate_labels.Contains(label)) return r;
 		}
 	}
 
 	/* No matching label was found, so it is invalid */
 	return INVALID_ROADTYPE;
+}
+
+uint32 RoadTypeIdentifier::Pack() const
+{
+	assert(this->basetype < ROADTYPE_END);
+	assert(this->subtype < ROADSUBTYPE_END);
+
+	return (this->basetype << ROADSUBTYPE_END) | this->subtype;
+}
+
+bool RoadTypeIdentifier::Unpack(uint32 data) {
+	this->basetype = (RoadType)GB(data, 0, ROADTYPE_END);
+	this->subtype = (RoadType)GB(data, ROADTYPE_END, ROADSUBTYPE_END);
+
+	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
+}
+
+RoadTypeIdentifier::RoadTypeIdentifier(uint32 data)
+{
+	bool ret = this->Unpack(data);
+	assert(ret);
 }

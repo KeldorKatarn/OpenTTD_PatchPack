@@ -125,13 +125,13 @@ SpriteID GetCustomRoadSprite(const RoadtypeInfo *rti, TileIndex tile, RoadTypeSp
 * @param grffile The GRF to do the lookup for.
 * @return the GRF internal ID.
 */
-uint8 GetReverseRoadTypeTranslation(RoadType roadtype, const GRFFile *grffile)
+uint8 GetReverseRoadTypeTranslation(RoadTypeIdentifier rti, const GRFFile *grffile)
 {
 	/* No road type table present, return road type as-is */
-	if (grffile == NULL || grffile->roadtype_list.Length() == 0) return roadtype;
+	if (grffile == NULL || grffile->roadtype_list.Length() == 0) return rti.subtype;
 
 	/* Look for a matching road type label in the table */
-	RoadTypeLabel label = GetRoadTypeInfo(roadtype)->label;
+	RoadTypeLabel label = GetRoadTypeInfo(rti.Pack())->label;
 	int index = grffile->roadtype_list.FindIndex(label);
 	if (index >= 0) return index;
 

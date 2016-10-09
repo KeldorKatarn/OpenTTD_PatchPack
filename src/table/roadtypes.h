@@ -106,6 +106,9 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		{ NULL },
 		{ NULL },
 	},
+};
+
+static const RoadtypeInfo _original_tramtypes[] = {
 	/** Tram */
 	{
 		/* GUI sprites */

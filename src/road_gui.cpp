@@ -310,13 +310,13 @@ static bool RoadToolbar_CtrlChanged(Window *w)
 
 /** Road toolbar window handler. */
 struct BuildRoadToolbarWindow : Window {
-	RoadType roadtype;       ///< Road type to build.
-	int last_started_action; ///< Last started user action.
+	uint32 roadtype_identifier; ///< Road type to build.
+	int last_started_action;    ///< Last started user action.
 
-	BuildRoadToolbarWindow(WindowDesc *desc, RoadType roadtype) : Window(desc)
+	BuildRoadToolbarWindow(WindowDesc *desc, uint32 roadtype_identifier) : Window(desc)
 	{
 		this->InitNested(ROADTYPE_ROAD);
-		this->SetupRoadToolbar(roadtype);
+		this->SetupRoadToolbar(roadtype_identifier);
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,
 				WID_ROT_ONE_WAY,
@@ -359,12 +359,13 @@ struct BuildRoadToolbarWindow : Window {
 	* Configures the road toolbar for roadtype given
 	* @param roadtype the roadtype to display
 	*/
-	void SetupRoadToolbar(RoadType roadtype)
+	void SetupRoadToolbar(uint32 roadtype_identifier)
 	{
-		this->roadtype = roadtype;
-		const RoadtypeInfo *rti = GetRoadTypeInfo(roadtype);
+		//assert(roadtype < ROADTYPE_END);
 
-		assert(roadtype < ROADTYPE_END);
+		this->roadtype_identifier = roadtype_identifier;
+		const RoadtypeInfo *rti = GetRoadTypeInfo(roadtype_identifier);
+
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_Y)->widget_data = rti->gui_sprites.build_y_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
@@ -441,17 +442,17 @@ struct BuildRoadToolbarWindow : Window {
 		_one_way_button_clicked = false;
 		switch (widget) {
 			case WID_ROT_ROAD_X:
-				HandlePlacePushButton(this, WID_ROT_ROAD_X, GetRoadTypeInfo(_cur_roadtype)->cursor.road_nwse, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_ROAD_X, GetRoadTypeInfo(roadtype_identifier)->cursor.road_nwse, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
 			case WID_ROT_ROAD_Y:
-				HandlePlacePushButton(this, WID_ROT_ROAD_Y, GetRoadTypeInfo(_cur_roadtype)->cursor.road_swne, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_ROAD_Y, GetRoadTypeInfo(roadtype_identifier)->cursor.road_swne, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
 			case WID_ROT_AUTOROAD:
-				HandlePlacePushButton(this, WID_ROT_AUTOROAD, GetRoadTypeInfo(_cur_roadtype)->cursor.autoroad, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_AUTOROAD, GetRoadTypeInfo(roadtype_identifier)->cursor.autoroad, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
@@ -462,7 +463,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_DEPOT:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(_cur_roadtype)->cursor.depot, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(roadtype_identifier)->cursor.depot, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
 				}
@@ -470,7 +471,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_BUS_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, GetRoadTypeInfo(_cur_roadtype)->cursor.bus_station, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.bus_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
 				}
@@ -478,7 +479,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_TRUCK_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, GetRoadTypeInfo(_cur_roadtype)->cursor.truck_station, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.truck_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
 				}
@@ -497,7 +498,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUILD_TUNNEL:
-				HandlePlacePushButton(this, WID_ROT_BUILD_TUNNEL, GetRoadTypeInfo(_cur_roadtype)->cursor.tunnel, HT_SPECIAL);
+				HandlePlacePushButton(this, WID_ROT_BUILD_TUNNEL, GetRoadTypeInfo(roadtype_identifier)->cursor.tunnel, HT_SPECIAL);
 				this->last_started_action = widget;
 				break;
 
@@ -1180,7 +1181,7 @@ DropDownList *GetRoadTypeDropDownList()
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
 	RoadType rt;
-	FOR_ALL_SORTED_ROADTYPES(rt) {
+	FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
 		/* If it's not used ever, don't show it to the user. */
 		if (!HasBit(used_roadtypes, rt)) continue;
 

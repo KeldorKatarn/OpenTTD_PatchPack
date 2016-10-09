@@ -85,6 +85,7 @@ enum GrfSpecFeature {
 	GSF_RAILTYPES,
 	GSF_AIRPORTTILES,
 	GSF_ROADTYPES,
+	GSF_TRAMTYPES,
 	GSF_END,
 
 	GSF_FAKE_TOWNS = GSF_END, ///< Fake town GrfSpecFeature for NewGRF debugging (parent scope)
@@ -132,7 +133,7 @@ struct GRFFile : ZeroedMemoryAllocator {
 	RailTypeByte railtype_map[RAILTYPE_END];
 
 	SmallVector<RoadTypeLabel, 4> roadtype_list;    ///< Roadtype translation table
-	RoadTypeByte roadtype_map[ROADTYPE_END];
+	RoadTypeByte roadtype_map[ROADTYPE_END][ROADSUBTYPE_END];
 
 	CanalProperties canal_local_properties[CF_END]; ///< Canal properties as set by this NewGRF
 

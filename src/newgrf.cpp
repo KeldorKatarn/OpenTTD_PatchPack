@@ -4245,11 +4245,11 @@ static ChangeInfoResult RailTypeReserveInfo(uint id, int numinfo, int prop, Byte
 * @param buf The property value.
 * @return ChangeInfoResult.
 */
-static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteReader *buf)
+static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteReader *buf, RoadType basetype)
 {
 	ChangeInfoResult ret = CIR_SUCCESS;
 
-	extern RoadtypeInfo _roadtypes[ROADTYPE_END];
+	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 
 	if (id + numinfo > ROADTYPE_END) {
 		grfmsg(1, "RoadTypeChangeInfo: Road type %u is invalid, max %u, ignoring", id + numinfo, ROADTYPE_END);
@@ -4257,10 +4257,10 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 	}
 
 	for (int i = 0; i < numinfo; i++) {
-		RoadType rt = _cur.grffile->roadtype_map[id + i];
+		RoadType rt = _cur.grffile->roadtype_map[basetype][id + i];
 		if (rt == INVALID_ROADTYPE) return CIR_INVALID_ID;
 
-		RoadtypeInfo *rti = &_roadtypes[rt];
+		RoadtypeInfo *rti = &_roadtypes[basetype][rt];
 
 		switch (prop) {
 		case 0x08: // Label of road type
@@ -4304,7 +4304,7 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			int n = buf->ReadByte();
 			for (int j = 0; j != n; j++) {
 				RoadTypeLabel label = buf->ReadDWord();
-				RoadType rt = GetRoadTypeByLabel(BSWAP32(label), false);
+				RoadType rt = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
 				if (rt != INVALID_ROADTYPE) {
 					switch (prop) {
 					case 0x0F: SetBit(rti->powered_roadtypes, rt); // Powered implies compatible.
@@ -4375,11 +4375,22 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 	return ret;
 }
 
-static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, ByteReader *buf)
+static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteReader *buf)
+{
+	return RoadTypeChangeInfo(id, numinfo, prop, buf, ROADTYPE_ROAD);
+}
+
+static ChangeInfoResult TramTypeChangeInfo(uint id, int numinfo, int prop, ByteReader *buf)
+{
+	return RoadTypeChangeInfo(id, numinfo, prop, buf, ROADTYPE_TRAM);
+}
+
+
+static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, ByteReader *buf, RoadType basetype)
 {
 	ChangeInfoResult ret = CIR_SUCCESS;
 
-	extern RoadtypeInfo _roadtypes[ROADTYPE_END];
+	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 
 	if (id + numinfo > ROADTYPE_END) {
 		grfmsg(1, "RoadTypeReserveInfo: Road type %u is invalid, max %u, ignoring", id + numinfo, ROADTYPE_END);
@@ -4393,13 +4404,13 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				RoadTypeLabel rtl = buf->ReadDWord();
 				rtl = BSWAP32(rtl);
 
-				RoadType rt = GetRoadTypeByLabel(rtl, false);
+				RoadType rt = GetRoadTypeByLabel(rtl, basetype, false);
 				if (rt == INVALID_ROADTYPE) {
 					/* Set up new road type */
-					rt = AllocateRoadType(rtl);
+					rt = AllocateRoadType(rtl, basetype);
 				}
 
-				_cur.grffile->roadtype_map[id + i] = rt;
+				_cur.grffile->roadtype_map[basetype][id + i] = rt;
 				break;
 			}
 			case 0x09: // Toolbar caption of roadtype
@@ -4415,10 +4426,10 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				break;
 
 			case 0x1D: // Alternate road type label list
-				if (_cur.grffile->roadtype_map[id + i] != INVALID_ROADTYPE) {
+				if (_cur.grffile->roadtype_map[basetype][id + i] != INVALID_ROADTYPE) {
 					int n = buf->ReadByte();
 					for (int j = 0; j != n; j++) {
-						*_roadtypes[_cur.grffile->roadtype_map[id + i]].alternate_labels.Append() = BSWAP32(buf->ReadDWord());
+						*_roadtypes[basetype][_cur.grffile->roadtype_map[basetype][id + i]].alternate_labels.Append() = BSWAP32(buf->ReadDWord());
 					}
 					break;
 				}
@@ -4454,6 +4465,16 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 	}
 
 	return ret;
+}
+
+static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, ByteReader *buf)
+{
+	return RoadTypeReserveInfo(id, numinfo, prop, buf, ROADTYPE_ROAD);
+}
+
+static ChangeInfoResult TramTypeReserveInfo(uint id, int numinfo, int prop, ByteReader *buf)
+{
+	return RoadTypeReserveInfo(id, numinfo, prop, buf, ROADTYPE_TRAM);
 }
 
 static ChangeInfoResult AirportTilesChangeInfo(uint airtid, int numinfo, int prop, ByteReader *buf)
@@ -4609,6 +4630,7 @@ static void FeatureChangeInfo(ByteReader *buf)
 		/* GSF_RAILTYPES */     RailTypeChangeInfo,
 		/* GSF_AIRPORTTILES */  AirportTilesChangeInfo,
 		/* GSF_ROADTYPES */     RoadTypeChangeInfo,
+		/* GSF_TRAMTYPES */     TramTypeChangeInfo,
 	};
 
 	uint8 feature  = buf->ReadByte();
@@ -4703,6 +4725,10 @@ static void ReserveChangeInfo(ByteReader *buf)
 
 			case GSF_ROADTYPES:
 				cir = RoadTypeReserveInfo(index, numinfo, prop, buf);
+				break;
+
+			case GSF_TRAMTYPES:
+				cir = TramTypeReserveInfo(index, numinfo, prop, buf);
 				break;
 		}
 
@@ -5483,11 +5509,11 @@ static void RailTypeMapSpriteGroup(ByteReader *buf, uint8 idcount)
 	buf->ReadWord();
 }
 
-static void RoadTypeMapSpriteGroup(ByteReader *buf, uint8 idcount)
+static void RoadTypeMapSpriteGroup(ByteReader *buf, uint8 idcount, RoadType basetype)
 {
 	uint8 *roadtypes = AllocaM(uint8, idcount);
 	for (uint i = 0; i < idcount; i++) {
-		roadtypes[i] = _cur.grffile->roadtype_map[buf->ReadByte()];
+		roadtypes[i] = _cur.grffile->roadtype_map[basetype][buf->ReadByte()];
 	}
 
 	uint8 cidcount = buf->ReadByte();
@@ -5498,10 +5524,10 @@ static void RoadTypeMapSpriteGroup(ByteReader *buf, uint8 idcount)
 
 		if (ctype >= ROTSG_END) continue;
 
-		extern RoadtypeInfo _roadtypes[ROADTYPE_END];
+		extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 		for (uint i = 0; i < idcount; i++) {
 			if (roadtypes[i] != INVALID_ROADTYPE) {
-				RoadtypeInfo *rti = &_roadtypes[roadtypes[i]];
+				RoadtypeInfo *rti = &_roadtypes[basetype][roadtypes[i]];
 
 				rti->grffile[ctype] = _cur.grffile;
 				rti->group[ctype] = _cur.spritegroups[groupid];
@@ -5659,7 +5685,11 @@ static void FeatureMapSpriteGroup(ByteReader *buf)
 			break;
 
 		case GSF_ROADTYPES:
-			RoadTypeMapSpriteGroup(buf, idcount);
+			RoadTypeMapSpriteGroup(buf, idcount, ROADTYPE_ROAD);
+			break;
+
+		case GSF_TRAMTYPES:
+			RoadTypeMapSpriteGroup(buf, idcount, ROADTYPE_TRAM);
 			break;
 
 		case GSF_AIRPORTTILES:

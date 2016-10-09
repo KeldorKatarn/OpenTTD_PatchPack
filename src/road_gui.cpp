@@ -1181,14 +1181,20 @@ DropDownList *GetRoadTypeDropDownList()
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
 	RoadType rt;
-	FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
-		/* If it's not used ever, don't show it to the user. */
-		if (!HasBit(used_roadtypes, rt)) continue;
+	RoadType rst;
 
-		const RoadtypeInfo *rti = GetRoadTypeInfo(rt);
+	/* The macro is broken */
+	//FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
+	for (rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
+		for (uint8 index = 0; index < _sorted_roadtypes_size[rt] && (rst = RoadTypeIdentifier(_sorted_roadtypes[rt][index]).subtype, true); index++) {
+			/* If it's not used ever, don't show it to the user. */
+			if (!HasBit(used_roadtypes, rt)) continue;
 
-		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rt, !HasBit(c->avail_roadtypes, rt));
-		*list->Append() = item;
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rt);
+
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rt, !HasBit(c->avail_roadtypes, rt));
+			*list->Append() = item;
+		}
 	}
 
 	return list;

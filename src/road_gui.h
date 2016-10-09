@@ -17,7 +17,7 @@
 #include "direction_type.h"
 #include "widgets/dropdown_type.h"
 
-struct Window *ShowBuildRoadToolbar(RoadType roadtype);
+struct Window *ShowBuildRoadToolbar(uint32 roadtype_id);
 struct Window *ShowBuildRoadScenToolbar();
 void ConnectRoadToStructure(TileIndex tile, DiagDirection direction);
 DropDownList *GetRoadTypeDropDownList();

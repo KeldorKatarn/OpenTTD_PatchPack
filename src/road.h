@@ -83,6 +83,15 @@ struct RoadtypeInfo {
 		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type.
 		StringID replace_text;    ///< Text used in the autoreplace GUI.
 		StringID new_loco;        ///< Name of an engine for this type of rail in the engine preview GUI.
+
+		StringID err_build_road;        ///< Building a normal piece of road
+		StringID err_remove_road;       ///< Removing a normal piece of road
+		StringID err_depot;             ///< Building a depot
+		StringID err_build_station[2];  ///< Building a bus or truck station
+		StringID err_remove_station[2]; ///< Removing of a bus or truck station
+
+		StringID picker_title[2];       ///< Title for the station picker for bus or truck stations
+		StringID picker_tooltip[2];     ///< Tooltip for the station picker for bus or truck stations
 	} strings;                        ///< Strings associated with the rail type.
 
 	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype generates power */

@@ -104,13 +104,13 @@ static int CDECL CompareRoadTypes(const uint32 first, const uint32 second)
 void InitRoadTypes()
 {
 	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-		for (RoadType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
+		for (RoadSubType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
 			RoadtypeInfo *rti = &_roadtypes[rt][rst];
 			ResolveRoadTypeGUISprites(rti);
 		}
 
 		_sorted_roadtypes_size[rt] = 0;
-		for (RoadType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
+		for (RoadSubType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
 			if (_roadtypes[rt][rst].label != 0) {
 				_sorted_roadtypes[rt][_sorted_roadtypes_size[rt]++] = RoadTypeIdentifier(rt, rst).Pack();
 			}
@@ -122,14 +122,14 @@ void InitRoadTypes()
 /**
  * Allocate a new road type label
  */
-RoadType AllocateRoadType(RoadTypeLabel label, RoadType basetype)
+RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 {
-	for (RoadType rt = ROADSUBTYPE_BEGIN; rt != ROADSUBTYPE_END; rt++) {
+	for (RoadSubType rt = ROADSUBTYPE_BEGIN; rt != ROADSUBTYPE_END; rt++) {
 		RoadtypeInfo *rti = &_roadtypes[basetype][rt];
 
 		if (rti->label == 0) {
 			/* Set up new road type */
-			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_FIRST], sizeof(*rti));
+			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_BEGIN], sizeof(*rti));
 			rti->label = label;
 			/* Clear alternate label list. Can't use Reset() here as that would free
 			 * the data pointer of ROADTYPE_ROAD and not our new road type. */
@@ -149,7 +149,7 @@ RoadType AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			 * other roadtypes, the 7 is to be able to place something
 			 * before the first (default) road type. */
 			rti->sorting_order = rt << 4 | 7;
-			return rt;
+			return RoadTypeIdentifier().Pack();
 		}
 	}
 

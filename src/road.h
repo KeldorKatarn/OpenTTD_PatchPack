@@ -193,12 +193,13 @@ struct RoadtypeInfo {
 
 struct RoadTypeIdentifier {
 	RoadType basetype;
-	RoadType subtype;
+	RoadSubType subtype;
 
 	uint8 Pack() const;
 	bool Unpack(uint8 data);
+	bool IsValid();
 
-	RoadTypeIdentifier(RoadType basetype, RoadType subtype) : basetype(basetype), subtype(subtype) {}
+	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
 	RoadTypeIdentifier(uint8 data = 0);
 };
 
@@ -248,11 +249,11 @@ static inline bool HasPowerOnRoad(uint8 roadtype_identifier)
 	return HasBit(a, b);
 }
 
-RoadType GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);
+RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);
 
 void ResetRoadTypes();
 void InitRoadTypes();
-RoadType AllocateRoadType(RoadTypeLabel label, RoadType subtype);
+RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype);
 
 extern uint8 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 extern uint8 _sorted_roadtypes_size[ROADTYPE_END];

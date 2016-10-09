@@ -30,16 +30,18 @@ enum RoadType {
 	ROADTYPE_TRAM = 1,       ///< Trams
 	ROADTYPE_END,            ///< Used for iterations
 	INVALID_ROADTYPE = 0xFF, ///< flag for invalid roadtype
-
-	ROADSUBTYPE_BEGIN = 0,   ///< Used for iterations
-	ROADSUBTYPE_FIRST = 0,   ///< Position for the first road subtype
-	ROADSUBTYPE_END = 16,    ///< Used for iterations
-
-	ROADTYPE_TODO = 0,
 };
 DECLARE_POSTFIX_INCREMENT(RoadType)
 template <> struct EnumPropsT<RoadType> : MakeEnumPropsT<RoadType, byte, ROADTYPE_BEGIN, ROADTYPE_END, INVALID_ROADTYPE, 2> {};
 typedef TinyEnumT<RoadType> RoadTypeByte;
+
+enum RoadSubType {
+	ROADSUBTYPE_BEGIN = 0,      ///< Used for iterations
+	ROADSUBTYPE_END = 16,       ///< Used for iterations
+	INVALID_ROADSUBTYPE = 0xFF, ///< flag for invalid roadsubtype
+};
+DECLARE_POSTFIX_INCREMENT(RoadSubType);
+
 
 /**
  * The different roadtypes we support, but then a bitmask of them

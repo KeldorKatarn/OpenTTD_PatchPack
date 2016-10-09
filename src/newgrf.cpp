@@ -4257,10 +4257,10 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 	}
 
 	for (int i = 0; i < numinfo; i++) {
-		RoadType rt = _cur.grffile->roadtype_map[basetype][id + i];
-		if (rt == INVALID_ROADTYPE) return CIR_INVALID_ID;
+		RoadTypeIdentifier rtid = RoadTypeIdentifier(_cur.grffile->roadtype_map[basetype][id + i]);
+		if (!rtid.IsValid()) return CIR_INVALID_ID;
 
-		RoadtypeInfo *rti = &_roadtypes[basetype][rt];
+		RoadtypeInfo *rti = &_roadtypes[basetype][rtid.subtype];
 
 		switch (prop) {
 		case 0x08: // Label of road type
@@ -4304,13 +4304,13 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			int n = buf->ReadByte();
 			for (int j = 0; j != n; j++) {
 				RoadTypeLabel label = buf->ReadDWord();
-				RoadType rt = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
-				if (rt != INVALID_ROADTYPE) {
+				RoadTypeIdentifier rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
+				if (!rtid.IsValid()) {
 					switch (prop) {
-					case 0x0F: SetBit(rti->powered_roadtypes, rt); // Powered implies compatible.
-					case 0x0E: SetBit(rti->compatible_roadtypes, rt);            break;
-					case 0x18: SetBit(rti->introduction_required_roadtypes, rt); break;
-					case 0x19: SetBit(rti->introduces_roadtypes, rt);            break;
+					case 0x0F: SetBit(rti->powered_roadtypes, rtid.basetype); // Powered implies compatible.
+					case 0x0E: SetBit(rti->compatible_roadtypes, rtid.basetype);            break;
+					case 0x18: SetBit(rti->introduction_required_roadtypes, rtid.basetype); break;
+					case 0x19: SetBit(rti->introduces_roadtypes, rtid.basetype);            break;
 					}
 				}
 			}
@@ -4404,13 +4404,14 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				RoadTypeLabel rtl = buf->ReadDWord();
 				rtl = BSWAP32(rtl);
 
-				RoadType rt = GetRoadTypeByLabel(rtl, basetype, false);
-				if (rt == INVALID_ROADTYPE) {
+				RoadTypeIdentifier rtid = GetRoadTypeByLabel(rtl, basetype, false);
+				bool is_valid = rtid.IsValid();
+				if (!is_valid) {
 					/* Set up new road type */
-					rt = AllocateRoadType(rtl, basetype);
+					rtid = AllocateRoadType(rtl, basetype);
 				}
 
-				_cur.grffile->roadtype_map[basetype][id + i] = rt;
+				_cur.grffile->roadtype_map[basetype][id + i] = rtid.Pack();
 				break;
 			}
 			case 0x09: // Toolbar caption of roadtype

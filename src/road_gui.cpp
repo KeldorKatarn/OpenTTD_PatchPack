@@ -1181,12 +1181,11 @@ DropDownList *GetRoadTypeDropDownList()
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
 	RoadType rt;
-	RoadType rst;
 
 	/* The macro is broken */
 	//FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
 	for (rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
-		for (uint8 index = 0; index < _sorted_roadtypes_size[rt] && (rst = RoadTypeIdentifier(_sorted_roadtypes[rt][index]).subtype, true); index++) {
+		for (uint8 index = 0; index < _sorted_roadtypes_size[rt]; index++) {
 			/* If it's not used ever, don't show it to the user. */
 			if (!HasBit(used_roadtypes, rt)) continue;
 

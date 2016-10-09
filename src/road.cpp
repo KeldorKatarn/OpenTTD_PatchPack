@@ -191,12 +191,12 @@ uint32 RoadTypeIdentifier::Pack() const
 	assert(this->basetype < ROADTYPE_END);
 	assert(this->subtype < ROADSUBTYPE_END);
 
-	return (this->basetype << ROADSUBTYPE_END) | this->subtype;
+	return this->basetype | (this->subtype << 1);
 }
 
 bool RoadTypeIdentifier::Unpack(uint32 data) {
 	this->basetype = (RoadType)GB(data, 0, 1);
-	this->subtype = (RoadType)GB(data, 2, 4);
+	this->subtype = (RoadType)GB(data, 1, 4);
 
 	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
 }

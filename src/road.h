@@ -195,11 +195,11 @@ struct RoadTypeIdentifier {
 	RoadType basetype;
 	RoadType subtype;
 
-	uint32 Pack() const;
-	bool Unpack(uint32 data);
+	uint8 Pack() const;
+	bool Unpack(uint8 data);
 
 	RoadTypeIdentifier(RoadType basetype, RoadType subtype) : basetype(basetype), subtype(subtype) {}
-	RoadTypeIdentifier(uint32 data = 0);
+	RoadTypeIdentifier(uint8 data = 0);
 };
 
 /**
@@ -207,7 +207,7 @@ struct RoadTypeIdentifier {
  * @param roadtype the road type which the information is requested for
  * @return The pointer to the RoadtypeInfo
  */
-static inline const RoadtypeInfo *GetRoadTypeInfo(uint32 roadtype_identifier)
+static inline const RoadtypeInfo *GetRoadTypeInfo(uint8 roadtype_identifier)
 {
 	RoadTypeIdentifier *rti = new RoadTypeIdentifier(roadtype_identifier);
 	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
@@ -224,7 +224,7 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(uint32 roadtype_identifier)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool IsCompatibleRoad(uint32 roadtype_identifier)
+static inline bool IsCompatibleRoad(uint8 roadtype_identifier)
 {
 	uint8 a = GetRoadTypeInfo(roadtype_identifier)->compatible_roadtypes;
 	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
@@ -240,7 +240,7 @@ static inline bool IsCompatibleRoad(uint32 roadtype_identifier)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(uint32 roadtype_identifier)
+static inline bool HasPowerOnRoad(uint8 roadtype_identifier)
 {
 	uint8 a = GetRoadTypeInfo(roadtype_identifier)->powered_roadtypes;
 	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
@@ -254,7 +254,7 @@ void ResetRoadTypes();
 void InitRoadTypes();
 RoadType AllocateRoadType(RoadTypeLabel label, RoadType subtype);
 
-extern uint32 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+extern uint8 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 extern uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 /**

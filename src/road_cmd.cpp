@@ -46,7 +46,7 @@
 
 
 RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
-uint32 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+uint8 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));

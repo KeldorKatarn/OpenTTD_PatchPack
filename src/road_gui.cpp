@@ -265,11 +265,11 @@ static bool RoadToolbar_CtrlChanged(Window *w)
 
 /** Road toolbar window handler. */
 struct BuildRoadToolbarWindow : Window {
-	uint32 roadtype_identifier; ///< Road type to build.
+	uint8 roadtype_identifier; ///< Road type to build.
 	const RoadtypeInfo *rti;          ///< Informations about current road type
 	int last_started_action;    ///< Last started user action.
 
-	BuildRoadToolbarWindow(WindowDesc *desc, uint32 roadtype_identifier) : Window(desc)
+	BuildRoadToolbarWindow(WindowDesc *desc, uint8 roadtype_identifier) : Window(desc)
 	{
 		this->InitNested(ROADTYPE_ROAD);
 		this->SetupRoadToolbar(roadtype_identifier);
@@ -315,7 +315,7 @@ struct BuildRoadToolbarWindow : Window {
 	* Configures the road toolbar for roadtype given
 	* @param roadtype the roadtype to display
 	*/
-	void SetupRoadToolbar(uint32 roadtype_identifier)
+	void SetupRoadToolbar(uint8 roadtype_identifier)
 	{
 		//assert(roadtype < ROADTYPE_END);
 

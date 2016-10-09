@@ -799,7 +799,7 @@ Window *ShowBuildRoadToolbar(uint32 roadtype_id)
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
 
-	return new BuildRoadToolbarWindow(_cur_roadtype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, _cur_roadtype);
+	return new BuildRoadToolbarWindow(_cur_roadtype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
 }
 
 static const NWidgetPart _nested_build_road_scen_widgets[] = {

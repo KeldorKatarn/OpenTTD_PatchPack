@@ -1190,9 +1190,9 @@ DropDownList *GetRoadTypeDropDownList()
 			/* If it's not used ever, don't show it to the user. */
 			if (!HasBit(used_roadtypes, rt)) continue;
 
-			const RoadtypeInfo *rti = GetRoadTypeInfo(rt);
+			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][index]);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rt, !HasBit(c->avail_roadtypes, rt));
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index], !HasBit(c->avail_roadtypes, rt));
 			*list->Append() = item;
 		}
 	}

@@ -4405,8 +4405,7 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				rtl = BSWAP32(rtl);
 
 				RoadTypeIdentifier rtid = GetRoadTypeByLabel(rtl, basetype, false);
-				bool is_valid = rtid.IsValid();
-				if (!is_valid) {
+				if (!rtid.IsValid()) {
 					/* Set up new road type */
 					rtid = AllocateRoadType(rtl, basetype);
 				}

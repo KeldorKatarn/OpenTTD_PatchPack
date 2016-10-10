@@ -613,9 +613,13 @@ struct BuildRoadToolbarWindow : Window {
 					 * Use the first three bits (0x07) if dir == Y
 					 * else use the last 2 bits (X dir has
 					 * not the 3rd bit set) */
+
+					/* Even if _cur_roadtype_id is a uint8 we only use 5 bits so
+					 * we could ignore the last 3 bits and reuse them for other
+					 * flags */
 					_place_road_flag = (RoadFlags)((_place_road_flag & RF_DIR_Y) ? (_place_road_flag & 0x07) : (_place_road_flag >> 3));
 
-					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype << 3) | (_one_way_button_clicked << 5),
+					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype_id << 3) | (_one_way_button_clicked << 8),
 							_remove_button_clicked ?
 							CMD_REMOVE_LONG_ROAD | CMD_MSG(rti->strings.err_remove_road) :
 							CMD_BUILD_LONG_ROAD | CMD_MSG(rti->strings.err_build_road), CcPlaySound_SPLAT_OTHER);

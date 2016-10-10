@@ -38,6 +38,7 @@
 #include "genworld.h"
 #include "company_gui.h"
 #include "road.h"
+#include "road_func.h"
 
 #include "table/strings.h"
 #include "table/roadtypes.h"
@@ -120,8 +121,8 @@ void InitRoadTypes()
 }
 
 /**
-* Allocate a new road type label
-*/
+ * Allocate a new road type label
+ */
 RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 {
 	RoadTypeIdentifier rtid;
@@ -137,7 +138,7 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_BEGIN], sizeof(*rti));
 			rti->label = label;
 			/* Clear alternate label list. Can't use Reset() here as that would free
-			* the data pointer of ROADTYPE_ROAD and not our new road type. */
+			 * the data pointer of ROADTYPE_ROAD and not our new road type. */
 			new (&rti->alternate_labels) RoadTypeLabelList;
 
 			/* Make us compatible with ourself. */
@@ -148,11 +149,11 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			rti->introduces_roadtypes = (RoadTypes)(1 << rt);
 
 			/* Default sort order; order of allocation, but with some
-			* offsets so it's easier for NewGRF to pick a spot without
-			* changing the order of other (original) road types.
-			* The << is so you can place other roadtypes in between the
-			* other roadtypes, the 7 is to be able to place something
-			* before the first (default) road type. */
+			 * offsets so it's easier for NewGRF to pick a spot without
+			 * changing the order of other (original) road types.
+			 * The << is so you can place other roadtypes in between the
+			 * other roadtypes, the 7 is to be able to place something
+			 * before the first (default) road type. */
 			rti->sorting_order = rt << 4 | 7;
 
 			rtid.basetype = basetype;
@@ -641,7 +642,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 6, 2>(p1);
-	bool _catenary_flag = HasCatenary(rt);
+	bool _catenary_flag = HasBit(p2, 8); //HasCatenary(rt);
 
 	Slope tileh = GetTileSlope(tile);
 
@@ -950,12 +951,12 @@ static bool CanConnectToRoad(TileIndex tile, RoadType rt, DiagDirection dir)
  * - p2 = (bit 0) - start tile starts in the 2nd half of tile (p2 & 1). Only used if bit 6 is set or if we are building a single tile
  * - p2 = (bit 1) - end tile starts in the 2nd half of tile (p2 & 2). Only used if bit 6 is set or if we are building a single tile
  * - p2 = (bit 2) - direction: 0 = along x-axis, 1 = along y-axis (p2 & 4)
- * - p2 = (bit 3 + 4) - road type
- * - p2 = (bit 5) - set road direction
- * - p2 = (bit 6) - defines two different behaviors for this command:
+ * - p2 = (bit 3..7) - road type identifier
+ * - p2 = (bit 8) - set road direction
+ * - p2 = (bit 9) - defines two different behaviors for this command:
  *      - 0 = Build up to an obstacle. Do not build the first and last roadbits unless they can be connected to something, or if we are building a single tile
  *      - 1 = Fail if an obstacle is found. Always take into account bit 0 and 1. This behavior is used for scripts
- *   p2 = (bit 7) - catenary
+ *   p2 = (bit 10) - catenary
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -966,7 +967,8 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	if (p1 >= MapSize()) return CMD_ERROR;
 
 	TileIndex end_tile = p1;
-	RoadType rt = Extract<RoadType, 3, 2>(p2);
+	RoadTypeIdentifier rtid = RoadTypeIdentifier(GB(p2, 3, 5));
+	RoadType rt = rtid.basetype;
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
@@ -988,7 +990,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	 * when you just 'click' on one tile to build them. */
 	if ((axis == AXIS_Y) == (start_tile == end_tile && HasBit(p2, 0) == HasBit(p2, 1))) drd ^= DRD_BOTH;
 	/* No disallowed direction bits have to be toggled */
-	if (!HasBit(p2, 5)) drd = DRD_NONE;
+	if (!HasBit(p2, 8)) drd = DRD_NONE;
 
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	CommandCost last_error = CMD_ERROR;
@@ -996,7 +998,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	bool had_bridge = false;
 	bool had_tunnel = false;
 	bool had_success = false;
-	bool is_ai = HasBit(p2, 6);
+	bool is_ai = HasBit(p2, 9);
 
 	/* Start tile is the first tile clicked by the user. */
 	for (;;) {
@@ -1016,8 +1018,8 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 			if (tile == start_tile && HasBit(p2, 0)) bits &= DiagDirToRoadBits(dir);
 		}
 
-		bool _has_catenary = HasBit(p2, 7);
-		CommandCost ret = DoCommand(tile, drd << 6 | rt << 4 | bits, 0, flags, CMD_BUILD_ROAD);
+		bool _has_catenary = HasCatenary(rtid);
+		CommandCost ret = DoCommand(tile, _has_catenary << 8 | drd << 6 | rt << 4 | bits, 0, flags, CMD_BUILD_ROAD);
 		if (ret.Failed()) {
 			last_error = ret;
 			if (last_error.GetErrorMessage() != STR_ERROR_ALREADY_BUILT) {

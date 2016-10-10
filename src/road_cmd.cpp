@@ -638,11 +638,17 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	/* do not allow building 'zero' road bits, code wouldn't handle it */
 	if (pieces == ROAD_NONE) return CMD_ERROR;
 
-	RoadType rt = Extract<RoadType, 4, 2>(p1);
+	RoadTypeIdentifier rtid = GB(p1, 4, 5);
+	RoadType rt = rtid.basetype;
+
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
-	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 6, 2>(p1);
-	bool _catenary_flag = HasBit(p2, 8); //HasCatenary(rt);
+	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 9, 2>(p1);
+
+	/* The catenary flag must be aware of the catenary bit of the tile,
+	 * we don't want to clear it if it's already set if we are
+	 * overbuilding another roadtype */
+	bool _catenary_flag = HasCatenary(tile) | HasCatenary(rtid);
 
 	Slope tileh = GetTileSlope(tile);
 
@@ -1018,8 +1024,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 			if (tile == start_tile && HasBit(p2, 0)) bits &= DiagDirToRoadBits(dir);
 		}
 
-		bool _has_catenary = HasCatenary(rtid);
-		CommandCost ret = DoCommand(tile, _has_catenary << 8 | drd << 6 | rt << 4 | bits, 0, flags, CMD_BUILD_ROAD);
+		CommandCost ret = DoCommand(tile, drd << 9 | rtid.Pack() << 4 | bits, 0, flags, CMD_BUILD_ROAD);
 		if (ret.Failed()) {
 			last_error = ret;
 			if (last_error.GetErrorMessage() != STR_ERROR_ALREADY_BUILT) {

@@ -120,10 +120,15 @@ void InitRoadTypes()
 }
 
 /**
- * Allocate a new road type label
- */
+* Allocate a new road type label
+*/
 RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 {
+	RoadTypeIdentifier rtid;
+
+	rtid.basetype = INVALID_ROADTYPE;
+	rtid.subtype = INVALID_ROADSUBTYPE;
+
 	for (RoadSubType rt = ROADSUBTYPE_BEGIN; rt != ROADSUBTYPE_END; rt++) {
 		RoadtypeInfo *rti = &_roadtypes[basetype][rt];
 
@@ -132,28 +137,32 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_BEGIN], sizeof(*rti));
 			rti->label = label;
 			/* Clear alternate label list. Can't use Reset() here as that would free
-			 * the data pointer of ROADTYPE_ROAD and not our new road type. */
+			* the data pointer of ROADTYPE_ROAD and not our new road type. */
 			new (&rti->alternate_labels) RoadTypeLabelList;
 
 			/* Make us compatible with ourself. */
-			rti->powered_roadtypes    = (RoadTypes)(1 << rt);
+			rti->powered_roadtypes = (RoadTypes)(1 << rt);
 			rti->compatible_roadtypes = (RoadTypes)(1 << rt);
 
 			/* We also introduce ourself. */
 			rti->introduces_roadtypes = (RoadTypes)(1 << rt);
 
 			/* Default sort order; order of allocation, but with some
-			 * offsets so it's easier for NewGRF to pick a spot without
-			 * changing the order of other (original) road types.
-			 * The << is so you can place other roadtypes in between the
-			 * other roadtypes, the 7 is to be able to place something
-			 * before the first (default) road type. */
+			* offsets so it's easier for NewGRF to pick a spot without
+			* changing the order of other (original) road types.
+			* The << is so you can place other roadtypes in between the
+			* other roadtypes, the 7 is to be able to place something
+			* before the first (default) road type. */
 			rti->sorting_order = rt << 4 | 7;
-			return RoadTypeIdentifier().Pack();
+
+			rtid.basetype = basetype;
+			rtid.subtype = rt;
+
+			return rtid.Pack();
 		}
 	}
 
-	return INVALID_ROADTYPE;
+	return rtid;
 }
 
 /**

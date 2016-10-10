@@ -178,12 +178,14 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 		for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
 			rtid.subtype = r;
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
-			if (rti->alternate_labels.Contains(label)) return r;
+			if (rti->alternate_labels.Contains(label)) return rtid;
 		}
 	}
 
 	/* No matching label was found, so it is invalid */
-	return RoadTypeIdentifier(0xF);
+	rtid.basetype = INVALID_ROADTYPE;
+	rtid.subtype = INVALID_ROADSUBTYPE;
+	return rtid;
 }
 
 uint8 RoadTypeIdentifier::Pack() const
@@ -203,7 +205,7 @@ bool RoadTypeIdentifier::Unpack(uint8 data) {
 
 bool RoadTypeIdentifier::IsValid()
 {
-	return this->Pack() != 0xF;
+	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
 }
 
 RoadTypeIdentifier::RoadTypeIdentifier(uint8 data)

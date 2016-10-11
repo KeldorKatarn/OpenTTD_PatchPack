@@ -879,7 +879,9 @@ do_clear:;
 				RoadTileType rtt = GetRoadTileType(tile);
 				if (existing == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
 					//SetRoadTypes(tile, GetRoadTypes(tile) | RoadTypeToRoadTypes(rt));
-					SetRoadTypes(tile, RoadTypeIdentifiers(RoadTypeIdentifiers(tile), rtid));
+					RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers(tile);
+
+					SetRoadTypes(tile, RoadTypeIdentifiers(tile_roadtype_ids, rtid));
 
 					SetRoadOwner(tile, rt, company);
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
@@ -1835,7 +1837,7 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 			break;
 
 		default: {
-			RoadTypeIdentifiers rtids = GetRoadTypeIdentifiers(tile);
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers(tile);
 			const RoadtypeInfo *rti;
 
 			if (rtids.road_identifier.IsValid()) {

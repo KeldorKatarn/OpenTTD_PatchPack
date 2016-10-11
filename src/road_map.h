@@ -646,7 +646,12 @@ struct RoadTypeIdentifiers {
 	RoadTypeIdentifier road_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
 	RoadTypeIdentifier tram_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
 
-	RoadTypeIdentifiers(TileIndex t) {
+	/* Extracts the RoadTypeIdentifiers from the given tile
+	 * @param tile The tile to read the informations from
+	 */
+	RoadTypeIdentifiers(TileIndex t)
+	{
+		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
 		if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
 			road_identifier = GetRoadTypeRoad(t);
 		}
@@ -656,7 +661,11 @@ struct RoadTypeIdentifiers {
 		}
 	}
 
-	RoadTypeIdentifiers(RoadTypeIdentifier rtid) {
+	/* Converts a RoadTypeIdentifier into a RoadTypeIdentifiers
+	 * @param rtid The RoadTypeIdentifier to convert
+	 */
+	RoadTypeIdentifiers(RoadTypeIdentifier rtid)
+	{
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD: road_identifier = rtid; break;
@@ -664,27 +673,40 @@ struct RoadTypeIdentifiers {
 		}
 	}
 
-	RoadTypeIdentifiers(RoadTypeIdentifier rtid1, RoadTypeIdentifier rtid2) {
+	/* Creates a RoadTypeIdentifiers from two RoadTypeIdentifier
+	 * The order of the identifier doesn't matter, but they must be of different
+	 * base type (no ROAD + ROAD or TRAM + TRAM)
+	 * @param rtid1 The first RoadTypeIdentifier
+	 * @param rtid2 The second RoadTypeIdentifier
+	 */
+	RoadTypeIdentifiers(RoadTypeIdentifier rtid1, RoadTypeIdentifier rtid2)
+	{
+		assert(rtid1.basetype < ROADTYPE_END);
+		assert(rtid2.basetype < ROADTYPE_END);
+
 		/* We can't merge 2 road types of the same base type, not yet */
 		assert(rtid1.basetype != rtid2.basetype);
 
+		/* As we are sure about the road types being different we can just check the first one */
 		switch (rtid1.basetype) {
 			default: NOT_REACHED();
-			case ROADTYPE_ROAD: road_identifier = rtid1; break;
-			case ROADTYPE_TRAM: tram_identifier = rtid1; break;
-		}
-
-		switch (rtid2.basetype) {
-			default: NOT_REACHED();
-			case ROADTYPE_ROAD: road_identifier = rtid2; break;
-			case ROADTYPE_TRAM: tram_identifier = rtid2; break;
+			case ROADTYPE_ROAD:
+				road_identifier = rtid1;
+				tram_identifier = rtid2;
+				break;
+			case ROADTYPE_TRAM:
+				road_identifier = rtid2;
+				tram_identifier = rtid1;
+				break;
 		}
 	}
 
-	RoadTypeIdentifiers(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid) {
-		/* We can't merge 2 road types of the same base type, not yet */
-		assert(HasBit(rtids.PresentRoadTypes(), RoadTypeToRoadTypes(rtid.basetype)));
-
+	/* Create a new RoadTypeIdentifiers merging a new identifier with a previous one
+	 * @param rtids a source RoadTypeIdentifiers
+	 * @param rtid the new RoadTypeIdentifier
+	 */
+	RoadTypeIdentifiers(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid)
+	{
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD:
@@ -698,7 +720,11 @@ struct RoadTypeIdentifiers {
 		}
 	}
 
-	RoadTypes PresentRoadTypes() {
+	/* Returns the RoadTypes contained in the RoadTypeIdentifiers
+	 * @return RoadTypes flags
+	 */
+	RoadTypes PresentRoadTypes()
+	{
 		RoadTypes rot = ROADTYPES_NONE;
 
 		if (road_identifier.IsValid()) {
@@ -711,12 +737,13 @@ struct RoadTypeIdentifiers {
 
 		return rot;
 	};
+
+	/* Merge a new road type identifier into the current one
+	 * @param rtid The new RoadTypeIdentifier to merge into the current one
+	 * @return true on success (current behaviour = always success)
+	 */
 	bool MergeRoadTypes(RoadTypeIdentifier rtid)
 	{
-		/* We can't merge 2 road types of the same base type, not yet */
-		assert(rtid.basetype != road_identifier.basetype);
-		assert(rtid.basetype != tram_identifier.basetype);
-
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD: road_identifier = rtid; break;
@@ -730,7 +757,7 @@ struct RoadTypeIdentifiers {
 /**
 * Set the present road types of a tile.
 * @param t  The tile to change.
-* @param rtid The new road types identifier.
+* @param rtids The new road types identifiers to set for the tile.
 */
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
@@ -740,26 +767,9 @@ static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 		SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
 	}
 
-	if (rtids.road_identifier.IsValid()) {
+	if (rtids.tram_identifier.IsValid()) {
 		SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
 	}
-
-	//switch (rtid.basetype) {
-	//	default: NOT_REACHED();
-	//	case ROADTYPE_ROAD: SB(_m[t].m4, 0, 4, rtid.subtype); break;
-	//	case ROADTYPE_TRAM: SB(_m[t].m4, 4, 4, rtid.subtype); break;
-	//}
-}
-
-static inline RoadTypeIdentifier RoadTypeIdToRoadTypeIds(RoadTypeIdentifier rtid)
-{
-	RoadTypeIdentifiers r = RoadTypeIdentifiers(rtid);
-}
-
-static inline RoadTypeIdentifiers GetRoadTypeIdentifiers(TileIndex t)
-{
-	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
-	return RoadTypeIdentifiers(t);
 }
 
 /**
@@ -772,17 +782,16 @@ static inline RoadTypeIdentifiers GetRoadTypeIdentifiers(TileIndex t)
  * @param tram New owner of tram tracks.
  * @param catenary_flag Then new value for the catenary flag.
  */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifiers rot, TownID town, Owner road, Owner tram, bool catenary_flag = false)
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifiers rtids, TownID town, Owner road, Owner tram, bool catenary_flag = false)
 {
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, road);
 	_m[t].m2 = town;
-	_m[t].m3 = (rot.tram_identifier.IsValid() ? bits : 0);
-	//_m[t].m4 = 0;
-	SetRoadTypes(t, rot);
-	_m[t].m5 = (rot.road_identifier.IsValid() ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	_m[t].m3 = (rtids.tram_identifier.IsValid() ? bits : 0);
+	SetRoadTypes(t, rtids);
+	_m[t].m5 = (rtids.road_identifier.IsValid() ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rot.PresentRoadTypes() << 6;
+	_me[t].m7 = rtids.PresentRoadTypes() << 6;
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 	SetCatenary(t, catenary_flag);
 }

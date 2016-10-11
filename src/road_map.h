@@ -632,4 +632,159 @@ static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDire
 	SetRoadOwner(t, ROADTYPE_TRAM, owner);
 }
 
+static inline RoadTypeIdentifier GetRoadTypeRoad(TileIndex t)
+{
+	return RoadTypeIdentifier(ROADTYPE_ROAD, (RoadSubType)GB(_m[t].m4, 0, 4));
+}
+
+static inline RoadTypeIdentifier GetRoadTypeTram(TileIndex t)
+{
+	return RoadTypeIdentifier(ROADTYPE_TRAM, (RoadSubType)GB(_m[t].m4, 4, 4));
+}
+
+struct RoadTypeIdentifiers {
+	RoadTypeIdentifier road_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
+	RoadTypeIdentifier tram_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
+
+	RoadTypeIdentifiers(TileIndex t) {
+		if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
+			road_identifier = GetRoadTypeRoad(t);
+		}
+
+		if (GetRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
+			tram_identifier = GetRoadTypeTram(t);
+		}
+	}
+
+	RoadTypeIdentifiers(RoadTypeIdentifier rtid) {
+		switch (rtid.basetype) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: road_identifier = rtid; break;
+			case ROADTYPE_TRAM: tram_identifier = rtid; break;
+		}
+	}
+
+	RoadTypeIdentifiers(RoadTypeIdentifier rtid1, RoadTypeIdentifier rtid2) {
+		/* We can't merge 2 road types of the same base type, not yet */
+		assert(rtid1.basetype != rtid2.basetype);
+
+		switch (rtid1.basetype) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: road_identifier = rtid1; break;
+			case ROADTYPE_TRAM: tram_identifier = rtid1; break;
+		}
+
+		switch (rtid2.basetype) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: road_identifier = rtid2; break;
+			case ROADTYPE_TRAM: tram_identifier = rtid2; break;
+		}
+	}
+
+	RoadTypeIdentifiers(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid) {
+		/* We can't merge 2 road types of the same base type, not yet */
+		assert(HasBit(rtids.PresentRoadTypes(), RoadTypeToRoadTypes(rtid.basetype)));
+
+		switch (rtid.basetype) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD:
+				road_identifier = rtid;
+				tram_identifier = rtids.tram_identifier;
+				break;
+			case ROADTYPE_TRAM:
+				road_identifier = rtids.road_identifier;
+				tram_identifier = rtid;
+				break;
+		}
+	}
+
+	RoadTypes PresentRoadTypes() {
+		RoadTypes rot = ROADTYPES_NONE;
+
+		if (road_identifier.IsValid()) {
+			rot |= ROADTYPES_ROAD;
+		}
+
+		if (tram_identifier.IsValid()) {
+			rot |= ROADTYPES_TRAM;
+		}
+
+		return rot;
+	};
+	bool MergeRoadTypes(RoadTypeIdentifier rtid)
+	{
+		/* We can't merge 2 road types of the same base type, not yet */
+		assert(rtid.basetype != road_identifier.basetype);
+		assert(rtid.basetype != tram_identifier.basetype);
+
+		switch (rtid.basetype) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: road_identifier = rtid; break;
+			case ROADTYPE_TRAM: tram_identifier = rtid; break;
+		}
+
+		return true;
+	};
+};
+
+/**
+* Set the present road types of a tile.
+* @param t  The tile to change.
+* @param rtid The new road types identifier.
+*/
+static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
+{
+	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
+
+	if (rtids.road_identifier.IsValid()) {
+		SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
+	}
+
+	if (rtids.road_identifier.IsValid()) {
+		SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
+	}
+
+	//switch (rtid.basetype) {
+	//	default: NOT_REACHED();
+	//	case ROADTYPE_ROAD: SB(_m[t].m4, 0, 4, rtid.subtype); break;
+	//	case ROADTYPE_TRAM: SB(_m[t].m4, 4, 4, rtid.subtype); break;
+	//}
+}
+
+static inline RoadTypeIdentifier RoadTypeIdToRoadTypeIds(RoadTypeIdentifier rtid)
+{
+	RoadTypeIdentifiers r = RoadTypeIdentifiers(rtid);
+}
+
+static inline RoadTypeIdentifiers GetRoadTypeIdentifiers(TileIndex t)
+{
+	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
+	return RoadTypeIdentifiers(t);
+}
+
+/**
+ * Make a normal road tile.
+ * @param t    Tile to make a normal road.
+ * @param bits Road bits to set for all present road types.
+ * @param rot  New present road types.
+ * @param town Town ID if the road is a town-owned road.
+ * @param road New owner of road.
+ * @param tram New owner of tram tracks.
+ * @param catenary_flag Then new value for the catenary flag.
+ */
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifiers rot, TownID town, Owner road, Owner tram, bool catenary_flag = false)
+{
+	SetTileType(t, MP_ROAD);
+	SetTileOwner(t, road);
+	_m[t].m2 = town;
+	_m[t].m3 = (rot.tram_identifier.IsValid() ? bits : 0);
+	//_m[t].m4 = 0;
+	SetRoadTypes(t, rot);
+	_m[t].m5 = (rot.road_identifier.IsValid() ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	SB(_me[t].m6, 2, 4, 0);
+	_me[t].m7 = rot.PresentRoadTypes() << 6;
+	SetRoadOwner(t, ROADTYPE_TRAM, tram);
+	SetCatenary(t, catenary_flag);
+}
+
 #endif /* ROAD_MAP_H */

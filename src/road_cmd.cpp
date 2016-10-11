@@ -878,7 +878,9 @@ do_clear:;
 			case MP_ROAD: {
 				RoadTileType rtt = GetRoadTileType(tile);
 				if (existing == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
-					SetRoadTypes(tile, GetRoadTypes(tile) | RoadTypeToRoadTypes(rt));
+					//SetRoadTypes(tile, GetRoadTypes(tile) | RoadTypeToRoadTypes(rt));
+					SetRoadTypes(tile, RoadTypeIdentifiers(RoadTypeIdentifiers(tile), rtid));
+
 					SetRoadOwner(tile, rt, company);
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
 				}
@@ -912,7 +914,7 @@ do_clear:;
 				break;
 
 			default:
-				MakeRoadNormal(tile, pieces, RoadTypeToRoadTypes(rt), p2, company, company, _catenary_flag);
+				MakeRoadNormal(tile, pieces, rtid, p2, company, company, _catenary_flag);
 				break;
 		}
 
@@ -1833,10 +1835,25 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 			break;
 
 		default: {
-			RoadTypes rts = GetRoadTypes(tile);
-			td->str = (HasBit(rts, ROADTYPE_ROAD) ? _road_tile_strings[GetRoadside(tile)] : STR_LAI_ROAD_DESCRIPTION_TRAMWAY);
-			if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-			if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+			RoadTypeIdentifiers rtids = GetRoadTypeIdentifiers(tile);
+			const RoadtypeInfo *rti;
+
+			if (rtids.road_identifier.IsValid()) {
+				rti = GetRoadTypeInfo(rtids.road_identifier.Pack());
+				td->str = rti->strings.menu_text; // TODO: roadside strings from grf
+				road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+			}
+
+			if (rtids.tram_identifier.IsValid()) {
+				rti = GetRoadTypeInfo(rtids.tram_identifier.Pack());
+				td->str = rti->strings.menu_text; // TODO: roadside strings from grf
+				tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+			}
+
+			//RoadTypes rts = GetRoadTypes(tile);
+			//td->str = (HasBit(rts, ROADTYPE_ROAD) ? _road_tile_strings[GetRoadside(tile)] : STR_LAI_ROAD_DESCRIPTION_TRAMWAY);
+			//if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+			//if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
 			break;
 		}
 	}

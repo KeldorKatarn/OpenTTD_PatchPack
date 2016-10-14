@@ -762,6 +762,7 @@ struct RoadTypeIdentifiers {
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
 	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
+	SB(_me[t].m7, 6, 2, rtids.PresentRoadTypes() << 6);
 
 	if (rtids.road_identifier.IsValid()) {
 		SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
@@ -782,16 +783,16 @@ static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
  * @param tram New owner of tram tracks.
  * @param catenary_flag Then new value for the catenary flag.
  */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifiers rtids, TownID town, Owner road, Owner tram, bool catenary_flag = false)
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier rtid, TownID town, Owner road, Owner tram, bool catenary_flag = false)
 {
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, road);
 	_m[t].m2 = town;
-	_m[t].m3 = (rtids.tram_identifier.IsValid() ? bits : 0);
-	SetRoadTypes(t, rtids);
-	_m[t].m5 = (rtids.road_identifier.IsValid() ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	_m[t].m3 = (rtid.basetype == ROADTYPE_TRAM ? bits : 0);
+	SetRoadTypes(t, RoadTypeIdentifiers(rtid));
+	_m[t].m5 = (rtid.basetype == ROADTYPE_ROAD ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rtids.PresentRoadTypes() << 6;
+	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6;
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 	SetCatenary(t, catenary_flag);
 }

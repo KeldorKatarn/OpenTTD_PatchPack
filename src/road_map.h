@@ -655,12 +655,23 @@ struct RoadTypeIdentifiers {
 	RoadTypeIdentifiers(TileIndex t)
 	{
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
-		if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
-			road_identifier = GetRoadTypeRoad(t);
-		}
+		TileType tt = GetTileType(t);
 
-		if (GetRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
-			tram_identifier = GetRoadTypeTram(t);
+		switch (tt) {
+			case MP_ROAD:
+				if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
+					road_identifier = GetRoadTypeRoad(t);
+				}
+
+				if (GetRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
+					tram_identifier = GetRoadTypeTram(t);
+				}
+				break;
+			case MP_STATION: /* TODO */
+			case MP_TUNNELBRIDGE:
+				road_identifier = GetRoadTypeRoad(t);
+				tram_identifier = GetRoadTypeTram(t);
+				break;
 		}
 	}
 

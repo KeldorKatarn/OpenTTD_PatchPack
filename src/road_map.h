@@ -646,6 +646,9 @@ struct RoadTypeIdentifiers {
 	RoadTypeIdentifier road_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
 	RoadTypeIdentifier tram_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
 
+	/* Creates an INVALID RoadTypeIdentifiers */
+	RoadTypeIdentifiers() {}
+
 	/* Extracts the RoadTypeIdentifiers from the given tile
 	 * @param tile The tile to read the informations from
 	 */
@@ -752,6 +755,19 @@ struct RoadTypeIdentifiers {
 
 		return true;
 	};
+
+	bool HasCatenary()
+	{
+		if (road_identifier.IsValid() && GetRoadTypeInfo(road_identifier.Pack())->flags & ROTFB_CATENARY) {
+			return true;
+		}
+
+		if (tram_identifier.IsValid() && GetRoadTypeInfo(tram_identifier.Pack())->flags & ROTFB_CATENARY) {
+			return true;
+		}
+
+		return false;
+	}
 };
 
 /**
@@ -785,6 +801,40 @@ static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 	if (rtids.tram_identifier.IsValid()) {
 		SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
 	}
+}
+
+static inline bool HasRoadTypeRoad(TileIndex t)
+{
+	return RoadTypeIdentifiers(t).road_identifier.IsValid();
+}
+
+static inline bool HasRoadTypeRoad(uint8 rtid)
+{
+	RoadTypeIdentifier _rtid = RoadTypeIdentifier(rtid);
+
+	return _rtid.IsValid() && _rtid.basetype == ROADTYPE_ROAD;
+}
+
+static inline bool HasRoadTypeRoad(RoadTypeIdentifiers rtids)
+{
+	return rtids.road_identifier.IsValid();
+}
+
+static inline bool HasRoadTypeTram(TileIndex t)
+{
+	return RoadTypeIdentifiers(t).tram_identifier.IsValid();
+}
+
+static inline bool HasRoadTypeTram(uint8 rtid)
+{
+	RoadTypeIdentifier _rtid = RoadTypeIdentifier(rtid);
+
+	return _rtid.IsValid() && _rtid.basetype == ROADTYPE_TRAM;
+}
+
+static inline bool HasRoadTypeTram(RoadTypeIdentifiers rtids)
+{
+	return rtids.tram_identifier.IsValid();
 }
 
 /**

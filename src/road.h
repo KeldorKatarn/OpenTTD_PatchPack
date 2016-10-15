@@ -20,6 +20,7 @@
 #include "core/enum_type.hpp"
 #include "core/smallvec_type.hpp"
 #include "newgrf.h"
+#include "economy_func.h"
 
 /** Roadtype flags. Starts with RO instead of R because R is used for rails */
 enum RoadTypeFlags {
@@ -247,6 +248,34 @@ static inline bool HasPowerOnRoad(uint8 roadtype_identifier)
 	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
 
 	return HasBit(a, b);
+}
+
+
+/**
+ * Returns the cost of building the specified roadtype.
+ * @param rti The roadtype being built.
+ * @return The cost multiplier.
+ */
+static inline Money RoadBuildCost(RoadTypeIdentifier rti)
+{
+	assert(rti.IsValid());
+	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rti.Pack())->cost_multiplier) >> 3;
+}
+
+/**
+ * Returns the 'cost' of clearing the specified railtype.
+ * @param railtype The railtype being removed.
+ * @return The cost.
+ */
+static inline Money RoadClearCost(RoadTypeIdentifier rti)
+{
+	/* Clearing rail in fact earns money, but if the build cost is set
+	 * very low then a loophole exists where money can be made.
+	 * In this case we limit the removal earnings to 3/4s of the build
+	 * cost.
+	 */
+	assert(rti.IsValid());
+	return max(_price[PR_CLEAR_ROAD], -RoadBuildCost(rti) * 3 / 4);
 }
 
 RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);

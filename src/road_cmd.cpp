@@ -878,7 +878,7 @@ do_clear:;
 			case MP_ROAD: {
 				RoadTileType rtt = GetRoadTileType(tile);
 				if (existing == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
-					SetRoadTypes(tile, RoadTypeIdentifiers(RoadTypeIdentifiers(tile), rtid));
+					SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
 
 					SetRoadOwner(tile, rt, company);
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
@@ -891,8 +891,8 @@ do_clear:;
 			case MP_TUNNELBRIDGE: {
 				TileIndex other_end = GetOtherTunnelBridgeEnd(tile);
 
-				SetRoadTypes(other_end, RoadTypeIdentifiers(RoadTypeIdentifiers(other_end), rtid));
-				SetRoadTypes(tile, RoadTypeIdentifiers(RoadTypeIdentifiers(tile), rtid));
+				SetRoadTypes(other_end, CombineTileRoadTypeIds(other_end, rtid));
+				SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
 				SetRoadOwner(other_end, rt, company);
 				SetRoadOwner(tile, rt, company);
 
@@ -908,7 +908,7 @@ do_clear:;
 
 			case MP_STATION:
 				assert(IsDriveThroughStopTile(tile));
-				SetRoadTypes(tile, GetRoadTypes(tile) | RoadTypeToRoadTypes(rt));
+				SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
 				SetRoadOwner(tile, rt, company);
 				break;
 

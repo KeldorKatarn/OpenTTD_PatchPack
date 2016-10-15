@@ -755,10 +755,25 @@ struct RoadTypeIdentifiers {
 };
 
 /**
-* Set the present road types of a tile.
-* @param t  The tile to change.
-* @param rtids The new road types identifiers to set for the tile.
-*/
+ * Combine road types from tile with the new one
+ * @param tile The tile to get the present road types from
+ * @param rtid The road type identifier to add
+ * @return The combined road types
+ */
+static RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdentifier rtid)
+{
+	/* Extract road types from tile, like "GetRoadTypes(tile)" */
+	RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers(tile);
+
+	/* Add the new road type preserving the other one (eg. add tram to road), like "roadtypes | RoadTypeToRoadTypes(rt)" */
+	return RoadTypeIdentifiers(tile_roadtype_ids, rtid);
+}
+
+/**
+ * Set the present road types of a tile.
+ * @param t  The tile to change.
+ * @param rtids The new road types identifiers to set for the tile.
+ */
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
 	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));

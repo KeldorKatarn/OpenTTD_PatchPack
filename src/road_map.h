@@ -776,7 +776,7 @@ static RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdenti
  */
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
-	SetRoadTypes(t, (RoadTypes)(rtids.PresentRoadTypes() << 6));
+	SetRoadTypes(t, rtids.PresentRoadTypes());
 
 	if (rtids.road_identifier.IsValid()) {
 		SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);

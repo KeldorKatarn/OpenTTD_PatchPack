@@ -171,7 +171,7 @@ static inline void MakeBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, D
  * @param d          the direction this ramp must be facing
  * @param r          the road type of the bridge
  */
-static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r, bool catenary_flag = false)
+static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypeIdentifiers r, bool catenary_flag = false)
 {
 	MakeBridgeRamp(t, o, bridgetype, d, TRANSPORT_ROAD, 0);
 	SetRoadOwner(t, ROADTYPE_ROAD, owner_road);

@@ -243,6 +243,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 	RailType railtype = INVALID_RAILTYPE;
 	RoadTypes roadtypes = ROADTYPES_NONE;
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers();
 
 	/* unpack parameters */
 	BridgeType bridge_type = GB(p2, 0, 8);
@@ -254,7 +255,10 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	/* type of bridge */
 	switch (transport_type) {
 		case TRANSPORT_ROAD:
-			roadtypes = Extract<RoadTypes, 8, 2>(p2);
+			rtids = RoadTypeIdentifiers(RoadTypeIdentifier(GB(p2, 8, 2)));
+			roadtypes = rtids.PresentRoadTypes();
+
+			//roadtypes = Extract<RoadTypes, 8, 2>(p2);
 			if (!HasExactlyOneBit(roadtypes) || !HasRoadTypesAvail(company, roadtypes)) return CMD_ERROR;
 			break;
 
@@ -515,9 +519,9 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				}
 				Owner owner_road = HasBit(prev_roadtypes, ROADTYPE_ROAD) ? GetRoadOwner(tile_start, ROADTYPE_ROAD) : company;
 				Owner owner_tram = HasBit(prev_roadtypes, ROADTYPE_TRAM) ? GetRoadOwner(tile_start, ROADTYPE_TRAM) : company;
-				bool catenary_flag = HasBit(p2, 17); // the setting from the selected roadtype
-				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir, roadtypes, catenary_flag);
-				MakeRoadBridgeRamp(tile_end, owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), roadtypes, catenary_flag);
+				//bool catenary_flag = HasBit(p2, 17); // the setting from the selected roadtype
+				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir, rtids, rtids.HasCatenary());
+				MakeRoadBridgeRamp(tile_end, owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), rtids, rtids.HasCatenary());
 				break;
 			}
 

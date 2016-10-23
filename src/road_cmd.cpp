@@ -47,7 +47,7 @@
 
 
 RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
-uint8 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));
@@ -113,7 +113,7 @@ void InitRoadTypes()
 		_sorted_roadtypes_size[rt] = 0;
 		for (RoadSubType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
 			if (_roadtypes[rt][rst].label != 0) {
-				_sorted_roadtypes[rt][_sorted_roadtypes_size[rt]++] = RoadTypeIdentifier(rt, rst).Pack();
+				_sorted_roadtypes[rt][_sorted_roadtypes_size[rt]++] = RoadTypeIdentifier(rt, rst);
 			}
 		}
 		//QSortT(_sorted_roadtypes[rt], _sorted_roadtypes_size[rt], CompareRoadTypes);
@@ -159,7 +159,7 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			rtid.basetype = basetype;
 			rtid.subtype = rt;
 
-			return rtid.Pack();
+			return rtid;
 		}
 	}
 

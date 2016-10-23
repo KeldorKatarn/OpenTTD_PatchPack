@@ -209,13 +209,12 @@ struct RoadTypeIdentifier {
  * @param roadtype the road type which the information is requested for
  * @return The pointer to the RoadtypeInfo
  */
-static inline const RoadtypeInfo *GetRoadTypeInfo(uint8 roadtype_identifier)
+static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
 {
-	RoadTypeIdentifier *rti = new RoadTypeIdentifier(roadtype_identifier);
 	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
-	assert(rti->basetype < ROADTYPE_END);
-	assert(rti->subtype < ROADSUBTYPE_END);
-	return &_roadtypes[rti->basetype][rti->subtype];
+	assert(rtid.basetype < ROADTYPE_END);
+	assert(rtid.subtype < ROADSUBTYPE_END);
+	return &_roadtypes[rtid.basetype][rtid.subtype];
 }
 
 /**
@@ -226,10 +225,10 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(uint8 roadtype_identifier)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool IsCompatibleRoad(uint8 roadtype_identifier)
+static inline bool IsCompatibleRoad(RoadTypeIdentifier rtid)
 {
-	uint8 a = GetRoadTypeInfo(roadtype_identifier)->compatible_roadtypes;
-	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
+	uint8 a = GetRoadTypeInfo(rtid)->compatible_roadtypes;
+	uint8 b = rtid.basetype;
 
 	return HasBit(a, b);
 }
@@ -242,10 +241,10 @@ static inline bool IsCompatibleRoad(uint8 roadtype_identifier)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(uint8 roadtype_identifier)
+static inline bool HasPowerOnRoad(RoadTypeIdentifier rtid)
 {
-	uint8 a = GetRoadTypeInfo(roadtype_identifier)->powered_roadtypes;
-	uint8 b = RoadTypeIdentifier(roadtype_identifier).basetype;
+	uint8 a = GetRoadTypeInfo(rtid)->powered_roadtypes;
+	uint8 b = rtid.basetype;
 
 	return HasBit(a, b);
 }
@@ -256,10 +255,10 @@ static inline bool HasPowerOnRoad(uint8 roadtype_identifier)
  * @param rti The roadtype being built.
  * @return The cost multiplier.
  */
-static inline Money RoadBuildCost(RoadTypeIdentifier rti)
+static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 {
-	assert(rti.IsValid());
-	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rti.Pack())->cost_multiplier) >> 3;
+	assert(rtid.IsValid());
+	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rtid)->cost_multiplier) >> 3;
 }
 
 /**
@@ -267,15 +266,15 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rti)
  * @param railtype The railtype being removed.
  * @return The cost.
  */
-static inline Money RoadClearCost(RoadTypeIdentifier rti)
+static inline Money RoadClearCost(RoadTypeIdentifier rtid)
 {
 	/* Clearing rail in fact earns money, but if the build cost is set
 	 * very low then a loophole exists where money can be made.
 	 * In this case we limit the removal earnings to 3/4s of the build
 	 * cost.
 	 */
-	assert(rti.IsValid());
-	return max(_price[PR_CLEAR_ROAD], -RoadBuildCost(rti) * 3 / 4);
+	assert(rtid.IsValid());
+	return max(_price[PR_CLEAR_ROAD], -RoadBuildCost(rtid) * 3 / 4);
 }
 
 RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);
@@ -284,7 +283,7 @@ void ResetRoadTypes();
 void InitRoadTypes();
 RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype);
 
-extern uint8 _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
+extern RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 extern uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
 /**

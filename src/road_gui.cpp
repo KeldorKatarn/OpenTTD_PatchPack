@@ -1152,7 +1152,7 @@ DropDownList *GetRoadTypeDropDownList()
 
 			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][index]);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index], !HasBit(c->avail_roadtypes, rt));
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index].Pack(), !HasBit(c->avail_roadtypes, rt));
 			*list->Append() = item;
 		}
 	}

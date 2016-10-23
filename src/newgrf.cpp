@@ -4420,7 +4420,7 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 					rtid = AllocateRoadType(rtl, basetype);
 				}
 
-				_cur.grffile->roadtype_map[basetype][id + i] = rtid.Pack();
+				_cur.grffile->roadtype_map[basetype][id + i] = rtid.subtype;
 				break;
 			}
 			case 0x09: // Toolbar caption of roadtype
@@ -4436,7 +4436,7 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				break;
 
 			case 0x1D: // Alternate road type label list
-				if (_cur.grffile->roadtype_map[basetype][id + i] != INVALID_ROADTYPE) {
+				if (_cur.grffile->roadtype_map[basetype][id + i] != INVALID_ROADSUBTYPE) {
 					int n = buf->ReadByte();
 					for (int j = 0; j != n; j++) {
 						*_roadtypes[basetype][_cur.grffile->roadtype_map[basetype][id + i]].alternate_labels.Append() = BSWAP32(buf->ReadDWord());
@@ -5536,7 +5536,7 @@ static void RoadTypeMapSpriteGroup(ByteReader *buf, uint8 idcount, RoadType base
 
 		extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 		for (uint i = 0; i < idcount; i++) {
-			if (roadtypes[i] != INVALID_ROADTYPE) {
+			if (roadtypes[i] != INVALID_ROADSUBTYPE) {
 				RoadtypeInfo *rti = &_roadtypes[basetype][roadtypes[i]];
 
 				rti->grffile[ctype] = _cur.grffile;

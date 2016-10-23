@@ -4251,8 +4251,13 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 
 	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 
-	if (id + numinfo > ROADTYPE_END) {
-		grfmsg(1, "RoadTypeChangeInfo: Road type %u is invalid, max %u, ignoring", id + numinfo, ROADTYPE_END);
+	if (basetype > ROADTYPE_END) {
+		grfmsg(1, "RoadTypeChangeInfo: Road type %u is invalid, max %u, ignoring", basetype, ROADTYPE_END);
+		return CIR_INVALID_ID;
+	}
+
+	if (id + numinfo > ROADSUBTYPE_END) {
+		grfmsg(1, "RoadTypeChangeInfo: Road type %u is invalid, max %u, ignoring", id + numinfo, ROADSUBTYPE_END);
 		return CIR_INVALID_ID;
 	}
 
@@ -4392,8 +4397,13 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 
 	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 
-	if (id + numinfo > ROADTYPE_END) {
-		grfmsg(1, "RoadTypeReserveInfo: Road type %u is invalid, max %u, ignoring", id + numinfo, ROADTYPE_END);
+	if (basetype > ROADTYPE_END) {
+		grfmsg(1, "RoadTypeReserveInfo: Road type %u is invalid, max %u, ignoring", basetype, ROADTYPE_END);
+		return CIR_INVALID_ID;
+	}
+
+	if (id + numinfo > ROADSUBTYPE_END) {
+		grfmsg(1, "RoadTypeReserveInfo: Road sub type %u is invalid, max %u, ignoring", id + numinfo, ROADSUBTYPE_END);
 		return CIR_INVALID_ID;
 	}
 

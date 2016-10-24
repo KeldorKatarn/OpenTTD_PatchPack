@@ -10,6 +10,7 @@
 /** @file group_cmd.cpp Handling of the engine groups */
 
 #include "stdafx.h"
+#include <algorithm>
 #include "cmd_helper.h"
 #include "command_func.h"
 #include "train.h"
@@ -24,6 +25,7 @@
 #include "company_func.h"
 #include "core/pool_func.hpp"
 #include "order_backup.h"
+#include "tracerestrict.h"
 #include "tbtr_template_vehicle.h"
 
 #include "table/strings.h"
@@ -354,6 +356,9 @@ CommandCost CmdDeleteGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 		/* Delete all template replacements using the just deleted group */
 		deleteIllegalTemplateReplacements(g->index);
 
+		/* notify tracerestrict that group is about to be deleted */
+		TraceRestrictRemoveGroupID(g->index);
+
 		/* Delete the Replace Vehicle Windows */
 		DeleteWindowById(WC_REPLACE_VEHICLE, g->vehicle_type);
 		delete g;
@@ -542,6 +547,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 	Order *first = NULL;
 	Order *last = NULL;
 	Order *order = v->GetOrder(start);
+	std::vector<Order*> unique_orders;
 
 	if (order == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
@@ -549,8 +555,9 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 
 	do {
 		if (order->IsType(OT_GOTO_STATION)) {
-			if(first == NULL) first = order;
-			last = order;
+			if (std::find_if(unique_orders.begin(), unique_orders.end(), [order](Order* o) { return o->GetDestination() == order->GetDestination(); }) == unique_orders.end()) {
+				unique_orders.push_back(order);
+			}
 		}
 
 		oid++;
@@ -561,7 +568,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		}
 	} while (oid != start);
 
-	if(last == NULL || first == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+	if (unique_orders.empty()) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 	/* Create the name */
 
@@ -572,10 +579,10 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		static char stationname_first[64] = { "" };
 		static char stationname_last[64] = { "" };
 
-		SetDParam(0, first->GetDestination());
+		SetDParam(0, unique_orders.front()->GetDestination());
 		GetString(stationname_first, STR_STATION_NAME, lastof(stationname_first));
 
-		SetDParam(0, last->GetDestination());
+		SetDParam(0, unique_orders.back()->GetDestination());
 		GetString(stationname_last, STR_STATION_NAME, lastof(stationname_last));
 
 		//if(strnatcmp(stationname_first, stationname_last) > 0) {  // Sort by name
@@ -583,15 +590,15 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		//	first = last;
 		//	last = temp;
 		//}
-		SetDParam(0, first->GetDestination());
-		SetDParam(1, last->GetDestination());
+		SetDParam(0, unique_orders.front()->GetDestination());
+		SetDParam(1, unique_orders.back()->GetDestination());
 		GetString(str, STR_GROUP_SPECIFIC_NAME_STATION, lastof(str));
 
 	}
 	else { //Use town names
 		
-		Station *station_first = Station::GetIfValid(first->GetDestination());
-		Station *station_last = Station::GetIfValid(last->GetDestination());
+		Station *station_first = Station::GetIfValid(unique_orders.front()->GetDestination());
+		Station *station_last = Station::GetIfValid(unique_orders.back()->GetDestination());
 				
 		if(station_last == NULL || station_first == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 

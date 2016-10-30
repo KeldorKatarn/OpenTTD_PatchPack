@@ -4709,7 +4709,7 @@ static void ReserveChangeInfo(ByteReader *buf)
 {
 	uint8 feature  = buf->ReadByte();
 
-	if (feature != GSF_CARGOES && feature != GSF_GLOBALVAR && feature != GSF_RAILTYPES && feature != GSF_ROADTYPES) return;
+	if (feature != GSF_CARGOES && feature != GSF_GLOBALVAR && feature != GSF_RAILTYPES && feature != GSF_ROADTYPES && feature != GSF_TRAMTYPES) return;
 
 	uint8 numprops = buf->ReadByte();
 	uint8 numinfo  = buf->ReadByte();

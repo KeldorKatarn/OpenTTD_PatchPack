@@ -1382,6 +1382,9 @@ static void DrawRoadBits(TileInfo *ti)
 	RoadBits road = GetRoadBits(ti->tile, ROADTYPE_ROAD);
 	RoadBits tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
 
+	const RoadtypeInfo* road_rti = GetRoadTypeInfo(GetRoadTypeRoad(ti->tile));
+	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(GetRoadTypeTram(ti->tile));
+
 	SpriteID image = 0;
 	PaletteID pal = PAL_NONE;
 
@@ -1393,7 +1396,15 @@ static void DrawRoadBits(TileInfo *ti)
 		if (ti->tileh != SLOPE_FLAT) image = _road_sloped_sprites[ti->tileh - 1] + SPR_ROAD_SLOPE_START;
 	}
 
-	if (image == 0) image = _road_tile_sprites_1[road != ROAD_NONE ? road : tram];
+	if (image == 0) {
+		if (road != ROAD_NONE) {
+			image = road_rti->base_sprites.roadbits[road];
+		} else {
+			image = tram_rti->base_sprites.roadbits[tram];
+		}
+	}
+
+	//if (image == 0) image = _road_tile_sprites_1[road != ROAD_NONE ? road : tram];
 
 	Roadside roadside = GetRoadside(ti->tile);
 
@@ -1413,11 +1424,21 @@ static void DrawRoadBits(TileInfo *ti)
 	/* For tram we overlay the road graphics with either tram tracks only
 	 * (when there is actual road beneath the trams) or with tram tracks
 	 * and some dirts which hides the road graphics */
+	//if (tram != ROAD_NONE) {
+	//	if (ti->tileh != SLOPE_FLAT) {
+	//		image = _road_sloped_sprites[ti->tileh - 1] + SPR_TRAMWAY_SLOPED_OFFSET;
+	//	} else {
+	//		image = _road_tile_sprites_1[tram] - SPR_ROAD_Y;
+	//	}
+	//	image += (road == ROAD_NONE) ? SPR_TRAMWAY_TRAM : SPR_TRAMWAY_OVERLAY;
+	//	DrawGroundSprite(image, pal);
+	//}
+
 	if (tram != ROAD_NONE) {
 		if (ti->tileh != SLOPE_FLAT) {
-			image = _road_sloped_sprites[ti->tileh - 1] + SPR_TRAMWAY_SLOPED_OFFSET;
+			image = _road_sloped_sprites[ti->tileh - 1] + tram_rti->base_sprites.slopes_offset;
 		} else {
-			image = _road_tile_sprites_1[tram] - SPR_ROAD_Y;
+			image = tram_rti->base_sprites.roadbits[tram] - SPR_ROAD_Y;
 		}
 		image += (road == ROAD_NONE) ? SPR_TRAMWAY_TRAM : SPR_TRAMWAY_OVERLAY;
 		DrawGroundSprite(image, pal);
@@ -1426,13 +1447,15 @@ static void DrawRoadBits(TileInfo *ti)
 	if (road != ROAD_NONE) {
 		DisallowedRoadDirections drd = GetDisallowedRoadDirections(ti->tile);
 		if (drd != DRD_NONE) {
-			DrawGroundSpriteAt(SPR_ONEWAY_BASE + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
+			DrawGroundSpriteAt(road_rti->base_sprites.road_oneway_base + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
+			//DrawGroundSpriteAt(SPR_ONEWAY_BASE + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
 		}
 	}
 
 	if (HasRoadWorks(ti->tile)) {
 		/* Road works */
-		DrawGroundSprite((road | tram) & ROAD_X ? SPR_EXCAVATION_X : SPR_EXCAVATION_Y, PAL_NONE);
+		DrawGroundSprite((road | tram) & ROAD_X ? road_rti->base_sprites.road_excavation_x : road_rti->base_sprites.road_excavation_y, PAL_NONE);
+		//DrawGroundSprite((road | tram) & ROAD_X ? SPR_EXCAVATION_X : SPR_EXCAVATION_Y, PAL_NONE);
 		return;
 	}
 

@@ -53,10 +53,18 @@ enum RoadTypeSpriteGroup {
 typedef SmallVector<RoadTypeLabel, 4> RoadTypeLabelList;
 
 struct RoadtypeInfo {
+	struct {
+		SpriteID roadbits[16];        ///< all the different roadbits combinations
+		SpriteID slopes_offset;       ///< offset for the different sprites for slopes
+		SpriteID road_oneway_base;    ///< base sprite for oneway road
+		SpriteID road_excavation_x;   ///< road excavation in X direction
+		SpriteID road_excavation_y;   ///< road excavation in Y direction
+	} base_sprites;
+
 	/**
-	* struct containing the sprites for the rail GUI. @note only sprites referred to
-	* directly in the code are listed
-	*/
+	 * struct containing the sprites for the rail GUI. @note only sprites referred to
+	 * directly in the code are listed
+	 */
 	struct {
 		SpriteID build_x_road;        ///< button for building single rail in X direction
 		SpriteID build_y_road;        ///< button for building single rail in Y direction
@@ -132,8 +140,8 @@ struct RoadtypeInfo {
 	uint16 maintenance_multiplier;
 
 	/**
-	* Acceleration type of this road type
-	*/
+	 * Acceleration type of this road type
+	 */
 	uint8 acceleration_type;
 
 	/**
@@ -182,13 +190,13 @@ struct RoadtypeInfo {
 	byte sorting_order;
 
 	/**
-	* NewGRF providing the Action3 for the roadtype. NULL if not available.
-	*/
+	 * NewGRF providing the Action3 for the roadtype. NULL if not available.
+	 */
 	const GRFFile *grffile[ROTSG_END];
 
 	/**
-	* Sprite groups for resolving sprites
-	*/
+	 * Sprite groups for resolving sprites
+	 */
 	const SpriteGroup *group[ROTSG_END];
 };
 

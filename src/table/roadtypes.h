@@ -21,6 +21,17 @@
 static const RoadtypeInfo _original_roadtypes[] = {
 	/** Road */
 	{
+		{
+			{
+					0, 0x546, 0x545, 0x53B, 0x544, 0x534, 0x53E, 0x539,
+				0x543, 0x53C, 0x535, 0x538, 0x53D, 0x537, 0x53A, 0x536
+			},
+			SPR_ROAD_SLOPE_START,
+			SPR_ONEWAY_BASE,
+			SPR_EXCAVATION_X,
+			SPR_EXCAVATION_Y
+		},
+
 		/* GUI sprites */
 		{
 			SPR_IMG_ROAD_X_DIR,
@@ -79,10 +90,10 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		ROTFB_NONE,
 
 		/* cost multiplier */
-		8,
+		2,
 
 		/* maintenance cost multiplier */
-		8,
+		2,
 
 		/* acceleration type */
 		0,
@@ -119,6 +130,17 @@ static const RoadtypeInfo _original_roadtypes[] = {
 static const RoadtypeInfo _original_tramtypes[] = {
 	/** Tram */
 	{
+		{
+			{
+					0, 0x546, 0x545, 0x53B, 0x544, 0x534, 0x53E, 0x539,
+				0x543, 0x53C, 0x535, 0x538, 0x53D, 0x537, 0x53A, 0x536
+			},
+			SPR_TRAMWAY_SLOPED_OFFSET,
+			NULL,
+			NULL,
+			NULL
+		},
+
 		/* GUI sprites */
 		{
 			SPR_IMG_TRAMWAY_X_DIR,
@@ -177,10 +199,10 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		ROTFB_NONE,
 
 		/* cost multiplier */
-		8,
+		2,
 
 		/* maintenance cost multiplier */
-		8,
+		2,
 
 		/* acceleration type */
 		0,

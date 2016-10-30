@@ -93,9 +93,9 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
  * @param second The roadtype to compare.
  * @return True iff the first should be sorted before the second.
  */
-static int CDECL CompareRoadTypes(const uint32 first, const uint32 second)
+static int CDECL CompareRoadTypes(const RoadTypeIdentifier *first, const RoadTypeIdentifier *second)
 {
-	return GetRoadTypeInfo(first)->sorting_order - GetRoadTypeInfo(second)->sorting_order;
+	return GetRoadTypeInfo(*first)->sorting_order - GetRoadTypeInfo(*second)->sorting_order;
 }
 
 /**
@@ -116,7 +116,7 @@ void InitRoadTypes()
 				_sorted_roadtypes[rt][_sorted_roadtypes_size[rt]++] = RoadTypeIdentifier(rt, rst);
 			}
 		}
-		//QSortT(_sorted_roadtypes[rt], _sorted_roadtypes_size[rt], CompareRoadTypes);
+		QSortT(_sorted_roadtypes[rt], _sorted_roadtypes_size[rt], CompareRoadTypes);
 	}
 }
 

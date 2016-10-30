@@ -658,6 +658,7 @@ struct RoadTypeIdentifiers {
 		TileType tt = GetTileType(t);
 
 		switch (tt) {
+			default: NOT_REACHED();
 			case MP_ROAD:
 				if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
 					road_identifier = GetRoadTypeRoad(t);
@@ -787,7 +788,7 @@ struct RoadTypeIdentifiers {
  * @param rtid The road type identifier to add
  * @return The combined road types
  */
-static RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdentifier rtid)
+static inline RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdentifier rtid)
 {
 	/* Extract road types from tile, like "GetRoadTypes(tile)" */
 	RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers(tile);

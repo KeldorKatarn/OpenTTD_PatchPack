@@ -136,9 +136,9 @@ static const RoadtypeInfo _original_tramtypes[] = {
 				0x543, 0x53C, 0x535, 0x538, 0x53D, 0x537, 0x53A, 0x536
 			},
 			SPR_TRAMWAY_SLOPED_OFFSET,
-			NULL,
-			NULL,
-			NULL
+			0,
+			0,
+			0
 		},
 
 		/* GUI sprites */

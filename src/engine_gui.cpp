@@ -19,6 +19,7 @@
 #include "vehicle_func.h"
 #include "company_func.h"
 #include "rail.h"
+#include "road.h"
 #include "settings_type.h"
 #include "train.h"
 #include "roadveh.h"

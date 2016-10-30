@@ -29,6 +29,7 @@
 #include "hotkeys.h"
 #include "road_gui.h"
 #include "zoom_func.h"
+#include "engine_base.h"
 
 #include "widgets/road_widget.h"
 
@@ -60,6 +61,7 @@ DECLARE_ENUM_AS_BIT_SET(RoadFlags)
 static RoadFlags _place_road_flag;
 
 static RoadType _cur_roadtype;
+static uint8 _cur_roadtype_id;
 
 static DiagDirection _road_depot_orientation;
 static DiagDirection _road_station_picker_orientation;
@@ -109,52 +111,6 @@ void CcBuildRoadTunnel(const CommandCost &result, TileIndex start_tile, uint32 p
 		SetRedErrorSquare(_build_tunnel_endtile);
 	}
 }
-
-/** Structure holding information per roadtype for several functions */
-struct RoadTypeInfo {
-	StringID err_build_road;        ///< Building a normal piece of road
-	StringID err_remove_road;       ///< Removing a normal piece of road
-	StringID err_depot;             ///< Building a depot
-	StringID err_build_station[2];  ///< Building a bus or truck station
-	StringID err_remove_station[2]; ///< Removing of a bus or truck station
-
-	StringID picker_title[2];       ///< Title for the station picker for bus or truck stations
-	StringID picker_tooltip[2];     ///< Tooltip for the station picker for bus or truck stations
-
-	SpriteID cursor_nesw;           ///< Cursor for building NE and SW bits
-	SpriteID cursor_nwse;           ///< Cursor for building NW and SE bits
-	SpriteID cursor_autoroad;       ///< Cursor for building autoroad
-};
-
-/** What errors/cursors must be shown for several types of roads */
-static const RoadTypeInfo _road_type_infos[] = {
-	{
-		STR_ERROR_CAN_T_BUILD_ROAD_HERE,
-		STR_ERROR_CAN_T_REMOVE_ROAD_FROM,
-		STR_ERROR_CAN_T_BUILD_ROAD_DEPOT,
-		{ STR_ERROR_CAN_T_BUILD_BUS_STATION,         STR_ERROR_CAN_T_BUILD_TRUCK_STATION          },
-		{ STR_ERROR_CAN_T_REMOVE_BUS_STATION,        STR_ERROR_CAN_T_REMOVE_TRUCK_STATION         },
-		{ STR_STATION_BUILD_BUS_ORIENTATION,         STR_STATION_BUILD_TRUCK_ORIENTATION          },
-		{ STR_STATION_BUILD_BUS_ORIENTATION_TOOLTIP, STR_STATION_BUILD_TRUCK_ORIENTATION_TOOLTIP  },
-
-		SPR_CURSOR_ROAD_NESW,
-		SPR_CURSOR_ROAD_NWSE,
-		SPR_CURSOR_AUTOROAD,
-	},
-	{
-		STR_ERROR_CAN_T_BUILD_TRAMWAY_HERE,
-		STR_ERROR_CAN_T_REMOVE_TRAMWAY_FROM,
-		STR_ERROR_CAN_T_BUILD_TRAM_DEPOT,
-		{ STR_ERROR_CAN_T_BUILD_PASSENGER_TRAM_STATION,         STR_ERROR_CAN_T_BUILD_CARGO_TRAM_STATION         },
-		{ STR_ERROR_CAN_T_REMOVE_PASSENGER_TRAM_STATION,        STR_ERROR_CAN_T_REMOVE_CARGO_TRAM_STATION        },
-		{ STR_STATION_BUILD_PASSENGER_TRAM_ORIENTATION,         STR_STATION_BUILD_CARGO_TRAM_ORIENTATION         },
-		{ STR_STATION_BUILD_PASSENGER_TRAM_ORIENTATION_TOOLTIP, STR_STATION_BUILD_CARGO_TRAM_ORIENTATION_TOOLTIP },
-
-		SPR_CURSOR_TRAMWAY_NESW,
-		SPR_CURSOR_TRAMWAY_NWSE,
-		SPR_CURSOR_AUTOTRAM,
-	},
-};
 
 /**
  * If required, connects a new structure to an existing road or tram by building the missing roadbit.
@@ -309,11 +265,14 @@ static bool RoadToolbar_CtrlChanged(Window *w)
 
 /** Road toolbar window handler. */
 struct BuildRoadToolbarWindow : Window {
-	int last_started_action; ///< Last started user action.
+	uint8 roadtype_identifier; ///< Road type to build.
+	const RoadtypeInfo *rti;          ///< Informations about current road type
+	int last_started_action;    ///< Last started user action.
 
-	BuildRoadToolbarWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc)
+	BuildRoadToolbarWindow(WindowDesc *desc, uint8 roadtype_identifier) : Window(desc)
 	{
-		this->InitNested(window_number);
+		this->InitNested(ROADTYPE_ROAD);
+		this->SetupRoadToolbar(roadtype_identifier);
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,
 				WID_ROT_ONE_WAY,
@@ -350,6 +309,36 @@ struct BuildRoadToolbarWindow : Window {
 			DeleteWindowById(WC_BUS_STATION, TRANSPORT_ROAD);
 			DeleteWindowById(WC_TRUCK_STATION, TRANSPORT_ROAD);
 		}
+	}
+
+	/**
+	* Configures the road toolbar for roadtype given
+	* @param roadtype the roadtype to display
+	*/
+	void SetupRoadToolbar(uint8 roadtype_identifier)
+	{
+		//assert(roadtype < ROADTYPE_END);
+
+		this->roadtype_identifier = roadtype_identifier;
+		this->rti = GetRoadTypeInfo(roadtype_identifier);
+
+		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
+		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_Y)->widget_data = rti->gui_sprites.build_y_road;
+		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
+		this->GetWidget<NWidgetCore>(WID_ROT_DEPOT)->widget_data = rti->gui_sprites.build_depot;
+		this->GetWidget<NWidgetCore>(WID_ROT_BUS_STATION)->widget_data = rti->gui_sprites.build_bus_station;
+		this->GetWidget<NWidgetCore>(WID_ROT_TRUCK_STATION)->widget_data = rti->gui_sprites.build_truck_station;
+		this->GetWidget<NWidgetCore>(WID_ROT_BUILD_TUNNEL)->widget_data = rti->gui_sprites.build_tunnel;
+	}
+
+	/**
+	* Switch to another road type.
+	* @param roadtype New road type.
+	*/
+	void ModifyRoadType(RoadType roadtype)
+	{
+		this->SetupRoadToolbar(roadtype);
+		this->ReInit();
 	}
 
 	/**
@@ -409,17 +398,17 @@ struct BuildRoadToolbarWindow : Window {
 		_one_way_button_clicked = false;
 		switch (widget) {
 			case WID_ROT_ROAD_X:
-				HandlePlacePushButton(this, WID_ROT_ROAD_X, _road_type_infos[_cur_roadtype].cursor_nwse, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_ROAD_X, GetRoadTypeInfo(roadtype_identifier)->cursor.road_nwse, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
 			case WID_ROT_ROAD_Y:
-				HandlePlacePushButton(this, WID_ROT_ROAD_Y, _road_type_infos[_cur_roadtype].cursor_nesw, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_ROAD_Y, GetRoadTypeInfo(roadtype_identifier)->cursor.road_swne, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
 			case WID_ROT_AUTOROAD:
-				HandlePlacePushButton(this, WID_ROT_AUTOROAD, _road_type_infos[_cur_roadtype].cursor_autoroad, HT_RECT);
+				HandlePlacePushButton(this, WID_ROT_AUTOROAD, GetRoadTypeInfo(roadtype_identifier)->cursor.autoroad, HT_RECT);
 				this->last_started_action = widget;
 				break;
 
@@ -430,7 +419,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_DEPOT:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_DEPOT, SPR_CURSOR_ROAD_DEPOT, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(roadtype_identifier)->cursor.depot, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
 				}
@@ -438,7 +427,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_BUS_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, SPR_CURSOR_BUS_STATION, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.bus_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
 				}
@@ -446,7 +435,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_TRUCK_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
-				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, SPR_CURSOR_TRUCK_STATION, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.truck_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
 				}
@@ -465,7 +454,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUILD_TUNNEL:
-				HandlePlacePushButton(this, WID_ROT_BUILD_TUNNEL, SPR_CURSOR_ROAD_TUNNEL, HT_SPECIAL);
+				HandlePlacePushButton(this, WID_ROT_BUILD_TUNNEL, GetRoadTypeInfo(roadtype_identifier)->cursor.tunnel, HT_SPECIAL);
 				this->last_started_action = widget;
 				break;
 
@@ -519,7 +508,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_DEPOT:
 				DoCommandP(tile, _cur_roadtype << 2 | _road_depot_orientation, 0,
-						CMD_BUILD_ROAD_DEPOT | CMD_MSG(_road_type_infos[_cur_roadtype].err_depot), CcRoadDepot);
+						CMD_BUILD_ROAD_DEPOT | CMD_MSG(rti->strings.err_depot), CcRoadDepot);
 				break;
 
 			case WID_ROT_BUS_STATION:
@@ -610,7 +599,7 @@ struct BuildRoadToolbarWindow : Window {
 				default: NOT_REACHED();
 				case DDSP_BUILD_BRIDGE:
 					if (!_settings_client.gui.persistent_buildingtools) ResetObjectToPlace();
-					ShowBuildBridgeWindow(start_tile, end_tile, TRANSPORT_ROAD, RoadTypeToRoadTypes(_cur_roadtype));
+					ShowBuildBridgeWindow(start_tile, end_tile, TRANSPORT_ROAD, _cur_roadtype_id, HasBit(rti->flags, ROTFB_CATENARY));
 					break;
 
 				case DDSP_DEMOLISH_AREA:
@@ -624,31 +613,35 @@ struct BuildRoadToolbarWindow : Window {
 					 * Use the first three bits (0x07) if dir == Y
 					 * else use the last 2 bits (X dir has
 					 * not the 3rd bit set) */
+
+					/* Even if _cur_roadtype_id is a uint8 we only use 5 bits so
+					 * we could ignore the last 3 bits and reuse them for other
+					 * flags */
 					_place_road_flag = (RoadFlags)((_place_road_flag & RF_DIR_Y) ? (_place_road_flag & 0x07) : (_place_road_flag >> 3));
 
-					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype << 3) | (_one_way_button_clicked << 5),
+					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype_id << 3) | (_one_way_button_clicked << 8),
 							_remove_button_clicked ?
-							CMD_REMOVE_LONG_ROAD | CMD_MSG(_road_type_infos[_cur_roadtype].err_remove_road) :
-							CMD_BUILD_LONG_ROAD | CMD_MSG(_road_type_infos[_cur_roadtype].err_build_road), CcPlaySound_SPLAT_OTHER);
+							CMD_REMOVE_LONG_ROAD | CMD_MSG(rti->strings.err_remove_road) :
+							CMD_BUILD_LONG_ROAD | CMD_MSG(rti->strings.err_build_road), CcPlaySound_SPLAT_OTHER);
 					break;
 
 				case DDSP_BUILD_BUSSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(_road_type_infos[_cur_roadtype].err_build_station[ROADSTOP_BUS]));
+					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_BUS]));
 					break;
 
 				case DDSP_BUILD_TRUCKSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(_road_type_infos[_cur_roadtype].err_build_station[ROADSTOP_TRUCK]));
+					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_TRUCK]));
 					break;
 
 				case DDSP_REMOVE_BUSSTOP: {
 					TileArea ta(start_tile, end_tile);
-					DoCommandP(ta.tile, ta.w | ta.h << 8, (_ctrl_pressed << 1) | ROADSTOP_BUS, CMD_REMOVE_ROAD_STOP | CMD_MSG(_road_type_infos[_cur_roadtype].err_remove_station[ROADSTOP_BUS]), CcPlaySound_SPLAT_OTHER);
+					DoCommandP(ta.tile, ta.w | ta.h << 8, (_ctrl_pressed << 1) | ROADSTOP_BUS, CMD_REMOVE_ROAD_STOP | CMD_MSG(rti->strings.err_remove_station[ROADSTOP_BUS]), CcPlaySound_SPLAT_OTHER);
 					break;
 				}
 
 				case DDSP_REMOVE_TRUCKSTOP: {
 					TileArea ta(start_tile, end_tile);
-					DoCommandP(ta.tile, ta.w | ta.h << 8, (_ctrl_pressed << 1) | ROADSTOP_TRUCK, CMD_REMOVE_ROAD_STOP | CMD_MSG(_road_type_infos[_cur_roadtype].err_remove_station[ROADSTOP_TRUCK]), CcPlaySound_SPLAT_OTHER);
+					DoCommandP(ta.tile, ta.w | ta.h << 8, (_ctrl_pressed << 1) | ROADSTOP_TRUCK, CMD_REMOVE_ROAD_STOP | CMD_MSG(rti->strings.err_remove_station[ROADSTOP_TRUCK]), CcPlaySound_SPLAT_OTHER);
 					break;
 				}
 			}
@@ -802,13 +795,15 @@ static WindowDesc _build_tramway_desc(
  *
  * @return newly opened road toolbar, or NULL if the toolbar could not be opened.
  */
-Window *ShowBuildRoadToolbar(RoadType roadtype)
+Window *ShowBuildRoadToolbar(uint32 roadtype_id)
 {
 	if (!Company::IsValidID(_local_company)) return NULL;
-	_cur_roadtype = roadtype;
+	_cur_roadtype = RoadTypeIdentifier(roadtype_id).basetype;
+	_cur_roadtype_id = roadtype_id;
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
-	return AllocateWindowDescFront<BuildRoadToolbarWindow>(roadtype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, TRANSPORT_ROAD);
+
+	return new BuildRoadToolbarWindow(_cur_roadtype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
 }
 
 static const NWidgetPart _nested_build_road_scen_widgets[] = {
@@ -853,7 +848,8 @@ static WindowDesc _build_road_scen_desc(
 Window *ShowBuildRoadScenToolbar()
 {
 	_cur_roadtype = ROADTYPE_ROAD;
-	return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
+	//return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
+	return new BuildRoadToolbarWindow(&_build_road_scen_desc, ROADTYPE_ROAD);
 }
 
 struct BuildRoadDepotWindow : public PickerWindowBase {
@@ -962,9 +958,9 @@ struct BuildRoadStationWindow : public PickerWindowBase {
 				WID_BROS_STATION_SW,
 				WID_BROS_STATION_NW,
 				WIDGET_LIST_END);
-
-		this->GetWidget<NWidgetCore>(WID_BROS_CAPTION)->widget_data = _road_type_infos[_cur_roadtype].picker_title[rs];
-		for (uint i = WID_BROS_STATION_NE; i < WID_BROS_LT_OFF; i++) this->GetWidget<NWidgetCore>(i)->tool_tip = _road_type_infos[_cur_roadtype].picker_tooltip[rs];
+		const RoadtypeInfo *rti = GetRoadTypeInfo(_cur_roadtype_id);
+		this->GetWidget<NWidgetCore>(WID_BROS_CAPTION)->widget_data = rti->strings.picker_title[rs];
+		for (uint i = WID_BROS_STATION_NE; i < WID_BROS_LT_OFF; i++) this->GetWidget<NWidgetCore>(i)->tool_tip = rti->strings.picker_tooltip[rs];
 
 		this->LowerWidget(_road_station_picker_orientation + WID_BROS_STATION_NE);
 		this->LowerWidget(_settings_client.gui.station_show_coverage + WID_BROS_LT_OFF);
@@ -1115,4 +1111,51 @@ void InitializeRoadGui()
 {
 	_road_depot_orientation = DIAGDIR_NW;
 	_road_station_picker_orientation = DIAGDIR_NW;
+}
+
+/**
+ * I really don't know why rail_gui.cpp has this too, shouldn't be included in the other one?
+ */
+void InitializeRoadGUI()
+{
+	BuildRoadToolbarWindow *w = dynamic_cast<BuildRoadToolbarWindow *>(FindWindowById(WC_BUILD_TOOLBAR, TRANSPORT_ROAD));
+	if (w != NULL) w->ModifyRoadType(_cur_roadtype);
+}
+
+DropDownList *GetRoadTypeDropDownList()
+{
+	RoadTypes used_roadtypes = ROADTYPES_NONE;
+
+	/* Road is always visible and available. */
+	used_roadtypes |= ROADTYPES_ROAD;
+
+	/* Tram is only visible when there will be a tram, and available when that has been introduced. */
+	Engine *e;
+	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+		if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
+		if (!HasBit(e->info.misc_flags, EF_ROAD_TRAM)) continue;
+
+		used_roadtypes |= ROADTYPES_TRAM;
+		break;
+	}
+
+	const Company *c = Company::Get(_local_company);
+	DropDownList *list = new DropDownList();
+	RoadType rt;
+
+	/* The macro is broken */
+	//FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
+	for (rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
+		for (uint8 index = 0; index < _sorted_roadtypes_size[rt]; index++) {
+			/* If it's not used ever, don't show it to the user. */
+			if (!HasBit(used_roadtypes, rt)) continue;
+
+			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][index]);
+
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index].Pack(), !HasBit(c->avail_roadtypes, rt));
+			*list->Append() = item;
+		}
+	}
+
+	return list;
 }

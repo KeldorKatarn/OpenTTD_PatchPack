@@ -13,6 +13,7 @@
 #include "error.h"
 #include "command_func.h"
 #include "rail.h"
+#include "road.h"
 #include "strings_func.h"
 #include "window_func.h"
 #include "sound_func.h"
@@ -35,6 +36,8 @@
 static BridgeType _last_railbridge_type = 0;
 /** The type of the last built road bridge */
 static BridgeType _last_roadbridge_type = 0;
+
+bool _bridge_catenary_flag = true;
 
 /**
  * Carriage for the data we need if we want to build a bridge
@@ -117,7 +120,7 @@ private:
 			case TRANSPORT_ROAD: _last_roadbridge_type = this->bridges->Get(i)->index; break;
 			default: break;
 		}
-		DoCommandP(this->end_tile, this->start_tile, this->type | this->bridges->Get(i)->index,
+		DoCommandP(this->end_tile, this->start_tile, this->type | this->bridges->Get(i)->index | (_bridge_catenary_flag << 17),
 					CMD_BUILD_BRIDGE | CMD_MSG(STR_ERROR_CAN_T_BUILD_BRIDGE_HERE), CcBuildBridge);
 	}
 
@@ -358,9 +361,11 @@ static WindowDesc _build_bridge_desc(
  * @param transport_type The transport type
  * @param road_rail_type The road/rail type
  */
-void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transport_type, byte road_rail_type)
+void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transport_type, byte road_rail_type, bool catenary_flag = false)
 {
 	DeleteWindowByClass(WC_BUILD_BRIDGE);
+
+	_bridge_catenary_flag = catenary_flag;
 
 	/* Data type for the bridge.
 	 * Bit 16,15 = transport type,
@@ -404,9 +409,13 @@ void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transpo
 		Money infra_cost = 0;
 		switch (transport_type) {
 			case TRANSPORT_ROAD:
-				infra_cost = (bridge_len + 2) * _price[PR_BUILD_ROAD] * 2;
+				infra_cost = (bridge_len + 2) * RoadBuildCost(RoadTypeIdentifier(road_rail_type));
 				/* In case we add a new road type as well, we must be aware of those costs. */
-				if (IsBridgeTile(start)) infra_cost *= CountBits(GetRoadTypes(start) | (RoadTypes)road_rail_type);
+				// if (IsBridgeTile(start)) infra_cost *= CountBits(GetRoadTypes(start) | (RoadTypes)road_rail_type);
+				if (IsBridgeTile(start)) {
+					RoadTypeIdentifiers tile_rtids = CombineTileRoadTypeIds(start, RoadTypeIdentifier(road_rail_type));
+					infra_cost *= CountBits(tile_rtids.PresentRoadTypes());
+				}
 				break;
 			case TRANSPORT_RAIL: infra_cost = (bridge_len + 2) * RailBuildCost((RailType)road_rail_type); break;
 			default: break;

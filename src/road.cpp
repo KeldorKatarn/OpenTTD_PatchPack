@@ -19,6 +19,7 @@
 #include "engine_base.h"
 #include "date_func.h"
 #include "landscape.h"
+#include "road.h"
 
 #include "safeguards.h"
 
@@ -151,4 +152,64 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 	}
 
 	return rt;
+}
+
+/**
+ * Get the road type for a given label.
+ * @param label the roadtype label.
+ * @param allow_alternate_labels Search in the alternate label lists as well.
+ * @return the roadtype.
+ */
+RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bool allow_alternate_labels)
+{
+	RoadTypeIdentifier rtid;
+
+	rtid.basetype = basetype;
+
+	/* Loop through each road type until the label is found */
+	for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
+		rtid.subtype = r;
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+		if (rti->label == label) return rtid;
+	}
+
+	if (allow_alternate_labels) {
+		/* Test if any road type defines the label as an alternate. */
+		for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
+			rtid.subtype = r;
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+			if (rti->alternate_labels.Contains(label)) return rtid;
+		}
+	}
+
+	/* No matching label was found, so it is invalid */
+	rtid.basetype = INVALID_ROADTYPE;
+	rtid.subtype = INVALID_ROADSUBTYPE;
+	return rtid;
+}
+
+uint8 RoadTypeIdentifier::Pack() const
+{
+	assert(this->basetype < ROADTYPE_END);
+	assert(this->subtype < ROADSUBTYPE_END);
+
+	return this->basetype | (this->subtype << 1);
+}
+
+bool RoadTypeIdentifier::Unpack(uint8 data) {
+	this->basetype = (RoadType)GB(data, 0, 1);
+	this->subtype = (RoadSubType)GB(data, 1, 4);
+
+	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
+}
+
+bool RoadTypeIdentifier::IsValid()
+{
+	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
+}
+
+RoadTypeIdentifier::RoadTypeIdentifier(uint8 data)
+{
+	bool ret = this->Unpack(data);
+	assert(ret);
 }

@@ -28,6 +28,7 @@
 #include "date_func.h"
 #include "sound_func.h"
 #include "rail.h"
+#include "road.h"
 #include "core/pool_func.hpp"
 #include "settings_func.h"
 #include "vehicle_base.h"

@@ -14,6 +14,11 @@
 
 #include "core/enum_type.hpp"
 
+typedef uint32 RoadTypeLabel;
+
+static const RoadTypeLabel ROAD_TYPE_ROAD = 'ROAD';
+static const RoadTypeLabel ROAD_TYPE_TRAM = 'TRAM';
+
 /**
  * The different roadtypes we support
  *
@@ -28,6 +33,15 @@ enum RoadType {
 };
 DECLARE_POSTFIX_INCREMENT(RoadType)
 template <> struct EnumPropsT<RoadType> : MakeEnumPropsT<RoadType, byte, ROADTYPE_BEGIN, ROADTYPE_END, INVALID_ROADTYPE, 2> {};
+typedef TinyEnumT<RoadType> RoadTypeByte;
+
+enum RoadSubType {
+	ROADSUBTYPE_BEGIN = 0,      ///< Used for iterations
+	ROADSUBTYPE_END = 16,       ///< Used for iterations
+	INVALID_ROADSUBTYPE = 0xFF, ///< flag for invalid roadsubtype
+};
+DECLARE_POSTFIX_INCREMENT(RoadSubType);
+
 
 /**
  * The different roadtypes we support, but then a bitmask of them

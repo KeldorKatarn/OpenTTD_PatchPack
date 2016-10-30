@@ -13,6 +13,7 @@
 #define ROAD_FUNC_H
 
 #include "core/bitmath_func.hpp"
+#include "road.h"
 #include "road_type.h"
 #include "economy_func.h"
 
@@ -173,6 +174,12 @@ static inline Money RoadMaintenanceCost(RoadType roadtype, uint32 num)
 {
 	assert(IsValidRoadType(roadtype));
 	return (_price[PR_INFRASTRUCTURE_ROAD] * (roadtype == ROADTYPE_TRAM ? 3 : 2) * num * (1 + IntSqrt(num))) >> 9; // 2 bits fraction for the multiplier and 7 bits scaling.
+}
+
+static inline bool HasCatenary(RoadTypeIdentifier rti)
+{
+	assert(IsValidRoadType(rti.basetype));
+	return HasBit(GetRoadTypeInfo(rti.Pack())->flags, ROTF_CATENARY);
 }
 
 bool HasRoadTypesAvail(const CompanyID company, const RoadTypes rts);

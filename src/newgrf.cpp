@@ -4991,6 +4991,8 @@ static void NewSpriteGroup(ByteReader *buf)
 				case GSF_CARGOES:
 				case GSF_AIRPORTS:
 				case GSF_RAILTYPES:
+				case GSF_ROADTYPES:
+				case GSF_TRAMTYPES:
 				{
 					byte num_loaded  = type;
 					byte num_loading = buf->ReadByte();

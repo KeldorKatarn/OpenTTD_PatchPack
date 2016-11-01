@@ -198,6 +198,11 @@ struct RoadtypeInfo {
 	 * Sprite groups for resolving sprites
 	 */
 	const SpriteGroup *group[ROTSG_END];
+
+	inline bool UsesOverlay() const
+	{
+		return this->group[ROTSG_GROUND] != NULL;
+	}
 };
 
 struct RoadTypeIdentifier {

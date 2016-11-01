@@ -801,7 +801,7 @@ Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id)
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
 
-	return new BuildRoadToolbarWindow(_cur_roadtype_identifier.basetype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
+	return new BuildRoadToolbarWindow(_cur_roadtype_identifier.IsRoad() ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
 }
 
 static const NWidgetPart _nested_build_road_scen_widgets[] = {
@@ -856,7 +856,7 @@ struct BuildRoadDepotWindow : public PickerWindowBase {
 		this->CreateNestedTree();
 
 		this->LowerWidget(_road_depot_orientation + WID_BROD_DEPOT_NE);
-		if ( _cur_roadtype_identifier.basetype == ROADTYPE_TRAM) {
+		if ( _cur_roadtype_identifier.IsTram()) {
 			this->GetWidget<NWidgetCore>(WID_BROD_CAPTION)->widget_data = STR_BUILD_DEPOT_TRAM_ORIENTATION_CAPTION;
 			for (int i = WID_BROD_DEPOT_NE; i <= WID_BROD_DEPOT_NW; i++) this->GetWidget<NWidgetCore>(i)->tool_tip = STR_BUILD_DEPOT_TRAM_ORIENTATION_SELECT_TOOLTIP;
 		}
@@ -947,10 +947,10 @@ struct BuildRoadStationWindow : public PickerWindowBase {
 		this->CreateNestedTree();
 
 		/* Trams don't have non-drivethrough stations */
-		if (_cur_roadtype_identifier.basetype == ROADTYPE_TRAM && _road_station_picker_orientation < DIAGDIR_END) {
+		if (_cur_roadtype_identifier.IsTram() && _road_station_picker_orientation < DIAGDIR_END) {
 			_road_station_picker_orientation = DIAGDIR_END;
 		}
-		this->SetWidgetsDisabledState(_cur_roadtype_identifier.basetype == ROADTYPE_TRAM,
+		this->SetWidgetsDisabledState(_cur_roadtype_identifier.IsTram(),
 				WID_BROS_STATION_NE,
 				WID_BROS_STATION_SE,
 				WID_BROS_STATION_SW,

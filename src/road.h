@@ -207,6 +207,8 @@ struct RoadTypeIdentifier {
 	uint8 Pack() const;
 	bool Unpack(uint8 data);
 	bool IsValid();
+	bool IsRoad();
+	bool IsTram();
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
 	RoadTypeIdentifier(uint8 data = 0);

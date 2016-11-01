@@ -21,7 +21,7 @@
 struct Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id);
 struct Window *ShowBuildRoadScenToolbar();
 void ConnectRoadToStructure(TileIndex tile, DiagDirection direction);
-DropDownList *GetRoadTypeDropDownList();
+DropDownList *GetRoadTypeDropDownList(RoadType roadtype);
 void InitializeRoadGUI();
 
 #endif /* ROAD_GUI_H */

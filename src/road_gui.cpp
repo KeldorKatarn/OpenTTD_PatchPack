@@ -672,8 +672,8 @@ static EventState RoadToolbarGlobalHotkeys(int hotkey)
 	Window *w = NULL;
 	switch (_game_mode) {
 		case GM_NORMAL: {
-			extern RoadType _last_built_roadtype;
-			w = ShowBuildRoadToolbar(_last_built_roadtype);
+			extern RoadTypeIdentifier _last_built_roadtype_identifier;
+			w = ShowBuildRoadToolbar(_last_built_roadtype_identifier);
 			break;
 		}
 
@@ -1120,7 +1120,7 @@ void InitializeRoadGUI()
 	if (w != NULL) w->ModifyRoadType(_cur_roadtype_identifier.basetype);
 }
 
-DropDownList *GetRoadTypeDropDownList()
+DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 {
 	RoadTypes used_roadtypes = ROADTYPES_NONE;
 
@@ -1141,16 +1141,14 @@ DropDownList *GetRoadTypeDropDownList()
 	DropDownList *list = new DropDownList();
 	RoadSubType rst;
 
-	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
-		FOR_ALL_SORTED_ROADTYPES(rst, rt) {
-			/* If it's not used ever, don't show it to the user. */
-			if (!HasBit(used_roadtypes, rt)) continue;
+	FOR_ALL_SORTED_ROADTYPES(rst, roadtype) {
+		/* If it's not used ever, don't show it to the user. */
+		if (!HasBit(used_roadtypes, roadtype)) continue;
 
-			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][rst]);
+		const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[roadtype][rst]);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][rst].Pack(), !HasBit(c->avail_roadtypes, rt));
-			*list->Append() = item;
-		}
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[roadtype][rst].Pack(), !HasBit(c->avail_roadtypes, roadtype));
+		*list->Append() = item;
 	}
 
 	return list;

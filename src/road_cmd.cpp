@@ -645,11 +645,6 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 9, 2>(p1);
 
-	/* The catenary flag must be aware of the catenary bit of the tile,
-	 * we don't want to clear it if it's already set if we are
-	 * overbuilding another roadtype */
-	bool _catenary_flag = HasCatenary(tile) | HasCatenary(rtid);
-
 	Slope tileh = GetTileSlope(tile);
 
 	bool need_to_clear = false;
@@ -884,7 +879,6 @@ do_clear:;
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
 				}
 				if (rtt != ROAD_TILE_CROSSING) SetRoadBits(tile, existing | pieces, rt);
-				SetCatenary(tile, _catenary_flag);
 				break;
 			}
 
@@ -913,7 +907,7 @@ do_clear:;
 				break;
 
 			default:
-				MakeRoadNormal(tile, pieces, rtid, p2, company, company, _catenary_flag);
+				MakeRoadNormal(tile, pieces, rtid, p2, company, company);
 				break;
 		}
 
@@ -1327,9 +1321,10 @@ static bool DrawRoadAsSnowDesert(TileIndex tile, Roadside roadside)
 /**
  * Draws the catenary for the given tile
  * @param ti   information about the tile (slopes, height etc)
- * @param tram the roadbits for the tram
+ * @param rti  road type to draw catenary for
+ * @param rb   the roadbits for the tram
  */
-void DrawTramCatenary(const TileInfo *ti, RoadBits tram)
+void DrawTramCatenary(const TileInfo *ti, RoadTypeIdentifier rti, RoadBits rb)
 {
 	/* Do not draw catenary if it is invisible */
 	if (IsInvisibilitySet(TO_CATENARY)) return;
@@ -1348,8 +1343,8 @@ void DrawTramCatenary(const TileInfo *ti, RoadBits tram)
 		back  = SPR_TRAMWAY_BACK_WIRES_SLOPED  + _road_sloped_sprites[ti->tileh - 1];
 		front = SPR_TRAMWAY_FRONT_WIRES_SLOPED + _road_sloped_sprites[ti->tileh - 1];
 	} else {
-		back  = SPR_TRAMWAY_BASE + _road_backpole_sprites_1[tram];
-		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[tram];
+		back  = SPR_TRAMWAY_BASE + _road_backpole_sprites_1[rb];
+		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[rb];
 	}
 
 	AddSortableSpriteToDraw(back,  PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
@@ -1403,8 +1398,10 @@ static void DrawRoadBits(TileInfo *ti)
 	RoadBits road = GetRoadBits(ti->tile, ROADTYPE_ROAD);
 	RoadBits tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
 
-	const RoadtypeInfo* road_rti = GetRoadTypeInfo(GetRoadTypeRoad(ti->tile));
-	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(GetRoadTypeTram(ti->tile));
+	RoadTypeIdentifier road_rtid = GetRoadTypeRoad(ti->tile);
+	RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
+	const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
+	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
 
 	if (ti->tileh != SLOPE_FLAT) {
 		DrawFoundation(ti, GetRoadFoundation(ti->tileh, road | tram));
@@ -1484,7 +1481,9 @@ static void DrawRoadBits(TileInfo *ti)
 		return;
 	}
 
-	if (HasCatenary(ti->tile)) DrawTramCatenary(ti, tram); // TODO catenary flag for roadtype TODO draw only one catenary, road takes precendence
+	if (tram != ROAD_NONE && HasCatenary(tram_rtid)) {
+		DrawTramCatenary(ti, tram_rtid, tram); // TODO catenary flag for roadtype TODO draw only one catenary, road takes precendence
+	}
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */
 	if (!HasBit(_display_opt, DO_FULL_DETAIL) || _cur_dpi->zoom > ZOOM_LVL_DETAIL) return;
@@ -1573,8 +1572,10 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 
 			if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
+				RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
+
 				DrawGroundSprite(SPR_TRAMWAY_OVERLAY + (GetCrossingRoadAxis(ti->tile) ^ 1), pal);
-				if (HasCatenary(ti->tile)) DrawTramCatenary(ti, GetCrossingRoadBits(ti->tile));
+				if (HasCatenary(tram_rtid)) DrawTramCatenary(ti, tram_rtid, GetCrossingRoadBits(ti->tile));
 			}
 			if (HasCatenaryDrawn(GetRailType(ti->tile))) DrawCatenary(ti);
 			break;

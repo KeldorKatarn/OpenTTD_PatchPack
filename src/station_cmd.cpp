@@ -1759,8 +1759,6 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	bool reuse = (station_to_join != NEW_STATION);
 	if (!reuse) station_to_join = INVALID_STATION;
 	bool distant_join = (station_to_join != INVALID_STATION);
-	bool catenary_flag = HasBit(p2, 9); // the setting from the selected roadtype
-	bool cur_tile_catenary_flag = catenary_flag; // used to set catenary flag on any given tile
 
 	uint8 width = (uint8)GB(p1, 0, 8);
 	uint8 lenght = (uint8)GB(p1, 8, 8);
@@ -1819,8 +1817,6 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 			RoadTypes cur_rts = GetRoadTypes(cur_tile);
 			Owner road_owner = HasBit(cur_rts, ROADTYPE_ROAD) ? GetRoadOwner(cur_tile, ROADTYPE_ROAD) : _current_company;
 			Owner tram_owner = HasBit(cur_rts, ROADTYPE_TRAM) ? GetRoadOwner(cur_tile, ROADTYPE_TRAM) : _current_company;
-			// don't remove existing catenary if present
-			cur_tile_catenary_flag = HasCatenary(cur_tile) ? true : catenary_flag;
 
 			if (IsTileType(cur_tile, MP_STATION) && IsRoadStop(cur_tile)) {
 				RemoveRoadStop(cur_tile, flags);
@@ -1855,7 +1851,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 					}
 				}
 
-				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rts | cur_rts, axis, cur_tile_catenary_flag);
+				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rts | cur_rts, axis);
 				road_stop->MakeDriveThrough();
 			} else {
 				/* Non-drive-through stop never overbuild and always count as two road bits. */
@@ -2061,7 +2057,7 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		/* Restore roads. */
 		if ((flags & DC_EXEC) && rts != ROADTYPES_NONE) {
 			MakeRoadNormal(cur_tile, road_bits, rts, ClosestTownFromTile(cur_tile, UINT_MAX)->index,
-					road_owner[ROADTYPE_ROAD], road_owner[ROADTYPE_TRAM], HasCatenary(cur_tile));
+					road_owner[ROADTYPE_ROAD], road_owner[ROADTYPE_TRAM]);
 
 			/* Update company infrastructure counts. */
 			RoadType rt;
@@ -2906,7 +2902,9 @@ draw_default_foundation:
 	if (HasBit(roadtypes, ROADTYPE_TRAM)) {
 		Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
 		DrawGroundSprite((HasBit(roadtypes, ROADTYPE_ROAD) ? SPR_TRAMWAY_OVERLAY : SPR_TRAMWAY_TRAM) + (axis ^ 1), PAL_NONE);
-		if (HasRoadTramCatenary(ti->tile)) DrawTramCatenary(ti, axis == AXIS_X ? ROAD_X : ROAD_Y);
+
+		RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
+		if (HasCatenary(tram_rtid)) DrawTramCatenary(ti, tram_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
 	}
 
 	if (IsRailWaypoint(ti->tile)) {

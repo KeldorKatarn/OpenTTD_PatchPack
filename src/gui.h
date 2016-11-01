@@ -61,7 +61,7 @@ void ShowExtraViewPortWindow(TileIndex tile = INVALID_TILE);
 void ShowExtraViewPortWindowForTileUnderCursor();
 
 /* bridge_gui.cpp */
-void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transport_type, byte bridge_type, bool catenary_flag = false);
+void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transport_type, byte bridge_type);
 
 void ShowBuildIndustryWindow();
 void ShowFoundTownWindow();

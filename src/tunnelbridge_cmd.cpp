@@ -520,8 +520,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				Owner owner_road = HasBit(prev_roadtypes, ROADTYPE_ROAD) ? GetRoadOwner(tile_start, ROADTYPE_ROAD) : company;
 				Owner owner_tram = HasBit(prev_roadtypes, ROADTYPE_TRAM) ? GetRoadOwner(tile_start, ROADTYPE_TRAM) : company;
 				//bool catenary_flag = HasBit(p2, 17); // the setting from the selected roadtype
-				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir, rtids, rtids.HasCatenary());
-				MakeRoadBridgeRamp(tile_end, owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), rtids, rtids.HasCatenary());
+				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir, rtids);
+				MakeRoadBridgeRamp(tile_end, owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), rtids);
 				break;
 			}
 
@@ -1091,9 +1091,8 @@ static void DrawBridgePillars(const PalSpriteID *psid, const TileInfo *ti, Axis 
  * @param offset       number representing whether to level or sloped and the direction
  * @param overlay      do we want to still see the road?
  * @param head         are we drawing bridge head?
- * @param has_catenary are we drawing the catenary?
  */
-static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bool head, bool has_catenary)
+static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bool head)
 {
 	static const SpriteID tram_offsets[2][6] = { { 107, 108, 109, 110, 111, 112 }, { 4, 5, 15, 16, 17, 18 } };
 	static const SpriteID back_offsets[6]    =   {  95,  96,  99, 102, 100, 101 };
@@ -1113,7 +1112,7 @@ static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bo
 	}
 
 	/* Do not draw catenary if it is set invisible */
-	if (has_catenary && !IsInvisibilitySet(TO_CATENARY)) {
+	if (!IsInvisibilitySet(TO_CATENARY)) {
 		AddSortableSpriteToDraw(SPR_TRAMWAY_BASE + back_offsets[offset], PAL_NONE,
 			x, y, size_x[offset], size_y[offset], 0x28, z,
 			IsTransparencySet(TO_CATENARY));
@@ -1124,7 +1123,7 @@ static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bo
 	StartSpriteCombine();
 
 	/* For sloped sprites the bounding box needs to be higher, as the pylons stop on a higher point */
-	if (has_catenary && !IsInvisibilitySet(TO_CATENARY)) {
+	if (!IsInvisibilitySet(TO_CATENARY)) {
 		AddSortableSpriteToDraw(SPR_TRAMWAY_BASE + front_offsets[offset], PAL_NONE,
 			x, y, size_x[offset] + front_bb_offset_x[offset], size_y[offset] + front_bb_offset_y[offset], 0x28, z,
 			IsTransparencySet(TO_CATENARY), front_bb_offset_x[offset], front_bb_offset_y[offset]);
@@ -1198,8 +1197,9 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 
 				DrawGroundSprite(SPR_TRAMWAY_BASE + tunnel_sprites[rts - ROADTYPES_TRAM][tunnelbridge_direction], PAL_NONE);
 
+				RoadTypeIdentifier tram_rti = GetRoadTypeTram(ti->tile);
 				/* Do not draw wires if they are invisible */
-				if (HasTunnelBridgeRoadTramCatenary(ti->tile) && !IsInvisibilitySet(TO_CATENARY)) {
+				if (HasCatenary(tram_rti) && !IsInvisibilitySet(TO_CATENARY)) {
 					catenary = true;
 					StartSpriteCombine();
 					AddSortableSpriteToDraw(SPR_TRAMWAY_TUNNEL_WIRES + tunnelbridge_direction, PAL_NONE, ti->x, ti->y, BB_data[10], BB_data[11], TILE_HEIGHT, ti->z, IsTransparencySet(TO_CATENARY), BB_data[8], BB_data[9], BB_Z_SEPARATOR);
@@ -1309,7 +1309,7 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 					offset += 2;
 				}
 				/* DrawBridgeTramBits() calls EndSpriteCombine() and StartSpriteCombine() */
-				DrawBridgeTramBits(ti->x, ti->y, z, offset, HasBit(rts, ROADTYPE_ROAD), true, HasTunnelBridgeRoadTramCatenary(ti->tile));
+				DrawBridgeTramBits(ti->x, ti->y, z, offset, HasBit(rts, ROADTYPE_ROAD), true);
 			}
 			EndSpriteCombine();
 		} else if (transport_type == TRANSPORT_RAIL) {
@@ -1472,7 +1472,7 @@ void DrawBridgeMiddle(const TileInfo *ti)
 
 		if (HasBit(rts, ROADTYPE_TRAM)) {
 			/* DrawBridgeTramBits() calls EndSpriteCombine() and StartSpriteCombine() */
-			DrawBridgeTramBits(x, y, bridge_z, axis ^ 1, HasBit(rts, ROADTYPE_ROAD), false, HasTunnelBridgeRoadTramCatenary(ti->tile));
+			DrawBridgeTramBits(x, y, bridge_z, axis ^ 1, HasBit(rts, ROADTYPE_ROAD), false);
 		} else {
 			EndSpriteCombine();
 			StartSpriteCombine();

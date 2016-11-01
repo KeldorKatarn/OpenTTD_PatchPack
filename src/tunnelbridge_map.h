@@ -121,25 +121,4 @@ static inline TrackBits GetTunnelBridgeReservationTrackBits(TileIndex t)
 	return HasTunnelBridgeReservation(t) ? DiagDirToDiagTrackBits(GetTunnelBridgeDirection(t)) : TRACK_BIT_NONE;
 }
 
-/**
- * Set the catenary bit on the tunnel/bridge
- * @param t the tile
- * @param b the catenary bit
- */
-static inline void SetTunnelBridgeRoadTramCatenary(TileIndex t, bool b)
-{
-	assert(IsTileType(t, MP_TUNNELBRIDGE));
-	SB(_m[t].m1, 7, 1, b ? 1 : 0);
-}
-
-/**
- * Get the catenary bit of the tunnel/bridge
- * @param t the tile
- * @return True if the tunnel/bridge has catenary
- */
-static inline bool HasTunnelBridgeRoadTramCatenary(TileIndex t)
-{
-	return GB(_m[t].m1, 7, 1) != 0;
-}
-
 #endif /* TUNNELBRIDGE_MAP_H */

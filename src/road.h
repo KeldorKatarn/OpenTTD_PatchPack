@@ -212,6 +212,8 @@ struct RoadTypeIdentifier {
 	uint8 Pack() const;
 	bool Unpack(uint8 data);
 	bool IsValid();
+	bool IsRoad();
+	bool IsTram();
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
 	RoadTypeIdentifier(uint8 data = 0);
@@ -303,6 +305,6 @@ extern uint8 _sorted_roadtypes_size[ROADTYPE_END];
  * Loop header for iterating over roadtypes, sorted by sortorder.
  * @param var Roadtype.
  */
-#define FOR_ALL_SORTED_ROADTYPES(var, type) for (uint8 index = 0; index < _sorted_roadtypes_size[type] && (var = RoadTypeIdentifier(_sorted_roadtypes[index][type]).subtype, true) ; index++)
+#define FOR_ALL_SORTED_ROADTYPES(var, type) for (uint8 index = 0; index < _sorted_roadtypes_size[type] && (var = _sorted_roadtypes[type][index].subtype, true) ; index++)
 
 #endif /* ROAD_H */

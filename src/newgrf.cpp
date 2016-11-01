@@ -4470,8 +4470,6 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				ret = CIR_UNKNOWN;
 				break;
 		}
-
-		grfmsg(0, "RoadTypeReserveInfo: Road type property found 0x%02X, num info %u", prop, numinfo);
 	}
 
 	return ret;

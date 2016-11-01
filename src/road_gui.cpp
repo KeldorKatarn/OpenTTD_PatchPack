@@ -1141,18 +1141,16 @@ DropDownList *GetRoadTypeDropDownList()
 
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
-	RoadType rt;
+	RoadSubType rst;
 
-	/* The macro is broken */
-	//FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
-	for (rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
-		for (uint8 index = 0; index < _sorted_roadtypes_size[rt]; index++) {
+	for (RoadType rt = ROADTYPE_BEGIN; rt != ROADTYPE_END; rt++) {
+		FOR_ALL_SORTED_ROADTYPES(rst, rt) {
 			/* If it's not used ever, don't show it to the user. */
 			if (!HasBit(used_roadtypes, rt)) continue;
 
-			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][index]);
+			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][rst]);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index].Pack(), !HasBit(c->avail_roadtypes, rt));
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][rst].Pack(), !HasBit(c->avail_roadtypes, rt));
 			*list->Append() = item;
 		}
 	}

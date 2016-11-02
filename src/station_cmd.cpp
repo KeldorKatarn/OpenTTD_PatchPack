@@ -3710,21 +3710,12 @@ static void UpdateStationRating(Station *st)
 				int b = ge->last_speed - 15;
 				if (b >= 0) rating += b >> 2;
 
-				byte waittime = ge->time_since_pickup;
-				if (ge->last_vehicle_type == VEH_SHIP) waittime >>= 2;
-
-				(waittime > 21) ||
-				(rating += 25, waittime > 12) ||
-				(rating += 25, waittime > 6) ||
-				(rating += 45, waittime > 3) ||
-				(rating += 35, true);
-
-				(rating -= 90, ge->max_waiting_cargo > 1500) ||
-				(rating += 55, ge->max_waiting_cargo > 1000) ||
-				(rating += 35, ge->max_waiting_cargo > 600) ||
-				(rating += 10, ge->max_waiting_cargo > 300) ||
-				(rating += 20, ge->max_waiting_cargo > 100) ||
-				(rating += 10, true);
+				(rating -= 90, ge->max_waiting_cargo > 2000) ||
+				(rating += 52, ge->max_waiting_cargo > 1000) ||
+				(rating += 52, ge->max_waiting_cargo > 500) ||
+				(rating += 52, ge->max_waiting_cargo > 250) ||
+				(rating += 52, ge->max_waiting_cargo > 125) ||
+				(rating += 52, true);
 			}
 
 			if (Company::IsValidID(st->owner) && HasBit(st->town->statues, st->owner)) rating += 26;

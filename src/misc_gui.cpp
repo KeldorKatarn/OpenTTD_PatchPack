@@ -1247,8 +1247,7 @@ static WindowDesc _station_rating_tooltip_desc(
 	);
 
 static const int STATION_RATING_AGE[] = { 0, 10, 20, 33 };
-static const int STATION_RATING_WAITTIME[] = { 0, 25, 50, 95, 130 };
-static const int STATION_RATING_WAITUNITS[] = { -90, -35, 0, 10, 30, 40 };
+static const int STATION_RATING_WAITUNITS[] = { -90, -38, 14, 66, 118, 170 };
 
 
 struct StationRatingTooltipWindow : public Window
@@ -1365,32 +1364,13 @@ public:
 
 		if (!this->newgrf_rating_used) {
 
-			byte waittime = ge->time_since_pickup;
-			if (ge->last_vehicle_type == VEH_SHIP) waittime >>= 2;
-
-			int waittime_stage = 0;
-			(waittime > 21) ||
-				(waittime_stage = 1, waittime > 12) ||
-				(waittime_stage = 2, waittime > 6) ||
-				(waittime_stage = 3, waittime > 3) ||
-				(waittime_stage = 4, true);
-			total_rating += STATION_RATING_WAITTIME[waittime_stage];
-
-			SetDParam(0, STR_STATION_RATING_TOOLTIP_WAITTIME_0 + waittime_stage);
-			SetDParam(1, ge->time_since_pickup * STATION_RATING_TICKS / DAY_TICKS);
-			SetDParam(2, this->RoundRating(STATION_RATING_WAITTIME[waittime_stage]));
-			GetString(this->data[line_nr],
-				      this->st->last_vehicle_type == VEH_SHIP ? STR_STATION_RATING_TOOLTIP_WAITTIME_SHIP : STR_STATION_RATING_TOOLTIP_WAITTIME,
-					  lastof(this->data[line_nr]));
-			line_nr++;
-
 			uint waitunits = ge->max_waiting_cargo;
 			int waitunits_stage = 0;
-			(ge->max_waiting_cargo > 1500) ||
+			(ge->max_waiting_cargo > 2000) ||
 				(waitunits_stage = 1, ge->max_waiting_cargo > 1000) ||
-				(waitunits_stage = 2, ge->max_waiting_cargo > 600) ||
-				(waitunits_stage = 3, ge->max_waiting_cargo > 300) ||
-				(waitunits_stage = 4, ge->max_waiting_cargo > 100) ||
+				(waitunits_stage = 2, ge->max_waiting_cargo > 500) ||
+				(waitunits_stage = 3, ge->max_waiting_cargo > 250) ||
+				(waitunits_stage = 4, ge->max_waiting_cargo > 125) ||
 				(waitunits_stage = 5, true);
 			total_rating += STATION_RATING_WAITUNITS[waitunits_stage];
 

@@ -5429,8 +5429,8 @@ STR_STATION_RATING_TOOLTIP_WAITTIME_2                           :{GOLD}{NUM} day
 STR_STATION_RATING_TOOLTIP_WAITTIME_3                           :{YELLOW}{NUM} day{P "" s}, +{NUM}%
 STR_STATION_RATING_TOOLTIP_WAITTIME_4                           :{GREEN}{NUM} day{P "" s}, +{NUM}%
 
-STR_STATION_RATING_TOOLTIP_WAITUNITS                            :Cargo waiting (on average per next stop, max +16%): {STRING2}
-STR_STATION_RATING_TOOLTIP_WAITUNITS_FEEDBACK                   :Cargo waiting (on average per next stop, max +16%): {STRING2} {RED}(next stop feedback)
+STR_STATION_RATING_TOOLTIP_WAITUNITS                            :Cargo waiting (on average per next stop, max +67%): {STRING2}
+STR_STATION_RATING_TOOLTIP_WAITUNITS_FEEDBACK                   :Cargo waiting (on average per next stop, max +67%): {STRING2} {RED}(next stop feedback)
 STR_STATION_RATING_TOOLTIP_WAITUNITS_0                          :{RED}{NUM}, {NUM}%
 STR_STATION_RATING_TOOLTIP_WAITUNITS_1                          :{ORANGE}{NUM}, {NUM}%
 STR_STATION_RATING_TOOLTIP_WAITUNITS_2                          :{GOLD}{NUM}, {NUM}%

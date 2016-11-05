@@ -16,6 +16,7 @@
 #include "road.h"
 #include "road_type.h"
 #include "economy_func.h"
+#include "transparency.h"
 
 /**
  * Iterate through each set RoadType in a RoadTypes value.
@@ -176,10 +177,23 @@ static inline Money RoadMaintenanceCost(RoadType roadtype, uint32 num)
 	return (_price[PR_INFRASTRUCTURE_ROAD] * (roadtype == ROADTYPE_TRAM ? 3 : 2) * num * (1 + IntSqrt(num))) >> 9; // 2 bits fraction for the multiplier and 7 bits scaling.
 }
 
-static inline bool HasCatenary(RoadTypeIdentifier rti)
+/**
+ * Test if a road type has catenary
+ * @param rti Road type to test
+ */
+static inline bool HasRoadCatenary(RoadTypeIdentifier rti)
 {
 	assert(IsValidRoadType(rti.basetype));
 	return HasBit(GetRoadTypeInfo(rti.Pack())->flags, ROTF_CATENARY);
+}
+
+/**
+ * Test if we should draw road catenary
+ * @param rti Road type to test
+ */
+static inline bool HasRoadCatenaryDrawn(RoadTypeIdentifier rti)
+{
+	return HasRoadCatenary(rti) && !IsInvisibilitySet(TO_CATENARY);
 }
 
 bool HasRoadTypesAvail(const CompanyID company, const RoadTypes rts);

@@ -2904,7 +2904,7 @@ draw_default_foundation:
 		DrawGroundSprite((HasBit(roadtypes, ROADTYPE_ROAD) ? SPR_TRAMWAY_OVERLAY : SPR_TRAMWAY_TRAM) + (axis ^ 1), PAL_NONE);
 
 		RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
-		if (HasCatenary(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
+		if (HasRoadCatenaryDrawn(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
 	}
 
 	if (IsRailWaypoint(ti->tile)) {

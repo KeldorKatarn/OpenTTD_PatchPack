@@ -1199,7 +1199,7 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 
 				RoadTypeIdentifier tram_rti = GetRoadTypeTram(ti->tile);
 				/* Do not draw wires if they are invisible */
-				if (HasCatenary(tram_rti) && !IsInvisibilitySet(TO_CATENARY)) {
+				if (HasRoadCatenaryDrawn(tram_rti)) {
 					catenary = true;
 					StartSpriteCombine();
 					AddSortableSpriteToDraw(SPR_TRAMWAY_TUNNEL_WIRES + tunnelbridge_direction, PAL_NONE, ti->x, ti->y, BB_data[10], BB_data[11], TILE_HEIGHT, ti->z, IsTransparencySet(TO_CATENARY), BB_data[8], BB_data[9], BB_Z_SEPARATOR);

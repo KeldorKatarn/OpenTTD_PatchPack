@@ -1326,9 +1326,6 @@ static bool DrawRoadAsSnowDesert(TileIndex tile, Roadside roadside)
  */
 void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rti, RoadBits rb)
 {
-	/* Do not draw catenary if it is invisible */
-	if (IsInvisibilitySet(TO_CATENARY)) return;
-
 	/* Don't draw the catenary under a low bridge */
 	if (IsBridgeAbove(ti->tile) && !IsTransparencySet(TO_CATENARY)) {
 		int height = GetBridgeHeight(GetNorthernBridgeEnd(ti->tile));
@@ -1481,7 +1478,7 @@ static void DrawRoadBits(TileInfo *ti)
 		return;
 	}
 
-	if (tram != ROAD_NONE && HasCatenary(tram_rtid)) {
+	if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) {
 		DrawRoadCatenary(ti, tram_rtid, tram); // TODO catenary flag for roadtype TODO draw only one catenary, road takes precendence
 	}
 
@@ -1575,7 +1572,7 @@ static void DrawTile_Road(TileInfo *ti)
 				RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
 
 				DrawGroundSprite(SPR_TRAMWAY_OVERLAY + (GetCrossingRoadAxis(ti->tile) ^ 1), pal);
-				if (HasCatenary(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, GetCrossingRoadBits(ti->tile));
+				if (HasRoadCatenaryDrawn(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, GetCrossingRoadBits(ti->tile));
 			}
 			if (HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);
 			break;

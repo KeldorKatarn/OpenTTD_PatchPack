@@ -891,7 +891,7 @@ static CallBackFunction MenuClickBuildRail(int index)
 
 static CallBackFunction ToolbarBuildRoadClick(Window *w)
 {
-	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_ROAD), _last_built_roadtype_identifier.subtype, WID_TN_ROADS, 140, true, true);
+	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_ROAD), _last_built_roadtype_identifier.Pack(), WID_TN_ROADS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }
@@ -904,7 +904,7 @@ static CallBackFunction ToolbarBuildRoadClick(Window *w)
  */
 static CallBackFunction MenuClickBuildRoad(int index)
 {
-	_last_built_roadtype_identifier = RoadTypeIdentifier(index);
+	_last_built_roadtype_identifier = RoadTypeIdentifier::Unpack(index);
 	ShowBuildRoadToolbar(_last_built_roadtype_identifier);
 	return CBF_NONE;
 }
@@ -913,7 +913,7 @@ static CallBackFunction MenuClickBuildRoad(int index)
 
 static CallBackFunction ToolbarBuildTramClick(Window *w)
 {
-	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_TRAM), _last_built_tramtype_identifier.subtype, WID_TN_TRAMS, 140, true, true);
+	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_TRAM), _last_built_tramtype_identifier.Pack(), WID_TN_TRAMS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }
@@ -926,7 +926,7 @@ static CallBackFunction ToolbarBuildTramClick(Window *w)
  */
 static CallBackFunction MenuClickBuildTram(int index)
 {
-	_last_built_tramtype_identifier = RoadTypeIdentifier(index);
+	_last_built_tramtype_identifier = RoadTypeIdentifier::Unpack(index);
 	ShowBuildRoadToolbar(_last_built_tramtype_identifier);
 	return CBF_NONE;
 }

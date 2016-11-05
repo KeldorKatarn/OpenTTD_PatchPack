@@ -209,13 +209,24 @@ struct RoadTypeIdentifier {
 	RoadSubType subtype;
 
 	uint8 Pack() const;
-	bool Unpack(uint8 data);
 	bool IsValid();
 	bool IsRoad();
 	bool IsTram();
 
+	static RoadTypeIdentifier Unpack(uint8 data)
+	{
+		RoadTypeIdentifier rtid = RoadTypeIdentifier(
+			(RoadType)GB(data, 0, 1),
+			(RoadSubType)GB(data, 1, 4)
+		);
+		
+		assert((rtid.subtype < ROADSUBTYPE_END) && (rtid.basetype < ROADTYPE_END));
+
+		return rtid;
+	}
+
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
-	RoadTypeIdentifier(uint8 data = 0);
+	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
 };
 
 /**
@@ -304,6 +315,6 @@ extern uint8 _sorted_roadtypes_size[ROADTYPE_END];
  * Loop header for iterating over roadtypes, sorted by sortorder.
  * @param var Roadtype.
  */
-#define FOR_ALL_SORTED_ROADTYPES(var, type) for (uint8 index = 0; index < _sorted_roadtypes_size[type] && (var = _sorted_roadtypes[type][index].subtype, true) ; index++)
+#define FOR_ALL_SORTED_ROADTYPES(var, type) for (uint8 index = 0; index < _sorted_roadtypes_size[type] && (var = _sorted_roadtypes[type][index], true) ; index++)
 
 #endif /* ROAD_H */

@@ -244,7 +244,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 	RailType railtype = INVALID_RAILTYPE;
 	RoadTypes roadtypes = ROADTYPES_NONE;
-	RoadTypeIdentifiers rtids = RoadTypeIdentifiers();
+	RoadTypeIdentifiers rtids;
 
 	/* unpack parameters */
 	BridgeType bridge_type = GB(p2, 0, 8);
@@ -256,7 +256,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	/* type of bridge */
 	switch (transport_type) {
 		case TRANSPORT_ROAD:
-			rtids = RoadTypeIdentifiers(RoadTypeIdentifier(GB(p2, 8, 2)));
+			rtids = RoadTypeIdentifiers(RoadTypeIdentifier::Unpack(GB(p2, 8, 2)));
 			roadtypes = rtids.PresentRoadTypes();
 
 			//roadtypes = Extract<RoadTypes, 8, 2>(p2);

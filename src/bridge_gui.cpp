@@ -405,11 +405,11 @@ void ShowBuildBridgeWindow(TileIndex start, TileIndex end, TransportType transpo
 		Money infra_cost = 0;
 		switch (transport_type) {
 			case TRANSPORT_ROAD:
-				infra_cost = (bridge_len + 2) * RoadBuildCost(RoadTypeIdentifier(road_rail_type));
+				infra_cost = (bridge_len + 2) * RoadBuildCost(RoadTypeIdentifier::Unpack(road_rail_type));
 				/* In case we add a new road type as well, we must be aware of those costs. */
 				// if (IsBridgeTile(start)) infra_cost *= CountBits(GetRoadTypes(start) | (RoadTypes)road_rail_type);
 				if (IsBridgeTile(start)) {
-					RoadTypeIdentifiers tile_rtids = CombineTileRoadTypeIds(start, RoadTypeIdentifier(road_rail_type));
+					RoadTypeIdentifiers tile_rtids = CombineTileRoadTypeIds(start, RoadTypeIdentifier::Unpack(road_rail_type));
 					infra_cost *= CountBits(tile_rtids.PresentRoadTypes());
 				}
 				break;

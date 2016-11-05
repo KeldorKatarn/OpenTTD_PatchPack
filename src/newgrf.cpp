@@ -4262,7 +4262,7 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 	}
 
 	for (int i = 0; i < numinfo; i++) {
-		RoadTypeIdentifier rtid = RoadTypeIdentifier(_cur.grffile->roadtype_map[basetype][id + i]);
+		RoadTypeIdentifier rtid = RoadTypeIdentifier(basetype, (RoadSubType)_cur.grffile->roadtype_map[basetype][id + i]);
 		if (!rtid.IsValid()) return CIR_INVALID_ID;
 
 		RoadtypeInfo *rti = &_roadtypes[basetype][rtid.subtype];
@@ -4470,8 +4470,6 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				ret = CIR_UNKNOWN;
 				break;
 		}
-
-		grfmsg(0, "RoadTypeReserveInfo: Road type property found 0x%02X, num info %u", prop, numinfo);
 	}
 
 	return ret;

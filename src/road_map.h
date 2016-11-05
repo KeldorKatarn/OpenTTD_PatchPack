@@ -643,8 +643,8 @@ static inline RoadTypeIdentifier GetRoadTypeTram(TileIndex t)
 }
 
 struct RoadTypeIdentifiers {
-	RoadTypeIdentifier road_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
-	RoadTypeIdentifier tram_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
+	RoadTypeIdentifier road_identifier;
+	RoadTypeIdentifier tram_identifier;
 
 	/* Creates an INVALID RoadTypeIdentifiers */
 	RoadTypeIdentifiers() {}
@@ -656,6 +656,8 @@ struct RoadTypeIdentifiers {
 	{
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
 		TileType tt = GetTileType(t);
+		road_identifier = RoadTypeIdentifier();
+		tram_identifier = RoadTypeIdentifier();
 
 		switch (tt) {
 			default: NOT_REACHED();
@@ -681,6 +683,9 @@ struct RoadTypeIdentifiers {
 	 */
 	RoadTypeIdentifiers(RoadTypeIdentifier rtid)
 	{
+		road_identifier = RoadTypeIdentifier();
+		tram_identifier = RoadTypeIdentifier();
+
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD: road_identifier = rtid; break;
@@ -770,11 +775,11 @@ struct RoadTypeIdentifiers {
 
 	bool HasCatenary()
 	{
-		if (road_identifier.IsValid() && GetRoadTypeInfo(road_identifier.Pack())->flags & ROTFB_CATENARY) {
+		if (road_identifier.IsValid() && GetRoadTypeInfo(road_identifier)->flags & ROTFB_CATENARY) {
 			return true;
 		}
 
-		if (tram_identifier.IsValid() && GetRoadTypeInfo(tram_identifier.Pack())->flags & ROTFB_CATENARY) {
+		if (tram_identifier.IsValid() && GetRoadTypeInfo(tram_identifier)->flags & ROTFB_CATENARY) {
 			return true;
 		}
 
@@ -820,11 +825,9 @@ static inline bool HasRoadTypeRoad(TileIndex t)
 	return RoadTypeIdentifiers(t).road_identifier.IsValid();
 }
 
-static inline bool HasRoadTypeRoad(uint8 rtid)
+static inline bool HasRoadTypeRoad(RoadTypeIdentifier rtid)
 {
-	RoadTypeIdentifier _rtid = RoadTypeIdentifier(rtid);
-
-	return _rtid.IsValid() && _rtid.basetype == ROADTYPE_ROAD;
+	return rtid.IsValid() && rtid.basetype == ROADTYPE_ROAD;
 }
 
 static inline bool HasRoadTypeRoad(RoadTypeIdentifiers rtids)
@@ -837,11 +840,9 @@ static inline bool HasRoadTypeTram(TileIndex t)
 	return RoadTypeIdentifiers(t).tram_identifier.IsValid();
 }
 
-static inline bool HasRoadTypeTram(uint8 rtid)
+static inline bool HasRoadTypeTram(RoadTypeIdentifier rtid)
 {
-	RoadTypeIdentifier _rtid = RoadTypeIdentifier(rtid);
-
-	return _rtid.IsValid() && _rtid.basetype == ROADTYPE_TRAM;
+	return rtid.IsValid() && rtid.basetype == ROADTYPE_TRAM;
 }
 
 static inline bool HasRoadTypeTram(RoadTypeIdentifiers rtids)

@@ -169,7 +169,7 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 	/* Loop through each road type until the label is found */
 	for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
 		rtid.subtype = r;
-		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 		if (rti->label == label) return rtid;
 	}
 
@@ -177,7 +177,7 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 		/* Test if any road type defines the label as an alternate. */
 		for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
 			rtid.subtype = r;
-			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 			if (rti->alternate_labels.Contains(label)) return rtid;
 		}
 	}
@@ -196,20 +196,17 @@ uint8 RoadTypeIdentifier::Pack() const
 	return this->basetype | (this->subtype << 1);
 }
 
-bool RoadTypeIdentifier::Unpack(uint8 data) {
-	this->basetype = (RoadType)GB(data, 0, 1);
-	this->subtype = (RoadSubType)GB(data, 1, 4);
-
-	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
-}
-
 bool RoadTypeIdentifier::IsValid()
 {
 	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
 }
 
-RoadTypeIdentifier::RoadTypeIdentifier(uint8 data)
+bool RoadTypeIdentifier::IsRoad()
 {
-	bool ret = this->Unpack(data);
-	assert(ret);
+	return (this->basetype == ROADTYPE_ROAD);
+}
+
+bool RoadTypeIdentifier::IsTram()
+{
+	return (this->basetype == ROADTYPE_TRAM);
 }

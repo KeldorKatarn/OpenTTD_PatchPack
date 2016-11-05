@@ -1139,15 +1139,15 @@ DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
-	RoadSubType rst;
+	RoadTypeIdentifier rtid;
 
-	FOR_ALL_SORTED_ROADTYPES(rst, roadtype) {
+	FOR_ALL_SORTED_ROADTYPES(rtid, roadtype) {
 		/* If it's not used ever, don't show it to the user. */
 		if (!HasBit(used_roadtypes, roadtype)) continue;
 
-		const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[roadtype][rst]);
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
-		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[roadtype][rst].Pack(), !HasBit(c->avail_roadtypes, roadtype));
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes, roadtype));
 		*list->Append() = item;
 	}
 

@@ -770,11 +770,11 @@ struct RoadTypeIdentifiers {
 
 	bool HasCatenary()
 	{
-		if (road_identifier.IsValid() && GetRoadTypeInfo(road_identifier.Pack())->flags & ROTFB_CATENARY) {
+		if (road_identifier.IsValid() && GetRoadTypeInfo(road_identifier)->flags & ROTFB_CATENARY) {
 			return true;
 		}
 
-		if (tram_identifier.IsValid() && GetRoadTypeInfo(tram_identifier.Pack())->flags & ROTFB_CATENARY) {
+		if (tram_identifier.IsValid() && GetRoadTypeInfo(tram_identifier)->flags & ROTFB_CATENARY) {
 			return true;
 		}
 

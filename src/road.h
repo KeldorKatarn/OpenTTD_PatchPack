@@ -216,7 +216,7 @@ struct RoadTypeIdentifier {
 	bool IsTram();
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
-	RoadTypeIdentifier(uint8 data = 0);
+	explicit RoadTypeIdentifier(uint8 data);
 };
 
 /**

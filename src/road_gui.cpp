@@ -334,9 +334,9 @@ struct BuildRoadToolbarWindow : Window {
 	* Switch to another road type.
 	* @param roadtype New road type.
 	*/
-	void ModifyRoadType(RoadType roadtype)
+	void ModifyRoadType(RoadTypeIdentifier roadtype_identifier)
 	{
-		this->SetupRoadToolbar(roadtype);
+		this->SetupRoadToolbar(roadtype_identifier);
 		this->ReInit();
 	}
 
@@ -847,7 +847,7 @@ Window *ShowBuildRoadScenToolbar()
 {
 	_cur_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
 	//return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
-	return new BuildRoadToolbarWindow(&_build_road_scen_desc, ROADTYPE_ROAD);
+	return new BuildRoadToolbarWindow(&_build_road_scen_desc, RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN)); // TODO which roadtype?
 }
 
 struct BuildRoadDepotWindow : public PickerWindowBase {
@@ -1117,7 +1117,7 @@ void InitializeRoadGui()
 void InitializeRoadGUI()
 {
 	BuildRoadToolbarWindow *w = dynamic_cast<BuildRoadToolbarWindow *>(FindWindowById(WC_BUILD_TOOLBAR, TRANSPORT_ROAD));
-	if (w != NULL) w->ModifyRoadType(_cur_roadtype_identifier.basetype);
+	if (w != NULL) w->ModifyRoadType(_cur_roadtype_identifier);
 }
 
 DropDownList *GetRoadTypeDropDownList(RoadType roadtype)

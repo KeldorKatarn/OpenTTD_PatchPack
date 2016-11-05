@@ -169,7 +169,7 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 	/* Loop through each road type until the label is found */
 	for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
 		rtid.subtype = r;
-		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 		if (rti->label == label) return rtid;
 	}
 
@@ -177,7 +177,7 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 		/* Test if any road type defines the label as an alternate. */
 		for (RoadSubType r = ROADSUBTYPE_BEGIN; r != ROADSUBTYPE_END; r++) {
 			rtid.subtype = r;
-			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid.Pack());
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 			if (rti->alternate_labels.Contains(label)) return rtid;
 		}
 	}

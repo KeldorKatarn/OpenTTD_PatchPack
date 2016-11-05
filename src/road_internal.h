@@ -20,6 +20,6 @@ RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb);
 
 CommandCost CheckAllowRemoveRoad(TileIndex tile, RoadBits remove, Owner owner, RoadType rt, DoCommandFlag flags, bool town_check = true);
 
-void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rti, RoadBits rb);
+void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb);
 
 #endif /* ROAD_INTERNAL_H */

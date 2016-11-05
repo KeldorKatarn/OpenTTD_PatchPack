@@ -1303,68 +1303,11 @@ const byte _road_sloped_sprites[14] = {
 };
 
 /**
- * Should the road be drawn as a unpaved snow/desert road?
- * By default, roads are always drawn as unpaved if they are on desert or
- * above the snow line, but NewGRFs can override this for desert.
- *
- * @param tile The tile the road is on
- * @param roadside What sort of road this is
- * @return True if snow/desert road sprites should be used.
+ * Get the sprite offset within a spritegroup.
+ * @param slope Slope
+ * @param bits Roadbits
+ * @return Offset for the sprite within the spritegroup.
  */
-static bool DrawRoadAsSnowDesert(TileIndex tile, Roadside roadside)
-{
-	return (IsOnSnow(tile) &&
-			!(_settings_game.game_creation.landscape == LT_TROPIC && HasGrfMiscBit(GMB_DESERT_PAVED_ROADS) &&
-				roadside != ROADSIDE_BARREN && roadside != ROADSIDE_GRASS && roadside != ROADSIDE_GRASS_ROAD_WORKS));
-}
-
-/**
- * Draws the catenary for the given tile
- * @param ti   information about the tile (slopes, height etc)
- * @param rti  road type to draw catenary for
- * @param rb   the roadbits for the tram
- */
-void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rti, RoadBits rb)
-{
-	/* Don't draw the catenary under a low bridge */
-	if (IsBridgeAbove(ti->tile) && !IsTransparencySet(TO_CATENARY)) {
-		int height = GetBridgeHeight(GetNorthernBridgeEnd(ti->tile));
-
-		if (height <= GetTileMaxZ(ti->tile) + 1) return;
-	}
-
-	SpriteID front;
-	SpriteID back;
-
-	if (ti->tileh != SLOPE_FLAT) {
-		back  = SPR_TRAMWAY_BACK_WIRES_SLOPED  + _road_sloped_sprites[ti->tileh - 1];
-		front = SPR_TRAMWAY_FRONT_WIRES_SLOPED + _road_sloped_sprites[ti->tileh - 1];
-	} else {
-		back  = SPR_TRAMWAY_BASE + _road_backpole_sprites_1[rb];
-		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[rb];
-	}
-
-	AddSortableSpriteToDraw(back,  PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
-	AddSortableSpriteToDraw(front, PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
-}
-
-/**
- * Draws details on/around the road
- * @param img the sprite to draw
- * @param ti  the tile to draw on
- * @param dx  the offset from the top of the BB of the tile
- * @param dy  the offset from the top of the BB of the tile
- * @param h   the height of the sprite to draw
- */
-static void DrawRoadDetail(SpriteID img, const TileInfo *ti, int dx, int dy, int h)
-{
-	int x = ti->x | dx;
-	int y = ti->y | dy;
-	int z = ti->z;
-	if (ti->tileh != SLOPE_FLAT) z = GetSlopePixelZ(x, y);
-	AddSortableSpriteToDraw(img, PAL_NONE, x, y, 2, 2, h, z);
-}
-
 static uint GetRoadSpriteOffset(Slope slope, RoadBits bits)
 {
 	if (slope != SLOPE_FLAT) {
@@ -1384,6 +1327,73 @@ static uint GetRoadSpriteOffset(Slope slope, RoadBits bits)
 		};
 		return offsets[bits];
 	}
+}
+
+/**
+ * Should the road be drawn as a unpaved snow/desert road?
+ * By default, roads are always drawn as unpaved if they are on desert or
+ * above the snow line, but NewGRFs can override this for desert.
+ *
+ * @param tile The tile the road is on
+ * @param roadside What sort of road this is
+ * @return True if snow/desert road sprites should be used.
+ */
+static bool DrawRoadAsSnowDesert(TileIndex tile, Roadside roadside)
+{
+	return (IsOnSnow(tile) &&
+			!(_settings_game.game_creation.landscape == LT_TROPIC && HasGrfMiscBit(GMB_DESERT_PAVED_ROADS) &&
+				roadside != ROADSIDE_BARREN && roadside != ROADSIDE_GRASS && roadside != ROADSIDE_GRASS_ROAD_WORKS));
+}
+
+/**
+ * Draws the catenary for the given tile
+ * @param ti   information about the tile (slopes, height etc)
+ * @param rtid road type to draw catenary for
+ * @param rb   the roadbits for the tram
+ */
+void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
+{
+	/* Don't draw the catenary under a low bridge */
+	if (IsBridgeAbove(ti->tile) && !IsTransparencySet(TO_CATENARY)) {
+		int height = GetBridgeHeight(GetNorthernBridgeEnd(ti->tile));
+
+		if (height <= GetTileMaxZ(ti->tile) + 1) return;
+	}
+
+	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
+	SpriteID front = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_FRONT);
+	SpriteID back = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_BACK);
+
+	if (front != 0 || back != 0) {
+		if (front != 0) front += GetRoadSpriteOffset(ti->tileh, rb);
+		if (back != 0) back += GetRoadSpriteOffset(ti->tileh, rb);
+	} else if (ti->tileh != SLOPE_FLAT) {
+		back  = SPR_TRAMWAY_BACK_WIRES_SLOPED  + _road_sloped_sprites[ti->tileh - 1];
+		front = SPR_TRAMWAY_FRONT_WIRES_SLOPED + _road_sloped_sprites[ti->tileh - 1];
+	} else {
+		back  = SPR_TRAMWAY_BASE + _road_backpole_sprites_1[rb];
+		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[rb];
+	}
+
+	if (back != 0) AddSortableSpriteToDraw(back,  PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
+	if (front != 0) AddSortableSpriteToDraw(front, PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
+}
+
+/**
+ * Draws details on/around the road
+ * @param img the sprite to draw
+ * @param ti  the tile to draw on
+ * @param dx  the offset from the top of the BB of the tile
+ * @param dy  the offset from the top of the BB of the tile
+ * @param h   the height of the sprite to draw
+ */
+static void DrawRoadDetail(SpriteID img, const TileInfo *ti, int dx, int dy, int h)
+{
+	int x = ti->x | dx;
+	int y = ti->y | dy;
+	int z = ti->z;
+	if (ti->tileh != SLOPE_FLAT) z = GetSlopePixelZ(x, y);
+	AddSortableSpriteToDraw(img, PAL_NONE, x, y, 2, 2, h, z);
 }
 
 /**
@@ -1427,15 +1437,13 @@ static void DrawRoadBits(TileInfo *ti)
 
 	DrawGroundSprite(image, pal);
 
-	/* Draw roadtype underlay */
+	/* Road underlay takes precendence over tram */
 	if (road != ROAD_NONE) {
-		/* If road exists, then the underlay is provided by the road */
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
 			DrawGroundSprite(ground + road_offset, PAL_NONE);
 		}
 	} else {
-		/* Tram only draws underlay if there is no road */
 		if (tram_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_GROUND);
 			DrawGroundSprite(ground + tram_offset, PAL_NONE);
@@ -1478,8 +1486,13 @@ static void DrawRoadBits(TileInfo *ti)
 		return;
 	}
 
-	if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) {
-		DrawRoadCatenary(ti, tram_rtid, tram); // TODO catenary flag for roadtype TODO draw only one catenary, road takes precendence
+	/* Road catenary takes precendence over tram */
+	if (road != ROAD_NONE && HasRoadCatenaryDrawn(road_rtid)) {
+		RoadBits bits = road;
+		if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) bits |= tram;
+		DrawRoadCatenary(ti, road_rtid, bits);
+	} else if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) {
+		DrawRoadCatenary(ti, tram_rtid, tram);
 	}
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */

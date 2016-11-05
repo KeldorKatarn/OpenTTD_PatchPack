@@ -196,7 +196,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		0,
 
 		/* flags */
-		ROTFB_NONE,
+		ROTFB_CATENARY,
 
 		/* cost multiplier */
 		2,

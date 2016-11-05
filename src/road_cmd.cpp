@@ -638,7 +638,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	/* do not allow building 'zero' road bits, code wouldn't handle it */
 	if (pieces == ROAD_NONE) return CMD_ERROR;
 
-	RoadTypeIdentifier rtid(GB(p1, 4, 5));
+	RoadTypeIdentifier rtid = RoadTypeIdentifier::Unpack(GB(p1, 4, 5));
 	RoadType rt = rtid.basetype;
 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
@@ -974,7 +974,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	if (p1 >= MapSize()) return CMD_ERROR;
 
 	TileIndex end_tile = p1;
-	RoadTypeIdentifier rtid = RoadTypeIdentifier(GB(p2, 3, 5));
+	RoadTypeIdentifier rtid = RoadTypeIdentifier::Unpack(GB(p2, 3, 5));
 	RoadType rt = rtid.basetype;
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 

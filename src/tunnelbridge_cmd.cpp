@@ -255,7 +255,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	/* type of bridge */
 	switch (transport_type) {
 		case TRANSPORT_ROAD:
-			rtids = RoadTypeIdentifiers(RoadTypeIdentifier(GB(p2, 8, 2)));
+			rtids = RoadTypeIdentifiers(RoadTypeIdentifier::Unpack(GB(p2, 8, 2)));
 			roadtypes = rtids.PresentRoadTypes();
 
 			//roadtypes = Extract<RoadTypes, 8, 2>(p2);

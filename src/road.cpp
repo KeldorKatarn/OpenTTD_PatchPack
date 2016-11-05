@@ -196,13 +196,6 @@ uint8 RoadTypeIdentifier::Pack() const
 	return this->basetype | (this->subtype << 1);
 }
 
-bool RoadTypeIdentifier::Unpack(uint8 data) {
-	this->basetype = (RoadType)GB(data, 0, 1);
-	this->subtype = (RoadSubType)GB(data, 1, 4);
-
-	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
-}
-
 bool RoadTypeIdentifier::IsValid()
 {
 	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
@@ -216,10 +209,4 @@ bool RoadTypeIdentifier::IsRoad()
 bool RoadTypeIdentifier::IsTram()
 {
 	return (this->basetype == ROADTYPE_TRAM);
-}
-
-RoadTypeIdentifier::RoadTypeIdentifier(uint8 data)
-{
-	bool ret = this->Unpack(data);
-	assert(ret);
 }

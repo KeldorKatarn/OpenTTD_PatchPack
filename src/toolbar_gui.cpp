@@ -904,7 +904,7 @@ static CallBackFunction ToolbarBuildRoadClick(Window *w)
  */
 static CallBackFunction MenuClickBuildRoad(int index)
 {
-	_last_built_roadtype_identifier = RoadTypeIdentifier(index);
+	_last_built_roadtype_identifier = RoadTypeIdentifier::Unpack(index);
 	ShowBuildRoadToolbar(_last_built_roadtype_identifier);
 	return CBF_NONE;
 }
@@ -926,7 +926,7 @@ static CallBackFunction ToolbarBuildTramClick(Window *w)
  */
 static CallBackFunction MenuClickBuildTram(int index)
 {
-	_last_built_tramtype_identifier = RoadTypeIdentifier(index);
+	_last_built_tramtype_identifier = RoadTypeIdentifier::Unpack(index);
 	ShowBuildRoadToolbar(_last_built_tramtype_identifier);
 	return CBF_NONE;
 }

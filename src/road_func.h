@@ -184,7 +184,7 @@ static inline Money RoadMaintenanceCost(RoadType roadtype, uint32 num)
 static inline bool HasRoadCatenary(RoadTypeIdentifier rti)
 {
 	assert(IsValidRoadType(rti.basetype));
-	return HasBit(GetRoadTypeInfo(rti.Pack())->flags, ROTF_CATENARY);
+	return HasBit(GetRoadTypeInfo(rti)->flags, ROTF_CATENARY);
 }
 
 /**

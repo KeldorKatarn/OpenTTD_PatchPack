@@ -196,6 +196,22 @@ uint8 RoadTypeIdentifier::Pack() const
 	return this->basetype | (this->subtype << 1);
 }
 
+bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
+{
+	this->basetype = (RoadType)GB(data, 0, 1);
+	this->subtype = (RoadSubType)GB(data, 1, 4);
+
+	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
+}
+
+/* static */ RoadTypeIdentifier RoadTypeIdentifier::Unpack(uint32 data)
+{
+	RoadTypeIdentifier result;
+	bool ret = result.UnpackIfValid(data);
+	assert(ret);
+	return result;
+}
+
 bool RoadTypeIdentifier::IsValid()
 {
 	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);

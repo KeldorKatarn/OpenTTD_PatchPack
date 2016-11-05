@@ -268,6 +268,7 @@ static const SpriteID SPR_TRAMWAY_BUS_STOP_DT_X_W      = SPR_TRAMWAY_BASE + 24;
 static const SpriteID SPR_TRAMWAY_BUS_STOP_DT_X_E      = SPR_TRAMWAY_BASE + 26;
 static const SpriteID SPR_TRAMWAY_PAVED_STRAIGHT_Y     = SPR_TRAMWAY_BASE + 46;
 static const SpriteID SPR_TRAMWAY_PAVED_STRAIGHT_X     = SPR_TRAMWAY_BASE + 47;
+static const SpriteID SPR_TRAMWAY_DEPOT                = SPR_TRAMWAY_BASE + 49;
 static const SpriteID SPR_TRAMWAY_BACK_WIRES_STRAIGHT  = SPR_TRAMWAY_BASE + 55;
 static const SpriteID SPR_TRAMWAY_FRONT_WIRES_STRAIGHT = SPR_TRAMWAY_BASE + 56;
 static const SpriteID SPR_TRAMWAY_BACK_WIRES_SLOPED    = SPR_TRAMWAY_BASE + 72;
@@ -552,6 +553,7 @@ static const SpriteID SPR_ROAD_SLOPE_START        = 1343;
 static const SpriteID SPR_ROAD_Y_SNOW             = 1351;
 static const SpriteID SPR_ROAD_X_SNOW             = 1352;
 /* see _road_sloped_sprites_offset in road_cmd.cpp for offsets for sloped road tiles */
+static const SpriteID SPR_ROAD_DEPOT              = 1408;
 
 static const SpriteID SPR_EXCAVATION_X = 1414;
 static const SpriteID SPR_EXCAVATION_Y = 1415;

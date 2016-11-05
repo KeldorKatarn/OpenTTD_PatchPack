@@ -243,7 +243,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 	RailType railtype = INVALID_RAILTYPE;
 	RoadTypes roadtypes = ROADTYPES_NONE;
-	RoadTypeIdentifiers rtids = RoadTypeIdentifiers();
+	RoadTypeIdentifiers rtids;
 
 	/* unpack parameters */
 	BridgeType bridge_type = GB(p2, 0, 8);

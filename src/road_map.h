@@ -643,8 +643,8 @@ static inline RoadTypeIdentifier GetRoadTypeTram(TileIndex t)
 }
 
 struct RoadTypeIdentifiers {
-	RoadTypeIdentifier road_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
-	RoadTypeIdentifier tram_identifier = RoadTypeIdentifier(INVALID_ROADTYPE, INVALID_ROADSUBTYPE);
+	RoadTypeIdentifier road_identifier;
+	RoadTypeIdentifier tram_identifier;
 
 	/* Creates an INVALID RoadTypeIdentifiers */
 	RoadTypeIdentifiers() {}
@@ -656,6 +656,8 @@ struct RoadTypeIdentifiers {
 	{
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
 		TileType tt = GetTileType(t);
+		road_identifier = RoadTypeIdentifier();
+		tram_identifier = RoadTypeIdentifier();
 
 		switch (tt) {
 			default: NOT_REACHED();
@@ -681,6 +683,9 @@ struct RoadTypeIdentifiers {
 	 */
 	RoadTypeIdentifiers(RoadTypeIdentifier rtid)
 	{
+		road_identifier = RoadTypeIdentifier();
+		tram_identifier = RoadTypeIdentifier();
+
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD: road_identifier = rtid; break;

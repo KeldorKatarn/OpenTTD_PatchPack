@@ -60,8 +60,7 @@ DECLARE_ENUM_AS_BIT_SET(RoadFlags)
 
 static RoadFlags _place_road_flag;
 
-static RoadType _cur_roadtype;
-static uint8 _cur_roadtype_id;
+static RoadTypeIdentifier _cur_roadtype_identifier;
 
 static DiagDirection _road_depot_orientation;
 static DiagDirection _road_station_picker_orientation;
@@ -122,8 +121,8 @@ void ConnectRoadToStructure(TileIndex tile, DiagDirection direction)
 	tile += TileOffsByDiagDir(direction);
 	/* if there is a roadpiece just outside of the station entrance, build a connecting route */
 	if (IsNormalRoadTile(tile)) {
-		if (GetRoadBits(tile, _cur_roadtype) != ROAD_NONE) {
-			DoCommandP(tile, _cur_roadtype << 4 | DiagDirToRoadBits(ReverseDiagDir(direction)), 0, CMD_BUILD_ROAD);
+		if (GetRoadBits(tile, _cur_roadtype_identifier.basetype) != ROAD_NONE) {
+			DoCommandP(tile, _cur_roadtype_identifier.basetype << 4 | DiagDirToRoadBits(ReverseDiagDir(direction)), 0, CMD_BUILD_ROAD);
 		}
 	}
 }
@@ -265,11 +264,11 @@ static bool RoadToolbar_CtrlChanged(Window *w)
 
 /** Road toolbar window handler. */
 struct BuildRoadToolbarWindow : Window {
-	uint8 roadtype_identifier; ///< Road type to build.
+	RoadTypeIdentifier roadtype_identifier; ///< Road type to build.
 	const RoadtypeInfo *rti;          ///< Informations about current road type
 	int last_started_action;    ///< Last started user action.
 
-	BuildRoadToolbarWindow(WindowDesc *desc, uint8 roadtype_identifier) : Window(desc)
+	BuildRoadToolbarWindow(WindowDesc *desc, RoadTypeIdentifier roadtype_identifier) : Window(desc)
 	{
 		this->InitNested(ROADTYPE_ROAD);
 		this->SetupRoadToolbar(roadtype_identifier);
@@ -315,7 +314,7 @@ struct BuildRoadToolbarWindow : Window {
 	* Configures the road toolbar for roadtype given
 	* @param roadtype the roadtype to display
 	*/
-	void SetupRoadToolbar(uint8 roadtype_identifier)
+	void SetupRoadToolbar(RoadTypeIdentifier roadtype_identifier)
 	{
 		//assert(roadtype < ROADTYPE_END);
 
@@ -507,7 +506,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				DoCommandP(tile, _cur_roadtype << 2 | _road_depot_orientation, 0,
+				DoCommandP(tile, _cur_roadtype_identifier.basetype << 2 | _road_depot_orientation, 0,
 						CMD_BUILD_ROAD_DEPOT | CMD_MSG(rti->strings.err_depot), CcRoadDepot);
 				break;
 
@@ -524,7 +523,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUILD_TUNNEL:
-				DoCommandP(tile, RoadTypeToRoadTypes(_cur_roadtype) | (TRANSPORT_ROAD << 8), 0,
+				DoCommandP(tile, RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) | (TRANSPORT_ROAD << 8), 0,
 						CMD_BUILD_TUNNEL | CMD_MSG(STR_ERROR_CAN_T_BUILD_TUNNEL_HERE), CcBuildRoadTunnel);
 				break;
 
@@ -599,7 +598,7 @@ struct BuildRoadToolbarWindow : Window {
 				default: NOT_REACHED();
 				case DDSP_BUILD_BRIDGE:
 					if (!_settings_client.gui.persistent_buildingtools) ResetObjectToPlace();
-					ShowBuildBridgeWindow(start_tile, end_tile, TRANSPORT_ROAD, _cur_roadtype_id);
+					ShowBuildBridgeWindow(start_tile, end_tile, TRANSPORT_ROAD, _cur_roadtype_identifier.Pack());
 					break;
 
 				case DDSP_DEMOLISH_AREA:
@@ -619,18 +618,18 @@ struct BuildRoadToolbarWindow : Window {
 					 * flags */
 					_place_road_flag = (RoadFlags)((_place_road_flag & RF_DIR_Y) ? (_place_road_flag & 0x07) : (_place_road_flag >> 3));
 
-					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype_id << 3) | (_one_way_button_clicked << 8),
+					DoCommandP(start_tile, end_tile, _place_road_flag | (_cur_roadtype_identifier.Pack() << 3) | (_one_way_button_clicked << 8),
 							_remove_button_clicked ?
 							CMD_REMOVE_LONG_ROAD | CMD_MSG(rti->strings.err_remove_road) :
 							CMD_BUILD_LONG_ROAD | CMD_MSG(rti->strings.err_build_road), CcPlaySound_SPLAT_OTHER);
 					break;
 
 				case DDSP_BUILD_BUSSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_BUS]));
+					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) << 2 | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_BUS]));
 					break;
 
 				case DDSP_BUILD_TRUCKSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype) << 2 | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_TRUCK]));
+					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) << 2 | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_TRUCK]));
 					break;
 
 				case DDSP_REMOVE_BUSSTOP: {
@@ -650,7 +649,7 @@ struct BuildRoadToolbarWindow : Window {
 
 	virtual void OnPlacePresize(Point pt, TileIndex tile)
 	{
-		DoCommand(tile, RoadTypeToRoadTypes(_cur_roadtype) | (TRANSPORT_ROAD << 8), 0, DC_AUTO, CMD_BUILD_TUNNEL);
+		DoCommand(tile, RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) | (TRANSPORT_ROAD << 8), 0, DC_AUTO, CMD_BUILD_TUNNEL);
 		VpSetPresizeRange(tile, _build_tunnel_endtile == 0 ? tile : _build_tunnel_endtile);
 	}
 
@@ -673,8 +672,8 @@ static EventState RoadToolbarGlobalHotkeys(int hotkey)
 	Window *w = NULL;
 	switch (_game_mode) {
 		case GM_NORMAL: {
-			extern RoadType _last_built_roadtype;
-			w = ShowBuildRoadToolbar(_last_built_roadtype);
+			extern RoadTypeIdentifier _last_built_roadtype_identifier;
+			w = ShowBuildRoadToolbar(_last_built_roadtype_identifier);
 			break;
 		}
 
@@ -795,15 +794,14 @@ static WindowDesc _build_tramway_desc(
  *
  * @return newly opened road toolbar, or NULL if the toolbar could not be opened.
  */
-Window *ShowBuildRoadToolbar(uint32 roadtype_id)
+Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id)
 {
 	if (!Company::IsValidID(_local_company)) return NULL;
-	_cur_roadtype = RoadTypeIdentifier(roadtype_id).basetype;
-	_cur_roadtype_id = roadtype_id;
+	_cur_roadtype_identifier = roadtype_id;
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
 
-	return new BuildRoadToolbarWindow(_cur_roadtype == ROADTYPE_ROAD ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
+	return new BuildRoadToolbarWindow(_cur_roadtype_identifier.IsRoad() ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
 }
 
 static const NWidgetPart _nested_build_road_scen_widgets[] = {
@@ -847,7 +845,7 @@ static WindowDesc _build_road_scen_desc(
  */
 Window *ShowBuildRoadScenToolbar()
 {
-	_cur_roadtype = ROADTYPE_ROAD;
+	_cur_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
 	//return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
 	return new BuildRoadToolbarWindow(&_build_road_scen_desc, ROADTYPE_ROAD);
 }
@@ -858,7 +856,7 @@ struct BuildRoadDepotWindow : public PickerWindowBase {
 		this->CreateNestedTree();
 
 		this->LowerWidget(_road_depot_orientation + WID_BROD_DEPOT_NE);
-		if ( _cur_roadtype == ROADTYPE_TRAM) {
+		if ( _cur_roadtype_identifier.IsTram()) {
 			this->GetWidget<NWidgetCore>(WID_BROD_CAPTION)->widget_data = STR_BUILD_DEPOT_TRAM_ORIENTATION_CAPTION;
 			for (int i = WID_BROD_DEPOT_NE; i <= WID_BROD_DEPOT_NW; i++) this->GetWidget<NWidgetCore>(i)->tool_tip = STR_BUILD_DEPOT_TRAM_ORIENTATION_SELECT_TOOLTIP;
 		}
@@ -878,7 +876,7 @@ struct BuildRoadDepotWindow : public PickerWindowBase {
 	{
 		if (!IsInsideMM(widget, WID_BROD_DEPOT_NE, WID_BROD_DEPOT_NW + 1)) return;
 
-		DrawRoadDepotSprite(r.left + 1 + ScaleGUITrad(31), r.bottom - ScaleGUITrad(31), (DiagDirection)(widget - WID_BROD_DEPOT_NE + DIAGDIR_NE), _cur_roadtype);
+		DrawRoadDepotSprite(r.left + 1 + ScaleGUITrad(31), r.bottom - ScaleGUITrad(31), (DiagDirection)(widget - WID_BROD_DEPOT_NE + DIAGDIR_NE), _cur_roadtype_identifier.basetype);
 	}
 
 	virtual void OnClick(Point pt, int widget, int click_count)
@@ -949,16 +947,16 @@ struct BuildRoadStationWindow : public PickerWindowBase {
 		this->CreateNestedTree();
 
 		/* Trams don't have non-drivethrough stations */
-		if (_cur_roadtype == ROADTYPE_TRAM && _road_station_picker_orientation < DIAGDIR_END) {
+		if (_cur_roadtype_identifier.IsTram() && _road_station_picker_orientation < DIAGDIR_END) {
 			_road_station_picker_orientation = DIAGDIR_END;
 		}
-		this->SetWidgetsDisabledState(_cur_roadtype == ROADTYPE_TRAM,
+		this->SetWidgetsDisabledState(_cur_roadtype_identifier.IsTram(),
 				WID_BROS_STATION_NE,
 				WID_BROS_STATION_SE,
 				WID_BROS_STATION_SW,
 				WID_BROS_STATION_NW,
 				WIDGET_LIST_END);
-		const RoadtypeInfo *rti = GetRoadTypeInfo(_cur_roadtype_id);
+		const RoadtypeInfo *rti = GetRoadTypeInfo(_cur_roadtype_identifier);
 		this->GetWidget<NWidgetCore>(WID_BROS_CAPTION)->widget_data = rti->strings.picker_title[rs];
 		for (uint i = WID_BROS_STATION_NE; i < WID_BROS_LT_OFF; i++) this->GetWidget<NWidgetCore>(i)->tool_tip = rti->strings.picker_tooltip[rs];
 
@@ -1015,7 +1013,7 @@ struct BuildRoadStationWindow : public PickerWindowBase {
 		if (!IsInsideMM(widget, WID_BROS_STATION_NE, WID_BROS_STATION_Y + 1)) return;
 
 		StationType st = (this->window_class == WC_BUS_STATION) ? STATION_BUS : STATION_TRUCK;
-		StationPickerDrawSprite(r.left + 1 + ScaleGUITrad(31), r.bottom - ScaleGUITrad(31), st, INVALID_RAILTYPE, widget < WID_BROS_STATION_X ? ROADTYPE_ROAD : _cur_roadtype, widget - WID_BROS_STATION_NE);
+		StationPickerDrawSprite(r.left + 1 + ScaleGUITrad(31), r.bottom - ScaleGUITrad(31), st, INVALID_RAILTYPE, widget < WID_BROS_STATION_X ? ROADTYPE_ROAD : _cur_roadtype_identifier.basetype, widget - WID_BROS_STATION_NE);
 	}
 
 	virtual void OnClick(Point pt, int widget, int click_count)
@@ -1119,10 +1117,10 @@ void InitializeRoadGui()
 void InitializeRoadGUI()
 {
 	BuildRoadToolbarWindow *w = dynamic_cast<BuildRoadToolbarWindow *>(FindWindowById(WC_BUILD_TOOLBAR, TRANSPORT_ROAD));
-	if (w != NULL) w->ModifyRoadType(_cur_roadtype);
+	if (w != NULL) w->ModifyRoadType(_cur_roadtype_identifier.basetype);
 }
 
-DropDownList *GetRoadTypeDropDownList()
+DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 {
 	RoadTypes used_roadtypes = ROADTYPES_NONE;
 
@@ -1141,20 +1139,16 @@ DropDownList *GetRoadTypeDropDownList()
 
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
-	RoadType rt;
+	RoadSubType rst;
 
-	/* The macro is broken */
-	//FOR_ALL_SORTED_ROADTYPES(rt, ROADTYPE_TRAM) {
-	for (rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
-		for (uint8 index = 0; index < _sorted_roadtypes_size[rt]; index++) {
-			/* If it's not used ever, don't show it to the user. */
-			if (!HasBit(used_roadtypes, rt)) continue;
+	FOR_ALL_SORTED_ROADTYPES(rst, roadtype) {
+		/* If it's not used ever, don't show it to the user. */
+		if (!HasBit(used_roadtypes, roadtype)) continue;
 
-			const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[rt][index]);
+		const RoadtypeInfo *rti = GetRoadTypeInfo(_sorted_roadtypes[roadtype][rst]);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[rt][index].Pack(), !HasBit(c->avail_roadtypes, rt));
-			*list->Append() = item;
-		}
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, _sorted_roadtypes[roadtype][rst].Pack(), !HasBit(c->avail_roadtypes, roadtype));
+		*list->Append() = item;
 	}
 
 	return list;

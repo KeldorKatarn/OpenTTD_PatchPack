@@ -208,6 +208,16 @@ bool RoadTypeIdentifier::IsValid()
 	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
 }
 
+bool RoadTypeIdentifier::IsRoad()
+{
+	return (this->basetype == ROADTYPE_ROAD);
+}
+
+bool RoadTypeIdentifier::IsTram()
+{
+	return (this->basetype == ROADTYPE_TRAM);
+}
+
 RoadTypeIdentifier::RoadTypeIdentifier(uint8 data)
 {
 	bool ret = this->Unpack(data);

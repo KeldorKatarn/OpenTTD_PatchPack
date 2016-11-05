@@ -37,6 +37,7 @@
 #include "pbs.h"
 #include "company_base.h"
 #include "newgrf_railtype.h"
+#include "newgrf_roadtype.h"
 #include "object_base.h"
 #include "water.h"
 #include "company_gui.h"
@@ -1190,20 +1191,60 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 		DrawGroundSprite(image, PAL_NONE);
 
 		if (transport_type == TRANSPORT_ROAD) {
-			RoadTypes rts = GetRoadTypes(ti->tile);
+			RoadTypes roadtypes = GetRoadTypes(ti->tile);
+			RoadTypeIdentifier road_rtid = GetRoadTypeRoad(ti->tile);
+			RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
+			const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
+			const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+			uint sprite_offset = DiagDirToAxis(tunnelbridge_direction) == AXIS_X ? 1 : 0;
 
-			if (HasBit(rts, ROADTYPE_TRAM)) {
-				static const SpriteID tunnel_sprites[2][4] = { { 28, 78, 79, 27 }, {  5, 76, 77,  4 } };
-
-				DrawGroundSprite(SPR_TRAMWAY_BASE + tunnel_sprites[rts - ROADTYPES_TRAM][tunnelbridge_direction], PAL_NONE);
-
-				RoadTypeIdentifier tram_rti = GetRoadTypeTram(ti->tile);
-				/* Do not draw wires if they are invisible */
-				if (HasRoadCatenaryDrawn(tram_rti)) {
-					catenary = true;
-					StartSpriteCombine();
-					AddSortableSpriteToDraw(SPR_TRAMWAY_TUNNEL_WIRES + tunnelbridge_direction, PAL_NONE, ti->x, ti->y, BB_data[10], BB_data[11], TILE_HEIGHT, ti->z, IsTransparencySet(TO_CATENARY), BB_data[8], BB_data[9], BB_Z_SEPARATOR);
+			/* Road underlay takes precendence over tram */
+			if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+				if (road_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
+					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				}
+			} else if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+				if (tram_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_GROUND);
+					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+				} else {
+					DrawGroundSprite(SPR_TRAMWAY_TRAM + sprite_offset, PAL_NONE);
+				}
+			}
+
+			/* Draw road overlay */
+			if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+				if (road_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
+					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+				}
+			}
+
+			/* Draw tram overlay */
+			if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+				if (tram_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
+					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+				} else if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
+				}
+			}
+
+			/* Road catenary takes precendence over tram */
+			SpriteID catenary_sprite_base = 0;
+			if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
+				catenary_sprite_base = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_CATENARY_FRONT);
+				if (catenary_sprite_base == 0) catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+			} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
+				catenary_sprite_base = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_CATENARY_FRONT);
+				if (catenary_sprite_base == 0) catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+			}
+
+			if (catenary_sprite_base != 0) {
+				catenary = true;
+				StartSpriteCombine();
+				AddSortableSpriteToDraw(catenary_sprite_base + tunnelbridge_direction, PAL_NONE, ti->x, ti->y, BB_data[10], BB_data[11], TILE_HEIGHT, ti->z, IsTransparencySet(TO_CATENARY), BB_data[8], BB_data[9], BB_Z_SEPARATOR);
 			}
 		} else {
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));

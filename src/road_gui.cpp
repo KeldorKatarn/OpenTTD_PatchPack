@@ -270,8 +270,9 @@ struct BuildRoadToolbarWindow : Window {
 
 	BuildRoadToolbarWindow(WindowDesc *desc, RoadTypeIdentifier roadtype_identifier) : Window(desc)
 	{
+		this->Initialize(roadtype_identifier);
 		this->InitNested(ROADTYPE_ROAD);
-		this->SetupRoadToolbar(roadtype_identifier);
+		this->SetupRoadToolbar();
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,
 				WID_ROT_ONE_WAY,
@@ -310,17 +311,19 @@ struct BuildRoadToolbarWindow : Window {
 		}
 	}
 
+	void Initialize(RoadTypeIdentifier roadtype_identifier)
+	{
+		assert(roadtype_identifier.IsValid());
+		this->roadtype_identifier = roadtype_identifier;
+		this->rti = GetRoadTypeInfo(this->roadtype_identifier);
+	}
+
 	/**
 	* Configures the road toolbar for roadtype given
 	* @param roadtype the roadtype to display
 	*/
-	void SetupRoadToolbar(RoadTypeIdentifier roadtype_identifier)
+	void SetupRoadToolbar()
 	{
-		//assert(roadtype < ROADTYPE_END);
-
-		this->roadtype_identifier = roadtype_identifier;
-		this->rti = GetRoadTypeInfo(roadtype_identifier);
-
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_Y)->widget_data = rti->gui_sprites.build_y_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
@@ -336,7 +339,8 @@ struct BuildRoadToolbarWindow : Window {
 	*/
 	void ModifyRoadType(RoadTypeIdentifier roadtype_identifier)
 	{
-		this->SetupRoadToolbar(roadtype_identifier);
+		this->Initialize(roadtype_identifier);
+		this->SetupRoadToolbar();
 		this->ReInit();
 	}
 

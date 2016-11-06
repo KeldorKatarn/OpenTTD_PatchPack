@@ -30,6 +30,7 @@
 #include "road_gui.h"
 #include "zoom_func.h"
 #include "engine_base.h"
+#include "strings_func.h"
 
 #include "widgets/road_widget.h"
 
@@ -342,6 +343,13 @@ struct BuildRoadToolbarWindow : Window {
 		this->Initialize(roadtype_identifier);
 		this->SetupRoadToolbar();
 		this->ReInit();
+	}
+
+	virtual void SetStringParameters(int widget) const
+	{
+		if (widget == WID_ROT_CAPTION) {
+			SetDParam(0, rti->strings.toolbar_caption);
+		}
 	}
 
 	/**
@@ -713,7 +721,7 @@ HotkeyList BuildRoadToolbarWindow::hotkeys("roadtoolbar", roadtoolbar_hotkeys, R
 static const NWidgetPart _nested_build_road_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
-		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN), SetDataTip(STR_ROAD_TOOLBAR_ROAD_CONSTRUCTION_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN, WID_ROT_CAPTION), SetDataTip(STR_WHITE_STRING, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_STICKYBOX, COLOUR_DARK_GREEN),
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),
@@ -754,7 +762,7 @@ static WindowDesc _build_road_desc(
 static const NWidgetPart _nested_build_tramway_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
-		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN), SetDataTip(STR_ROAD_TOOLBAR_TRAM_CONSTRUCTION_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN, WID_ROT_CAPTION), SetDataTip(STR_WHITE_STRING, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_STICKYBOX, COLOUR_DARK_GREEN),
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),

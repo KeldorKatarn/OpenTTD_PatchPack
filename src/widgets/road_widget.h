@@ -15,6 +15,7 @@
 /** Widgets of the #BuildRoadToolbarWindow class. */
 enum RoadToolbarWidgets {
 	/* Name starts with RO instead of R, because of collision with RailToolbarWidgets */
+	WID_ROT_CAPTION,        ///< Caption of the window
 	WID_ROT_ROAD_X,         ///< Build road in x-direction.
 	WID_ROT_ROAD_Y,         ///< Build road in y-direction.
 	WID_ROT_AUTOROAD,       ///< Autorail.

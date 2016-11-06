@@ -1088,19 +1088,89 @@ static void DrawBridgePillars(const PalSpriteID *psid, const TileInfo *ti, Axis 
 }
 
 /**
- * Draws the trambits over an already drawn (lower end) of a bridge.
+ * Draws the road and trambits over an already drawn (lower end) of a bridge.
+ * @param head_tile    bridge head tile with roadtype information
  * @param x            the x of the bridge
  * @param y            the y of the bridge
  * @param z            the z of the bridge
- * @param offset       number representing whether to level or sloped and the direction
- * @param overlay      do we want to still see the road?
+ * @param offset       sprite offset identifying flat to sloped bridge tiles
  * @param head         are we drawing bridge head?
  */
-static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bool head)
+static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int offset, bool head)
 {
-	static const SpriteID tram_offsets[2][6] = { { 107, 108, 109, 110, 111, 112 }, { 4, 5, 15, 16, 17, 18 } };
-	static const SpriteID back_offsets[6]    =   {  95,  96,  99, 102, 100, 101 };
-	static const SpriteID front_offsets[6]   =   {  97,  98, 103, 106, 104, 105 };
+	RoadTypes roadtypes = GetRoadTypes(head_tile);
+	RoadTypeIdentifier road_rtid = GetRoadTypeRoad(head_tile);
+	RoadTypeIdentifier tram_rtid = GetRoadTypeTram(head_tile);
+	const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
+	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+
+	SpriteID seq_back[4] = { 0 };
+	bool trans_back[4] = { false };
+	SpriteID seq_front[4] = { 0 };
+	bool trans_front[4] = { false };
+
+	static const SpriteID overlay_offsets[6] = {   0,   1,  11,  12,  13,  14 };
+	static const SpriteID back_offsets[6]    = {  95,  96,  99, 102, 100, 101 };
+	static const SpriteID front_offsets[6]   = {  97,  98, 103, 106, 104, 105 };
+
+	if (head || !IsInvisibilitySet(TO_BRIDGES)) {
+		/* Road underlay takes precendence over tram */
+		trans_back[0] = !head && IsTransparencySet(TO_BRIDGES);
+		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti->UsesOverlay()) {
+				seq_back[0] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_BRIDGE, head ? TCX_NORMAL : TCX_ON_BRIDGE) + offset;
+			}
+		} else if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			if (tram_rti->UsesOverlay()) {
+				seq_back[0] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_BRIDGE, head ? TCX_NORMAL : TCX_ON_BRIDGE) + offset;
+			} else {
+				seq_back[0] = SPR_TRAMWAY_BRIDGE + offset;
+			}
+		}
+
+		/* Draw road overlay */
+		trans_back[1] = !head && IsTransparencySet(TO_BRIDGES);
+		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti->UsesOverlay()) {
+				seq_back[1] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
+			}
+		}
+
+		/* Draw tram overlay */
+		trans_back[2] = !head && IsTransparencySet(TO_BRIDGES);
+		if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			if (tram_rti->UsesOverlay()) {
+				seq_back[2] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
+			} else if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+				seq_back[2] = SPR_TRAMWAY_OVERLAY + overlay_offsets[offset];
+			}
+		}
+
+		/* Road catenary takes precendence over tram */
+		trans_back[3] = IsTransparencySet(TO_CATENARY);
+		trans_front[0] = IsTransparencySet(TO_CATENARY);
+		if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
+			seq_back[3] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_CATENARY_BACK, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+			seq_front[0] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_CATENARY_FRONT, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+			if (seq_back[3] == 0 || seq_front[0] == 0) {
+				seq_back[3] = SPR_TRAMWAY_BASE + back_offsets[offset];
+				seq_front[0] = SPR_TRAMWAY_BASE + front_offsets[offset];
+			} else {
+				seq_back[3] += 23 + offset;
+				seq_front[0] += 23 + offset;
+			}
+		} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
+			seq_back[3] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_CATENARY_BACK, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+			seq_front[0] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_CATENARY_FRONT, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+			if (seq_back[3] == 0 || seq_front[0] == 0) {
+				seq_back[3] = SPR_TRAMWAY_BASE + back_offsets[offset];
+				seq_front[0] = SPR_TRAMWAY_BASE + front_offsets[offset];
+			} else {
+				seq_back[3] += 23 + offset;
+				seq_front[0] += 23 + offset;
+			}
+		}
+	}
 
 	static const uint size_x[6] = {  1, 16, 16,  1, 16,  1 };
 	static const uint size_y[6] = { 16,  1,  1, 16,  1, 16 };
@@ -1109,28 +1179,25 @@ static void DrawBridgeTramBits(int x, int y, int z, int offset, bool overlay, bo
 
 	/* The sprites under the vehicles are drawn as SpriteCombine. StartSpriteCombine() has already been called
 	 * The bounding boxes here are the same as for bridge front/roof */
-	if (head || !IsInvisibilitySet(TO_BRIDGES)) {
-		AddSortableSpriteToDraw(SPR_TRAMWAY_BASE + tram_offsets[overlay][offset], PAL_NONE,
-			x, y, size_x[offset], size_y[offset], 0x28, z,
-			!head && IsTransparencySet(TO_BRIDGES));
-	}
-
-	/* Do not draw catenary if it is set invisible */
-	if (!IsInvisibilitySet(TO_CATENARY)) {
-		AddSortableSpriteToDraw(SPR_TRAMWAY_BASE + back_offsets[offset], PAL_NONE,
-			x, y, size_x[offset], size_y[offset], 0x28, z,
-			IsTransparencySet(TO_CATENARY));
+	for (uint i = 0; i < lengthof(seq_back); ++i) {
+		if (seq_back[i] != 0) {
+			AddSortableSpriteToDraw(seq_back[i], PAL_NONE,
+				x, y, size_x[offset], size_y[offset], 0x28, z,
+				trans_back[i]);
+		}
 	}
 
 	/* Start a new SpriteCombine for the front part */
 	EndSpriteCombine();
 	StartSpriteCombine();
 
-	/* For sloped sprites the bounding box needs to be higher, as the pylons stop on a higher point */
-	if (!IsInvisibilitySet(TO_CATENARY)) {
-		AddSortableSpriteToDraw(SPR_TRAMWAY_BASE + front_offsets[offset], PAL_NONE,
-			x, y, size_x[offset] + front_bb_offset_x[offset], size_y[offset] + front_bb_offset_y[offset], 0x28, z,
-			IsTransparencySet(TO_CATENARY), front_bb_offset_x[offset], front_bb_offset_y[offset]);
+	for (uint i = 0; i < lengthof(seq_front); ++i) {
+		if (seq_front[i] != 0) {
+			AddSortableSpriteToDraw(seq_front[i], PAL_NONE,
+				x, y, size_x[offset] + front_bb_offset_x[offset], size_y[offset] + front_bb_offset_y[offset], 0x28, z,
+				trans_front[i],
+				front_bb_offset_x[offset], front_bb_offset_y[offset]);
+		}
 	}
 }
 
@@ -1349,20 +1416,18 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 		AddSortableSpriteToDraw(psid->sprite, psid->pal, ti->x, ti->y, 16, 16, ti->tileh == SLOPE_FLAT ? 0 : 8, ti->z);
 
 		if (transport_type == TRANSPORT_ROAD) {
-			RoadTypes rts = GetRoadTypes(ti->tile);
-
-			if (HasBit(rts, ROADTYPE_TRAM)) {
-				uint offset = tunnelbridge_direction;
-				int z = ti->z;
-				if (ti->tileh != SLOPE_FLAT) {
-					offset = (offset + 1) & 1;
-					z += TILE_HEIGHT;
-				} else {
-					offset += 2;
-				}
-				/* DrawBridgeTramBits() calls EndSpriteCombine() and StartSpriteCombine() */
-				DrawBridgeTramBits(ti->x, ti->y, z, offset, HasBit(rts, ROADTYPE_ROAD), true);
+			uint offset = tunnelbridge_direction;
+			int z = ti->z;
+			if (ti->tileh != SLOPE_FLAT) {
+				offset = (offset + 1) & 1;
+				z += TILE_HEIGHT;
+			} else {
+				offset += 2;
 			}
+
+			/* DrawBridgeRoadBits() calls EndSpriteCombine() and StartSpriteCombine() */
+			DrawBridgeRoadBits(ti->tile, ti->x, ti->y, z, offset, true);
+
 			EndSpriteCombine();
 		} else if (transport_type == TRANSPORT_RAIL) {
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));
@@ -1520,15 +1585,8 @@ void DrawBridgeMiddle(const TileInfo *ti)
 	psid++;
 
 	if (transport_type == TRANSPORT_ROAD) {
-		RoadTypes rts = GetRoadTypes(rampsouth);
-
-		if (HasBit(rts, ROADTYPE_TRAM)) {
-			/* DrawBridgeTramBits() calls EndSpriteCombine() and StartSpriteCombine() */
-			DrawBridgeTramBits(x, y, bridge_z, axis ^ 1, HasBit(rts, ROADTYPE_ROAD), false);
-		} else {
-			EndSpriteCombine();
-			StartSpriteCombine();
-		}
+		/* DrawBridgeRoadBits() calls EndSpriteCombine() and StartSpriteCombine() */
+		DrawBridgeRoadBits(rampsouth, x, y, bridge_z, axis ^ 1, false);
 	} else if (transport_type == TRANSPORT_RAIL) {
 		const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(rampsouth));
 		if (rti->UsesOverlay() && !IsInvisibilitySet(TO_BRIDGES)) {

@@ -33,6 +33,8 @@ projects/*.sdf
 projects/*.opensdf
 projects/*.vcproj.*.user
 projects/*.vcxproj.user
+projects/.vs
+projects/*.db
 src/rev.cpp
 src/os/windows/ottdres.rc
 

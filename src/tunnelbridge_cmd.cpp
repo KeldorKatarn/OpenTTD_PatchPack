@@ -1238,10 +1238,18 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 			SpriteID catenary_sprite_base = 0;
 			if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
 				catenary_sprite_base = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_CATENARY_FRONT);
-				if (catenary_sprite_base == 0) catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+				if (catenary_sprite_base == 0) {
+					catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+				} else {
+					catenary_sprite_base += 19;
+				}
 			} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
 				catenary_sprite_base = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_CATENARY_FRONT);
-				if (catenary_sprite_base == 0) catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+				if (catenary_sprite_base == 0) {
+					catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
+				} else {
+					catenary_sprite_base += 19;
+				}
 			}
 
 			if (catenary_sprite_base != 0) {

@@ -209,21 +209,12 @@ struct RoadTypeIdentifier {
 	RoadSubType subtype;
 
 	uint8 Pack() const;
+	bool UnpackIfValid(uint32 data);
+	static RoadTypeIdentifier Unpack(uint32 data);
+
 	bool IsValid();
 	bool IsRoad();
 	bool IsTram();
-
-	static RoadTypeIdentifier Unpack(uint8 data)
-	{
-		RoadTypeIdentifier rtid = RoadTypeIdentifier(
-			(RoadType)GB(data, 0, 1),
-			(RoadSubType)GB(data, 1, 4)
-		);
-		
-		assert((rtid.subtype < ROADSUBTYPE_END) && (rtid.basetype < ROADTYPE_END));
-
-		return rtid;
-	}
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
 	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}

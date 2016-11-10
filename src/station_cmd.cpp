@@ -39,6 +39,7 @@
 #include "station_base.h"
 #include "roadstop_base.h"
 #include "newgrf_railtype.h"
+#include "newgrf_roadtype.h"
 #include "waypoint_base.h"
 #include "waypoint_func.h"
 #include "pbs.h"
@@ -2676,7 +2677,6 @@ static void DrawTile_Station(TileInfo *ti)
 	const NewGRFSpriteLayout *layout = NULL;
 	DrawTileSprites tmp_rail_layout;
 	const DrawTileSprites *t = NULL;
-	RoadTypes roadtypes;
 	int32 total_offset;
 	const RailtypeInfo *rti = NULL;
 	uint32 relocation = 0;
@@ -2687,7 +2687,6 @@ static void DrawTile_Station(TileInfo *ti)
 
 	if (HasStationRail(ti->tile)) {
 		rti = GetRailTypeInfo(GetRailType(ti->tile));
-		roadtypes = ROADTYPES_NONE;
 		total_offset = rti->GetRailtypeSpriteOffset();
 
 		if (IsCustomStationSpecIndex(ti->tile)) {
@@ -2714,7 +2713,6 @@ static void DrawTile_Station(TileInfo *ti)
 			}
 		}
 	} else {
-		roadtypes = IsRoadStop(ti->tile) ? GetRoadTypes(ti->tile) : ROADTYPES_NONE;
 		total_offset = 0;
 	}
 
@@ -2899,12 +2897,55 @@ draw_default_foundation:
 
 	if (HasStationRail(ti->tile) && HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);
 
-	if (HasBit(roadtypes, ROADTYPE_TRAM)) {
-		Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
-		DrawGroundSprite((HasBit(roadtypes, ROADTYPE_ROAD) ? SPR_TRAMWAY_OVERLAY : SPR_TRAMWAY_TRAM) + (axis ^ 1), PAL_NONE);
+	if (IsRoadStop(ti->tile)) {
+		RoadTypes roadtypes = GetRoadTypes(ti->tile);
+		Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y; // TODO drive-in stops
 
+		RoadTypeIdentifier road_rtid = GetRoadTypeRoad(ti->tile);
 		RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
-		if (HasRoadCatenaryDrawn(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
+		const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
+		const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+		uint sprite_offset = axis == AXIS_X ? 1 : 0;
+
+		/* Road underlay takes precendence over tram */
+		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
+				DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+			}
+		} else if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			if (tram_rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_GROUND);
+				DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+			} else {
+				DrawGroundSprite(SPR_TRAMWAY_TRAM + sprite_offset, PAL_NONE);
+			}
+		}
+
+		/* Draw road overlay */
+		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
+				DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+			}
+		}
+
+		/* Draw tram overlay */
+		if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			if (tram_rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
+				DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+			} else if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+				DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
+			}
+		}
+
+		/* Road catenary takes precendence over tram */
+		if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
+			DrawRoadCatenary(ti, road_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
+		} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
+			DrawRoadCatenary(ti, tram_rtid, axis == AXIS_X ? ROAD_X : ROAD_Y);
+		}
 	}
 
 	if (IsRailWaypoint(ti->tile)) {

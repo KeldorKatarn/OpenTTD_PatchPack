@@ -638,7 +638,8 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	/* do not allow building 'zero' road bits, code wouldn't handle it */
 	if (pieces == ROAD_NONE) return CMD_ERROR;
 
-	RoadTypeIdentifier rtid = RoadTypeIdentifier::Unpack(GB(p1, 4, 5));
+	RoadTypeIdentifier rtid;
+	if (!rtid.UnpackIfValid(GB(p1, 4, 5))) return CMD_ERROR;
 	RoadType rt = rtid.basetype;
 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
@@ -968,7 +969,8 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	if (p1 >= MapSize()) return CMD_ERROR;
 
 	TileIndex end_tile = p1;
-	RoadTypeIdentifier rtid = RoadTypeIdentifier::Unpack(GB(p2, 3, 5));
+	RoadTypeIdentifier rtid;
+	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CMD_ERROR;
 	RoadType rt = rtid.basetype;
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
@@ -1596,16 +1598,21 @@ static void DrawTile_Road(TileInfo *ti)
 			if (ti->tileh != SLOPE_FLAT) DrawFoundation(ti, FOUNDATION_LEVELED);
 
 			PaletteID palette = COMPANY_SPRITE_COLOUR(GetTileOwner(ti->tile));
+			RoadTypeIdentifier rtid = GetRoadTypeTram(ti->tile);
+			const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 
-			const DrawTileSprites *dts;
-			if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
-				dts =  &_tram_depot[GetRoadDepotDirection(ti->tile)];
+			int relocation = GetCustomRoadSprite(rti, ti->tile, ROTSG_DEPOT);
+			if (relocation == 0) {
+				if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
+					relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+				}
 			} else {
-				dts =  &_road_depot[GetRoadDepotDirection(ti->tile)];
+				relocation -= SPR_ROAD_DEPOT;
 			}
 
+			const DrawTileSprites *dts = &_road_depot[GetRoadDepotDirection(ti->tile)];
 			DrawGroundSprite(dts->ground.sprite, PAL_NONE);
-			DrawOrigTileSeq(ti, dts, TO_BUILDINGS, palette);
+			DrawRailTileSeq(ti, dts, TO_BUILDINGS, relocation, 0, palette);
 			break;
 		}
 	}
@@ -1617,15 +1624,25 @@ static void DrawTile_Road(TileInfo *ti)
  * @param x   The x offset to draw at.
  * @param y   The y offset to draw at.
  * @param dir The direction the depot must be facing.
- * @param rt  The road type of the depot to draw.
+ * @param rtid The road type of the depot to draw.
  */
-void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadType rt)
+void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rtid)
 {
 	PaletteID palette = COMPANY_SPRITE_COLOUR(_local_company);
-	const DrawTileSprites *dts = (rt == ROADTYPE_TRAM) ? &_tram_depot[dir] : &_road_depot[dir];
 
+	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
+	int relocation = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_DEPOT);
+	if (relocation == 0) {
+		if (rtid.basetype == ROADTYPE_TRAM) {
+			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+		}
+	} else {
+		relocation -= SPR_ROAD_DEPOT;
+	}
+
+	const DrawTileSprites *dts = &_road_depot[dir];
 	DrawSprite(dts->ground.sprite, PAL_NONE, x, y);
-	DrawOrigTileSeqInGUI(x, y, dts, palette);
+	DrawRailTileSeqInGUI(x, y, dts, relocation, 0, palette);
 }
 
 /**

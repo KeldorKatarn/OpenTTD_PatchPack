@@ -1306,7 +1306,7 @@ static MenuClickedProc * const _menu_clicked_procs[] = {
 	NULL,                 // 20
 	MenuClickBuildRail,   // 21
 	MenuClickBuildRoad,   // 22
-	MenuClickBuildTram,   // 23 
+	MenuClickBuildTram,   // 23
 	MenuClickBuildWater,  // 24
 	MenuClickBuildAir,    // 25
 	MenuClickForest,      // 26
@@ -2220,7 +2220,7 @@ static NWidgetBase *MakeMainToolbar(int *biggest_index)
 		SPR_IMG_ZOOMOUT,         // WID_TN_ZOOMOUT
 		SPR_IMG_BUILDRAIL,       // WID_TN_RAILS
 		SPR_IMG_BUILDROAD,       // WID_TN_ROADS
-		SPR_IMG_BUILDRAIL,       // WID_TN_TRAMS
+		SPR_IMG_BUILDTRAMS,      // WID_TN_TRAMS
 		SPR_IMG_BUILDWATER,      // WID_TN_WATER
 		SPR_IMG_BUILDAIR,        // WID_TN_AIR
 		SPR_IMG_LANDSCAPING,     // WID_TN_LANDSCAPE

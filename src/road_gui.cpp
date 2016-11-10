@@ -30,6 +30,7 @@
 #include "road_gui.h"
 #include "zoom_func.h"
 #include "engine_base.h"
+#include "strings_func.h"
 
 #include "widgets/road_widget.h"
 
@@ -270,8 +271,9 @@ struct BuildRoadToolbarWindow : Window {
 
 	BuildRoadToolbarWindow(WindowDesc *desc, RoadTypeIdentifier roadtype_identifier) : Window(desc)
 	{
+		this->Initialize(roadtype_identifier);
 		this->InitNested(ROADTYPE_ROAD);
-		this->SetupRoadToolbar(roadtype_identifier);
+		this->SetupRoadToolbar();
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,
 				WID_ROT_ONE_WAY,
@@ -310,17 +312,19 @@ struct BuildRoadToolbarWindow : Window {
 		}
 	}
 
+	void Initialize(RoadTypeIdentifier roadtype_identifier)
+	{
+		assert(roadtype_identifier.IsValid());
+		this->roadtype_identifier = roadtype_identifier;
+		this->rti = GetRoadTypeInfo(this->roadtype_identifier);
+	}
+
 	/**
 	* Configures the road toolbar for roadtype given
 	* @param roadtype the roadtype to display
 	*/
-	void SetupRoadToolbar(RoadTypeIdentifier roadtype_identifier)
+	void SetupRoadToolbar()
 	{
-		//assert(roadtype < ROADTYPE_END);
-
-		this->roadtype_identifier = roadtype_identifier;
-		this->rti = GetRoadTypeInfo(roadtype_identifier);
-
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_Y)->widget_data = rti->gui_sprites.build_y_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
@@ -336,8 +340,16 @@ struct BuildRoadToolbarWindow : Window {
 	*/
 	void ModifyRoadType(RoadTypeIdentifier roadtype_identifier)
 	{
-		this->SetupRoadToolbar(roadtype_identifier);
+		this->Initialize(roadtype_identifier);
+		this->SetupRoadToolbar();
 		this->ReInit();
+	}
+
+	virtual void SetStringParameters(int widget) const
+	{
+		if (widget == WID_ROT_CAPTION) {
+			SetDParam(0, rti->strings.toolbar_caption);
+		}
 	}
 
 	/**
@@ -709,7 +721,7 @@ HotkeyList BuildRoadToolbarWindow::hotkeys("roadtoolbar", roadtoolbar_hotkeys, R
 static const NWidgetPart _nested_build_road_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
-		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN), SetDataTip(STR_ROAD_TOOLBAR_ROAD_CONSTRUCTION_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN, WID_ROT_CAPTION), SetDataTip(STR_WHITE_STRING, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_STICKYBOX, COLOUR_DARK_GREEN),
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),
@@ -750,7 +762,7 @@ static WindowDesc _build_road_desc(
 static const NWidgetPart _nested_build_tramway_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
-		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN), SetDataTip(STR_ROAD_TOOLBAR_TRAM_CONSTRUCTION_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN, WID_ROT_CAPTION), SetDataTip(STR_WHITE_STRING, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_STICKYBOX, COLOUR_DARK_GREEN),
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),

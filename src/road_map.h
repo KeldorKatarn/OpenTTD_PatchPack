@@ -540,74 +540,6 @@ static inline DiagDirection GetRoadDepotDirection(TileIndex t)
 
 RoadBits GetAnyRoadBits(TileIndex tile, RoadType rt, bool straight_tunnel_bridge_entrance = false);
 
-
-/**
- * Make a normal road tile.
- * @param t    Tile to make a normal road.
- * @param bits Road bits to set for all present road types.
- * @param rot  New present road types.
- * @param town Town ID if the road is a town-owned road.
- * @param road New owner of road.
- * @param tram New owner of tram tracks.
- */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, TownID town, Owner road, Owner tram)
-{
-	SetTileType(t, MP_ROAD);
-	SetTileOwner(t, road);
-	_m[t].m2 = town;
-	_m[t].m3 = (HasBit(rot, ROADTYPE_TRAM) ? bits : 0);
-	_m[t].m4 = 0;
-	_m[t].m5 = (HasBit(rot, ROADTYPE_ROAD) ? bits : 0) | ROAD_TILE_NORMAL << 6;
-	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rot << 6;
-	SetRoadOwner(t, ROADTYPE_TRAM, tram);
-}
-
-/**
- * Make a level crossing.
- * @param t       Tile to make a level crossing.
- * @param road    New owner of road.
- * @param tram    New owner of tram tracks.
- * @param rail    New owner of the rail track.
- * @param roaddir Axis of the road.
- * @param rat     New rail type.
- * @param rot     New present road types.
- * @param town    Town ID if the road is a town-owned road.
- */
-static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner rail, Axis roaddir, RailType rat, RoadTypes rot, uint town)
-{
-	SetTileType(t, MP_ROAD);
-	SetTileOwner(t, rail);
-	_m[t].m2 = town;
-	_m[t].m3 = rat;
-	_m[t].m4 = 0;
-	_m[t].m5 = ROAD_TILE_CROSSING << 6 | roaddir;
-	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rot << 6 | road;
-	SetRoadOwner(t, ROADTYPE_TRAM, tram);
-}
-
-/**
- * Make a road depot.
- * @param t     Tile to make a level crossing.
- * @param owner New owner of the depot.
- * @param did   New depot ID.
- * @param dir   Direction of the depot exit.
- * @param rt    Road type of the depot.
- */
-static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDirection dir, RoadType rt)
-{
-	SetTileType(t, MP_ROAD);
-	SetTileOwner(t, owner);
-	_m[t].m2 = did;
-	_m[t].m3 = 0;
-	_m[t].m4 = 0;
-	_m[t].m5 = ROAD_TILE_DEPOT << 6 | dir;
-	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = RoadTypeToRoadTypes(rt) << 6 | owner;
-	SetRoadOwner(t, ROADTYPE_TRAM, owner);
-}
-
 static inline RoadTypeIdentifier GetRoadTypeRoad(TileIndex t)
 {
 	return RoadTypeIdentifier(ROADTYPE_ROAD, (RoadSubType)GB(_m[t].m4, 0, 4));
@@ -825,6 +757,74 @@ static inline bool HasRoadTypeTram(RoadTypeIdentifier rtid)
 static inline bool HasRoadTypeTram(RoadTypeIdentifiers rtids)
 {
 	return rtids.tram_identifier.IsValid();
+}
+
+/**
+ * Make a normal road tile.
+ * @param t    Tile to make a normal road.
+ * @param bits Road bits to set for all present road types.
+ * @param rot  New present road types.
+ * @param town Town ID if the road is a town-owned road.
+ * @param road New owner of road.
+ * @param tram New owner of tram tracks.
+ */
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, TownID town, Owner road, Owner tram)
+{
+	SetTileType(t, MP_ROAD);
+	SetTileOwner(t, road);
+	_m[t].m2 = town;
+	_m[t].m3 = (HasBit(rot, ROADTYPE_TRAM) ? bits : 0);
+	_m[t].m4 = 0;
+	_m[t].m5 = (HasBit(rot, ROADTYPE_ROAD) ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	SB(_me[t].m6, 2, 4, 0);
+	_me[t].m7 = rot << 6;
+	SetRoadOwner(t, ROADTYPE_TRAM, tram);
+}
+
+/**
+ * Make a level crossing.
+ * @param t       Tile to make a level crossing.
+ * @param road    New owner of road.
+ * @param tram    New owner of tram tracks.
+ * @param rail    New owner of the rail track.
+ * @param roaddir Axis of the road.
+ * @param rat     New rail type.
+ * @param rot     New present road types.
+ * @param town    Town ID if the road is a town-owned road.
+ */
+static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner rail, Axis roaddir, RailType rat, RoadTypes rot, uint town)
+{
+	SetTileType(t, MP_ROAD);
+	SetTileOwner(t, rail);
+	_m[t].m2 = town;
+	_m[t].m3 = rat;
+	_m[t].m4 = 0;
+	_m[t].m5 = ROAD_TILE_CROSSING << 6 | roaddir;
+	SB(_me[t].m6, 2, 4, 0);
+	_me[t].m7 = rot << 6 | road;
+	SetRoadOwner(t, ROADTYPE_TRAM, tram);
+}
+
+/**
+ * Make a road depot.
+ * @param t     Tile to make a level crossing.
+ * @param owner New owner of the depot.
+ * @param did   New depot ID.
+ * @param dir   Direction of the depot exit.
+ * @param rt    Road type of the depot.
+ */
+static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDirection dir, RoadTypeIdentifier rtid)
+{
+	SetTileType(t, MP_ROAD);
+	SetTileOwner(t, owner);
+	_m[t].m2 = did;
+	_m[t].m3 = 0;
+	_m[t].m4 = 0;
+	_m[t].m5 = ROAD_TILE_DEPOT << 6 | dir;
+	SB(_me[t].m6, 2, 4, 0);
+	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6 | owner;
+	SetRoadOwner(t, ROADTYPE_TRAM, owner);
+	SetRoadTypes(t, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid));
 }
 
 /**

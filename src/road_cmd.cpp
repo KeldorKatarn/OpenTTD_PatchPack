@@ -1151,7 +1151,11 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 CommandCost CmdBuildRoadDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	DiagDirection dir = Extract<DiagDirection, 0, 2>(p1);
-	RoadType rt = Extract<RoadType, 2, 2>(p1);
+	//RoadType rt = Extract<RoadType, 2, 2>(p1);
+
+	RoadTypeIdentifier rtid;
+	rtid.UnpackIfValid(GB(p1, 2, 5));
+	RoadType rt = rtid.basetype;
 
 	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
 
@@ -1178,7 +1182,7 @@ CommandCost CmdBuildRoadDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		Company::Get(_current_company)->infrastructure.road[rt] += 2;
 		DirtyCompanyInfrastructureWindows(_current_company);
 
-		MakeRoadDepot(tile, _current_company, dep->index, dir, rt);
+		MakeRoadDepot(tile, _current_company, dep->index, dir, rtid);
 		MarkTileDirtyByTile(tile);
 		MakeDefaultName(dep);
 	}

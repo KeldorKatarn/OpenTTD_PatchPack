@@ -518,7 +518,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				DoCommandP(tile, _cur_roadtype_identifier.basetype << 2 | _road_depot_orientation, 0,
+				DoCommandP(tile, _cur_roadtype_identifier.Pack() << 2 | _road_depot_orientation, 0,
 						CMD_BUILD_ROAD_DEPOT | CMD_MSG(rti->strings.err_depot), CcRoadDepot);
 				break;
 

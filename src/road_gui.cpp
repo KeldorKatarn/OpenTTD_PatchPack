@@ -535,7 +535,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUILD_TUNNEL:
-				DoCommandP(tile, RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) | (TRANSPORT_ROAD << 8), 0,
+				DoCommandP(tile, _cur_roadtype_identifier.Pack() | (TRANSPORT_ROAD << 8), 0,
 						CMD_BUILD_TUNNEL | CMD_MSG(STR_ERROR_CAN_T_BUILD_TUNNEL_HERE), CcBuildRoadTunnel);
 				break;
 
@@ -661,7 +661,7 @@ struct BuildRoadToolbarWindow : Window {
 
 	virtual void OnPlacePresize(Point pt, TileIndex tile)
 	{
-		DoCommand(tile, RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) | (TRANSPORT_ROAD << 8), 0, DC_AUTO, CMD_BUILD_TUNNEL);
+		DoCommand(tile, _cur_roadtype_identifier.Pack() | (TRANSPORT_ROAD << 8), 0, DC_AUTO, CMD_BUILD_TUNNEL);
 		VpSetPresizeRange(tile, _build_tunnel_endtile == 0 ? tile : _build_tunnel_endtile);
 	}
 

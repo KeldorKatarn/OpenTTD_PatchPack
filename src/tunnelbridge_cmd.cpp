@@ -594,6 +594,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	CompanyID company = _current_company;
 
 	TransportType transport_type = Extract<TransportType, 8, 2>(p1);
+	RoadTypeIdentifiers rtids;
 
 	RailType railtype = INVALID_RAILTYPE;
 	RoadTypes rts = ROADTYPES_NONE;
@@ -604,10 +605,15 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 			if (!ValParamRailtype(railtype)) return CMD_ERROR;
 			break;
 
-		case TRANSPORT_ROAD:
-			rts = Extract<RoadTypes, 0, 2>(p1);
+		case TRANSPORT_ROAD: {
+			RoadTypeIdentifier rtid;
+			if (!rtid.UnpackIfValid(GB(p1, 0, 5))) return CMD_ERROR;
+			rtids = RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid);
+			rts = rtids.PresentRoadTypes();
+
 			if (!HasExactlyOneBit(rts) || !HasRoadTypesAvail(company, rts)) return CMD_ERROR;
 			break;
+		}
 
 		default: return CMD_ERROR;
 	}
@@ -740,8 +746,8 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 					c->infrastructure.road[rt] += num_pieces * 2; // A full diagonal road has two road bits.
 				}
 			}
-			MakeRoadTunnel(start_tile, company, direction,                 rts);
-			MakeRoadTunnel(end_tile,   company, ReverseDiagDir(direction), rts);
+			MakeRoadTunnel(start_tile, company, direction,                 rtids);
+			MakeRoadTunnel(end_tile,   company, ReverseDiagDir(direction), rtids);
 		}
 		DirtyCompanyInfrastructureWindows(company);
 	}

@@ -563,12 +563,10 @@ struct RoadTypeIdentifiers {
 	static RoadTypeIdentifiers FromTile(TileIndex t)
 	{
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
-		TileType tt = GetTileType(t);
-		RoadTypeIdentifiers rtids;
-		rtids.road_identifier = RoadTypeIdentifier();
-		rtids.tram_identifier = RoadTypeIdentifier();
 
-		switch (tt) {
+		RoadTypeIdentifiers rtids;
+
+		switch (GetTileType(t)) {
 			default: NOT_REACHED();
 			case MP_ROAD:
 				if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
@@ -595,8 +593,6 @@ struct RoadTypeIdentifiers {
 	static RoadTypeIdentifiers FromRoadTypeIdentifier(RoadTypeIdentifier rtid)
 	{
 		RoadTypeIdentifiers rtids;
-		rtids.road_identifier = RoadTypeIdentifier();
-		rtids.tram_identifier = RoadTypeIdentifier();
 
 		switch (rtid.basetype) {
 			default: NOT_REACHED();

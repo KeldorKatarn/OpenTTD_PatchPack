@@ -1918,7 +1918,7 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 			break;
 
 		default: {
-			RoadTypeIdentifiers rtids = RoadTypeIdentifiers(tile);
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 			const RoadtypeInfo *rti;
 
 			if (rtids.road_identifier.IsValid()) {

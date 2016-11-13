@@ -628,45 +628,51 @@ struct RoadTypeIdentifiers {
 	/* Extracts the RoadTypeIdentifiers from the given tile
 	 * @param tile The tile to read the informations from
 	 */
-	RoadTypeIdentifiers(TileIndex t)
+	static RoadTypeIdentifiers FromTile(TileIndex t)
 	{
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
 		TileType tt = GetTileType(t);
-		road_identifier = RoadTypeIdentifier();
-		tram_identifier = RoadTypeIdentifier();
+		RoadTypeIdentifiers rtids;
+		rtids.road_identifier = RoadTypeIdentifier();
+		rtids.tram_identifier = RoadTypeIdentifier();
 
 		switch (tt) {
 			default: NOT_REACHED();
 			case MP_ROAD:
 				if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
-					road_identifier = GetRoadTypeRoad(t);
+					rtids.road_identifier = GetRoadTypeRoad(t);
 				}
 
 				if (GetRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
-					tram_identifier = GetRoadTypeTram(t);
+					rtids.tram_identifier = GetRoadTypeTram(t);
 				}
 				break;
 			case MP_STATION: /* TODO */
 			case MP_TUNNELBRIDGE:
-				road_identifier = GetRoadTypeRoad(t);
-				tram_identifier = GetRoadTypeTram(t);
+				rtids.road_identifier = GetRoadTypeRoad(t);
+				rtids.tram_identifier = GetRoadTypeTram(t);
 				break;
 		}
+
+		return rtids;
 	}
 
 	/* Converts a RoadTypeIdentifier into a RoadTypeIdentifiers
 	 * @param rtid The RoadTypeIdentifier to convert
 	 */
-	RoadTypeIdentifiers(RoadTypeIdentifier rtid)
+	static RoadTypeIdentifiers FromRoadTypeIdentifier(RoadTypeIdentifier rtid)
 	{
-		road_identifier = RoadTypeIdentifier();
-		tram_identifier = RoadTypeIdentifier();
+		RoadTypeIdentifiers rtids;
+		rtids.road_identifier = RoadTypeIdentifier();
+		rtids.tram_identifier = RoadTypeIdentifier();
 
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
-			case ROADTYPE_ROAD: road_identifier = rtid; break;
-			case ROADTYPE_TRAM: tram_identifier = rtid; break;
+			case ROADTYPE_ROAD: rtids.road_identifier = rtid; break;
+			case ROADTYPE_TRAM: rtids.tram_identifier = rtid; break;
 		}
+
+		return rtids;
 	}
 
 	/* Creates a RoadTypeIdentifiers from two RoadTypeIdentifier
@@ -675,7 +681,7 @@ struct RoadTypeIdentifiers {
 	 * @param rtid1 The first RoadTypeIdentifier
 	 * @param rtid2 The second RoadTypeIdentifier
 	 */
-	RoadTypeIdentifiers(RoadTypeIdentifier rtid1, RoadTypeIdentifier rtid2)
+	static RoadTypeIdentifiers FromRoadTypeIdentifier(RoadTypeIdentifier rtid1, RoadTypeIdentifier rtid2)
 	{
 		assert(rtid1.basetype < ROADTYPE_END);
 		assert(rtid2.basetype < ROADTYPE_END);
@@ -683,37 +689,45 @@ struct RoadTypeIdentifiers {
 		/* We can't merge 2 road types of the same base type, not yet */
 		assert(rtid1.basetype != rtid2.basetype);
 
+		RoadTypeIdentifiers rtids;
+
 		/* As we are sure about the road types being different we can just check the first one */
 		switch (rtid1.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD:
-				road_identifier = rtid1;
-				tram_identifier = rtid2;
+				rtids.road_identifier = rtid1;
+				rtids.tram_identifier = rtid2;
 				break;
 			case ROADTYPE_TRAM:
-				road_identifier = rtid2;
-				tram_identifier = rtid1;
+				rtids.road_identifier = rtid2;
+				rtids.tram_identifier = rtid1;
 				break;
 		}
+
+		return rtids;
 	}
 
 	/* Create a new RoadTypeIdentifiers merging a new identifier with a previous one
 	 * @param rtids a source RoadTypeIdentifiers
 	 * @param rtid the new RoadTypeIdentifier
 	 */
-	RoadTypeIdentifiers(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid)
+	static RoadTypeIdentifiers Merge(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid)
 	{
+		RoadTypeIdentifiers new_rtids;
+
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD:
-				road_identifier = rtid;
-				tram_identifier = rtids.tram_identifier;
+				new_rtids.road_identifier = rtid;
+				new_rtids.tram_identifier = rtids.tram_identifier;
 				break;
 			case ROADTYPE_TRAM:
-				road_identifier = rtids.road_identifier;
-				tram_identifier = rtid;
+				new_rtids.road_identifier = rtids.road_identifier;
+				new_rtids.tram_identifier = rtid;
 				break;
 		}
+
+		return new_rtids;
 	}
 
 	/* Returns the RoadTypes contained in the RoadTypeIdentifiers
@@ -759,10 +773,10 @@ struct RoadTypeIdentifiers {
 static inline RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdentifier rtid)
 {
 	/* Extract road types from tile, like "GetRoadTypes(tile)" */
-	RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers(tile);
+	RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers::FromTile(tile);
 
 	/* Add the new road type preserving the other one (eg. add tram to road), like "roadtypes | RoadTypeToRoadTypes(rt)" */
-	return RoadTypeIdentifiers(tile_roadtype_ids, rtid);
+	return RoadTypeIdentifiers::Merge(tile_roadtype_ids, rtid);
 }
 
 /**
@@ -785,7 +799,7 @@ static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 
 static inline bool HasRoadTypeRoad(TileIndex t)
 {
-	return RoadTypeIdentifiers(t).road_identifier.IsValid();
+	return RoadTypeIdentifiers::FromTile(t).road_identifier.IsValid();
 }
 
 static inline bool HasRoadTypeRoad(RoadTypeIdentifier rtid)
@@ -800,7 +814,7 @@ static inline bool HasRoadTypeRoad(RoadTypeIdentifiers rtids)
 
 static inline bool HasRoadTypeTram(TileIndex t)
 {
-	return RoadTypeIdentifiers(t).tram_identifier.IsValid();
+	return RoadTypeIdentifiers::FromTile(t).tram_identifier.IsValid();
 }
 
 static inline bool HasRoadTypeTram(RoadTypeIdentifier rtid)
@@ -828,7 +842,7 @@ static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier
 	SetTileOwner(t, road);
 	_m[t].m2 = town;
 	_m[t].m3 = (rtid.basetype == ROADTYPE_TRAM ? bits : 0);
-	SetRoadTypes(t, RoadTypeIdentifiers(rtid));
+	SetRoadTypes(t, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid));
 	_m[t].m5 = (rtid.basetype == ROADTYPE_ROAD ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6;

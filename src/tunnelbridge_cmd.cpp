@@ -258,7 +258,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		case TRANSPORT_ROAD: {
 			RoadTypeIdentifier rtid;
 			if (!rtid.UnpackIfValid(GB(p2, 8, 2))) return CMD_ERROR;
-			rtids = rtid;
+			rtids = RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid);
 			roadtypes = rtids.PresentRoadTypes();
 
 			//roadtypes = Extract<RoadTypes, 8, 2>(p2);

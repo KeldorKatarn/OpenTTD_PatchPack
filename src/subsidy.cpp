@@ -351,8 +351,7 @@ bool FindSubsidyTownCargoRoute()
 	}
 
 	/* Avoid using invalid NewGRF cargoes. */
-	if (!CargoSpec::Get(cid)->IsValid() ||
-			_settings_game.linkgraph.GetDistributionType(cid) != DT_MANUAL) {
+	if (!CargoSpec::Get(cid)->IsValid()) {
 		return false;
 	}
 
@@ -396,9 +395,7 @@ bool FindSubsidyIndustryCargoRoute()
 	/* Quit if no production in this industry
 	 * or if the pct transported is already large enough
 	 * or if the cargo is automatically distributed */
-	if (total == 0 || trans > SUBSIDY_MAX_PCT_TRANSPORTED ||
-			cid == CT_INVALID ||
-			_settings_game.linkgraph.GetDistributionType(cid) != DT_MANUAL) {
+	if (total == 0 || trans > SUBSIDY_MAX_PCT_TRANSPORTED || cid == CT_INVALID) {
 		return false;
 	}
 
@@ -493,13 +490,6 @@ void SubsidyMonthlyLoop()
 
 	if (modified) {
 		RebuildSubsidisedSourceAndDestinationCache();
-	} else if (_settings_game.linkgraph.distribution_pax != DT_MANUAL &&
-			   _settings_game.linkgraph.distribution_mail != DT_MANUAL &&
-			   _settings_game.linkgraph.distribution_armoured != DT_MANUAL &&
-			   _settings_game.linkgraph.distribution_default != DT_MANUAL) {
-		/* Return early if there are no manually distributed cargoes and if we
-		 * don't need to invalidate the subsidies window. */
-		return;
 	}
 
 	bool passenger_subsidy = false;
@@ -508,7 +498,7 @@ void SubsidyMonthlyLoop()
 
 	int random_chance = RandomRange(16);
 
-	if (random_chance < 2 && _settings_game.linkgraph.distribution_pax == DT_MANUAL) {
+	if (random_chance < 2) {
 		/* There is a 1/8 chance each month of generating a passenger subsidy. */
 		int n = 1000;
 

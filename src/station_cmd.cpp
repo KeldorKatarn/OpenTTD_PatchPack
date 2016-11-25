@@ -2972,7 +2972,7 @@ draw_default_foundation:
 	DrawRailTileSeq(ti, t, TO_BUILDINGS, total_offset, relocation, palette);
 }
 
-void StationPickerDrawSprite(int x, int y, StationType st, RailType railtype, RoadType roadtype, int image)
+void StationPickerDrawSprite(int x, int y, StationType st, RailType railtype, RoadTypeIdentifier rtid, int image)
 {
 	int32 total_offset = 0;
 	PaletteID pal = COMPANY_SPRITE_COLOUR(_local_company);
@@ -2994,8 +2994,29 @@ void StationPickerDrawSprite(int x, int y, StationType st, RailType railtype, Ro
 		DrawSprite(img + total_offset, HasBit(img, PALETTE_MODIFIER_COLOUR) ? pal : PAL_NONE, x, y);
 	}
 
-	if (roadtype == ROADTYPE_TRAM) {
-		DrawSprite(SPR_TRAMWAY_TRAM + (t->ground.sprite == SPR_ROAD_PAVED_STRAIGHT_X ? 1 : 0), PAL_NONE, x, y);
+	if (rtid.IsValid()) {
+		const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
+		if (image >= 4) {
+			/* Drive-through stop */
+			uint sprite_offset = 5 - image;
+
+			/* Road underlay takes precendence over tram */
+			if (rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_GROUND);
+				DrawSprite(ground + sprite_offset, PAL_NONE, x, y);
+
+				SpriteID overlay = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
+				DrawSprite(overlay + sprite_offset, PAL_NONE, x, y);
+			} else if (rtid.IsTram()) {
+				DrawSprite(SPR_TRAMWAY_TRAM + sprite_offset, PAL_NONE, x, y);
+			}
+		} else {
+			/* Drive-in stop */
+			if (rtid.IsRoad() && rti->UsesOverlay()) {
+				SpriteID ground = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_ROADSTOP);
+				DrawSprite(ground + image, PAL_NONE, x, y);
+			}
+		}
 	}
 
 	/* Default waypoint has no railtype specific sprites */

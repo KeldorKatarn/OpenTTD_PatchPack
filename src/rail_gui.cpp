@@ -1115,7 +1115,7 @@ public:
 					int x = ScaleGUITrad(31) + 1;
 					int y = r.bottom - r.top - ScaleGUITrad(31);
 					if (!DrawStationTile(x, y, _cur_railtype, AXIS_X, _railstation.station_class, _railstation.station_type)) {
-						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, INVALID_ROADTYPE, 2);
+						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, RoadTypeIdentifier(), 2);
 					}
 					_cur_dpi = old_dpi;
 				}
@@ -1129,7 +1129,7 @@ public:
 					int x = ScaleGUITrad(31) + 1;
 					int y = r.bottom - r.top - ScaleGUITrad(31);
 					if (!DrawStationTile(x, y, _cur_railtype, AXIS_Y, _railstation.station_class, _railstation.station_type)) {
-						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, INVALID_ROADTYPE, 3);
+						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, RoadTypeIdentifier(), 3);
 					}
 					_cur_dpi = old_dpi;
 				}
@@ -1167,7 +1167,7 @@ public:
 					int x = ScaleGUITrad(31) + 1;
 					int y = r.bottom - r.top - ScaleGUITrad(31);
 					if (!DrawStationTile(x, y, _cur_railtype, _railstation.orientation, _railstation.station_class, type)) {
-						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, INVALID_ROADTYPE, 2 + _railstation.orientation);
+						StationPickerDrawSprite(x, y, STATION_RAIL, _cur_railtype, RoadTypeIdentifier(), 2 + _railstation.orientation);
 					}
 					_cur_dpi = old_dpi;
 				}

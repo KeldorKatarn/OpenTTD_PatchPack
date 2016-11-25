@@ -45,6 +45,7 @@ enum RoadTypeSpriteGroup {
 	ROTSG_reserved2,      ///< Placeholder, if we need specific level crossing sprites.
 	ROTSG_DEPOT,          ///< Depot images
 	ROTSG_reserved3,      ///< Placeholder, if we add road fences (for highways).
+	ROTSG_ROADSTOP,       ///< Drive-in stop surface
 	ROTSG_END,
 };
 

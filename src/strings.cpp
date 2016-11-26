@@ -10,6 +10,8 @@
 /** @file strings.cpp Handling of translated strings. */
 
 #include "stdafx.h"
+#include <iostream>
+#include <cctype>
 #include "currency.h"
 #include "station_base.h"
 #include "town.h"
@@ -494,6 +496,25 @@ static char *FormatGenericCurrency(char *buff, const CurrencySpec *spec, Money n
 	}
 
 	return buff;
+}
+
+void MakeCamelCase(char line[])  {
+	bool active = true;
+
+	for (int i = 0; line[i] != '\0'; i++) {
+		if (std::isalpha(line[i])) {
+			if (active) {
+				line[i] = std::toupper(line[i]);
+				active = false;
+			}
+			else {
+				line[i] = std::tolower(line[i]);
+			}
+		}
+		else if (line[i] == ' ') {
+			active = true;
+		}
+	}
 }
 
 /**

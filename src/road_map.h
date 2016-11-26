@@ -569,11 +569,11 @@ struct RoadTypeIdentifiers {
 		switch (GetTileType(t)) {
 			default: NOT_REACHED();
 			case MP_ROAD:
-				if (GetRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
+				if (HasTileRoadType(t, ROADTYPE_ROAD)) {
 					rtids.road_identifier = GetRoadTypeRoad(t);
 				}
 
-				if (GetRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
+				if (HasTileRoadType(t, ROADTYPE_TRAM)) {
 					rtids.tram_identifier = GetRoadTypeTram(t);
 				}
 				break;

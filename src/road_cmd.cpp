@@ -488,10 +488,6 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				return CMD_ERROR;
 			}
 
-			/* Don't allow road to be removed from the crossing when there is tram;
-			 * we can't draw the crossing without roadbits ;) */
-			if (rt == ROADTYPE_ROAD && HasTileRoadType(tile, ROADTYPE_TRAM) && (flags & DC_EXEC || crossing_check)) return CMD_ERROR;
-
 			if (flags & DC_EXEC) {
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
@@ -779,7 +775,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 				/* Always add road to the roadtypes (can't draw without it) */
 				bool reserved = HasBit(GetRailReservationTrackBits(tile), railtrack);
-				MakeRoadCrossing(tile, company, company, GetTileOwner(tile), roaddir, GetRailType(tile), RoadTypeToRoadTypes(rt) | ROADTYPES_ROAD, p2);
+				MakeRoadCrossing(tile, company, company, GetTileOwner(tile), roaddir, GetRailType(tile), RoadTypeToRoadTypes(rt), p2);
 				SetCrossingReservation(tile, reserved);
 				UpdateLevelCrossing(tile, false);
 				MarkTileDirtyByTile(tile);
@@ -1542,41 +1538,37 @@ static void DrawTile_Road(TileInfo *ti)
 		case ROAD_TILE_CROSSING: {
 			if (ti->tileh != SLOPE_FLAT) DrawFoundation(ti, FOUNDATION_LEVELED);
 
-			PaletteID pal = PAL_NONE;
+			Axis axis = GetCrossingRailAxis(ti->tile);
+
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));
 
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+			const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+			const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+
+			/* Draw base ground */
 			if (rti->UsesOverlay()) {
-				Axis axis = GetCrossingRailAxis(ti->tile);
-				SpriteID road = SPR_ROAD_Y + axis;
+				PaletteID pal = PAL_NONE;
+				SpriteID image = SPR_ROAD_Y + axis;
 
 				Roadside roadside = GetRoadside(ti->tile);
-
 				if (DrawRoadAsSnowDesert(ti->tile, roadside)) {
-					road += 19;
+					image += 19;
 				} else {
 					switch (roadside) {
 						case ROADSIDE_BARREN: pal = PALETTE_TO_BARE_LAND; break;
 						case ROADSIDE_GRASS:  break;
-						default:              road -= 19; break; // Paved
+						default:              image -= 19; break; // Paved
 					}
 				}
 
-				DrawGroundSprite(road, pal);
-
-				SpriteID rail = GetCustomRailSprite(rti, ti->tile, RTSG_CROSSING) + axis;
-				/* Draw tracks, but draw PBS reserved tracks darker. */
-				pal = (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) ? PALETTE_CRASH : PAL_NONE;
-				DrawGroundSprite(rail, pal);
-
-				DrawRailTileSeq(ti, &_crossing_layout, TO_CATENARY, rail, 0, PAL_NONE);
+				DrawGroundSprite(image, pal);
 			} else {
-				SpriteID image = rti->base_sprites.crossing;
-
-				if (GetCrossingRoadAxis(ti->tile) == AXIS_X) image++;
+				PaletteID pal = PAL_NONE;
+				SpriteID image = rti->base_sprites.crossing + axis;
 				if (IsCrossingBarred(ti->tile)) image += 2;
 
 				Roadside roadside = GetRoadside(ti->tile);
-
 				if (DrawRoadAsSnowDesert(ti->tile, roadside)) {
 					image += 8;
 				} else {
@@ -1588,20 +1580,66 @@ static void DrawTile_Road(TileInfo *ti)
 				}
 
 				DrawGroundSprite(image, pal);
+			}
 
-				/* PBS debugging, draw reserved tracks darker */
-				if (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) {
-					DrawGroundSprite(GetCrossingRoadAxis(ti->tile) == AXIS_Y ? GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_x : GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_y, PALETTE_CRASH);
+			/* Draw road/tram underlay; road underlay takes precendence over tram */
+			if (HasRoadTypeRoad(rtids)) {
+				if (road_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
+					DrawGroundSprite(ground + axis, PAL_NONE);
+				}
+			} else {
+				if (tram_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_GROUND);
+					DrawGroundSprite(ground + axis, PAL_NONE);
+				} else {
+					DrawGroundSprite(SPR_TRAMWAY_TRAM + axis, PAL_NONE);
 				}
 			}
 
-			if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
-				RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
-
-				DrawGroundSprite(SPR_TRAMWAY_OVERLAY + (GetCrossingRoadAxis(ti->tile) ^ 1), pal);
-				if (HasRoadCatenaryDrawn(tram_rtid)) DrawRoadCatenary(ti, tram_rtid, GetCrossingRoadBits(ti->tile));
+			/* Draw road overlay */
+			if (HasRoadTypeRoad(rtids)) {
+				if (road_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
+					DrawGroundSprite(ground + axis, PAL_NONE);
+				}
 			}
+	
+			/* Draw tram overlay */
+			if (HasRoadTypeTram(rtids)) {
+				if (tram_rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
+					DrawGroundSprite(ground + axis, PAL_NONE);
+				} else if (HasRoadTypeRoad(rtids)) {
+					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + axis, PAL_NONE);
+				}
+			}
+
+			/* Draw rail/PBS overlay */
+			bool draw_pbs = _game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile);
+			if (rti->UsesOverlay()) {
+				PaletteID pal = draw_pbs ? PALETTE_CRASH : PAL_NONE;
+				SpriteID rail = GetCustomRailSprite(rti, ti->tile, RTSG_CROSSING) + axis;
+				DrawGroundSprite(rail, pal);
+
+				DrawRailTileSeq(ti, &_crossing_layout, TO_CATENARY, rail, 0, PAL_NONE);
+			} else if (draw_pbs || HasRoadTypeTram(rtids) || road_rti->UsesOverlay()) {
+				/* Add another rail overlay, unless there is only the base road sprite. */
+				PaletteID pal = draw_pbs ? PALETTE_CRASH : PAL_NONE;
+				SpriteID rail = GetCrossingRoadAxis(ti->tile) == AXIS_Y ? GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_x : GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_y;
+				DrawGroundSprite(rail, pal);
+			}
+
+			/* Draw road catenary; Road catenary takes precendence over tram */
+			if (HasRoadTypeRoad(rtids) && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+				DrawRoadCatenary(ti, rtids.road_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
+			} else if (HasRoadTypeTram(rtids) && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+				DrawRoadCatenary(ti, rtids.tram_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
+			}
+
+			/* Draw rail catenary */
 			if (HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);
+
 			break;
 		}
 

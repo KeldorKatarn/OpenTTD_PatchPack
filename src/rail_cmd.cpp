@@ -516,11 +516,7 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 						CommandCost ret = CheckOwnership(tram_owner);
 						if (ret.Failed()) return ret;
 					}
-					/* Crossings must always have a road... */
-					uint num_new_road_pieces = 2 - CountBits(road);
-					if (road == ROAD_NONE) road_owner = _current_company;
-					roadtypes |= ROADTYPES_ROAD;
-					/* ...but tram is not required. */
+					uint num_new_road_pieces = (road != ROAD_NONE) ? 2 - CountBits(road) : 0;
 					uint num_new_tram_pieces = (tram != ROAD_NONE) ? 2 - CountBits(tram) : 0;
 
 					cost.AddCost((num_new_road_pieces + num_new_tram_pieces) * _price[PR_BUILD_ROAD]);

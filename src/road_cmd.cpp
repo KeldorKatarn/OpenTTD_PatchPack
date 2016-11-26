@@ -1415,10 +1415,9 @@ static void DrawRoadBits(TileInfo *ti)
 	RoadBits road = GetRoadBits(ti->tile, ROADTYPE_ROAD);
 	RoadBits tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
 
-	RoadTypeIdentifier road_rtid = GetRoadTypeRoad(ti->tile);
-	RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
-	const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
-	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+	const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 	if (ti->tileh != SLOPE_FLAT) {
 		DrawFoundation(ti, GetRoadFoundation(ti->tileh, road | tram));
@@ -1430,7 +1429,7 @@ static void DrawRoadBits(TileInfo *ti)
 	uint tram_offset = GetRoadSpriteOffset(ti->tileh, tram);
 
 	/* Draw baseset underlay */
-	SpriteID image = SPR_ROAD_Y + (road != ROAD_NONE ? road_offset : tram_offset);
+	SpriteID image = SPR_ROAD_Y + (road_rti != NULL ? road_offset : tram_offset);
 	PaletteID pal = PAL_NONE;
 
 	Roadside roadside = GetRoadside(ti->tile);
@@ -1448,7 +1447,7 @@ static void DrawRoadBits(TileInfo *ti)
 	DrawGroundSprite(image, pal);
 
 	/* Road underlay takes precendence over tram */
-	if (road != ROAD_NONE) {
+	if (road_rti != NULL) {
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
 			DrawGroundSprite(ground + road_offset, PAL_NONE);
@@ -1463,7 +1462,7 @@ static void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Draw road overlay */
-	if (road != ROAD_NONE) {
+	if (road_rti != NULL) {
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
 			DrawGroundSprite(ground + road_offset, PAL_NONE);
@@ -1471,17 +1470,17 @@ static void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Draw tram overlay */
-	if (tram != ROAD_NONE) {
+	if (tram_rti != NULL) {
 		if (tram_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
 			DrawGroundSprite(ground + tram_offset, PAL_NONE);
-		} else if (road != ROAD_NONE) {
+		} else if (road_rti != NULL) {
 			DrawGroundSprite(SPR_TRAMWAY_OVERLAY + tram_offset, PAL_NONE);
 		}
 	}
 
 	/* Draw one way */
-	if (road != ROAD_NONE) { // TODO custom oneway?
+	if (road_rti != NULL) { // TODO custom oneway?
 		DisallowedRoadDirections drd = GetDisallowedRoadDirections(ti->tile);
 		if (drd != DRD_NONE) {
 			DrawGroundSpriteAt(road_rti->base_sprites.road_oneway_base + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
@@ -1497,12 +1496,12 @@ static void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Road catenary takes precendence over tram */
-	if (road != ROAD_NONE && HasRoadCatenaryDrawn(road_rtid)) {
+	if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
 		RoadBits bits = road;
-		if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) bits |= tram;
-		DrawRoadCatenary(ti, road_rtid, bits);
-	} else if (tram != ROAD_NONE && HasRoadCatenaryDrawn(tram_rtid)) {
-		DrawRoadCatenary(ti, tram_rtid, tram);
+		if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) bits |= tram;
+		DrawRoadCatenary(ti, rtids.road_identifier, bits);
+	} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+		DrawRoadCatenary(ti, rtids.tram_identifier, tram);
 	}
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */
@@ -1583,7 +1582,7 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 
 			/* Draw road/tram underlay; road underlay takes precendence over tram */
-			if (HasRoadTypeRoad(rtids)) {
+			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
 					DrawGroundSprite(ground + axis, PAL_NONE);
@@ -1598,7 +1597,7 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 
 			/* Draw road overlay */
-			if (HasRoadTypeRoad(rtids)) {
+			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
 					DrawGroundSprite(ground + axis, PAL_NONE);
@@ -1606,11 +1605,11 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 	
 			/* Draw tram overlay */
-			if (HasRoadTypeTram(rtids)) {
+			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
 					DrawGroundSprite(ground + axis, PAL_NONE);
-				} else if (HasRoadTypeRoad(rtids)) {
+				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + axis, PAL_NONE);
 				}
 			}
@@ -1623,7 +1622,7 @@ static void DrawTile_Road(TileInfo *ti)
 				DrawGroundSprite(rail, pal);
 
 				DrawRailTileSeq(ti, &_crossing_layout, TO_CATENARY, rail, 0, PAL_NONE);
-			} else if (draw_pbs || HasRoadTypeTram(rtids) || road_rti->UsesOverlay()) {
+			} else if (draw_pbs || tram_rti != NULL || road_rti->UsesOverlay()) {
 				/* Add another rail overlay, unless there is only the base road sprite. */
 				PaletteID pal = draw_pbs ? PALETTE_CRASH : PAL_NONE;
 				SpriteID rail = GetCrossingRoadAxis(ti->tile) == AXIS_Y ? GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_x : GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_y;
@@ -1631,9 +1630,9 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 
 			/* Draw road catenary; Road catenary takes precendence over tram */
-			if (HasRoadTypeRoad(rtids) && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+			if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
 				DrawRoadCatenary(ti, rtids.road_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
-			} else if (HasRoadTypeTram(rtids) && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+			} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
 				DrawRoadCatenary(ti, rtids.tram_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
 			}
 
@@ -1648,8 +1647,8 @@ static void DrawTile_Road(TileInfo *ti)
 			if (ti->tileh != SLOPE_FLAT) DrawFoundation(ti, FOUNDATION_LEVELED);
 
 			PaletteID palette = COMPANY_SPRITE_COLOUR(GetTileOwner(ti->tile));
-			RoadTypeIdentifier rtid = GetRoadTypeTram(ti->tile);
-			const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+			const RoadtypeInfo* rti = GetRoadTypeInfo(HasRoadTypeRoad(rtids) ? rtids.road_identifier : rtids.tram_identifier);
 
 			int relocation = GetCustomRoadSprite(rti, ti->tile, ROTSG_DEPOT);
 			if (relocation == 0) {

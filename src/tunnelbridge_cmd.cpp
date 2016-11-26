@@ -1104,11 +1104,9 @@ static void DrawBridgePillars(const PalSpriteID *psid, const TileInfo *ti, Axis 
  */
 static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int offset, bool head)
 {
-	RoadTypes roadtypes = GetRoadTypes(head_tile);
-	RoadTypeIdentifier road_rtid = GetRoadTypeRoad(head_tile);
-	RoadTypeIdentifier tram_rtid = GetRoadTypeTram(head_tile);
-	const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
-	const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(head_tile);
+	const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 	SpriteID seq_back[4] = { 0 };
 	bool trans_back[4] = { false };
@@ -1122,11 +1120,11 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 	if (head || !IsInvisibilitySet(TO_BRIDGES)) {
 		/* Road underlay takes precendence over tram */
 		trans_back[0] = !head && IsTransparencySet(TO_BRIDGES);
-		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+		if (road_rti != NULL) {
 			if (road_rti->UsesOverlay()) {
 				seq_back[0] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_BRIDGE, head ? TCX_NORMAL : TCX_ON_BRIDGE) + offset;
 			}
-		} else if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+		} else if (tram_rti != NULL) {
 			if (tram_rti->UsesOverlay()) {
 				seq_back[0] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_BRIDGE, head ? TCX_NORMAL : TCX_ON_BRIDGE) + offset;
 			} else {
@@ -1136,7 +1134,7 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 
 		/* Draw road overlay */
 		trans_back[1] = !head && IsTransparencySet(TO_BRIDGES);
-		if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+		if (road_rti != NULL) {
 			if (road_rti->UsesOverlay()) {
 				seq_back[1] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
 			}
@@ -1144,10 +1142,10 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 
 		/* Draw tram overlay */
 		trans_back[2] = !head && IsTransparencySet(TO_BRIDGES);
-		if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+		if (tram_rti != NULL) {
 			if (tram_rti->UsesOverlay()) {
 				seq_back[2] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
-			} else if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			} else if (road_rti != NULL) {
 				seq_back[2] = SPR_TRAMWAY_OVERLAY + overlay_offsets[offset];
 			}
 		}
@@ -1155,7 +1153,7 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 		/* Road catenary takes precendence over tram */
 		trans_back[3] = IsTransparencySet(TO_CATENARY);
 		trans_front[0] = IsTransparencySet(TO_CATENARY);
-		if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
+		if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
 			seq_back[3] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_CATENARY_BACK, head ? TCX_NORMAL : TCX_ON_BRIDGE);
 			seq_front[0] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_CATENARY_FRONT, head ? TCX_NORMAL : TCX_ON_BRIDGE);
 			if (seq_back[3] == 0 || seq_front[0] == 0) {
@@ -1165,7 +1163,7 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 				seq_back[3] += 23 + offset;
 				seq_front[0] += 23 + offset;
 			}
-		} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
+		} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
 			seq_back[3] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_CATENARY_BACK, head ? TCX_NORMAL : TCX_ON_BRIDGE);
 			seq_front[0] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_CATENARY_FRONT, head ? TCX_NORMAL : TCX_ON_BRIDGE);
 			if (seq_back[3] == 0 || seq_front[0] == 0) {
@@ -1267,20 +1265,18 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 		DrawGroundSprite(image, PAL_NONE);
 
 		if (transport_type == TRANSPORT_ROAD) {
-			RoadTypes roadtypes = GetRoadTypes(ti->tile);
-			RoadTypeIdentifier road_rtid = GetRoadTypeRoad(ti->tile);
-			RoadTypeIdentifier tram_rtid = GetRoadTypeTram(ti->tile);
-			const RoadtypeInfo* road_rti = GetRoadTypeInfo(road_rtid);
-			const RoadtypeInfo* tram_rti = GetRoadTypeInfo(tram_rtid);
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+			const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+			const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 			uint sprite_offset = DiagDirToAxis(tunnelbridge_direction) == AXIS_X ? 1 : 0;
 
 			/* Road underlay takes precendence over tram */
-			if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_GROUND);
 					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				}
-			} else if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			} else if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_GROUND);
 					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
@@ -1290,7 +1286,7 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 			}
 
 			/* Draw road overlay */
-			if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
 					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
@@ -1298,25 +1294,25 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 			}
 
 			/* Draw tram overlay */
-			if (HasBit(roadtypes, ROADTYPE_TRAM)) {
+			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
 					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
-				} else if (HasBit(roadtypes, ROADTYPE_ROAD)) {
+				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}
 			}
 
 			/* Road catenary takes precendence over tram */
 			SpriteID catenary_sprite_base = 0;
-			if (HasBit(roadtypes, ROADTYPE_ROAD) && HasRoadCatenaryDrawn(road_rtid)) {
+			if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
 				catenary_sprite_base = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_CATENARY_FRONT);
 				if (catenary_sprite_base == 0) {
 					catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;
 				} else {
 					catenary_sprite_base += 19;
 				}
-			} else if (HasBit(roadtypes, ROADTYPE_TRAM) && HasRoadCatenaryDrawn(tram_rtid)) {
+			} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
 				catenary_sprite_base = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_CATENARY_FRONT);
 				if (catenary_sprite_base == 0) {
 					catenary_sprite_base = SPR_TRAMWAY_TUNNEL_WIRES;

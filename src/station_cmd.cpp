@@ -1743,10 +1743,10 @@ static CommandCost FindJoiningRoadStop(StationID existing_stop, StationID statio
  *           bit 8..15: Length of the road stop.
  * @param p2 bit 0: 0 For bus stops, 1 for truck stops.
  *           bit 1: 0 For normal stops, 1 for drive-through.
- *           bit 2..3: The roadtypes.
- *           bit 5: Allow stations directly adjacent to other stations.
- *           bit 6..7: Entrance direction (#DiagDirection) for normal stops.
- *           bit 6: #Axis of the road for drive-through stops.
+ *           bit 2: Allow stations directly adjacent to other stations.
+ *           bit 3..4: Entrance direction (#DiagDirection) for normal stops.
+ *           bit 3: #Axis of the road for drive-through stops.
+ *           bit 5..10: The roadtypes.
  *           bit 16..31: Station ID to join (NEW_STATION if build new one).
  * @param text Unused.
  * @return The cost of this operation or an error.
@@ -1755,7 +1755,9 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 {
 	bool type = HasBit(p2, 0);
 	bool is_drive_through = HasBit(p2, 1);
-	RoadTypes rts = Extract<RoadTypes, 2, 2>(p2);
+	RoadTypeIdentifier rtid;
+	if (!rtid.UnpackIfValid(GB(p2, 5, 5))) return CMD_ERROR;
+	RoadTypes rts = RoadTypeToRoadTypes(rtid.basetype);
 	StationID station_to_join = GB(p2, 16, 16);
 	bool reuse = (station_to_join != NEW_STATION);
 	if (!reuse) station_to_join = INVALID_STATION;
@@ -1784,11 +1786,11 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	Axis axis;
 	if (is_drive_through) {
 		/* By definition axis is valid, due to there being 2 axes and reading 1 bit. */
-		axis = Extract<Axis, 6, 1>(p2);
+		axis = Extract<Axis, 3, 1>(p2);
 		ddir = AxisToDiagDir(axis);
 	} else {
 		/* By definition ddir is valid, due to there being 4 diagonal directions and reading 2 bits. */
-		ddir = Extract<DiagDirection, 6, 2>(p2);
+		ddir = Extract<DiagDirection, 3, 2>(p2);
 		axis = DiagDirToAxis(ddir);
 	}
 
@@ -1803,7 +1805,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	cost.AddCost(ret);
 
 	Station *st = NULL;
-	ret = FindJoiningRoadStop(est, station_to_join, HasBit(p2, 5), roadstop_area, &st);
+	ret = FindJoiningRoadStop(est, station_to_join, HasBit(p2, 2), roadstop_area, &st);
 	if (ret.Failed()) return ret;
 
 	/* Check if this number of road stops can be allocated. */
@@ -1815,9 +1817,9 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	if (flags & DC_EXEC) {
 		/* Check every tile in the area. */
 		TILE_AREA_LOOP(cur_tile, roadstop_area) {
-			RoadTypes cur_rts = GetRoadTypes(cur_tile);
-			Owner road_owner = HasBit(cur_rts, ROADTYPE_ROAD) ? GetRoadOwner(cur_tile, ROADTYPE_ROAD) : _current_company;
-			Owner tram_owner = HasBit(cur_rts, ROADTYPE_TRAM) ? GetRoadOwner(cur_tile, ROADTYPE_TRAM) : _current_company;
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(cur_tile);
+			Owner road_owner = HasRoadTypeRoad(rtids) ? GetRoadOwner(cur_tile, ROADTYPE_ROAD) : _current_company;
+			Owner tram_owner = HasRoadTypeTram(rtids) ? GetRoadOwner(cur_tile, ROADTYPE_TRAM) : _current_company;
 
 			if (IsTileType(cur_tile, MP_STATION) && IsRoadStop(cur_tile)) {
 				RemoveRoadStop(cur_tile, flags);
@@ -1844,6 +1846,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 				/* Update company infrastructure counts. If the current tile is a normal
 				 * road tile, count only the new road bits needed to get a full diagonal road. */
 				RoadType rt;
+				RoadTypes cur_rts = rtids.PresentRoadTypes();
 				FOR_EACH_SET_ROADTYPE(rt, cur_rts | rts) {
 					Company *c = Company::GetIfValid(rt == ROADTYPE_ROAD ? road_owner : tram_owner);
 					if (c != NULL) {
@@ -1852,12 +1855,13 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 					}
 				}
 
-				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rts | cur_rts, axis);
+				rtids.MergeRoadTypes(rtid);
+				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rtids, axis);
 				road_stop->MakeDriveThrough();
 			} else {
 				/* Non-drive-through stop never overbuild and always count as two road bits. */
 				Company::Get(st->owner)->infrastructure.road[FIND_FIRST_BIT(rts)] += 2;
-				MakeRoadStop(cur_tile, st->owner, st->index, rs_type, rts, ddir);
+				MakeRoadStop(cur_tile, st->owner, st->index, rs_type, rtids, ddir);
 			}
 			Company::Get(st->owner)->infrastructure.station++;
 			DirtyCompanyInfrastructureWindows(st->owner);

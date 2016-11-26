@@ -583,13 +583,13 @@ static inline void MakeRailWaypoint(TileIndex t, Owner o, StationID sid, Axis a,
  * @param o the owner of the roadstop
  * @param sid the station to which this tile belongs
  * @param rst the type of roadstop to make this tile
- * @param rt the roadtypes on this tile
+ * @param rtids the roadtypes on this tile
  * @param d the direction of the roadstop
  */
-static inline void MakeRoadStop(TileIndex t, Owner o, StationID sid, RoadStopType rst, RoadTypes rt, DiagDirection d)
+static inline void MakeRoadStop(TileIndex t, Owner o, StationID sid, RoadStopType rst, RoadTypeIdentifiers rtids, DiagDirection d)
 {
 	MakeStation(t, o, sid, (rst == ROADSTOP_BUS ? STATION_BUS : STATION_TRUCK), d);
-	SetRoadTypes(t, rt);
+	SetRoadTypes(t, rtids);
 	SetRoadOwner(t, ROADTYPE_ROAD, o);
 	SetRoadOwner(t, ROADTYPE_TRAM, o);
 }
@@ -602,13 +602,13 @@ static inline void MakeRoadStop(TileIndex t, Owner o, StationID sid, RoadStopTyp
  * @param tram the owner of the tram
  * @param sid the station to which this tile belongs
  * @param rst the type of roadstop to make this tile
- * @param rt the roadtypes on this tile
+ * @param rtids the roadtypes on this tile
  * @param a the direction of the roadstop
  */
-static inline void MakeDriveThroughRoadStop(TileIndex t, Owner station, Owner road, Owner tram, StationID sid, RoadStopType rst, RoadTypes rt, Axis a)
+static inline void MakeDriveThroughRoadStop(TileIndex t, Owner station, Owner road, Owner tram, StationID sid, RoadStopType rst, RoadTypeIdentifiers rtids, Axis a)
 {
 	MakeStation(t, station, sid, (rst == ROADSTOP_BUS ? STATION_BUS : STATION_TRUCK), GFX_TRUCK_BUS_DRIVETHROUGH_OFFSET + a);
-	SetRoadTypes(t, rt);
+	SetRoadTypes(t, rtids);
 	SetRoadOwner(t, ROADTYPE_ROAD, road);
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 }

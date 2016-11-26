@@ -172,8 +172,8 @@ void CcRoadStop(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)
  * @param start_tile First tile of the area.
  * @param end_tile Last tile of the area.
  * @param p2 bit 0: 0 For bus stops, 1 for truck stops.
- *           bit 2..3: The roadtypes.
- *           bit 5: Allow stations directly adjacent to other stations.
+ *           bit 2: Allow stations directly adjacent to other stations.
+ *           bit 5..10: The roadtypes.
  * @param cmd Command to use.
  * @see CcRoadStop()
  */
@@ -186,7 +186,7 @@ static void PlaceRoadStop(TileIndex start_tile, TileIndex end_tile, uint32 p2, u
 		SetBit(p2, 1); // It's a drive-through stop.
 		ddir -= DIAGDIR_END; // Adjust picker result to actual direction.
 	}
-	p2 |= ddir << 6; // Set the DiagDirecion into p2 bits 6 and 7.
+	p2 |= ddir << 3; // Set the DiagDirecion into p2 bits 3 and 4.
 
 	TileArea ta(start_tile, end_tile);
 	CommandContainer cmdcont = { ta.tile, (uint32)(ta.w | ta.h << 8), p2, cmd, CcRoadStop, "" };
@@ -637,11 +637,11 @@ struct BuildRoadToolbarWindow : Window {
 					break;
 
 				case DDSP_BUILD_BUSSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) << 2 | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_BUS]));
+					PlaceRoadStop(start_tile, end_tile, _cur_roadtype_identifier.Pack() << 5 | (_ctrl_pressed << 2) | ROADSTOP_BUS, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_BUS]));
 					break;
 
 				case DDSP_BUILD_TRUCKSTOP:
-					PlaceRoadStop(start_tile, end_tile, (_ctrl_pressed << 5) | RoadTypeToRoadTypes(_cur_roadtype_identifier.basetype) << 2 | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_TRUCK]));
+					PlaceRoadStop(start_tile, end_tile, _cur_roadtype_identifier.Pack() << 5 | (_ctrl_pressed << 2) | ROADSTOP_TRUCK, CMD_BUILD_ROAD_STOP | CMD_MSG(rti->strings.err_build_station[ROADSTOP_TRUCK]));
 					break;
 
 				case DDSP_REMOVE_BUSSTOP: {

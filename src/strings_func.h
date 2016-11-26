@@ -169,6 +169,8 @@ void CopyInDParam(int offs, const uint64 *src, int num);
 void CopyOutDParam(uint64 *dst, int offs, int num);
 void CopyOutDParam(uint64 *dst, const char **strings, StringID string, int num);
 
+void MakeCamelCase(char line[]);
+
 /**
  * Get the current string parameter at index \a n from parameter array \a s.
  * @param s Array of string parameters.

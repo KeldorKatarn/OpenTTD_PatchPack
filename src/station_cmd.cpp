@@ -252,7 +252,7 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 		0,                                       // STATIONNAMING_RAIL
 		0,                                       // STATIONNAMING_ROAD
 		1U << M(STR_SV_STNAME_AIRPORT),          // STATIONNAMING_AIRPORT
-		1U << M(STR_SV_STNAME_OILFIELD),         // STATIONNAMING_OILRIG
+		0,         // STATIONNAMING_OILRIG
 		1U << M(STR_SV_STNAME_DOCKS),            // STATIONNAMING_DOCK
 		1U << M(STR_SV_STNAME_HELIPORT),         // STATIONNAMING_HELIPORT
 	};
@@ -270,7 +270,7 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 				indtypes[s->indtype] = true;
 				StringID name = GetIndustrySpec(s->indtype)->station_name;
 				if (name != STR_UNDEFINED) {
-					/* Filter for other industrytypes with the same name */
+					/* Filter for other industry types with the same name */
 					for (IndustryType it = 0; it < NUM_INDUSTRYTYPES; it++) {
 						const IndustrySpec *indsp = GetIndustrySpec(it);
 						if (indsp->enabled && indsp->station_name == name) indtypes[it] = true;
@@ -290,16 +290,6 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 
 	TileIndex indtile = tile;
 	StationNameInformation sni = { free_names, indtypes };
-	//if (CircularTileSearch(&indtile, 7, FindNearIndustryName, &sni)) {
-	//	/* An industry has been found nearby */
-	//	IndustryType indtype = GetIndustryType(indtile);
-	//	const IndustrySpec *indsp = GetIndustrySpec(indtype);
-	//	/* STR_NULL means it only disables oil rig/mines */
-	//	if (indsp->station_name != STR_NULL) {
-	//		st->indtype = indtype;
-	//		return STR_SV_STNAME_FALLBACK;
-	//	}
-	//}
 
 	/* Oil rigs/mines name could be marked not free by looking for a near by industry. */
 	free_names = sni.free_names;
@@ -346,6 +336,8 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 				// Add industry name
 				GetString(buf+strlen(buf), (GetIndustrySpec(ind->type))->name, lastof(buf));
 
+				MakeCamelCase(buf);
+
 				if (IsUniqueStationName(buf)) {
 					free(st->name);
 					st->name = stredup(buf);
@@ -354,13 +346,6 @@ static StringID GenerateStationName(Station *st, TileIndex tile, int width, int 
 			}
 		}
 	}
-
-	/* check mine? */
-	//if (HasBit(free_names, M(STR_SV_STNAME_MINES))) {
-	//	if (CountMapSquareAround(tile, width, height, 3, CMSAMine) >= 2) {
-	//		return STR_SV_STNAME_MINES;
-	//	}
-	//}
 
 	/* check close enough to town to get central as name? */
 	if (DistanceMax(tile, t->xy) < 8) {

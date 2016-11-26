@@ -272,7 +272,7 @@ struct BuildRoadToolbarWindow : Window {
 	BuildRoadToolbarWindow(WindowDesc *desc, RoadTypeIdentifier roadtype_identifier) : Window(desc)
 	{
 		this->Initialize(roadtype_identifier);
-		this->InitNested(ROADTYPE_ROAD);
+		this->InitNested(TRANSPORT_ROAD);
 		this->SetupRoadToolbar();
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,

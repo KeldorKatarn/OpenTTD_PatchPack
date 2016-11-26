@@ -636,7 +636,7 @@ CommandCost CmdRemoveSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 				owner = GetTileOwner(tile);
 				Company::Get(owner)->infrastructure.rail[GetRailType(tile)] -= LEVELCROSSING_TRACKBIT_FACTOR;
 				DirtyCompanyInfrastructureWindows(owner);
-				MakeRoadNormal(tile, GetCrossingRoadBits(tile), GetRoadTypes(tile), GetTownIndex(tile), GetRoadOwner(tile, ROADTYPE_ROAD), GetRoadOwner(tile, ROADTYPE_TRAM));
+				MakeRoadNormal(tile, GetCrossingRoadBits(tile), RoadTypeIdentifiers::FromTile(tile), GetTownIndex(tile), GetRoadOwner(tile, ROADTYPE_ROAD), GetRoadOwner(tile, ROADTYPE_TRAM));
 				DeleteNewGRFInspectWindow(GSF_RAILTYPES, tile);
 			}
 			break;

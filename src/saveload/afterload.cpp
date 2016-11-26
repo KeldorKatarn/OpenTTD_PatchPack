@@ -462,7 +462,7 @@ static void FixOwnerOfRailTrack(TileIndex t)
 
 	if (IsLevelCrossingTile(t)) {
 		/* else change the crossing to normal road (road vehicles won't care) */
-		MakeRoadNormal(t, GetCrossingRoadBits(t), GetRoadTypes(t), GetTownIndex(t),
+		MakeRoadNormal(t, GetCrossingRoadBits(t), RoadTypeIdentifiers::FromTile(t), GetTownIndex(t),
 			GetRoadOwner(t, ROADTYPE_ROAD), GetRoadOwner(t, ROADTYPE_TRAM));
 		return;
 	}
@@ -1155,7 +1155,7 @@ bool AfterLoadGame()
 							MakeRoadNormal(
 								t,
 								axis == AXIS_X ? ROAD_Y : ROAD_X,
-								ROADTYPES_ROAD,
+								RoadTypeIdentifiers::FromRoadTypeIdentifier(RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN)),
 								town,
 								GetTileOwner(t), OWNER_NONE
 							);

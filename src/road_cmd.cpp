@@ -909,7 +909,7 @@ do_clear:;
 				break;
 
 			default:
-				MakeRoadNormal(tile, pieces, rtid, p2, company, company);
+				MakeRoadNormal(tile, pieces, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid), p2, company, company);
 				break;
 		}
 

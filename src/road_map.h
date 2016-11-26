@@ -770,23 +770,23 @@ static inline bool HasRoadTypeTram(RoadTypeIdentifiers rtids)
 
 /**
  * Make a normal road tile.
- * @param t    Tile to make a normal road.
- * @param bits Road bits to set for all present road types.
- * @param rot  New present road types.
- * @param town Town ID if the road is a town-owned road.
- * @param road New owner of road.
- * @param tram New owner of tram tracks.
+ * @param t     Tile to make a normal road.
+ * @param bits  Road bits to set for all present road types.
+ * @param rtids New present road types.
+ * @param town  Town ID if the road is a town-owned road.
+ * @param road  New owner of road.
+ * @param tram  New owner of tram tracks.
  */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypes rot, TownID town, Owner road, Owner tram)
+static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifiers rtids, TownID town, Owner road, Owner tram)
 {
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, road);
 	_m[t].m2 = town;
-	_m[t].m3 = (HasBit(rot, ROADTYPE_TRAM) ? bits : 0);
-	_m[t].m4 = 0;
-	_m[t].m5 = (HasBit(rot, ROADTYPE_ROAD) ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	_m[t].m3 = (HasRoadTypeTram(rtids) ? bits : 0);
+	_m[t].m5 = (HasRoadTypeRoad(rtids) ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rot << 6;
+	//_me[t].m7 = rot << 6; /* Deprecate */
+	SetRoadTypes(t, rtids);
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 }
 
@@ -834,28 +834,6 @@ static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDire
 	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6 | owner;
 	SetRoadOwner(t, ROADTYPE_TRAM, owner);
 	SetRoadTypes(t, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid));
-}
-
-/**
- * Make a normal road tile.
- * @param t    Tile to make a normal road.
- * @param bits Road bits to set for all present road types.
- * @param rot  New present road types.
- * @param town Town ID if the road is a town-owned road.
- * @param road New owner of road.
- * @param tram New owner of tram tracks.
- */
-static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier rtid, TownID town, Owner road, Owner tram)
-{
-	SetTileType(t, MP_ROAD);
-	SetTileOwner(t, road);
-	_m[t].m2 = town;
-	_m[t].m3 = (rtid.basetype == ROADTYPE_TRAM ? bits : 0);
-	SetRoadTypes(t, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid));
-	_m[t].m5 = (rtid.basetype == ROADTYPE_ROAD ? bits : 0) | ROAD_TILE_NORMAL << 6;
-	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6;
-	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 }
 
 #endif /* ROAD_MAP_H */

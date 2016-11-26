@@ -2033,6 +2033,7 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		if (!IsTileType(cur_tile, MP_STATION) || !IsRoadStop(cur_tile) || (uint32)GetRoadStopType(cur_tile) != GB(p2, 0, 1)) continue;
 
 		/* Save information on to-be-restored roads before the stop is removed. */
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(cur_tile);
 		RoadTypes rts = ROADTYPES_NONE;
 		RoadBits road_bits = ROAD_NONE;
 		Owner road_owner[] = { OWNER_NONE, OWNER_NONE };
@@ -2057,7 +2058,7 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 
 		/* Restore roads. */
 		if ((flags & DC_EXEC) && rts != ROADTYPES_NONE) {
-			MakeRoadNormal(cur_tile, road_bits, rts, ClosestTownFromTile(cur_tile, UINT_MAX)->index,
+			MakeRoadNormal(cur_tile, road_bits, rtids, ClosestTownFromTile(cur_tile, UINT_MAX)->index,
 					road_owner[ROADTYPE_ROAD], road_owner[ROADTYPE_TRAM]);
 
 			/* Update company infrastructure counts. */

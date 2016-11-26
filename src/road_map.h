@@ -577,10 +577,23 @@ struct RoadTypeIdentifiers {
 					rtids.tram_identifier = GetRoadTypeTram(t);
 				}
 				break;
-			case MP_STATION: /* TODO */
+			case MP_STATION:
+				if (GetAnyRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
+					rtids.road_identifier = GetRoadTypeRoad(t);
+				}
+
+				if (GetAnyRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
+					rtids.tram_identifier = GetRoadTypeTram(t);
+				}
+				break;
 			case MP_TUNNELBRIDGE:
-				rtids.road_identifier = GetRoadTypeRoad(t);
-				rtids.tram_identifier = GetRoadTypeTram(t);
+				if (GetAnyRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE, true) {
+					rtids.road_identifier = GetRoadTypeRoad(t);
+				}
+
+				if (GetAnyRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE, true) {
+					rtids.tram_identifier = GetRoadTypeTram(t);
+				}
 				break;
 		}
 

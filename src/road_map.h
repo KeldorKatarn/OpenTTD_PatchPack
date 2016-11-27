@@ -162,21 +162,14 @@ static inline void SetRoadBits(TileIndex t, RoadBits r, RoadType rt)
  * Get the present road types of a tile.
  * @param t The tile to query.
  * @return Present road types.
+ * TODO remove this function and always use RoadTypeIdentifiers
  */
 static inline RoadTypes GetRoadTypes(TileIndex t)
 {
-	return (RoadTypes)GB(_me[t].m7, 6, 2);
-}
-
-/**
- * Set the present road types of a tile.
- * @param t  The tile to change.
- * @param rt The new road types.
- */
-static inline void SetRoadTypes(TileIndex t, RoadTypes rt)
-{
-	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
-	SB(_me[t].m7, 6, 2, rt);
+	RoadTypes result = ROADTYPES_NONE;
+	if (GB(_m[t].m4, 0, 4) != INVALID_ROADSUBTYPE) result |= ROADTYPES_ROAD;
+	if (GB(_m[t].m4, 4, 4) != INVALID_ROADSUBTYPE) result |= ROADTYPES_TRAM;
+	return result;
 }
 
 /**
@@ -187,7 +180,11 @@ static inline void SetRoadTypes(TileIndex t, RoadTypes rt)
  */
 static inline bool HasTileRoadType(TileIndex t, RoadType rt)
 {
-	return HasBit(GetRoadTypes(t), rt);
+	switch (rt) {
+		default: NOT_REACHED();
+		case ROADTYPE_ROAD: return GB(_m[t].m4, 0, 4) != INVALID_ROADSUBTYPE;
+		case ROADTYPE_TRAM: return GB(_m[t].m4, 4, 4) != INVALID_ROADSUBTYPE;
+	}
 }
 
 /**
@@ -554,10 +551,11 @@ struct RoadTypeIdentifiers {
 	RoadTypeIdentifier road_identifier;
 	RoadTypeIdentifier tram_identifier;
 
-	/* Creates an INVALID RoadTypeIdentifiers */
+	/** Creates an INVALID RoadTypeIdentifiers */
 	RoadTypeIdentifiers() {}
 
-	/* Extracts the RoadTypeIdentifiers from the given tile
+	/**
+	 * Extracts the RoadTypeIdentifiers from the given tile
 	 * @param tile The tile to read the informations from
 	 */
 	static RoadTypeIdentifiers FromTile(TileIndex t)
@@ -565,42 +563,14 @@ struct RoadTypeIdentifiers {
 		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
 
 		RoadTypeIdentifiers rtids;
-
-		switch (GetTileType(t)) {
-			default: NOT_REACHED();
-			case MP_ROAD:
-				if (HasTileRoadType(t, ROADTYPE_ROAD)) {
-					rtids.road_identifier = GetRoadTypeRoad(t);
-				}
-
-				if (HasTileRoadType(t, ROADTYPE_TRAM)) {
-					rtids.tram_identifier = GetRoadTypeTram(t);
-				}
-				break;
-			case MP_STATION:
-				if (GetAnyRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE) {
-					rtids.road_identifier = GetRoadTypeRoad(t);
-				}
-
-				if (GetAnyRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE) {
-					rtids.tram_identifier = GetRoadTypeTram(t);
-				}
-				break;
-			case MP_TUNNELBRIDGE:
-				if (GetAnyRoadBits(t, ROADTYPE_ROAD) != ROAD_NONE, true) {
-					rtids.road_identifier = GetRoadTypeRoad(t);
-				}
-
-				if (GetAnyRoadBits(t, ROADTYPE_TRAM) != ROAD_NONE, true) {
-					rtids.tram_identifier = GetRoadTypeTram(t);
-				}
-				break;
-		}
+		rtids.road_identifier = GetRoadTypeRoad(t);
+		rtids.tram_identifier = GetRoadTypeTram(t);
 
 		return rtids;
 	}
 
-	/* Converts a RoadTypeIdentifier into a RoadTypeIdentifiers
+	/**
+	 * Converts a RoadTypeIdentifier into a RoadTypeIdentifiers
 	 * @param rtid The RoadTypeIdentifier to convert
 	 */
 	static RoadTypeIdentifiers FromRoadTypeIdentifier(RoadTypeIdentifier rtid)
@@ -616,7 +586,8 @@ struct RoadTypeIdentifiers {
 		return rtids;
 	}
 
-	/* Creates a RoadTypeIdentifiers from two RoadTypeIdentifier
+	/**
+	 * Creates a RoadTypeIdentifiers from two RoadTypeIdentifier
 	 * The order of the identifier doesn't matter, but they must be of different
 	 * base type (no ROAD + ROAD or TRAM + TRAM)
 	 * @param rtid1 The first RoadTypeIdentifier
@@ -648,7 +619,8 @@ struct RoadTypeIdentifiers {
 		return rtids;
 	}
 
-	/* Create a new RoadTypeIdentifiers merging a new identifier with a previous one
+	/**
+	 * Create a new RoadTypeIdentifiers merging a new identifier with a previous one
 	 * @param rtids a source RoadTypeIdentifiers
 	 * @param rtid the new RoadTypeIdentifier
 	 */
@@ -671,7 +643,8 @@ struct RoadTypeIdentifiers {
 		return new_rtids;
 	}
 
-	/* Returns the RoadTypes contained in the RoadTypeIdentifiers
+	/**
+	 * Returns the RoadTypes contained in the RoadTypeIdentifiers
 	 * @return RoadTypes flags
 	 */
 	RoadTypes PresentRoadTypes()
@@ -689,7 +662,8 @@ struct RoadTypeIdentifiers {
 		return rot;
 	};
 
-	/* Merge a new road type identifier into the current one
+	/**
+	 * Merge a new road type identifier into the current one
 	 * @param rtid The new RoadTypeIdentifier to merge into the current one
 	 * @return true on success (current behaviour = always success)
 	 */
@@ -703,6 +677,18 @@ struct RoadTypeIdentifiers {
 
 		return true;
 	};
+
+	/**
+	 * Remove a roadtype.
+	 */
+	void ClearRoadType(RoadType rt)
+	{
+		switch (rt) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: road_identifier = RoadTypeIdentifier(); break;
+			case ROADTYPE_TRAM: tram_identifier = RoadTypeIdentifier(); break;
+		}
+	}
 };
 
 /**
@@ -727,15 +713,8 @@ static inline RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTyp
  */
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
-	SetRoadTypes(t, rtids.PresentRoadTypes());
-
-	if (rtids.road_identifier.IsValid()) {
-		SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
-	}
-
-	if (rtids.tram_identifier.IsValid()) {
-		SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
-	}
+	SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
+	SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
 }
 
 static inline bool HasRoadTypeRoad(TileIndex t)
@@ -785,7 +764,7 @@ static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier
 	_m[t].m3 = (HasRoadTypeTram(rtids) ? bits : 0);
 	_m[t].m5 = (HasRoadTypeRoad(rtids) ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
-	//_me[t].m7 = rot << 6; /* Deprecate */
+	_me[t].m7 = 0;
 	SetRoadTypes(t, rtids);
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 }
@@ -798,10 +777,10 @@ static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier
  * @param rail    New owner of the rail track.
  * @param roaddir Axis of the road.
  * @param rat     New rail type.
- * @param rot     New present road types.
+ * @param rtids   New present road types.
  * @param town    Town ID if the road is a town-owned road.
  */
-static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner rail, Axis roaddir, RailType rat, RoadTypes rot, uint town)
+static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner rail, Axis roaddir, RailType rat, RoadTypeIdentifiers rtids, uint town)
 {
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, rail);
@@ -810,7 +789,8 @@ static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner r
 	_m[t].m4 = 0;
 	_m[t].m5 = ROAD_TILE_CROSSING << 6 | roaddir;
 	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = rot << 6 | road;
+	_me[t].m7 = road;
+	SetRoadTypes(t, rtids);
 	SetRoadOwner(t, ROADTYPE_TRAM, tram);
 }
 
@@ -831,9 +811,9 @@ static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDire
 	_m[t].m4 = 0;
 	_m[t].m5 = ROAD_TILE_DEPOT << 6 | dir;
 	SB(_me[t].m6, 2, 4, 0);
-	_me[t].m7 = RoadTypeToRoadTypes(rtid.basetype) << 6 | owner;
-	SetRoadOwner(t, ROADTYPE_TRAM, owner);
+	_me[t].m7 = owner;
 	SetRoadTypes(t, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid));
+	SetRoadOwner(t, ROADTYPE_TRAM, owner);
 }
 
 #endif /* ROAD_MAP_H */

@@ -361,8 +361,10 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 
-				SetRoadTypes(other_end, GetRoadTypes(other_end) & ~RoadTypeToRoadTypes(rt));
-				SetRoadTypes(tile, GetRoadTypes(tile) & ~RoadTypeToRoadTypes(rt));
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.ClearRoadType(rt);
+				SetRoadTypes(other_end, rtids);
+				SetRoadTypes(tile, rtids);
 
 				/* If the owner of the bridge sells all its road, also move the ownership
 				 * to the owner of the other roadtype, unless the bridge owner is a town. */
@@ -391,7 +393,9 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 					c->infrastructure.road[rt] -= 2;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
-				SetRoadTypes(tile, GetRoadTypes(tile) & ~RoadTypeToRoadTypes(rt));
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.ClearRoadType(rt);
+				SetRoadTypes(tile, rtids);
 				MarkTileDirtyByTile(tile);
 			}
 		}
@@ -453,8 +457,9 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				}
 
 				if (present == ROAD_NONE) {
-					RoadTypes rts = GetRoadTypes(tile) & ComplementRoadTypes(RoadTypeToRoadTypes(rt));
-					if (rts == ROADTYPES_NONE) {
+					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+					rtids.ClearRoadType(rt);
+					if (rtids.PresentRoadTypes() == ROADTYPES_NONE) {
 						/* Includes MarkTileDirtyByTile() */
 						DoClearSquare(tile);
 					} else {
@@ -464,7 +469,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 							SetTownIndex(tile, town == NULL ? (TownID)INVALID_TOWN : town->index);
 						}
 						SetRoadBits(tile, ROAD_NONE, rt);
-						SetRoadTypes(tile, rts);
+						SetRoadTypes(tile, rtids);
 						MarkTileDirtyByTile(tile);
 					}
 				} else {
@@ -498,8 +503,9 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				}
 
 				Track railtrack = GetCrossingRailTrack(tile);
-				RoadTypes rts = GetRoadTypes(tile) & ComplementRoadTypes(RoadTypeToRoadTypes(rt));
-				if (rts == ROADTYPES_NONE) {
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.ClearRoadType(rt);
+				if (rtids.PresentRoadTypes() == ROADTYPES_NONE) {
 					TrackBits tracks = GetCrossingRailBits(tile);
 					bool reserved = HasCrossingReservation(tile);
 					MakeRailNormal(tile, GetTileOwner(tile), tracks, GetRailType(tile));
@@ -513,7 +519,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 						DirtyCompanyInfrastructureWindows(c->index);
 					}
 				} else {
-					SetRoadTypes(tile, rts);
+					SetRoadTypes(tile, rtids);
 				}
 				MarkTileDirtyByTile(tile);
 				YapfNotifyTrackLayoutChange(tile, railtrack);
@@ -776,7 +782,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 				/* Always add road to the roadtypes (can't draw without it) */
 				bool reserved = HasBit(GetRailReservationTrackBits(tile), railtrack);
-				MakeRoadCrossing(tile, company, company, GetTileOwner(tile), roaddir, GetRailType(tile), RoadTypeToRoadTypes(rt), p2);
+				MakeRoadCrossing(tile, company, company, GetTileOwner(tile), roaddir, GetRailType(tile), RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid), p2);
 				SetCrossingReservation(tile, reserved);
 				UpdateLevelCrossing(tile, false);
 				MarkTileDirtyByTile(tile);

@@ -53,16 +53,8 @@ enum RoadTypeSpriteGroup {
 typedef SmallVector<RoadTypeLabel, 4> RoadTypeLabelList;
 
 struct RoadtypeInfo {
-	struct {
-		SpriteID roadbits[16];        ///< all the different roadbits combinations
-		SpriteID slopes_offset;       ///< offset for the different sprites for slopes
-		SpriteID road_oneway_base;    ///< base sprite for oneway road
-		SpriteID road_excavation_x;   ///< road excavation in X direction
-		SpriteID road_excavation_y;   ///< road excavation in Y direction
-	} base_sprites;
-
 	/**
-	 * struct containing the sprites for the rail GUI. @note only sprites referred to
+	 * struct containing the sprites for the road GUI. @note only sprites referred to
 	 * directly in the code are listed
 	 */
 	struct {
@@ -73,6 +65,7 @@ struct RoadtypeInfo {
 		SpriteID build_bus_station;   ///< button for building bus stations
 		SpriteID build_truck_station; ///< button for building truck stations
 		SpriteID build_tunnel;        ///< button for building a tunnel
+		SpriteID convert_road;        ///< button for converting road types
 	} gui_sprites;
 
 	struct {
@@ -83,15 +76,16 @@ struct RoadtypeInfo {
 		CursorID bus_station;   ///< Cursor for building a bus station
 		CursorID truck_station; ///< Cursor for building a truck station
 		CursorID tunnel;        ///< Cursor for building a tunnel
+		SpriteID convert_road;  ///< Cursor for converting road types
 	} cursor;                       ///< Cursors associated with the road type.
 
 	struct {
-		StringID name;            ///< Name of this rail type.
+		StringID name;            ///< Name of this rail type. // TODO use
 		StringID toolbar_caption; ///< Caption in the construction toolbar GUI for this rail type.
 		StringID menu_text;       ///< Name of this rail type in the main toolbar dropdown.
-		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type.
-		StringID replace_text;    ///< Text used in the autoreplace GUI.
-		StringID new_loco;        ///< Name of an engine for this type of rail in the engine preview GUI.
+		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type. // TODO use
+		StringID replace_text;    ///< Text used in the autoreplace GUI. // TODO use
+		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI. // TODO use
 
 		StringID err_build_road;        ///< Building a normal piece of road
 		StringID err_remove_road;       ///< Removing a normal piece of road
@@ -104,50 +98,32 @@ struct RoadtypeInfo {
 	} strings;                        ///< Strings associated with the rail type.
 
 	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype generates power */
-	RoadTypes powered_roadtypes;
-
-	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype can physically travel */
-	RoadTypes compatible_roadtypes;
-
-	/**
-	 * Bridge offset
-	 */
-	SpriteID bridge_offset;
-
-	/**
-	 * Original roadtype number to use when drawing non-newgrf roadtypes, or when drawing stations.
-	 */
-	byte fallback_roadtype;
+	RoadSubTypes powered_roadtypes; // TODO use
 
 	/**
 	 * Multiplier for curve maximum speed advantage
 	 */
-	byte curve_speed;
+	byte curve_speed; // TODO use
 
 	/**
 	 * Bit mask of road type flags
 	 */
-	RoadTypeFlags flags;
+	RoadTypeFlags flags; // TODO more flags
 
 	/**
 	 * Cost multiplier for building this road type
 	 */
-	uint16 cost_multiplier;
+	uint16 cost_multiplier; // TODO use
 
 	/**
 	 * Cost multiplier for maintenance of this road type
 	 */
-	uint16 maintenance_multiplier;
-
-	/**
-	 * Acceleration type of this road type
-	 */
-	uint8 acceleration_type;
+	uint16 maintenance_multiplier; // TODO use
 
 	/**
 	 * Maximum speed for vehicles travelling on this road type
 	 */
-	uint16 max_speed;
+	uint16 max_speed; // TODO use
 
 	/**
 	 * Unique 32 bit road type identifier
@@ -157,12 +133,12 @@ struct RoadtypeInfo {
 	/**
 	 * Road type labels this type provides in addition to the main label.
 	 */
-	RoadTypeLabelList alternate_labels;
+	RoadTypeLabelList alternate_labels; // TODO use
 
 	/**
 	 * Colour on mini-map
 	 */
-	byte map_colour;
+	byte map_colour; // TODO use
 
 	/**
 	 * Introduction date.
@@ -171,18 +147,18 @@ struct RoadtypeInfo {
 	 * The introduction at this date is furthermore limited by the
 	 * #introduction_required_types.
 	 */
-	Date introduction_date;
+	Date introduction_date; // TODO use
 
 	/**
 	 * Bitmask of roadtypes that are required for this roadtype to be introduced
 	 * at a given #introduction_date.
 	 */
-	RoadTypes introduction_required_roadtypes;
+	RoadSubTypes introduction_required_roadtypes; // TODO use
 
 	/**
 	 * Bitmask of which other roadtypes are introduced when this roadtype is introduced.
 	 */
-	RoadTypes introduces_roadtypes;
+	RoadSubTypes introduces_roadtypes; // TODO use
 
 	/**
 	 * The sorting order of this roadtype for the toolbar dropdown.
@@ -232,22 +208,6 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
 	assert(rtid.basetype < ROADTYPE_END);
 	assert(rtid.subtype < ROADSUBTYPE_END);
 	return &_roadtypes[rtid.basetype][rtid.subtype];
-}
-
-/**
- * Checks if an engine of the given RoadType can drive on a tile with a given
- * RoadType. This would normally just be an equality check, but for electrified
- * roads (which also support non-electric vehicles).
- * @return Whether the engine can drive on this tile.
- * @param  vehicletype The RoadType of the engine we are considering.
- * @param  tiletype   The RoadType of the tile we are considering.
- */
-static inline bool IsCompatibleRoad(RoadTypeIdentifier rtid)
-{
-	uint8 a = GetRoadTypeInfo(rtid)->compatible_roadtypes;
-	uint8 b = rtid.basetype;
-
-	return HasBit(a, b);
 }
 
 /**

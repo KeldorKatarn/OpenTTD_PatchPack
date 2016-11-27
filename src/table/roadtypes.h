@@ -21,17 +21,6 @@
 static const RoadtypeInfo _original_roadtypes[] = {
 	/** Road */
 	{
-		{
-			{
-					0, 0x546, 0x545, 0x53B, 0x544, 0x534, 0x53E, 0x539,
-				0x543, 0x53C, 0x535, 0x538, 0x53D, 0x537, 0x53A, 0x536
-			},
-			SPR_ROAD_SLOPE_START,
-			SPR_ONEWAY_BASE,
-			SPR_EXCAVATION_X,
-			SPR_EXCAVATION_Y
-		},
-
 		/* GUI sprites */
 		{
 			SPR_IMG_ROAD_X_DIR,
@@ -40,7 +29,8 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_IMG_ROAD_DEPOT,
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
-			SPR_IMG_ROAD_TUNNEL
+			SPR_IMG_ROAD_TUNNEL,
+			SPR_IMG_QUERY // TODO
 		},
 
 		{
@@ -50,7 +40,8 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_CURSOR_ROAD_DEPOT,
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
-			SPR_CURSOR_TUNNEL_RAIL
+			SPR_CURSOR_TUNNEL_RAIL,
+			SPR_IMG_QUERY // TODO
 		},
 
 		/* strings */
@@ -72,31 +63,19 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		},
 
 		/* Powered roadtypes */
-		ROADTYPES_ROAD | ROADTYPES_TRAM,
-
-		/* Compatible roadtypes */
-		ROADTYPES_ROAD,
-
-		/* bridge offset */
-		0,
-
-		/* fallback_roadtype */
-		0,
+		ROADSUBTYPES_DEFAULT,
 
 		/* curve speed advantage (multiplier) */
-		0,
+		0, // TODO
 
 		/* flags */
 		ROTFB_NONE,
 
 		/* cost multiplier */
-		2,
+		2, // TODO
 
 		/* maintenance cost multiplier */
-		2,
-
-		/* acceleration type */
-		0,
+		2, // TODO
 
 		/* max speed */
 		0,
@@ -108,19 +87,19 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A,
+		0x0A, // TODO
 
 		/* introduction date */
 		INVALID_DATE,
 
 		/* roadtypes required for this to be introduced */
-		ROADTYPES_NONE,
+		ROADSUBTYPES_NONE,
 
 		/* introduction road types */
-		ROADTYPES_ROAD,
+		ROADSUBTYPES_DEFAULT,
 
 		/* sort order */
-		0 << 4 | 7,
+		7,
 
 		{ NULL },
 		{ NULL },
@@ -130,17 +109,6 @@ static const RoadtypeInfo _original_roadtypes[] = {
 static const RoadtypeInfo _original_tramtypes[] = {
 	/** Tram */
 	{
-		{
-			{
-					0, 0x546, 0x545, 0x53B, 0x544, 0x534, 0x53E, 0x539,
-				0x543, 0x53C, 0x535, 0x538, 0x53D, 0x537, 0x53A, 0x536
-			},
-			SPR_TRAMWAY_SLOPED_OFFSET,
-			0,
-			0,
-			0
-		},
-
 		/* GUI sprites */
 		{
 			SPR_IMG_TRAMWAY_X_DIR,
@@ -149,7 +117,8 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_IMG_ROAD_DEPOT,
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
-			SPR_IMG_ROAD_TUNNEL
+			SPR_IMG_ROAD_TUNNEL,
+			SPR_IMG_QUERY // TODO
 		},
 
 		{
@@ -159,7 +128,8 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_CURSOR_ROAD_DEPOT,
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
-			SPR_CURSOR_TUNNEL_RAIL
+			SPR_CURSOR_TUNNEL_RAIL,
+			SPR_IMG_QUERY // TODO
 		},
 
 		/* strings */
@@ -181,34 +151,22 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		},
 
 		/* Powered roadtypes */
-		ROADTYPES_ROAD | ROADTYPES_TRAM,
-
-		/* Compatible roadtypes */
-		ROADTYPES_TRAM,
-
-		/* bridge offset */
-		0,
-
-		/* fallback_roadtype */
-		0,
+		ROADSUBTYPES_DEFAULT,
 
 		/* curve speed advantage (multiplier) */
-		0,
+		0, // TODO
 
 		/* flags */
 		ROTFB_CATENARY,
 
 		/* cost multiplier */
-		2,
+		2, // TODO
 
 		/* maintenance cost multiplier */
-		2,
-
-		/* acceleration type */
-		0,
+		2, // TODO
 
 		/* max speed */
-		0,
+		0, // TODO
 
 		/* road type label */
 		'TRAM',
@@ -217,19 +175,19 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A,
+		0x0A, // TODO
 
 		/* introduction date */
 		INVALID_DATE,
 
 		/* roadtypes required for this to be introduced */
-		ROADTYPES_NONE,
+		ROADSUBTYPES_NONE,
 
 		/* introduction road types */
-		ROADTYPES_TRAM,
+		ROADSUBTYPES_DEFAULT,
 
 		/* sort order */
-		1 << 4 | 7,
+		7,
 
 		{ NULL },
 		{ NULL },

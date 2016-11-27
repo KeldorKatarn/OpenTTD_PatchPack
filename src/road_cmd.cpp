@@ -77,6 +77,7 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
 		rti->gui_sprites.build_bus_station = cursors_base + 4;
 		rti->gui_sprites.build_truck_station = cursors_base + 5;
 		rti->gui_sprites.build_tunnel = cursors_base + 6;
+		rti->gui_sprites.convert_road = cursors_base + 7;
 		rti->cursor.road_swne = cursors_base + 8;
 		rti->cursor.road_nwse = cursors_base + 9;
 		rti->cursor.autoroad = cursors_base + 10;
@@ -84,6 +85,7 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
 		rti->cursor.bus_station = cursors_base + 12;
 		rti->cursor.truck_station = cursors_base + 13;
 		rti->cursor.tunnel = cursors_base + 14;
+		rti->cursor.convert_road = cursors_base + 15;
 	}
 }
 
@@ -142,11 +144,10 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 			new (&rti->alternate_labels) RoadTypeLabelList;
 
 			/* Make us compatible with ourself. */
-			rti->powered_roadtypes = (RoadTypes)(1 << rt);
-			rti->compatible_roadtypes = (RoadTypes)(1 << rt);
+			rti->powered_roadtypes = (RoadSubTypes)(1 << rt);
 
 			/* We also introduce ourself. */
-			rti->introduces_roadtypes = (RoadTypes)(1 << rt);
+			rti->introduces_roadtypes = (RoadSubTypes)(1 << rt);
 
 			/* Default sort order; order of allocation, but with some
 			 * offsets so it's easier for NewGRF to pick a spot without
@@ -1480,18 +1481,16 @@ static void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Draw one way */
-	if (road_rti != NULL) { // TODO custom oneway?
+	if (road_rti != NULL) {
 		DisallowedRoadDirections drd = GetDisallowedRoadDirections(ti->tile);
 		if (drd != DRD_NONE) {
-			DrawGroundSpriteAt(road_rti->base_sprites.road_oneway_base + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
-			//DrawGroundSpriteAt(SPR_ONEWAY_BASE + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh)); // TODO revert
+			DrawGroundSpriteAt(SPR_ONEWAY_BASE + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
 		}
 	}
 
 	if (HasRoadWorks(ti->tile)) {
 		/* Road works */
-		DrawGroundSprite((road | tram) & ROAD_X ? road_rti->base_sprites.road_excavation_x : road_rti->base_sprites.road_excavation_y, PAL_NONE);
-		//DrawGroundSprite((road | tram) & ROAD_X ? SPR_EXCAVATION_X : SPR_EXCAVATION_Y, PAL_NONE); // TODO revert
+		DrawGroundSprite((road | tram) & ROAD_X ? SPR_EXCAVATION_X : SPR_EXCAVATION_Y, PAL_NONE);
 		return;
 	}
 

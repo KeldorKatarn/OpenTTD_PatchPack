@@ -4294,11 +4294,10 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			AddStringForMapping(buf->ReadWord(), &rti->strings.replace_text);
 			break;
 
-		case 0x0D: // New locomotive text
-			AddStringForMapping(buf->ReadWord(), &rti->strings.new_loco);
+		case 0x0D: // New engine text
+			AddStringForMapping(buf->ReadWord(), &rti->strings.new_engine);
 			break;
 
-		case 0x0E: // Compatible roadtype list
 		case 0x0F: // Powered roadtype list
 		case 0x18: // Roadtype list required for date introduction
 		case 0x19: // Introduced roadtype list
@@ -4312,8 +4311,7 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 				RoadTypeIdentifier rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
 				if (!rtid.IsValid()) {
 					switch (prop) {
-					case 0x0F: SetBit(rti->powered_roadtypes, rtid.basetype); // Powered implies compatible.
-					case 0x0E: SetBit(rti->compatible_roadtypes, rtid.basetype);            break;
+					case 0x0F: SetBit(rti->powered_roadtypes, rtid.basetype);               break;
 					case 0x18: SetBit(rti->introduction_required_roadtypes, rtid.basetype); break;
 					case 0x19: SetBit(rti->introduces_roadtypes, rtid.basetype);            break;
 					}
@@ -4330,20 +4328,12 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			rti->curve_speed = buf->ReadByte();
 			break;
 
-		case 0x12: // Station graphic
-			rti->fallback_roadtype = Clamp(buf->ReadByte(), 0, 2);
-			break;
-
 		case 0x13: // Construction cost factor
 			rti->cost_multiplier = buf->ReadWord();
 			break;
 
 		case 0x14: // Speed limit
 			rti->max_speed = buf->ReadWord();
-			break;
-
-		case 0x15: // Acceleration model
-			rti->acceleration_type = Clamp(buf->ReadByte(), 0, 2);
 			break;
 
 		case 0x16: // Map colour
@@ -4446,7 +4436,6 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				grfmsg(1, "RoadTypeReserveInfo: Ignoring property 1D for road type %u because no label was set", id + i);
 				/* FALL THROUGH */
 
-			case 0x0E: // Compatible roadtype list
 			case 0x0F: // Powered roadtype list
 			case 0x18: // Roadtype list required for date introduction
 			case 0x19: // Introduced roadtype list

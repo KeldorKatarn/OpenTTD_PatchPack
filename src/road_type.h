@@ -42,10 +42,8 @@ enum RoadSubType {
 };
 DECLARE_POSTFIX_INCREMENT(RoadSubType);
 
-
 /**
- * The different roadtypes we support, but then a bitmask of them
- * @note currently only roadtypes with ROADTYPE_ROAD and ROADTYPE_TRAM are supported.
+ * The different roadtypes we support, but then a bitmask of them.
  */
 enum RoadTypes {
 	ROADTYPES_NONE     = 0,                                ///< No roadtypes
@@ -59,6 +57,14 @@ DECLARE_ENUM_AS_BIT_SET(RoadTypes)
 template <> struct EnumPropsT<RoadTypes> : MakeEnumPropsT<RoadTypes, byte, ROADTYPES_NONE, ROADTYPES_END, INVALID_ROADTYPES, 2> {};
 typedef SimpleTinyEnumT<RoadTypes, byte> RoadTypesByte;
 
+/**
+ * The different roadsubtypes which exist, but then a bitmask of them.
+ */
+enum RoadSubTypes {
+	ROADSUBTYPES_NONE    = 0,                        ///< No roadsubtypes
+	ROADSUBTYPES_DEFAULT = 1 << ROADSUBTYPE_BEGIN,   ///< Default road/tram
+};
+DECLARE_ENUM_AS_BIT_SET(RoadSubTypes)
 
 /**
  * Enumeration for the road parts on a tile.

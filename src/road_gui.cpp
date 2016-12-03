@@ -328,9 +328,11 @@ struct BuildRoadToolbarWindow : Window {
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_Y)->widget_data = rti->gui_sprites.build_y_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
-		this->GetWidget<NWidgetCore>(WID_ROT_DEPOT)->widget_data = rti->gui_sprites.build_depot;
-		this->GetWidget<NWidgetCore>(WID_ROT_BUS_STATION)->widget_data = rti->gui_sprites.build_bus_station;
-		this->GetWidget<NWidgetCore>(WID_ROT_TRUCK_STATION)->widget_data = rti->gui_sprites.build_truck_station;
+		if (_game_mode != GM_EDITOR) {
+			this->GetWidget<NWidgetCore>(WID_ROT_DEPOT)->widget_data = rti->gui_sprites.build_depot;
+			this->GetWidget<NWidgetCore>(WID_ROT_BUS_STATION)->widget_data = rti->gui_sprites.build_bus_station;
+			this->GetWidget<NWidgetCore>(WID_ROT_TRUCK_STATION)->widget_data = rti->gui_sprites.build_truck_station;
+		}
 		this->GetWidget<NWidgetCore>(WID_ROT_BUILD_TUNNEL)->widget_data = rti->gui_sprites.build_tunnel;
 	}
 

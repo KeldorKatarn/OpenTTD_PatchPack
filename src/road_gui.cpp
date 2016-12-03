@@ -269,10 +269,10 @@ struct BuildRoadToolbarWindow : Window {
 	const RoadtypeInfo *rti;          ///< Informations about current road type
 	int last_started_action;    ///< Last started user action.
 
-	BuildRoadToolbarWindow(WindowDesc *desc, RoadTypeIdentifier roadtype_identifier) : Window(desc)
+	BuildRoadToolbarWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc)
 	{
-		this->Initialize(roadtype_identifier);
-		this->InitNested(TRANSPORT_ROAD);
+		this->Initialize(_cur_roadtype_identifier);
+		this->InitNested(window_number);
 		this->SetupRoadToolbar();
 		this->SetWidgetsDisabledState(true,
 				WID_ROT_REMOVE,
@@ -813,7 +813,7 @@ Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id)
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
 
-	return new BuildRoadToolbarWindow(_cur_roadtype_identifier.IsRoad() ? &_build_road_desc : &_build_tramway_desc, roadtype_id);
+	return AllocateWindowDescFront<BuildRoadToolbarWindow>(_cur_roadtype_identifier.IsRoad() ? &_build_road_desc : &_build_tramway_desc, TRANSPORT_ROAD);
 }
 
 static const NWidgetPart _nested_build_road_scen_widgets[] = {
@@ -858,8 +858,8 @@ static WindowDesc _build_road_scen_desc(
 Window *ShowBuildRoadScenToolbar()
 {
 	_cur_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
-	//return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
-	return new BuildRoadToolbarWindow(&_build_road_scen_desc, RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN)); // TODO which roadtype?
+
+	return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
 }
 
 struct BuildRoadDepotWindow : public PickerWindowBase {

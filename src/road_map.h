@@ -620,34 +620,10 @@ struct RoadTypeIdentifiers {
 	}
 
 	/**
-	 * Create a new RoadTypeIdentifiers merging a new identifier with a previous one
-	 * @param rtids a source RoadTypeIdentifiers
-	 * @param rtid the new RoadTypeIdentifier
-	 */
-	static RoadTypeIdentifiers Merge(RoadTypeIdentifiers rtids, RoadTypeIdentifier rtid)
-	{
-		RoadTypeIdentifiers new_rtids;
-
-		switch (rtid.basetype) {
-			default: NOT_REACHED();
-			case ROADTYPE_ROAD:
-				new_rtids.road_identifier = rtid;
-				new_rtids.tram_identifier = rtids.tram_identifier;
-				break;
-			case ROADTYPE_TRAM:
-				new_rtids.road_identifier = rtids.road_identifier;
-				new_rtids.tram_identifier = rtid;
-				break;
-		}
-
-		return new_rtids;
-	}
-
-	/**
 	 * Returns the RoadTypes contained in the RoadTypeIdentifiers
 	 * @return RoadTypes flags
 	 */
-	RoadTypes PresentRoadTypes()
+	RoadTypes PresentRoadTypes() const
 	{
 		RoadTypes rot = ROADTYPES_NONE;
 
@@ -662,12 +638,22 @@ struct RoadTypeIdentifiers {
 		return rot;
 	};
 
+	bool HasRoad() const
+	{
+		return road_identifier.IsValid();
+	}
+
+	bool HasTram() const
+	{
+		return tram_identifier.IsValid();
+	}
+
 	/**
 	 * Merge a new road type identifier into the current one
 	 * @param rtid The new RoadTypeIdentifier to merge into the current one
 	 * @return true on success (current behaviour = always success)
 	 */
-	bool MergeRoadTypes(RoadTypeIdentifier rtid)
+	bool MergeRoadType(RoadTypeIdentifier rtid)
 	{
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
@@ -692,21 +678,6 @@ struct RoadTypeIdentifiers {
 };
 
 /**
- * Combine road types from tile with the new one
- * @param tile The tile to get the present road types from
- * @param rtid The road type identifier to add
- * @return The combined road types
- */
-static inline RoadTypeIdentifiers CombineTileRoadTypeIds(TileIndex tile, RoadTypeIdentifier rtid)
-{
-	/* Extract road types from tile, like "GetRoadTypes(tile)" */
-	RoadTypeIdentifiers tile_roadtype_ids = RoadTypeIdentifiers::FromTile(tile);
-
-	/* Add the new road type preserving the other one (eg. add tram to road), like "roadtypes | RoadTypeToRoadTypes(rt)" */
-	return RoadTypeIdentifiers::Merge(tile_roadtype_ids, rtid);
-}
-
-/**
  * Set the present road types of a tile.
  * @param t  The tile to change.
  * @param rtids The new road types identifiers to set for the tile.
@@ -722,29 +693,9 @@ static inline bool HasRoadTypeRoad(TileIndex t)
 	return RoadTypeIdentifiers::FromTile(t).road_identifier.IsValid();
 }
 
-static inline bool HasRoadTypeRoad(RoadTypeIdentifier rtid)
-{
-	return rtid.IsValid() && rtid.basetype == ROADTYPE_ROAD;
-}
-
-static inline bool HasRoadTypeRoad(RoadTypeIdentifiers rtids)
-{
-	return rtids.road_identifier.IsValid();
-}
-
 static inline bool HasRoadTypeTram(TileIndex t)
 {
 	return RoadTypeIdentifiers::FromTile(t).tram_identifier.IsValid();
-}
-
-static inline bool HasRoadTypeTram(RoadTypeIdentifier rtid)
-{
-	return rtid.IsValid() && rtid.basetype == ROADTYPE_TRAM;
-}
-
-static inline bool HasRoadTypeTram(RoadTypeIdentifiers rtids)
-{
-	return rtids.tram_identifier.IsValid();
 }
 
 /**
@@ -761,8 +712,8 @@ static inline void MakeRoadNormal(TileIndex t, RoadBits bits, RoadTypeIdentifier
 	SetTileType(t, MP_ROAD);
 	SetTileOwner(t, road);
 	_m[t].m2 = town;
-	_m[t].m3 = (HasRoadTypeTram(rtids) ? bits : 0);
-	_m[t].m5 = (HasRoadTypeRoad(rtids) ? bits : 0) | ROAD_TILE_NORMAL << 6;
+	_m[t].m3 = (rtids.HasTram() ? bits : 0);
+	_m[t].m5 = (rtids.HasRoad() ? bits : 0) | ROAD_TILE_NORMAL << 6;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = 0;
 	SetRoadTypes(t, rtids);

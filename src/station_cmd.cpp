@@ -1818,8 +1818,8 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 		/* Check every tile in the area. */
 		TILE_AREA_LOOP(cur_tile, roadstop_area) {
 			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(cur_tile);
-			Owner road_owner = HasRoadTypeRoad(rtids) ? GetRoadOwner(cur_tile, ROADTYPE_ROAD) : _current_company;
-			Owner tram_owner = HasRoadTypeTram(rtids) ? GetRoadOwner(cur_tile, ROADTYPE_TRAM) : _current_company;
+			Owner road_owner = rtids.HasRoad() ? GetRoadOwner(cur_tile, ROADTYPE_ROAD) : _current_company;
+			Owner tram_owner = rtids.HasTram() ? GetRoadOwner(cur_tile, ROADTYPE_TRAM) : _current_company;
 
 			if (IsTileType(cur_tile, MP_STATION) && IsRoadStop(cur_tile)) {
 				RemoveRoadStop(cur_tile, flags);
@@ -1855,7 +1855,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 					}
 				}
 
-				rtids.MergeRoadTypes(rtid);
+				rtids.MergeRoadType(rtid);
 				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rtids, axis);
 				road_stop->MakeDriveThrough();
 			} else {
@@ -2904,8 +2904,8 @@ draw_default_foundation:
 
 	if (IsRoadStop(ti->tile)) {
 		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
-		const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-		const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+		const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+		const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 		RoadBits catenary_bits;
 		if (IsDriveThroughStopTile(ti->tile)) {

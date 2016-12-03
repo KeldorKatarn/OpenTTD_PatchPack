@@ -211,18 +211,3 @@ bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
 	assert(ret);
 	return result;
 }
-
-bool RoadTypeIdentifier::IsValid()
-{
-	return (this->basetype != INVALID_ROADTYPE) && (this->subtype != INVALID_ROADSUBTYPE);
-}
-
-bool RoadTypeIdentifier::IsRoad()
-{
-	return (this->basetype == ROADTYPE_ROAD);
-}
-
-bool RoadTypeIdentifier::IsTram()
-{
-	return (this->basetype == ROADTYPE_TRAM);
-}

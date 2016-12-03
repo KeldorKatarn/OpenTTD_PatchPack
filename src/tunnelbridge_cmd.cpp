@@ -1103,8 +1103,8 @@ static void DrawBridgePillars(const PalSpriteID *psid, const TileInfo *ti, Axis 
 static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int offset, bool head)
 {
 	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(head_tile);
-	const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-	const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+	const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 	SpriteID seq_back[4] = { 0 };
 	bool trans_back[4] = { false };
@@ -1264,8 +1264,8 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 
 		if (transport_type == TRANSPORT_ROAD) {
 			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
-			const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-			const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+			const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+			const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 			uint sprite_offset = DiagDirToAxis(tunnelbridge_direction) == AXIS_X ? 1 : 0;
 
 			/* Road underlay takes precendence over tram */

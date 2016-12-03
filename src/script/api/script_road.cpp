@@ -58,7 +58,7 @@
 
 /* static */ bool ScriptRoad::IsRoadTypeAvailable(RoadType road_type)
 {
-	return ::IsValidRoadType((::RoadType)road_type) && ::HasRoadTypesAvail(ScriptObject::GetCompany(), ::RoadTypeToRoadTypes((::RoadType)road_type));
+	return ::IsValidRoadType((::RoadType)road_type) && ::HasRoadTypesAvail(ScriptObject::GetCompany(), ::RoadTypeToRoadTypes((::RoadType)road_type)); // TODO
 }
 
 /* static */ ScriptRoad::RoadType ScriptRoad::GetCurrentRoadType()
@@ -460,7 +460,7 @@ static bool NeighbourHasReachableRoad(::RoadTypes rts, TileIndex start_tile, Dia
 	EnforcePrecondition(false, ::IsValidTile(start));
 	EnforcePrecondition(false, ::IsValidTile(end));
 	EnforcePrecondition(false, ::TileX(start) == ::TileX(end) || ::TileY(start) == ::TileY(end));
-	EnforcePrecondition(false, !one_way || ScriptObject::GetRoadType().basetype == ::ROADTYPE_ROAD);
+	EnforcePrecondition(false, !one_way || ScriptObject::GetRoadType().IsRoad());
 	EnforcePrecondition(false, IsRoadTypeAvailable(GetCurrentRoadType()));
 
 	return ScriptObject::DoCommand(start, end, (::TileY(start) != ::TileY(end) ? 4 : 0) | (((start < end) == !full) ? 1 : 2) | (ScriptObject::GetRoadType().Pack() << 3) | ((one_way ? 1 : 0) << 8) | 1 << 9, CMD_BUILD_LONG_ROAD);

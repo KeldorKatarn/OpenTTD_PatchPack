@@ -189,9 +189,20 @@ struct RoadTypeIdentifier {
 	bool UnpackIfValid(uint32 data);
 	static RoadTypeIdentifier Unpack(uint32 data);
 
-	bool IsValid();
-	bool IsRoad();
-	bool IsTram();
+	bool IsValid() const
+	{
+		return IsRoad() || IsTram();
+	}
+
+	bool IsRoad() const
+	{
+		return (this->basetype == ROADTYPE_ROAD) && (this->subtype < ROADSUBTYPE_END);
+	}
+
+	bool IsTram() const
+	{
+		return (this->basetype == ROADTYPE_TRAM) && (this->subtype < ROADSUBTYPE_END);
+	}
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
 	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
@@ -218,7 +229,7 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
  * @param  vehicletype The RoadType of the engine we are considering.
  * @param  tiletype   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(RoadTypeIdentifier rtid)
+static inline bool HasPowerOnRoad(RoadTypeIdentifier rtid) // TODO
 {
 	uint8 a = GetRoadTypeInfo(rtid)->powered_roadtypes;
 	uint8 b = rtid.basetype;

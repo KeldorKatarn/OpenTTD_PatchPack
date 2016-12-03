@@ -877,7 +877,9 @@ do_clear:;
 			case MP_ROAD: {
 				RoadTileType rtt = GetRoadTileType(tile);
 				if (existing == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
-					SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
+					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+					rtids.MergeRoadType(rtid);
+					SetRoadTypes(tile, rtids);
 
 					SetRoadOwner(tile, rt, company);
 					if (rt == ROADTYPE_ROAD) SetTownIndex(tile, p2);
@@ -889,8 +891,10 @@ do_clear:;
 			case MP_TUNNELBRIDGE: {
 				TileIndex other_end = GetOtherTunnelBridgeEnd(tile);
 
-				SetRoadTypes(other_end, CombineTileRoadTypeIds(other_end, rtid));
-				SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.MergeRoadType(rtid);
+				SetRoadTypes(other_end, rtids);
+				SetRoadTypes(tile, rtids);
 				SetRoadOwner(other_end, rt, company);
 				SetRoadOwner(tile, rt, company);
 
@@ -904,11 +908,14 @@ do_clear:;
 				break;
 			}
 
-			case MP_STATION:
+			case MP_STATION: {
 				assert(IsDriveThroughStopTile(tile));
-				SetRoadTypes(tile, CombineTileRoadTypeIds(tile, rtid));
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.MergeRoadType(rtid);
+				SetRoadTypes(tile, rtids);
 				SetRoadOwner(tile, rt, company);
 				break;
+			}
 
 			default:
 				MakeRoadNormal(tile, pieces, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid), p2, company, company);
@@ -1418,8 +1425,8 @@ static void DrawRoadBits(TileInfo *ti)
 	RoadBits tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
 
 	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
-	const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-	const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+	const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 	if (ti->tileh != SLOPE_FLAT) {
 		DrawFoundation(ti, GetRoadFoundation(ti->tileh, road | tram));
@@ -1542,8 +1549,8 @@ static void DrawTile_Road(TileInfo *ti)
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));
 
 			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
-			const RoadtypeInfo* road_rti = HasRoadTypeRoad(rtids) ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-			const RoadtypeInfo* tram_rti = HasRoadTypeTram(rtids) ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+			const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+			const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 			/* Draw base ground */
 			if (rti->UsesOverlay()) {
@@ -1648,7 +1655,7 @@ static void DrawTile_Road(TileInfo *ti)
 
 			PaletteID palette = COMPANY_SPRITE_COLOUR(GetTileOwner(ti->tile));
 			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
-			const RoadtypeInfo* rti = GetRoadTypeInfo(HasRoadTypeRoad(rtids) ? rtids.road_identifier : rtids.tram_identifier);
+			const RoadtypeInfo* rti = GetRoadTypeInfo(rtids.HasRoad() ? rtids.road_identifier : rtids.tram_identifier);
 
 			int relocation = GetCustomRoadSprite(rti, ti->tile, ROTSG_DEPOT);
 			if (relocation == 0) {
@@ -1682,7 +1689,7 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 	int relocation = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_DEPOT);
 	if (relocation == 0) {
-		if (rtid.basetype == ROADTYPE_TRAM) {
+		if (rtid.IsTram()) {
 			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
 		}
 	} else {

@@ -1746,7 +1746,7 @@ static CommandCost FindJoiningRoadStop(StationID existing_stop, StationID statio
  *           bit 2: Allow stations directly adjacent to other stations.
  *           bit 3..4: Entrance direction (#DiagDirection) for normal stops.
  *           bit 3: #Axis of the road for drive-through stops.
- *           bit 5..10: The roadtypes.
+ *           bit 5..9: The roadtype.
  *           bit 16..31: Station ID to join (NEW_STATION if build new one).
  * @param text Unused.
  * @return The cost of this operation or an error.

@@ -14,6 +14,7 @@
 
 #include "../../misc/countedptr.hpp"
 #include "../../road_type.h"
+#include "../../road.h"
 #include "../../rail_type.h"
 
 #include "script_types.hpp"
@@ -97,14 +98,14 @@ protected:
 	static ScriptErrorType GetLastError();
 
 	/**
-	 * Set the road type.
+	 * Set the road type identifier.
 	 */
-	static void SetRoadType(RoadType road_type);
+	static void SetRoadType(RoadTypeIdentifier rtid);
 
 	/**
-	 * Get the road type.
+	 * Get the road type identifier.
 	 */
-	static RoadType GetRoadType();
+	static RoadTypeIdentifier GetRoadType();
 
 	/**
 	 * Set the rail type.

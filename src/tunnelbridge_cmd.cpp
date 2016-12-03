@@ -233,7 +233,7 @@ CommandCost CheckBridgeAvailability(BridgeType bridge_type, uint bridge_len, DoC
  * @param p1 packed start tile coords (~ dx)
  * @param p2 various bitstuffed elements
  * - p2 = (bit  0- 7) - bridge type (hi bh)
- * - p2 = (bit  8-11) - rail type or road types.
+ * - p2 = (bit  8-12) - rail type or road types.
  * - p2 = (bit 15-16) - transport type.
  * @param text unused
  * @return the cost of this operation or an error
@@ -261,7 +261,6 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			rtids = RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid);
 			roadtypes = rtids.PresentRoadTypes();
 
-			//roadtypes = Extract<RoadTypes, 8, 2>(p2);
 			if (!HasExactlyOneBit(roadtypes) || !HasRoadTypesAvail(company, roadtypes)) return CMD_ERROR;
 			break;
 		}
@@ -523,7 +522,6 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				}
 				Owner owner_road = HasBit(prev_roadtypes, ROADTYPE_ROAD) ? GetRoadOwner(tile_start, ROADTYPE_ROAD) : company;
 				Owner owner_tram = HasBit(prev_roadtypes, ROADTYPE_TRAM) ? GetRoadOwner(tile_start, ROADTYPE_TRAM) : company;
-				//bool catenary_flag = HasBit(p2, 17); // the setting from the selected roadtype
 				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir, rtids);
 				MakeRoadBridgeRamp(tile_end, owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), rtids);
 				break;
@@ -583,7 +581,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
  * Build Tunnel.
  * @param start_tile start tile of tunnel
  * @param flags type of operation
- * @param p1 bit 0-3 railtype or roadtypes
+ * @param p1 bit 0-4 railtype or roadtypes
  *           bit 8-9 transport type
  * @param p2 unused
  * @param text unused

@@ -605,9 +605,8 @@ static CommandCost CheckRoadSlope(Slope tileh, RoadBits *pieces, RoadBits existi
  * @param tile tile where to build road
  * @param flags operation to perform
  * @param p1 bit 0..3 road pieces to build (RoadBits)
- *           bit 4..5 road type
- *           bit 6..7 disallowed directions to toggle
- *           bit 8 catenary
+ *           bit 4..8 road type
+ *           bit 9..10 disallowed directions to toggle
  * @param p2 the town that is building the road (0 if not applicable)
  * @param text unused
  * @return the cost of this operation or an error
@@ -646,7 +645,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (!rtid.UnpackIfValid(GB(p1, 4, 5))) return CMD_ERROR;
 	RoadType rt = rtid.basetype;
 
-	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
+	if (!ValParamRoadType(rt)) return CMD_ERROR;
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 9, 2>(p1);
 
@@ -962,7 +961,6 @@ static bool CanConnectToRoad(TileIndex tile, RoadType rt, DiagDirection dir)
  * - p2 = (bit 9) - defines two different behaviors for this command:
  *      - 0 = Build up to an obstacle. Do not build the first and last roadbits unless they can be connected to something, or if we are building a single tile
  *      - 1 = Fail if an obstacle is found. Always take into account bit 0 and 1. This behavior is used for scripts
- *   p2 = (bit 10) - catenary
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -976,7 +974,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CMD_ERROR;
 	RoadType rt = rtid.basetype;
-	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
+	if (!ValParamRoadType(rt)) return CMD_ERROR;
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
 	/* Only drag in X or Y direction dictated by the direction variable */
@@ -1014,9 +1012,9 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 		/* Determine which road parts should be built. */
 		if (!is_ai && start_tile != end_tile) {
 			/* Only build the first and last roadbit if they can connect to something. */
-			if (tile == end_tile && !CanConnectToRoad(tile, rt, dir)) {
+			if (tile == end_tile && !CanConnectToRoad(tile, rt, dir)) { // TODO
 				bits = DiagDirToRoadBits(ReverseDiagDir(dir));
-			} else if (tile == start_tile && !CanConnectToRoad(tile, rt, ReverseDiagDir(dir))) {
+			} else if (tile == start_tile && !CanConnectToRoad(tile, rt, ReverseDiagDir(dir))) { // TODO
 				bits = DiagDirToRoadBits(dir);
 			}
 		} else {
@@ -1070,7 +1068,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
  * - p2 = (bit 0) - start tile starts in the 2nd half of tile (p2 & 1)
  * - p2 = (bit 1) - end tile starts in the 2nd half of tile (p2 & 2)
  * - p2 = (bit 2) - direction: 0 = along x-axis, 1 = along y-axis (p2 & 4)
- * - p2 = (bit 3 + 4) - road type
+ * - p2 = (bit 3 - 7) - road type
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -1083,8 +1081,6 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 	TileIndex end_tile = p1;
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CMD_ERROR;
-	RoadType rt = rtid.basetype;
-	if (!IsValidRoadType(rt)) return CMD_ERROR;
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
 	/* Only drag in X or Y direction dictated by the direction variable */
@@ -1143,7 +1139,7 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
  * @param tile tile where to build the depot
  * @param flags operation to perform
  * @param p1 bit 0..1 entrance direction (DiagDirection)
- *           bit 2..3 road type
+ *           bit 2..7 road type identifier
  * @param p2 unused
  * @param text unused
  * @return the cost of this operation or an error
@@ -1154,13 +1150,12 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 CommandCost CmdBuildRoadDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	DiagDirection dir = Extract<DiagDirection, 0, 2>(p1);
-	//RoadType rt = Extract<RoadType, 2, 2>(p1);
 
 	RoadTypeIdentifier rtid;
-	rtid.UnpackIfValid(GB(p1, 2, 5));
+	if (!rtid.UnpackIfValid(GB(p1, 2, 5))) return CMD_ERROR;
 	RoadType rt = rtid.basetype;
 
-	if (!IsValidRoadType(rt) || !ValParamRoadType(rt)) return CMD_ERROR;
+	if (!ValParamRoadType(rt)) return CMD_ERROR;
 
 	Slope tileh = GetTileSlope(tile);
 	if (tileh != SLOPE_FLAT && (

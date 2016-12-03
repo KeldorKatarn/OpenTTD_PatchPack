@@ -876,7 +876,8 @@ static bool IsRoadAllowedHere(Town *t, TileIndex tile, DiagDirection dir)
 		/* No, try if we are able to build a road piece there.
 		 * If that fails clear the land, and if that fails exit.
 		 * This is to make sure that we can build a road here later. */
-		if (DoCommand(tile, ((dir == DIAGDIR_NW || dir == DIAGDIR_SE) ? ROAD_Y : ROAD_X), 0, DC_AUTO, CMD_BUILD_ROAD).Failed() &&
+		RoadTypeIdentifier rtid(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN); // TODO
+		if (DoCommand(tile, ((dir == DIAGDIR_NW || dir == DIAGDIR_SE) ? ROAD_Y : ROAD_X) | (rtid.Pack() << 4), 0, DC_AUTO, CMD_BUILD_ROAD).Failed() &&
 				DoCommand(tile, 0, 0, DC_AUTO, CMD_LANDSCAPE_CLEAR).Failed()) {
 			return false;
 		}
@@ -1044,7 +1045,8 @@ static bool GrowTownWithExtraHouse(Town *t, TileIndex tile)
  */
 static bool GrowTownWithRoad(const Town *t, TileIndex tile, RoadBits rcmd)
 {
-	if (DoCommand(tile, rcmd, t->index, DC_EXEC | DC_AUTO | DC_NO_WATER, CMD_BUILD_ROAD).Succeeded()) {
+	RoadTypeIdentifier rtid(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN); // TODO
+	if (DoCommand(tile, rcmd | (rtid.Pack() << 4), t->index, DC_EXEC | DC_AUTO | DC_NO_WATER, CMD_BUILD_ROAD).Succeeded()) {
 		_grow_town_result = GROWTH_SUCCEED;
 		return true;
 	}
@@ -1107,8 +1109,9 @@ static bool GrowTownWithBridge(const Town *t, const TileIndex tile, const DiagDi
 		byte bridge_type = RandomRange(MAX_BRIDGES - 1);
 
 		/* Can we actually build the bridge? */
-		if (DoCommand(tile, bridge_tile, bridge_type | ROADTYPES_ROAD << 8 | TRANSPORT_ROAD << 15, CommandFlagsToDCFlags(GetCommandFlags(CMD_BUILD_BRIDGE)), CMD_BUILD_BRIDGE).Succeeded()) {
-			DoCommand(tile, bridge_tile, bridge_type | ROADTYPES_ROAD << 8 | TRANSPORT_ROAD << 15, DC_EXEC | CommandFlagsToDCFlags(GetCommandFlags(CMD_BUILD_BRIDGE)), CMD_BUILD_BRIDGE);
+		RoadTypeIdentifier rtid(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN); // TODO
+		if (DoCommand(tile, bridge_tile, bridge_type | rtid.Pack() << 8 | TRANSPORT_ROAD << 15, CommandFlagsToDCFlags(GetCommandFlags(CMD_BUILD_BRIDGE)), CMD_BUILD_BRIDGE).Succeeded()) {
+			DoCommand(tile, bridge_tile, bridge_type | rtid.Pack() << 8 | TRANSPORT_ROAD << 15, DC_EXEC | CommandFlagsToDCFlags(GetCommandFlags(CMD_BUILD_BRIDGE)), CMD_BUILD_BRIDGE);
 			_grow_town_result = GROWTH_SUCCEED;
 			return true;
 		}
@@ -1484,7 +1487,8 @@ static bool GrowTown(Town *t)
 			/* Only work with plain land that not already has a house */
 			if (!IsTileType(tile, MP_HOUSE) && IsTileFlat(tile)) {
 				if (DoCommand(tile, 0, 0, DC_AUTO | DC_NO_WATER, CMD_LANDSCAPE_CLEAR).Succeeded()) {
-					DoCommand(tile, GenRandomRoadBits(), t->index, DC_EXEC | DC_AUTO, CMD_BUILD_ROAD);
+					RoadTypeIdentifier rtid(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN); // TODO
+					DoCommand(tile, GenRandomRoadBits() | (rtid.Pack() << 4), t->index, DC_EXEC | DC_AUTO, CMD_BUILD_ROAD);
 					cur_company.Restore();
 					return true;
 				}

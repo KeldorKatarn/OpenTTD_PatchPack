@@ -380,6 +380,8 @@ void SQGSWindow_Register(Squirrel *engine)
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_RAIL_COUNT,                         "WID_CI_RAIL_COUNT");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_ROAD_DESC,                          "WID_CI_ROAD_DESC");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_ROAD_COUNT,                         "WID_CI_ROAD_COUNT");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_TRAM_DESC,                          "WID_CI_TRAM_DESC");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_TRAM_COUNT,                         "WID_CI_TRAM_COUNT");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_WATER_DESC,                         "WID_CI_WATER_DESC");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_WATER_COUNT,                        "WID_CI_WATER_COUNT");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_CI_STATION_DESC,                       "WID_CI_STATION_DESC");
@@ -970,6 +972,7 @@ void SQGSWindow_Register(Squirrel *engine)
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BRW_WAYPOINT_MATRIX,                   "WID_BRW_WAYPOINT_MATRIX");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BRW_WAYPOINT,                          "WID_BRW_WAYPOINT");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_BRW_SCROLL,                            "WID_BRW_SCROLL");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_ROT_CAPTION,                           "WID_ROT_CAPTION");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_ROT_ROAD_X,                            "WID_ROT_ROAD_X");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_ROT_ROAD_Y,                            "WID_ROT_ROAD_Y");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_ROT_AUTOROAD,                          "WID_ROT_AUTOROAD");
@@ -1183,8 +1186,10 @@ void SQGSWindow_Register(Squirrel *engine)
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_AIRCRAFTS,                          "WID_TN_AIRCRAFTS");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_ZOOM_IN,                            "WID_TN_ZOOM_IN");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_ZOOM_OUT,                           "WID_TN_ZOOM_OUT");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_BUILDING_TOOLS_START,               "WID_TN_BUILDING_TOOLS_START");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_RAILS,                              "WID_TN_RAILS");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_ROADS,                              "WID_TN_ROADS");
+	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_TRAMS,                              "WID_TN_TRAMS");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_WATER,                              "WID_TN_WATER");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_AIR,                                "WID_TN_AIR");
 	SQGSWindow.DefSQConst(engine, ScriptWindow::WID_TN_LANDSCAPE,                          "WID_TN_LANDSCAPE");

@@ -514,10 +514,12 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				}
 				if (c != NULL) {
 					/* Add all new road types to the company infrastructure counter. */
-					RoadType new_rt;
-					FOR_EACH_SET_ROADTYPE(new_rt, roadtypes ^ prev_roadtypes) {
-						/* A full diagonal road tile has two road bits. */
-						c->infrastructure.road[new_rt] += (bridge_len + 2) * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+					RoadTypeIdentifier rtid;
+					FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+						if (!HasBit(prev_roadtypes, rtid.basetype)) {
+							/* A full diagonal road tile has two road bits. */
+							c->infrastructure.road[rtid.basetype][rtid.subtype] += (bridge_len + 2) * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+						}
 					}
 				}
 				Owner owner_road = HasBit(prev_roadtypes, ROADTYPE_ROAD) ? GetRoadOwner(tile_start, ROADTYPE_ROAD) : company;
@@ -739,9 +741,12 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 			YapfNotifyTrackLayoutChange(start_tile, DiagDirToDiagTrack(direction));
 		} else {
 			if (c != NULL) {
-				RoadType rt;
-				FOR_EACH_SET_ROADTYPE(rt, rts ^ (IsTunnelTile(start_tile) ? GetRoadTypes(start_tile) : ROADTYPES_NONE)) {
-					c->infrastructure.road[rt] += num_pieces * 2; // A full diagonal road has two road bits.
+				RoadTypes prev_rts = (IsTunnelTile(start_tile) ? GetRoadTypes(start_tile) : ROADTYPES_NONE);
+				RoadTypeIdentifier rtid;
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+					if (!HasBit(prev_rts, rtid.basetype)) {
+						c->infrastructure.road[rtid.basetype][rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
+					}
 				}
 			}
 			MakeRoadTunnel(start_tile, company, direction,                 rtids);
@@ -866,12 +871,13 @@ static CommandCost DoClearTunnel(TileIndex tile, DoCommandFlag flags)
 
 			if (v != NULL) TryPathReserve(v);
 		} else {
-			RoadType rt;
-			FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(tile)) {
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+			RoadTypeIdentifier rtid;
+			FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
 				/* A full diagonal road tile has two road bits. */
-				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
+				Company *c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
 				if (c != NULL) {
-					c->infrastructure.road[rt] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 			}
@@ -938,12 +944,13 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 		if (rail) {
 			if (Company::IsValidID(owner)) Company::Get(owner)->infrastructure.rail[GetRailType(tile)] -= len * TUNNELBRIDGE_TRACKBIT_FACTOR;
 		} else if (GetTunnelBridgeTransportType(tile) == TRANSPORT_ROAD) {
-			RoadType rt;
-			FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(tile)) {
-				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+			RoadTypeIdentifier rtid;
+			FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+				Company *c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
 				if (c != NULL) {
 					/* A full diagonal road tile has two road bits. */
-					c->infrastructure.road[rt] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 			}
@@ -1786,14 +1793,16 @@ static void ChangeTileOwner_TunnelBridge(TileIndex tile, Owner old_owner, Owner 
 	 * don't want to update the infrastructure counts twice. */
 	uint num_pieces = tile < other_end ? (GetTunnelBridgeLength(tile, other_end) + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR : 0;
 
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 	for (RoadType rt = ROADTYPE_ROAD; rt < ROADTYPE_END; rt++) {
 		/* Update all roadtypes, no matter if they are present */
 		if (GetRoadOwner(tile, rt) == old_owner) {
-			if (HasBit(GetRoadTypes(tile), rt)) {
+			RoadTypeIdentifier rtid = rtids.GetType(rt);
+			if (rtid.IsValid()) {
 				/* Update company infrastructure counts. A full diagonal road tile has two road bits.
 				 * No need to dirty windows here, we'll redraw the whole screen anyway. */
-				Company::Get(old_owner)->infrastructure.road[rt] -= num_pieces * 2;
-				if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rt] += num_pieces * 2;
+				Company::Get(old_owner)->infrastructure.road[rtid.basetype][rtid.subtype] -= num_pieces * 2;
+				if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rtid.basetype][rtid.subtype] += num_pieces * 2;
 			}
 
 			SetRoadOwner(tile, rt, new_owner == INVALID_OWNER ? OWNER_NONE : new_owner);

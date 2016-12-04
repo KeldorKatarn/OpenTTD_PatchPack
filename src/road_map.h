@@ -638,6 +638,15 @@ struct RoadTypeIdentifiers {
 		return rot;
 	};
 
+	RoadTypeIdentifier GetType(RoadType rt) const
+	{
+		switch (rt) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: return this->road_identifier;
+			case ROADTYPE_TRAM: return this->tram_identifier;
+		}
+	}
+
 	bool HasRoad() const
 	{
 		return road_identifier.IsValid();
@@ -676,6 +685,10 @@ struct RoadTypeIdentifiers {
 		}
 	}
 };
+
+#define FOR_EACH_SET_ROADTYPEIDENTIFIER(var, rtids) \
+  for (RoadType ___FESRTID = ROADTYPE_BEGIN; ___FESRTID < ROADTYPE_END; ___FESRTID++) \
+    if ((var = rtids.GetType(___FESRTID)).IsValid())
 
 /**
  * Set the present road types of a tile.

@@ -118,7 +118,7 @@ struct RoadtypeInfo {
 	/**
 	 * Cost multiplier for maintenance of this road type
 	 */
-	uint16 maintenance_multiplier; // TODO use
+	uint16 maintenance_multiplier;
 
 	/**
 	 * Maximum speed for vehicles travelling on this road type

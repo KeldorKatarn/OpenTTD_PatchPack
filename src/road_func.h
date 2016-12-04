@@ -167,14 +167,15 @@ static inline RoadBits AxisToRoadBits(Axis a)
 
 /**
  * Calculates the maintenance cost of a number of road bits.
- * @param roadtype Road type to get the cost for.
+ * @param rtid Road type to get the cost for.
  * @param num Number of road bits.
+ * @param total_num Total number of road bits of all road/tram-types.
  * @return Total cost.
  */
-static inline Money RoadMaintenanceCost(RoadType roadtype, uint32 num)
+static inline Money RoadMaintenanceCost(RoadTypeIdentifier rtid, uint32 num, uint32 total_num)
 {
-	assert(IsValidRoadType(roadtype));
-	return (_price[PR_INFRASTRUCTURE_ROAD] * (roadtype == ROADTYPE_TRAM ? 3 : 2) * num * (1 + IntSqrt(num))) >> 9; // 2 bits fraction for the multiplier and 7 bits scaling.
+	assert(rtid.IsValid());
+	return (_price[PR_INFRASTRUCTURE_ROAD] * GetRoadTypeInfo(rtid)->maintenance_multiplier * num * (1 + IntSqrt(total_num))) >> 11;
 }
 
 /**

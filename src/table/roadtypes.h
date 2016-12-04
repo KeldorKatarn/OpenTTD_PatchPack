@@ -75,7 +75,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		2, // TODO
 
 		/* maintenance cost multiplier */
-		2, // TODO
+		16,
 
 		/* max speed */
 		0,
@@ -163,7 +163,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		2, // TODO
 
 		/* maintenance cost multiplier */
-		2, // TODO
+		24,
 
 		/* max speed */
 		0, // TODO

@@ -1843,24 +1843,25 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 			RoadStopType rs_type = type ? ROADSTOP_TRUCK : ROADSTOP_BUS;
 			if (is_drive_through) {
+				RoadTypes cur_rts = rtids.PresentRoadTypes();
+				rtids.MergeRoadType(rtid);
+
 				/* Update company infrastructure counts. If the current tile is a normal
 				 * road tile, count only the new road bits needed to get a full diagonal road. */
-				RoadType rt;
-				RoadTypes cur_rts = rtids.PresentRoadTypes();
-				FOR_EACH_SET_ROADTYPE(rt, cur_rts | rts) {
-					Company *c = Company::GetIfValid(rt == ROADTYPE_ROAD ? road_owner : tram_owner);
+				RoadTypeIdentifier cur_rtid;
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(cur_rtid, rtids) {
+					Company *c = Company::GetIfValid(cur_rtid.basetype == ROADTYPE_ROAD ? road_owner : tram_owner);
 					if (c != NULL) {
-						c->infrastructure.road[rt] += 2 - (IsNormalRoadTile(cur_tile) && HasBit(cur_rts, rt) ? CountBits(GetRoadBits(cur_tile, rt)) : 0);
+						c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] += 2 - (IsNormalRoadTile(cur_tile) && HasBit(cur_rts, cur_rtid.basetype) ? CountBits(GetRoadBits(cur_tile, cur_rtid.basetype)) : 0);
 						DirtyCompanyInfrastructureWindows(c->index);
 					}
 				}
 
-				rtids.MergeRoadType(rtid);
 				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rtids, axis);
 				road_stop->MakeDriveThrough();
 			} else {
 				/* Non-drive-through stop never overbuild and always count as two road bits. */
-				Company::Get(st->owner)->infrastructure.road[FIND_FIRST_BIT(rts)] += 2;
+				Company::Get(st->owner)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 				MakeRoadStop(cur_tile, st->owner, st->index, rs_type, rtids, ddir);
 			}
 			Company::Get(st->owner)->infrastructure.station++;
@@ -1953,11 +1954,12 @@ static CommandCost RemoveRoadStop(TileIndex tile, DoCommandFlag flags)
 		}
 
 		/* Update company infrastructure counts. */
-		RoadType rt;
-		FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(tile)) {
-			Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+		RoadTypeIdentifier rtid;
+		FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+			Company *c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
 			if (c != NULL) {
-				c->infrastructure.road[rt] -= 2;
+				c->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
 				DirtyCompanyInfrastructureWindows(c->index);
 			}
 		}
@@ -2066,11 +2068,11 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 					road_owner[ROADTYPE_ROAD], road_owner[ROADTYPE_TRAM]);
 
 			/* Update company infrastructure counts. */
-			RoadType rt;
-			FOR_EACH_SET_ROADTYPE(rt, rts) {
-				Company *c = Company::GetIfValid(GetRoadOwner(cur_tile, rt));
+			RoadTypeIdentifier rtid;
+			FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+				Company *c = Company::GetIfValid(GetRoadOwner(cur_tile, rtid.basetype));
 				if (c != NULL) {
-					c->infrastructure.road[rt] += CountBits(road_bits);
+					c->infrastructure.road[rtid.basetype][rtid.subtype] += CountBits(road_bits);
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 			}
@@ -4008,13 +4010,15 @@ void DeleteOilRig(TileIndex tile)
 static void ChangeTileOwner_Station(TileIndex tile, Owner old_owner, Owner new_owner)
 {
 	if (IsRoadStopTile(tile)) {
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 		for (RoadType rt = ROADTYPE_ROAD; rt < ROADTYPE_END; rt++) {
 			/* Update all roadtypes, no matter if they are present */
 			if (GetRoadOwner(tile, rt) == old_owner) {
-				if (HasTileRoadType(tile, rt)) {
+				RoadTypeIdentifier rtid = rtids.GetType(rt);
+				if (rtid.IsValid()) {
 					/* A drive-through road-stop has always two road bits. No need to dirty windows here, we'll redraw the whole screen anyway. */
-					Company::Get(old_owner)->infrastructure.road[rt] -= 2;
-					if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rt] += 2;
+					Company::Get(old_owner)->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
+					if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 				}
 				SetRoadOwner(tile, rt, new_owner == INVALID_OWNER ? OWNER_NONE : new_owner);
 			}

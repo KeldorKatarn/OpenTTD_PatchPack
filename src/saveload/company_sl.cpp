@@ -131,11 +131,11 @@ void AfterLoadCompanyStats()
 
 				/* Iterate all present road types as each can have a different owner. */
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-				RoadType rt;
-				FOR_EACH_SET_ROADTYPE(rt, rtids.PresentRoadTypes()) {
-					c = Company::GetIfValid(IsRoadDepot(tile) ? GetTileOwner(tile) : GetRoadOwner(tile, rt));
+				RoadTypeIdentifier rtid;
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+					c = Company::GetIfValid(IsRoadDepot(tile) ? GetTileOwner(tile) : GetRoadOwner(tile, rtid.basetype));
 					/* A level crossings and depots have two road bits. */
-					if (c != NULL) c->infrastructure.road[rt] += IsNormalRoad(tile) ? CountBits(GetRoadBits(tile, rt)) : 2;
+					if (c != NULL) c->infrastructure.road[rtid.basetype][rtid.subtype] += IsNormalRoad(tile) ? CountBits(GetRoadBits(tile, rtid.basetype)) : 2;
 				}
 				break;
 			}
@@ -154,10 +154,10 @@ void AfterLoadCompanyStats()
 					case STATION_TRUCK: {
 						/* Iterate all present road types as each can have a different owner. */
 						RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-						RoadType rt;
-						FOR_EACH_SET_ROADTYPE(rt, rtids.PresentRoadTypes()) {
-							c = Company::GetIfValid(GetRoadOwner(tile, rt));
-							if (c != NULL) c->infrastructure.road[rt] += 2; // A road stop has two road bits.
+						RoadTypeIdentifier rtid;
+						FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+							c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
+							if (c != NULL) c->infrastructure.road[rtid.basetype][rtid.subtype] += 2; // A road stop has two road bits.
 						}
 						break;
 					}
@@ -212,10 +212,10 @@ void AfterLoadCompanyStats()
 						case TRANSPORT_ROAD: {
 							/* Iterate all present road types as each can have a different owner. */
 							RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-							RoadType rt;
-							FOR_EACH_SET_ROADTYPE(rt, rtids.PresentRoadTypes()) {
-								c = Company::GetIfValid(GetRoadOwner(tile, rt));
-								if (c != NULL) c->infrastructure.road[rt] += len * 2; // A full diagonal road has two road bits.
+							RoadTypeIdentifier rtid;
+							FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+								c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
+								if (c != NULL) c->infrastructure.road[rtid.basetype][rtid.subtype] += len * 2; // A full diagonal road has two road bits.
 							}
 							break;
 						}

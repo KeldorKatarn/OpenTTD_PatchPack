@@ -357,7 +357,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
 					/* A full diagonal road tile has two road bits. */
-					c->infrastructure.road[rt] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 
@@ -390,7 +390,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
 					/* A full diagonal road tile has two road bits. */
-					c->infrastructure.road[rt] -= 2;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
@@ -452,7 +452,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
-					c->infrastructure.road[rt] -= CountBits(pieces);
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= CountBits(pieces);
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 
@@ -498,7 +498,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
 					/* A full diagonal road tile has two road bits. */
-					c->infrastructure.road[rt] -= 2;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
 
@@ -767,8 +767,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				/* Update company infrastructure counts. A level crossing has two road bits. */
 				Company *c = Company::GetIfValid(company);
 				if (c != NULL) {
-					c->infrastructure.road[rt] += 2;
-					if (rt != ROADTYPE_ROAD) c->infrastructure.road[ROADTYPE_ROAD] += 2;
+					c->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 					DirtyCompanyInfrastructureWindows(company);
 				}
 				/* Update rail count for level crossings. The plain track is already
@@ -926,7 +925,7 @@ do_clear:;
 		Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 		if (c != NULL) {
 			if (IsTileType(tile, MP_TUNNELBRIDGE)) num_pieces *= TUNNELBRIDGE_TRACKBIT_FACTOR;
-			c->infrastructure.road[rt] += num_pieces;
+			c->infrastructure.road[rtid.basetype][rtid.subtype] += num_pieces;
 			DirtyCompanyInfrastructureWindows(c->index);
 		}
 
@@ -1184,7 +1183,7 @@ CommandCost CmdBuildRoadDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		dep->build_date = _date;
 
 		/* A road depot has two road bits. */
-		Company::Get(_current_company)->infrastructure.road[rt] += 2;
+		Company::Get(_current_company)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 		DirtyCompanyInfrastructureWindows(_current_company);
 
 		MakeRoadDepot(tile, _current_company, dep->index, dir, rtid);
@@ -1209,7 +1208,9 @@ static CommandCost RemoveRoadDepot(TileIndex tile, DoCommandFlag flags)
 		Company *c = Company::GetIfValid(GetTileOwner(tile));
 		if (c != NULL) {
 			/* A road depot has two road bits. */
-			c->infrastructure.road[FIND_FIRST_BIT(GetRoadTypes(tile))] -= 2;
+			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+			RoadTypeIdentifier rtid = rtids.HasRoad() ? rtids.road_identifier : rtids.tram_identifier;
+			c->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
 			DirtyCompanyInfrastructureWindows(c->index);
 		}
 
@@ -2048,15 +2049,16 @@ static VehicleEnterTileStatus VehicleEnter_Road(Vehicle *v, TileIndex tile, int 
 
 static void ChangeTileOwner_Road(TileIndex tile, Owner old_owner, Owner new_owner)
 {
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 	if (IsRoadDepot(tile)) {
 		if (GetTileOwner(tile) == old_owner) {
 			if (new_owner == INVALID_OWNER) {
 				DoCommand(tile, 0, 0, DC_EXEC | DC_BANKRUPT, CMD_LANDSCAPE_CLEAR);
 			} else {
 				/* A road depot has two road bits. No need to dirty windows here, we'll redraw the whole screen anyway. */
-				RoadType rt = (RoadType)FIND_FIRST_BIT(GetRoadTypes(tile));
-				Company::Get(old_owner)->infrastructure.road[rt] -= 2;
-				Company::Get(new_owner)->infrastructure.road[rt] += 2;
+				RoadTypeIdentifier rtid = rtids.HasRoad() ? rtids.road_identifier : rtids.tram_identifier;
+				Company::Get(old_owner)->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
+				Company::Get(new_owner)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 
 				SetTileOwner(tile, new_owner);
 				for (RoadType rt = ROADTYPE_ROAD; rt < ROADTYPE_END; rt++) {
@@ -2072,11 +2074,12 @@ static void ChangeTileOwner_Road(TileIndex tile, Owner old_owner, Owner new_owne
 	for (RoadType rt = ROADTYPE_ROAD; rt < ROADTYPE_END; rt++) {
 		/* Update all roadtypes, no matter if they are present */
 		if (GetRoadOwner(tile, rt) == old_owner) {
-			if (HasTileRoadType(tile, rt)) {
+			RoadTypeIdentifier rtid = rt == ROADTYPE_ROAD ? rtids.road_identifier : rtids.tram_identifier;
+			if (rtid.IsValid()) {
 				/* A level crossing has two road bits. No need to dirty windows here, we'll redraw the whole screen anyway. */
 				uint num_bits = IsLevelCrossing(tile) ? 2 : CountBits(GetRoadBits(tile, rt));
-				Company::Get(old_owner)->infrastructure.road[rt] -= num_bits;
-				if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rt] += num_bits;
+				Company::Get(old_owner)->infrastructure.road[rtid.basetype][rtid.subtype] -= num_bits;
+				if (new_owner != INVALID_OWNER) Company::Get(new_owner)->infrastructure.road[rtid.basetype][rtid.subtype] += num_bits;
 			}
 
 			SetRoadOwner(tile, rt, new_owner == INVALID_OWNER ? OWNER_NONE : new_owner);

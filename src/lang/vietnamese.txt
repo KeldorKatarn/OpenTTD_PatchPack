@@ -3263,8 +3263,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Hạ t�
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Ô đường ray:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Tín hiệu
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Ô đường bộ:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Đường bộ
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Xe điện
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Ô là nước:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Kênh đào
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Ga, bến:

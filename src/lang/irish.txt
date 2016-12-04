@@ -3263,8 +3263,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Bonneaga
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Píosaí iarnróid:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Comharthaí
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Píosaí bóthair:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Bóthar
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Trambhealach
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Tíleanna uisce:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canálacha
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stáisiúin:

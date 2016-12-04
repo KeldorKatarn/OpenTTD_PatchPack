@@ -2883,8 +2883,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}{COMPANY
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}இரயில் பாகங்கள்:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}சிக்னல்கள்
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}சாலை பாகங்கள்:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}சாலை
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}ட்ராம்வே
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}தண்ணீர் வட்டங்கள்:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}கால்வாய்கள்
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}நிலையங்கள்:

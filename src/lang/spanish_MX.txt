@@ -3264,8 +3264,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infraest
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Tramos de vías férreas:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Señales
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Tramos de carretera:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Carretera
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Tranvía
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Casillas de agua:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canales
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Estaciones:

@@ -3596,8 +3596,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Iнфр�
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Чыгуначныя элемэнты:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Сыґналы
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Дарожныя элемэнты:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Дарогi
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Трамваi
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Водныя клеткi:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Каналы
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Станцыi:

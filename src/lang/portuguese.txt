@@ -3264,8 +3264,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infraest
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Peças de caminho-de-ferro:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Sinais
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Peças de estrada:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Estrada
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Via para elétricos
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Quadrados de água:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canais
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Estações:

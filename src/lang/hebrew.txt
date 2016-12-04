@@ -3277,8 +3277,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}תתיו
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}חלקי מסילה:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}רמזורים
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}חלקי כביש:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}כביש
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}מסילת רכבת קלה
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}משבצות מים:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}תעלות
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}תחנות:

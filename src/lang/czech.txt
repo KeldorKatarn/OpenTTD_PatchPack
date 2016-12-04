@@ -3356,8 +3356,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infrastr
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Železniční oblasti:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Semafory
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Silniční oblasti:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Silnice
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Tramvajové koleje
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Vodní oblasti:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Průplavy
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stanice:

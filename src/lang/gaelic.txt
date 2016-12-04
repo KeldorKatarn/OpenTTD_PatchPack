@@ -3492,8 +3492,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Am bun-s
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Earrannan rèile:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Comharran
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Earrannan rathaid:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Rathad
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Slighe-trama
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Leacan uisge:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canalan
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stèiseanan:

@@ -3195,8 +3195,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}โค�
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}ชิ้นส่วนทางรถไฟ:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}เสาอาณัติสัญญาณ
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}ชิ้นส่วนถนน:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}ถนน
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}ทางรถราง
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}คลอง:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}คลอง
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}สถานี:

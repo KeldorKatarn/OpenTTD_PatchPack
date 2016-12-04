@@ -3212,8 +3212,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infraest
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Segmentos de vía de ferrocarril:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Sinais
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Segmentos de estrada:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Estrada
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE} Tranvía
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Cadros de auga:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canles
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Estacións:

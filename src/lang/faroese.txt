@@ -2893,8 +2893,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Innanker
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Jarnbreyta pettir:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Tekin
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Vega pettir:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Vegur
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Sporvognur
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Vatn puntar:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Siglingarennir
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Støðir:

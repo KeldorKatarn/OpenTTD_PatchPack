@@ -3016,8 +3016,6 @@ STR_BUY_COMPANY_MESSAGE                                         :{WHITE}Wy sykje
 STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Ynfrastruktuer fan {COMPANY}
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Seinen
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Stikjes dyk:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Dyk
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Tramwei
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stasjons:
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATIONS                        :{WHITE}Stasjontegels
 STR_COMPANY_INFRASTRUCTURE_VIEW_AIRPORTS                        :{WHITE}Fleanfjilden

@@ -3054,8 +3054,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Innviði
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Járnbrautarspor:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Umferðarmerki
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Vegir:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Vegir
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Sporvagnaspor
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Vatns reitir:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Skipaskurðir
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stöðvar:

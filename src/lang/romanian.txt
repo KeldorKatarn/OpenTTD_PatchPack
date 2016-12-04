@@ -3198,8 +3198,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infrastr
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Pătrățele de cale ferată:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Semnale
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Pătrățele cu drumuri:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Drumuri
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Tramvaie
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Suprafață apă:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Canale
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stații:

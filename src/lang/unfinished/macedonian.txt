@@ -1396,8 +1396,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Инфр
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}железнички парчиња:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}сигнали
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Патот парчиња:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}патот
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}трамвај
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Вода плочки:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}каналите
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}станици:

@@ -3327,8 +3327,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}{COMPANY
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Vasúti elemek:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Vasúti jelzők
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Közúti elemek:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Út
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Villamospálya
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Vízi elemek:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Csatornák
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Állomások:

@@ -3394,8 +3394,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Інфр
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Залізничні ділянки:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}З сигналами
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Дорожні ділянки:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Автомобільні
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Трамвайні
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Судноплавні ділянки:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Канали
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Станції:

@@ -2913,8 +2913,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Infrastr
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Cebisan landasan:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Isyarat
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Cebisan jalanraya:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Jalanraya
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Laluan Trem
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Petak air:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Terusan
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Stesen:

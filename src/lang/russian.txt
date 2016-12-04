@@ -3443,8 +3443,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Инфр
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Ж/д участки:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Сигналы
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Дорожные участки:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Автодороги
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Трамвайные пути
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Водные участки:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Каналы
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Станции:

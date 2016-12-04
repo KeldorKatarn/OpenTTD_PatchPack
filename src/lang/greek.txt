@@ -3372,8 +3372,6 @@ STR_COMPANY_INFRASTRUCTURE_VIEW_CAPTION                         :{WHITE}Υποδ
 STR_COMPANY_INFRASTRUCTURE_VIEW_RAIL_SECT                       :{GOLD}Κομμάτια σιδηροτροχιάς:
 STR_COMPANY_INFRASTRUCTURE_VIEW_SIGNALS                         :{WHITE}Σήματα
 STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD_SECT                       :{GOLD}Κομμάτια δρόμου:
-STR_COMPANY_INFRASTRUCTURE_VIEW_ROAD                            :{WHITE}Δρόμος
-STR_COMPANY_INFRASTRUCTURE_VIEW_TRAMWAY                         :{WHITE}Τροχιόδρομος
 STR_COMPANY_INFRASTRUCTURE_VIEW_WATER_SECT                      :{GOLD}Τετραγωνίδια νερού:
 STR_COMPANY_INFRASTRUCTURE_VIEW_CANALS                          :{WHITE}Κανάλια
 STR_COMPANY_INFRASTRUCTURE_VIEW_STATION_SECT                    :{GOLD}Σταθμοί:

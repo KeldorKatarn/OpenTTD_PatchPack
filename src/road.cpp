@@ -190,8 +190,7 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType basetype, bo
 
 uint8 RoadTypeIdentifier::Pack() const
 {
-	assert(this->basetype < ROADTYPE_END);
-	assert(this->subtype < ROADSUBTYPE_END);
+	assert(this->IsValid());
 
 	return this->basetype | (this->subtype << 1);
 }
@@ -201,7 +200,7 @@ bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
 	this->basetype = (RoadType)GB(data, 0, 1);
 	this->subtype = (RoadSubType)GB(data, 1, 4);
 
-	return (this->subtype < ROADSUBTYPE_END) && (this->basetype < ROADTYPE_END);
+	return this->IsValid();
 }
 
 /* static */ RoadTypeIdentifier RoadTypeIdentifier::Unpack(uint32 data)

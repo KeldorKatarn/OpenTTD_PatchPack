@@ -191,17 +191,17 @@ struct RoadTypeIdentifier {
 
 	bool IsValid() const
 	{
-		return IsRoad() || IsTram();
+		return (this->basetype == ROADTYPE_ROAD || this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
 	}
 
 	bool IsRoad() const
 	{
-		return (this->basetype == ROADTYPE_ROAD) && (this->subtype < ROADSUBTYPE_END);
+		return (this->basetype == ROADTYPE_ROAD) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
 	}
 
 	bool IsTram() const
 	{
-		return (this->basetype == ROADTYPE_TRAM) && (this->subtype < ROADSUBTYPE_END);
+		return (this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
 	}
 
 	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
@@ -216,8 +216,7 @@ struct RoadTypeIdentifier {
 static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
 {
 	extern RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
-	assert(rtid.basetype < ROADTYPE_END);
-	assert(rtid.subtype < ROADSUBTYPE_END);
+	assert(rtid.IsValid());
 	return &_roadtypes[rtid.basetype][rtid.subtype];
 }
 

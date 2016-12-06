@@ -2039,17 +2039,17 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		if (!IsTileType(cur_tile, MP_STATION) || !IsRoadStop(cur_tile) || (uint32)GetRoadStopType(cur_tile) != GB(p2, 0, 1)) continue;
 
 		/* Save information on to-be-restored roads before the stop is removed. */
-		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(cur_tile);
-		RoadTypes rts = ROADTYPES_NONE;
+		RoadTypeIdentifiers rtids;
 		RoadBits road_bits = ROAD_NONE;
 		Owner road_owner[] = { OWNER_NONE, OWNER_NONE };
 		assert_compile(lengthof(road_owner) == ROADTYPE_END);
 		if (IsDriveThroughStopTile(cur_tile)) {
-			RoadType rt;
-			FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(cur_tile)) {
-				road_owner[rt] = GetRoadOwner(cur_tile, rt);
+			rtids = RoadTypeIdentifiers::FromTile(cur_tile);
+			RoadTypeIdentifier rtid;
+			FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+				road_owner[rtid.basetype] = GetRoadOwner(cur_tile, rtid.basetype);
 				/* If we don't want to preserve our roads then restore only roads of others. */
-				if (keep_drive_through_roads || road_owner[rt] != _current_company) SetBit(rts, rt);
+				if (!keep_drive_through_roads && road_owner[rtid.basetype] == _current_company) rtids.ClearRoadType(rtid.basetype);
 			}
 			road_bits = AxisToRoadBits(DiagDirToAxis(GetRoadStopDir(cur_tile)));
 		}
@@ -2063,7 +2063,7 @@ CommandCost CmdRemoveRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 		had_success = true;
 
 		/* Restore roads. */
-		if ((flags & DC_EXEC) && rts != ROADTYPES_NONE) {
+		if ((flags & DC_EXEC) && (rtids.HasRoad() || rtids.HasTram())) {
 			MakeRoadNormal(cur_tile, road_bits, rtids, ClosestTownFromTile(cur_tile, UINT_MAX)->index,
 					road_owner[ROADTYPE_ROAD], road_owner[ROADTYPE_TRAM]);
 

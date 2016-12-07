@@ -20,6 +20,7 @@
 #include "date_func.h"
 #include "landscape.h"
 #include "road.h"
+#include "road_func.h"
 
 #include "safeguards.h"
 
@@ -105,53 +106,55 @@ RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb)
 /**
  * Finds out, whether given company has all given RoadTypes available
  * @param company ID of company
- * @param rts RoadTypes to test
- * @return true if company has all requested RoadTypes available
+ * @param rtid RoadType to test
+ * @return true if company has the requested RoadType available
  */
-bool HasRoadTypesAvail(const CompanyID company, const RoadTypes rts)
+bool HasRoadTypeAvail(const CompanyID company, RoadTypeIdentifier rtid)
 {
-	RoadTypes avail_roadtypes;
-
 	if (company == OWNER_DEITY || company == OWNER_TOWN || _game_mode == GM_EDITOR || _generating_world) {
-		avail_roadtypes = ROADTYPES_ROAD;
+		return rtid.basetype == ROADTYPE_ROAD && GetRoadTypeInfo(rtid)->label != 0; // TODO
 	} else {
 		Company *c = Company::GetIfValid(company);
 		if (c == NULL) return false;
-		avail_roadtypes = (RoadTypes)c->avail_roadtypes | ROADTYPES_ROAD; // road is available for always for everybody
+		return HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype);
 	}
-	return (rts & ~avail_roadtypes) == 0;
 }
 
 /**
  * Validate functions for rail building.
- * @param rt road type to check.
+ * @param rtid road type to check.
  * @return true if the current company may build the road.
  */
-bool ValParamRoadType(const RoadType rt)
+bool ValParamRoadType(RoadTypeIdentifier rtid)
 {
-	return HasRoadTypesAvail(_current_company, RoadTypeToRoadTypes(rt));
+	return rtid.IsValid() && HasRoadTypeAvail(_current_company, rtid);
 }
 
 /**
- * Get the road types the given company can build.
+ * Get the road (sub) types the given company can build.
  * @param company the company to get the roadtypes for.
- * @return the road types.
+ * @param rt the base road type to check
+ * @return the available road sub types.
  */
-RoadTypes GetCompanyRoadtypes(CompanyID company)
+RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt)
 {
-	RoadTypes rt = ROADTYPES_NONE;
+	RoadSubTypes rst = ROADSUBTYPES_NONE;
 
 	Engine *e;
 	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
 		const EngineInfo *ei = &e->info;
 
 		if (HasBit(ei->climates, _settings_game.game_creation.landscape) &&
-				(HasBit(e->company_avail, company) || _date >= e->intro_date + DAYS_IN_YEAR)) {
-			SetBit(rt, HasBit(ei->misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD);
+				(HasBit(e->company_avail, company) || _date >= e->intro_date + DAYS_IN_YEAR) &&
+				rt == (HasBit(ei->misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD)) {
+			RoadTypeIdentifier rtid;
+			FOR_ALL_SORTED_ROADTYPES(rtid, rt) { // TODO
+				SetBit(rst, rtid.subtype);
+			}
 		}
 	}
 
-	return rt;
+	return rst;
 }
 
 /**

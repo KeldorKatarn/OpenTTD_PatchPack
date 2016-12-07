@@ -892,10 +892,10 @@ static CommandCost CheckFlatLandRailStation(TileArea tile_area, DoCommandFlag fl
  * @param is_truck_stop True when building a truck stop, false otherwise.
  * @param axis Axis of a drive-through road stop.
  * @param station StationID to be queried and returned if available.
- * @param rts Road types to build.
+ * @param rtid Road type to build.
  * @return The cost in case of success, or an error code if it failed.
  */
-static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags, uint invalid_dirs, bool is_drive_through, bool is_truck_stop, Axis axis, StationID *station, RoadTypes rts)
+static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags, uint invalid_dirs, bool is_drive_through, bool is_truck_stop, Axis axis, StationID *station, RoadTypeIdentifier rtid)
 {
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	int allowed_z = -1;
@@ -946,11 +946,12 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 				}
 			}
 
-			RoadTypes cur_rts = IsNormalRoadTile(cur_tile) ? GetRoadTypes(cur_tile) : ROADTYPES_NONE;
-			uint num_roadbits = 0;
+			RoadTypeIdentifiers rtids;
 			if (build_over_road) {
+				rtids = RoadTypeIdentifiers::FromTile(cur_tile);
+
 				/* There is a road, check if we can build road+tram stop over it. */
-				if (HasBit(cur_rts, ROADTYPE_ROAD)) {
+				if (rtids.HasRoad()) {
 					Owner road_owner = GetRoadOwner(cur_tile, ROADTYPE_ROAD);
 					if (road_owner == OWNER_TOWN) {
 						if (!_settings_game.construction.road_stop_on_town_road) return_cmd_error(STR_ERROR_DRIVE_THROUGH_ON_TOWN_ROAD);
@@ -958,11 +959,13 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						CommandCost ret = CheckOwnership(road_owner);
 						if (ret.Failed()) return ret;
 					}
-					num_roadbits += CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD));
+
+					/* Pay to complete the bits */
+					cost.AddCost(_price[PR_BUILD_ROAD] * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD))));
 				}
 
 				/* There is a tram, check if we can build road+tram stop over it. */
-				if (HasBit(cur_rts, ROADTYPE_TRAM)) {
+				if (rtids.HasTram()) {
 					Owner tram_owner = GetRoadOwner(cur_tile, ROADTYPE_TRAM);
 					if (Company::IsValidID(tram_owner) &&
 							(!_settings_game.construction.road_stop_on_competitor_road ||
@@ -972,19 +975,20 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						CommandCost ret = CheckOwnership(tram_owner);
 						if (ret.Failed()) return ret;
 					}
-					num_roadbits += CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM));
-				}
 
-				/* Take into account existing roadbits. */
-				rts |= cur_rts;
+					/* Pay to complete the bits */
+					cost.AddCost(_price[PR_BUILD_ROAD] * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM))));
+				}
 			} else {
 				ret = DoCommand(cur_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 				if (ret.Failed()) return ret;
 				cost.AddCost(ret);
 			}
 
-			uint roadbits_to_build = CountBits(rts) * 2 - num_roadbits;
-			cost.AddCost(_price[PR_BUILD_ROAD] * roadbits_to_build);
+			/* Pay to build a new type */
+			if (rtids.HasType(rtid.basetype)) {
+				cost.AddCost(_price[PR_BUILD_ROAD] * 2);
+			}
 		}
 	}
 
@@ -1757,7 +1761,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	bool is_drive_through = HasBit(p2, 1);
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p2, 5, 5))) return CMD_ERROR;
-	RoadTypes rts = RoadTypeToRoadTypes(rtid.basetype);
+	if (!ValParamRoadType(rtid)) return CMD_ERROR;
 	StationID station_to_join = GB(p2, 16, 16);
 	bool reuse = (station_to_join != NEW_STATION);
 	if (!reuse) station_to_join = INVALID_STATION;
@@ -1777,10 +1781,8 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 	if (distant_join && (!_settings_game.station.distant_join_stations || !Station::IsValidID(station_to_join))) return CMD_ERROR;
 
-	if (!HasExactlyOneBit(rts) || !HasRoadTypesAvail(_current_company, rts)) return CMD_ERROR;
-
 	/* Trams only have drive through stops */
-	if (!is_drive_through && HasBit(rts, ROADTYPE_TRAM)) return CMD_ERROR;
+	if (!is_drive_through && rtid.IsTram()) return CMD_ERROR;
 
 	DiagDirection ddir;
 	Axis axis;
@@ -1800,7 +1802,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	/* Total road stop cost. */
 	CommandCost cost(EXPENSES_CONSTRUCTION, roadstop_area.w * roadstop_area.h * _price[type ? PR_BUILD_STATION_TRUCK : PR_BUILD_STATION_BUS]);
 	StationID est = INVALID_STATION;
-	ret = CheckFlatLandRoadStop(roadstop_area, flags, is_drive_through ? 5 << axis : 1 << ddir, is_drive_through, type, axis, &est, rts);
+	ret = CheckFlatLandRoadStop(roadstop_area, flags, is_drive_through ? 5 << axis : 1 << ddir, is_drive_through, type, axis, &est, rtid);
 	if (ret.Failed()) return ret;
 	cost.AddCost(ret);
 

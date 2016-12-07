@@ -708,7 +708,8 @@ void StartupEngines()
 	Company *c;
 	FOR_ALL_COMPANIES(c) {
 		c->avail_railtypes = GetCompanyRailtypes(c->index);
-		c->avail_roadtypes = GetCompanyRoadtypes(c->index);
+		c->avail_roadtypes[ROADTYPE_ROAD] = GetCompanyRoadtypes(c->index, ROADTYPE_ROAD);
+		c->avail_roadtypes[ROADTYPE_TRAM] = GetCompanyRoadtypes(c->index, ROADTYPE_TRAM);
 	}
 
 	/* Rail types that are invalid or never introduced are marked as
@@ -743,7 +744,10 @@ static void AcceptEnginePreview(EngineID eid, CompanyID company)
 		assert(e->u.rail.railtype < RAILTYPE_END);
 		c->avail_railtypes = AddDateIntroducedRailTypes(c->avail_railtypes | GetRailTypeInfo(e->u.rail.railtype)->introduces_railtypes, _date);
 	} else if (e->type == VEH_ROAD) {
-		SetBit(c->avail_roadtypes, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD);
+		RoadTypeIdentifier rtid;
+		FOR_ALL_SORTED_ROADTYPES(rtid, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD) { // TODO
+			SetBit(c->avail_roadtypes[rtid.subtype], rtid.subtype);
+		}
 	}
 
 	e->preview_company = INVALID_COMPANY;
@@ -961,7 +965,12 @@ static void NewVehicleAvailable(Engine *e)
 		FOR_ALL_COMPANIES(c) c->avail_railtypes = AddDateIntroducedRailTypes(c->avail_railtypes | GetRailTypeInfo(e->u.rail.railtype)->introduces_railtypes, _date);
 	} else if (e->type == VEH_ROAD) {
 		/* maybe make another road type available */
-		FOR_ALL_COMPANIES(c) SetBit(c->avail_roadtypes, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD);
+		FOR_ALL_COMPANIES(c) {
+			RoadTypeIdentifier rtid;
+			FOR_ALL_SORTED_ROADTYPES(rtid, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD) { // TODO
+				SetBit(c->avail_roadtypes[rtid.subtype], rtid.subtype);
+			}
+		}
 	}
 
 	/* Only broadcast event if AIs are able to build this vehicle type. */

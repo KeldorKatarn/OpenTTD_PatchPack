@@ -120,7 +120,7 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 	~Company();
 
 	Livery livery[LS_END];
-	RoadTypes avail_roadtypes;         ///< Road types available to this company.
+	RoadSubTypes avail_roadtypes[ROADTYPE_END];      ///< NOSAVE: Road types available to this company.
 
 	class AIInstance *ai_instance;
 	class AIInfo *ai_info;

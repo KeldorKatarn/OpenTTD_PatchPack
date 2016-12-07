@@ -1196,7 +1196,7 @@ DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
-		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes, roadtype));
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
 		*list->Append() = item;
 	}
 

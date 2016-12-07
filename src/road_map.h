@@ -647,6 +647,15 @@ struct RoadTypeIdentifiers {
 		}
 	}
 
+	bool HasType(RoadType rt) const
+	{
+		switch (rt) {
+			default: NOT_REACHED();
+			case ROADTYPE_ROAD: return this->road_identifier.IsValid();
+			case ROADTYPE_TRAM: return this->tram_identifier.IsValid();
+		}
+	}
+
 	bool HasRoad() const
 	{
 		return road_identifier.IsValid();

@@ -58,7 +58,8 @@
 
 /* static */ bool ScriptRoad::IsRoadTypeAvailable(RoadType road_type)
 {
-	return ::IsValidRoadType((::RoadType)road_type) && ::HasRoadTypesAvail(ScriptObject::GetCompany(), ::RoadTypeToRoadTypes((::RoadType)road_type)); // TODO
+	RoadTypeIdentifier rtid((::RoadType)road_type, ROADSUBTYPE_BEGIN); // TODO
+	return rtid.IsValid() && ::HasRoadTypeAvail(ScriptObject::GetCompany(), rtid);
 }
 
 /* static */ ScriptRoad::RoadType ScriptRoad::GetCurrentRoadType()

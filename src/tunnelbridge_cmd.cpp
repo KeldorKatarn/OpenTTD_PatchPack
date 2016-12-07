@@ -243,8 +243,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	CompanyID company = _current_company;
 
 	RailType railtype = INVALID_RAILTYPE;
-	RoadTypes roadtypes = ROADTYPES_NONE;
-	RoadTypeIdentifiers rtids;
+	RoadTypeIdentifier rtid;
 
 	/* unpack parameters */
 	BridgeType bridge_type = GB(p2, 0, 8);
@@ -256,12 +255,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	/* type of bridge */
 	switch (transport_type) {
 		case TRANSPORT_ROAD: {
-			RoadTypeIdentifier rtid;
 			if (!rtid.UnpackIfValid(GB(p2, 8, 5))) return CMD_ERROR;
-			rtids = RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid);
-			roadtypes = rtids.PresentRoadTypes();
-
-			if (!HasExactlyOneBit(roadtypes) || !HasRoadTypesAvail(company, roadtypes)) return CMD_ERROR;
+			if (!ValParamRoadType(rtid)) return CMD_ERROR;
 			break;
 		}
 
@@ -332,6 +327,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	Owner owner;
 	bool is_new_owner;
+	RoadTypeIdentifiers rtids;
 	if (IsBridgeTile(tile_start) && IsBridgeTile(tile_end) &&
 			GetOtherBridgeEnd(tile_start) == tile_end &&
 			GetTunnelBridgeTransportType(tile_start) == transport_type) {
@@ -357,7 +353,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		}
 
 		/* Do not replace the bridge with the same bridge type. */
-		if (!(flags & DC_QUERY_COST) && (bridge_type == GetBridgeType(tile_start)) && (transport_type != TRANSPORT_ROAD || (roadtypes & ~GetRoadTypes(tile_start)) == 0)) {
+		if (!(flags & DC_QUERY_COST) && (bridge_type == GetBridgeType(tile_start)) && (transport_type != TRANSPORT_ROAD || !HasTileRoadType(tile_start, rtid.basetype))) {
 			return_cmd_error(STR_ERROR_ALREADY_BUILT);
 		}
 
@@ -381,7 +377,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 			case TRANSPORT_ROAD:
 				/* Do not remove road types when upgrading a bridge */
-				roadtypes |= GetRoadTypes(tile_start);
+				rtids = RoadTypeIdentifiers::FromTile(tile_start);
 				break;
 
 			default: break;
@@ -490,6 +486,9 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		is_new_owner = true;
 	}
 
+	RoadTypes prev_roadtypes = rtids.PresentRoadTypes();
+	rtids.MergeRoadType(rtid);
+
 	/* do the drill? */
 	if (flags & DC_EXEC) {
 		DiagDirection dir = AxisToDiagDir(direction);
@@ -506,7 +505,6 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				break;
 
 			case TRANSPORT_ROAD: {
-				RoadTypes prev_roadtypes = IsBridgeTile(tile_start) ? GetRoadTypes(tile_start) : ROADTYPES_NONE;
 				if (is_new_owner) {
 					/* Also give unowned present roadtypes to new owner */
 					if (HasBit(prev_roadtypes, ROADTYPE_ROAD) && GetRoadOwner(tile_start, ROADTYPE_ROAD) == OWNER_NONE) ClrBit(prev_roadtypes, ROADTYPE_ROAD);
@@ -514,11 +512,11 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				}
 				if (c != NULL) {
 					/* Add all new road types to the company infrastructure counter. */
-					RoadTypeIdentifier rtid;
-					FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-						if (!HasBit(prev_roadtypes, rtid.basetype)) {
+					RoadTypeIdentifier new_rtid;
+					FOR_EACH_SET_ROADTYPEIDENTIFIER(new_rtid, rtids) {
+						if (!HasBit(prev_roadtypes, new_rtid.basetype)) {
 							/* A full diagonal road tile has two road bits. */
-							c->infrastructure.road[rtid.basetype][rtid.subtype] += (bridge_len + 2) * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
+							c->infrastructure.road[new_rtid.basetype][new_rtid.subtype] += (bridge_len + 2) * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
 						}
 					}
 				}
@@ -559,7 +557,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		bridge_len += 2; // begin and end tiles/ramps
 
 		switch (transport_type) {
-			case TRANSPORT_ROAD: cost.AddCost(bridge_len * _price[PR_BUILD_ROAD] * 2 * CountBits(roadtypes)); break;
+			case TRANSPORT_ROAD: cost.AddCost(bridge_len * _price[PR_BUILD_ROAD] * 2 * CountBits(rtids.PresentRoadTypes())); break;
 			case TRANSPORT_RAIL: cost.AddCost(bridge_len * RailBuildCost(railtype)); break;
 			default: break;
 		}
@@ -594,10 +592,8 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	CompanyID company = _current_company;
 
 	TransportType transport_type = Extract<TransportType, 8, 2>(p1);
-	RoadTypeIdentifiers rtids;
-
 	RailType railtype = INVALID_RAILTYPE;
-	RoadTypes rts = ROADTYPES_NONE;
+	RoadTypeIdentifier rtid;
 	_build_tunnel_endtile = 0;
 	switch (transport_type) {
 		case TRANSPORT_RAIL:
@@ -606,12 +602,8 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 			break;
 
 		case TRANSPORT_ROAD: {
-			RoadTypeIdentifier rtid;
 			if (!rtid.UnpackIfValid(GB(p1, 0, 5))) return CMD_ERROR;
-			rtids = RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid);
-			rts = rtids.PresentRoadTypes();
-
-			if (!HasExactlyOneBit(rts) || !HasRoadTypesAvail(company, rts)) return CMD_ERROR;
+			if (!ValParamRoadType(rtid)) return CMD_ERROR;
 			break;
 		}
 
@@ -740,12 +732,15 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 			AddSideToSignalBuffer(start_tile, INVALID_DIAGDIR, company);
 			YapfNotifyTrackLayoutChange(start_tile, DiagDirToDiagTrack(direction));
 		} else {
+			RoadTypeIdentifiers rtids;
+			if (IsTunnelTile(start_tile)) rtids = RoadTypeIdentifiers::FromTile(start_tile);
+			RoadTypes prev_rts = rtids.PresentRoadTypes();
+			rtids.MergeRoadType(rtid);
 			if (c != NULL) {
-				RoadTypes prev_rts = (IsTunnelTile(start_tile) ? GetRoadTypes(start_tile) : ROADTYPES_NONE);
-				RoadTypeIdentifier rtid;
-				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-					if (!HasBit(prev_rts, rtid.basetype)) {
-						c->infrastructure.road[rtid.basetype][rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
+				RoadTypeIdentifier new_rtid;
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(new_rtid, rtids) {
+					if (!HasBit(prev_rts, new_rtid.basetype)) {
+						c->infrastructure.road[new_rtid.basetype][new_rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
 					}
 				}
 			}

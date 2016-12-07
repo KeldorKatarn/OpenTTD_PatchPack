@@ -186,9 +186,9 @@ static inline bool HasRoadCatenaryDrawn(RoadTypeIdentifier rti)
 	return HasRoadCatenary(rti) && !IsInvisibilitySet(TO_CATENARY);
 }
 
-bool HasRoadTypesAvail(const CompanyID company, const RoadTypes rts);
-bool ValParamRoadType(const RoadType rt);
-RoadTypes GetCompanyRoadtypes(const CompanyID company);
+bool HasRoadTypeAvail(CompanyID company, RoadTypeIdentifier rtid);
+bool ValParamRoadType(RoadTypeIdentifier rtid);
+RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt);
 
 void UpdateLevelCrossing(TileIndex tile, bool sound = true);
 

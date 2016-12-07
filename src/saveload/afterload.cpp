@@ -1376,7 +1376,8 @@ bool AfterLoadGame()
 	Company *c;
 	FOR_ALL_COMPANIES(c) {
 		c->avail_railtypes = GetCompanyRailtypes(c->index);
-		c->avail_roadtypes = GetCompanyRoadtypes(c->index);
+		c->avail_roadtypes[ROADTYPE_ROAD] = GetCompanyRoadtypes(c->index, ROADTYPE_ROAD);
+		c->avail_roadtypes[ROADTYPE_TRAM] = GetCompanyRoadtypes(c->index, ROADTYPE_TRAM);
 	}
 
 	if (!IsSavegameVersionBefore(27)) AfterLoadStations();

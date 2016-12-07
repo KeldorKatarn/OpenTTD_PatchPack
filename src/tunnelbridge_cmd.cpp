@@ -557,7 +557,13 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		bridge_len += 2; // begin and end tiles/ramps
 
 		switch (transport_type) {
-			case TRANSPORT_ROAD: cost.AddCost(bridge_len * _price[PR_BUILD_ROAD] * 2 * CountBits(rtids.PresentRoadTypes())); break;
+			case TRANSPORT_ROAD: {
+				RoadTypeIdentifier cost_rtid;
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(cost_rtid, rtids) {
+					cost.AddCost(bridge_len * 2 * RoadBuildCost(cost_rtid));
+				}
+				break;
+			}
 			case TRANSPORT_RAIL: cost.AddCost(bridge_len * RailBuildCost(railtype)); break;
 			default: break;
 		}
@@ -717,7 +723,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 
 	/* Pay for the rail/road in the tunnel including entrances */
 	switch (transport_type) {
-		case TRANSPORT_ROAD: cost.AddCost((tiles + 2) * _price[PR_BUILD_ROAD] * 2); break;
+		case TRANSPORT_ROAD: cost.AddCost((tiles + 2) * RoadBuildCost(rtid) * 2); break;
 		case TRANSPORT_RAIL: cost.AddCost((tiles + 2) * RailBuildCost(railtype)); break;
 		default: NOT_REACHED();
 	}

@@ -783,7 +783,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				UpdateLevelCrossing(tile, false);
 				MarkTileDirtyByTile(tile);
 			}
-			return CommandCost(EXPENSES_CONSTRUCTION, _price[PR_BUILD_ROAD] * (rtid.IsRoad() ? 2 : 4));
+			return CommandCost(EXPENSES_CONSTRUCTION, 2 * RoadBuildCost(rtid));
 		}
 
 		case MP_STATION: {
@@ -867,7 +867,7 @@ do_clear:;
 			/* Count pieces */
 			CountBits(pieces);
 
-	cost.AddCost(num_pieces * _price[PR_BUILD_ROAD]);
+	cost.AddCost(num_pieces * RoadBuildCost(rtid));
 
 	if (flags & DC_EXEC) {
 		switch (GetTileType(tile)) {

@@ -961,7 +961,7 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 					}
 
 					/* Pay to complete the bits */
-					cost.AddCost(_price[PR_BUILD_ROAD] * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD))));
+					cost.AddCost(RoadBuildCost(rtids.road_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD))));
 				}
 
 				/* There is a tram, check if we can build road+tram stop over it. */
@@ -977,7 +977,7 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 					}
 
 					/* Pay to complete the bits */
-					cost.AddCost(_price[PR_BUILD_ROAD] * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM))));
+					cost.AddCost(RoadBuildCost(rtids.tram_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM))));
 				}
 			} else {
 				ret = DoCommand(cur_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
@@ -986,8 +986,8 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 			}
 
 			/* Pay to build a new type */
-			if (rtids.HasType(rtid.basetype)) {
-				cost.AddCost(_price[PR_BUILD_ROAD] * 2);
+			if (!rtids.HasType(rtid.basetype)) {
+				cost.AddCost(RoadBuildCost(rtid) * 2);
 			}
 		}
 	}

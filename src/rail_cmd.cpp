@@ -516,10 +516,16 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 						CommandCost ret = CheckOwnership(tram_owner);
 						if (ret.Failed()) return ret;
 					}
-					uint num_new_road_pieces = (road != ROAD_NONE) ? 2 - CountBits(road) : 0;
-					uint num_new_tram_pieces = (tram != ROAD_NONE) ? 2 - CountBits(tram) : 0;
 
-					cost.AddCost((num_new_road_pieces + num_new_tram_pieces) * _price[PR_BUILD_ROAD]);
+					uint num_new_road_pieces = (road != ROAD_NONE) ? 2 - CountBits(road) : 0;
+					if (num_new_road_pieces > 0) {
+						cost.AddCost(num_new_road_pieces * RoadBuildCost(rtids.road_identifier));
+					}
+
+					uint num_new_tram_pieces = (tram != ROAD_NONE) ? 2 - CountBits(tram) : 0;
+					if (num_new_tram_pieces > 0) {
+						cost.AddCost(num_new_tram_pieces * RoadBuildCost(rtids.tram_identifier));
+					}
 
 					if (flags & DC_EXEC) {
 						MakeRoadCrossing(tile, road_owner, tram_owner, _current_company, (track == TRACK_X ? AXIS_Y : AXIS_X), railtype, rtids, GetTownIndex(tile));

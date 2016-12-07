@@ -72,7 +72,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		ROTFB_NONE,
 
 		/* cost multiplier */
-		2, // TODO
+		8,
 
 		/* maintenance cost multiplier */
 		16,
@@ -160,7 +160,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		ROTFB_CATENARY,
 
 		/* cost multiplier */
-		2, // TODO
+		16,
 
 		/* maintenance cost multiplier */
 		24,

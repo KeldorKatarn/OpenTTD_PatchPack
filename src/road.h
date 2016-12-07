@@ -113,7 +113,7 @@ struct RoadtypeInfo {
 	/**
 	 * Cost multiplier for building this road type
 	 */
-	uint16 cost_multiplier; // TODO use
+	uint16 cost_multiplier;
 
 	/**
 	 * Cost multiplier for maintenance of this road type
@@ -246,22 +246,6 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 {
 	assert(rtid.IsValid());
 	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rtid)->cost_multiplier) >> 3;
-}
-
-/**
- * Returns the 'cost' of clearing the specified railtype.
- * @param railtype The railtype being removed.
- * @return The cost.
- */
-static inline Money RoadClearCost(RoadTypeIdentifier rtid)
-{
-	/* Clearing rail in fact earns money, but if the build cost is set
-	 * very low then a loophole exists where money can be made.
-	 * In this case we limit the removal earnings to 3/4s of the build
-	 * cost.
-	 */
-	assert(rtid.IsValid());
-	return max(_price[PR_CLEAR_ROAD], -RoadBuildCost(rtid) * 3 / 4);
 }
 
 RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);

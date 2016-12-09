@@ -4276,9 +4276,6 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 		case 0x09: { // Toolbar caption of roadtype (sets name as well for backwards compatibility for grf ver < 8)
 			uint16 str = buf->ReadWord();
 			AddStringForMapping(str, &rti->strings.toolbar_caption);
-			if (_cur.grffile->grf_version < 8) {
-				AddStringForMapping(str, &rti->strings.name);
-			}
 			break;
 		}
 
@@ -4348,7 +4345,7 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			rti->sorting_order = buf->ReadByte();
 			break;
 
-		case 0x1B: // Name of roadtype (overridden by prop 09 for grf ver < 8)
+		case 0x1B: // Name of roadtype
 			AddStringForMapping(buf->ReadWord(), &rti->strings.name);
 			break;
 

@@ -3042,28 +3042,43 @@ static Foundation GetFoundation_Station(TileIndex tile, Slope tileh)
 static void GetTileDesc_Station(TileIndex tile, TileDesc *td)
 {
 	td->owner[0] = GetTileOwner(tile);
-	if (IsDriveThroughStopTile(tile)) {
+
+	if (IsRoadStopTile(tile)) {
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 		Owner road_owner = INVALID_OWNER;
 		Owner tram_owner = INVALID_OWNER;
-		RoadTypes rts = GetRoadTypes(tile);
-		if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-		if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+		if (rtids.HasRoad()) {
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
+			td->roadtype = rti->strings.name;
+			td->road_speed = rti->max_speed;
+			road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+		}
 
-		/* Is there a mix of owners? */
-		if ((tram_owner != INVALID_OWNER && tram_owner != td->owner[0]) ||
-				(road_owner != INVALID_OWNER && road_owner != td->owner[0])) {
-			uint i = 1;
-			if (road_owner != INVALID_OWNER) {
-				td->owner_type[i] = STR_LAND_AREA_INFORMATION_ROAD_OWNER;
-				td->owner[i] = road_owner;
-				i++;
-			}
-			if (tram_owner != INVALID_OWNER) {
-				td->owner_type[i] = STR_LAND_AREA_INFORMATION_TRAM_OWNER;
-				td->owner[i] = tram_owner;
+		if (rtids.HasTram()) {
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
+			td->tramtype = rti->strings.name;
+			td->tram_speed = rti->max_speed;
+			tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+		}
+
+		if (IsDriveThroughStopTile(tile)) {
+			/* Is there a mix of owners? */
+			if ((tram_owner != INVALID_OWNER && tram_owner != td->owner[0]) ||
+					(road_owner != INVALID_OWNER && road_owner != td->owner[0])) {
+				uint i = 1;
+				if (road_owner != INVALID_OWNER) {
+					td->owner_type[i] = STR_LAND_AREA_INFORMATION_ROAD_OWNER;
+					td->owner[i] = road_owner;
+					i++;
+				}
+				if (tram_owner != INVALID_OWNER) {
+					td->owner_type[i] = STR_LAND_AREA_INFORMATION_TRAM_OWNER;
+					td->owner[i] = tram_owner;
+				}
 			}
 		}
 	}
+
 	td->build_date = BaseStation::GetByTile(tile)->build_date;
 
 	if (HasStationTileRail(tile)) {

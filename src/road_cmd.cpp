@@ -1940,13 +1940,24 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 	Owner road_owner = INVALID_OWNER;
 	Owner tram_owner = INVALID_OWNER;
 
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+	if (rtids.HasRoad()) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
+		td->roadtype = rti->strings.name;
+		td->road_speed = rti->max_speed;
+		road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+	}
+	if (rtids.HasTram()) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
+		td->tramtype = rti->strings.name;
+		td->tram_speed = rti->max_speed;
+		tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+	}
+
 	switch (GetRoadTileType(tile)) {
 		case ROAD_TILE_CROSSING: {
 			td->str = STR_LAI_ROAD_DESCRIPTION_ROAD_RAIL_LEVEL_CROSSING;
-			RoadTypes rts = GetRoadTypes(tile);
 			rail_owner = GetTileOwner(tile);
-			if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-			if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
 
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(tile));
 			td->railtype = rti->strings.name;
@@ -1957,30 +1968,11 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 
 		case ROAD_TILE_DEPOT:
 			td->str = STR_LAI_ROAD_DESCRIPTION_ROAD_VEHICLE_DEPOT;
-			road_owner = GetTileOwner(tile); // Tile has only one owner, roadtype does not matter
 			td->build_date = Depot::GetByTile(tile)->build_date;
 			break;
 
 		default: {
-			RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-			const RoadtypeInfo *rti;
-
-			if (rtids.road_identifier.IsValid()) {
-				rti = GetRoadTypeInfo(rtids.road_identifier);
-				td->str = rti->strings.menu_text; // TODO: roadside strings from grf
-				road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-			}
-
-			if (rtids.tram_identifier.IsValid()) {
-				rti = GetRoadTypeInfo(rtids.tram_identifier);
-				td->str = rti->strings.menu_text; // TODO: roadside strings from grf
-				tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
-			}
-
-			//RoadTypes rts = GetRoadTypes(tile);
-			//td->str = (HasBit(rts, ROADTYPE_ROAD) ? _road_tile_strings[GetRoadside(tile)] : STR_LAI_ROAD_DESCRIPTION_TRAMWAY);
-			//if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-			//if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+			td->str = (rtids.HasRoad() ? _road_tile_strings[GetRoadside(tile)] : STR_LAI_ROAD_DESCRIPTION_TRAMWAY);
 			break;
 		}
 	}

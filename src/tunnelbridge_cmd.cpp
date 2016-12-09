@@ -1714,9 +1714,19 @@ static void GetTileDesc_TunnelBridge(TileIndex tile, TileDesc *td)
 
 	Owner road_owner = INVALID_OWNER;
 	Owner tram_owner = INVALID_OWNER;
-	RoadTypes rts = GetRoadTypes(tile);
-	if (HasBit(rts, ROADTYPE_ROAD)) road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
-	if (HasBit(rts, ROADTYPE_TRAM)) tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+	if (rtids.HasRoad()) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
+		td->roadtype = rti->strings.name;
+		td->road_speed = rti->max_speed;
+		road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+	}
+	if (rtids.HasTram()) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
+		td->tramtype = rti->strings.name;
+		td->tram_speed = rti->max_speed;
+		tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
+	}
 
 	/* Is there a mix of owners? */
 	if ((tram_owner != INVALID_OWNER && tram_owner != td->owner[0]) ||
@@ -1745,7 +1755,9 @@ static void GetTileDesc_TunnelBridge(TileIndex tile, TileDesc *td)
 			}
 		}
 	} else if (tt == TRANSPORT_ROAD && !IsTunnel(tile)) {
-		td->road_speed = GetBridgeSpec(GetBridgeType(tile))->speed;
+		uint16 spd = GetBridgeSpec(GetBridgeType(tile))->speed;
+		if (rtids.HasRoad() && (td->road_speed == 0 || spd < td->road_speed)) td->road_speed = spd;
+		if (rtids.HasTram() && (td->tram_speed == 0 || spd < td->tram_speed)) td->tram_speed = spd;
 	}
 }
 

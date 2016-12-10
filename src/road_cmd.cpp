@@ -50,20 +50,22 @@ RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 uint8 _sorted_roadtypes_size[ROADTYPE_END];
 
-assert_compile(sizeof(_original_roadtypes) <= sizeof(_roadtypes));
-
 /**
  * Reset all road type information to its default values.
  */
 void ResetRoadTypes()
 {
 	/* Road type */
-	memset(_roadtypes[ROADTYPE_ROAD], 0, sizeof(_roadtypes[ROADTYPE_ROAD]));
-	memcpy(_roadtypes[ROADTYPE_ROAD], _original_roadtypes, sizeof(_original_roadtypes));
+	assert_compile(lengthof(_original_roadtypes) <= lengthof(_roadtypes[ROADTYPE_ROAD]));
+	uint i = 0;
+	for (; i < lengthof(_original_roadtypes);       i++) _roadtypes[ROADTYPE_ROAD][i] = _original_roadtypes[i];
+	for (; i < lengthof(_roadtypes[ROADTYPE_ROAD]); i++) _roadtypes[ROADTYPE_ROAD][i] = RoadtypeInfo(); // zero-init
 
 	/* Tram type */
-	memset(_roadtypes[ROADTYPE_TRAM], 0, sizeof(_roadtypes[ROADTYPE_TRAM]));
-	memcpy(_roadtypes[ROADTYPE_TRAM], _original_tramtypes, sizeof(_original_tramtypes));
+	assert_compile(lengthof(_original_tramtypes) <= lengthof(_roadtypes[ROADTYPE_TRAM]));
+	i = 0;
+	for (; i < lengthof(_original_tramtypes);       i++) _roadtypes[ROADTYPE_TRAM][i] = _original_tramtypes[i];
+	for (; i < lengthof(_roadtypes[ROADTYPE_TRAM]); i++) _roadtypes[ROADTYPE_TRAM][i] = RoadtypeInfo(); // zero-init
 }
 
 void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
@@ -137,11 +139,9 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 
 		if (rti->label == 0) {
 			/* Set up new road type */
-			memcpy(rti, &_roadtypes[basetype][ROADSUBTYPE_BEGIN], sizeof(*rti));
+			*rti = (basetype == ROADTYPE_ROAD ? _original_roadtypes[ROADSUBTYPE_BEGIN] : _original_tramtypes[ROADSUBTYPE_BEGIN]);
 			rti->label = label;
-			/* Clear alternate label list. Can't use Reset() here as that would free
-			 * the data pointer of ROADTYPE_ROAD and not our new road type. */
-			new (&rti->alternate_labels) RoadTypeLabelList;
+			rti->alternate_labels.Clear();
 
 			/* Make us compatible with ourself. */
 			rti->powered_roadtypes = (RoadSubTypes)(1 << rt);

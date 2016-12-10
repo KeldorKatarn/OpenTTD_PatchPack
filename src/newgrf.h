@@ -132,7 +132,7 @@ struct GRFFile : ZeroedMemoryAllocator {
 	SmallVector<RailTypeLabel, 4> railtype_list;    ///< Railtype translation table
 	RailTypeByte railtype_map[RAILTYPE_END];
 
-	SmallVector<RoadTypeLabel, 4> roadtype_list;    ///< Roadtype translation table
+	SmallVector<RoadTypeLabel, 4> roadtype_list[ROADTYPE_END];  ///< Roadtype translation table
 	uint8 roadtype_map[ROADTYPE_END][ROADSUBTYPE_END];
 
 	CanalProperties canal_local_properties[CF_END]; ///< Canal properties as set by this NewGRF

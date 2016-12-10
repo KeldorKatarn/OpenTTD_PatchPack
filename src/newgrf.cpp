@@ -2585,6 +2585,12 @@ static ChangeInfoResult GlobalVarChangeInfo(uint gvid, int numinfo, int prop, By
 		case 0x12: // Rail type translation table; loading during both reservation and activation stage (in case it is selected depending on defined railtypes)
 			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->railtype_list, "Rail type");
 
+		case 0x16: // Road type translation table; loading during both reservation and activation stage (in case it is selected depending on defined railtypes)
+			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->roadtype_list[ROADTYPE_ROAD], "Road type");
+
+		case 0x17: // Tram type translation table; loading during both reservation and activation stage (in case it is selected depending on defined railtypes)
+			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->roadtype_list[ROADTYPE_TRAM], "Tram type");
+
 		default:
 			break;
 	}
@@ -2799,6 +2805,12 @@ static ChangeInfoResult GlobalVarReserveInfo(uint gvid, int numinfo, int prop, B
 
 		case 0x12: // Rail type translation table; loading during both reservation and activation stage (in case it is selected depending on defined railtypes)
 			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->railtype_list, "Rail type");
+
+		case 0x16: // Road type translation table; loading during both reservation and activation stage (in case it is selected depending on defined roadtypes)
+			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->roadtype_list[ROADTYPE_ROAD], "Road type");
+
+		case 0x17: // Tram type translation table; loading during both reservation and activation stage (in case it is selected depending on defined tramtypes)
+			return LoadTranslationTable(gvid, numinfo, buf, _cur.grffile->roadtype_list[ROADTYPE_TRAM], "Tram type");
 
 		default:
 			break;
@@ -6416,6 +6428,14 @@ static void SkipIf(ByteReader *buf)
 				break;
 			case 0x0E: result = GetRailTypeByLabel(BSWAP32(cond_val)) != INVALID_RAILTYPE;
 				break;
+			case 0x0F: result = !GetRoadTypeByLabel(BSWAP32(cond_val), ROADTYPE_ROAD).IsValid();
+				break;
+			case 0x10: result = GetRoadTypeByLabel(BSWAP32(cond_val), ROADTYPE_ROAD).IsValid();
+				break;
+			case 0x11: result = !GetRoadTypeByLabel(BSWAP32(cond_val), ROADTYPE_TRAM).IsValid();
+				break;
+			case 0x12: result = GetRoadTypeByLabel(BSWAP32(cond_val), ROADTYPE_TRAM).IsValid();
+				break;
 
 			default: grfmsg(1, "SkipIf: Unsupported condition type %02X. Ignoring", condtype); return;
 		}
@@ -8504,6 +8524,11 @@ GRFFile::GRFFile(const GRFConfig *config)
 	this->railtype_map[1] = RAILTYPE_ELECTRIC;
 	this->railtype_map[2] = RAILTYPE_MONO;
 	this->railtype_map[3] = RAILTYPE_MAGLEV;
+
+	/* Initialise road type map with default road types */
+	memset(this->roadtype_map, INVALID_ROADSUBTYPE, sizeof(this->roadtype_map));
+	this->roadtype_map[ROADTYPE_ROAD][0] = ROADSUBTYPE_BEGIN;
+	this->roadtype_map[ROADTYPE_TRAM][0] = ROADSUBTYPE_BEGIN;
 
 	/* Copy the initial parameter list
 	 * 'Uninitialised' parameters are zeroed as that is their default value when dynamically creating them. */

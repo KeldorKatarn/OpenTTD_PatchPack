@@ -308,6 +308,7 @@ struct GRFTempEngineData {
 	uint16 cargo_allowed;
 	uint16 cargo_disallowed;
 	RailTypeLabel railtypelabel;
+	uint8 roadsubtype;
 	const GRFFile *defaultcargo_grf; ///< GRF defining the cargo translation table to use if the default cargo is the 'first refittable'.
 	Refittability refittability;     ///< Did the newgrf set any refittability property? If not, default refittability will be applied.
 	bool prop27_set;         ///< Did the NewGRF set property 27 (misc flags)?
@@ -1343,6 +1344,10 @@ static ChangeInfoResult RoadVehicleChangeInfo(uint engine, int numinfo, int prop
 		RoadVehicleInfo *rvi = &e->u.road;
 
 		switch (prop) {
+			case 0x05: // Road/tram subtype
+				_gted[e->index].roadsubtype = buf->ReadByte();
+				break;
+
 			case 0x08: // Speed (1 unit is 0.5 kmh)
 				rvi->max_speed = buf->ReadByte();
 				break;
@@ -9487,6 +9492,18 @@ static void AfterLoadGRFs()
 
 	Engine *e;
 	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+		RoadType rt = HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD;
+		const GRFFile *file = e->GetGRF();
+		if (file != NULL && _gted[e->index].roadsubtype < file->roadtype_list[rt].Length()) {
+			RoadTypeIdentifier rtid = GetRoadTypeByLabel(file->roadtype_list[rt][_gted[e->index].roadsubtype], rt, true);
+			if (rtid.IsValid()) {
+				e->u.road.roadsubtype = rtid.subtype;
+			} else {
+				/* Road type is not available, so disable this engine */
+				e->info.climates = 0;
+			}
+		}
+
 		if (_gted[e->index].rv_max_speed != 0) {
 			/* Set RV maximum speed from the mph/0.8 unit value */
 			e->u.road.max_speed = _gted[e->index].rv_max_speed * 4;

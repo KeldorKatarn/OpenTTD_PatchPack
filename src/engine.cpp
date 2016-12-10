@@ -160,6 +160,16 @@ bool Engine::IsEnabled() const
 }
 
 /**
+ * Determine the roadtype of a road vehicle.
+ * @return roadtype identifier
+ */
+RoadTypeIdentifier Engine::GetRoadType() const
+{
+	assert(this->type == VEH_ROAD);
+	return RoadTypeIdentifier(HasBit(this->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD, this->u.road.roadsubtype);
+}
+
+/**
  * Retrieve the GRF ID of the NewGRF the engine is tied to.
  * This is the GRF providing the Action 3.
  * @return GRF ID of the associated NewGRF.

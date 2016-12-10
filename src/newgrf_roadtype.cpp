@@ -121,18 +121,18 @@ SpriteID GetCustomRoadSprite(const RoadtypeInfo *rti, TileIndex tile, RoadTypeSp
 
 /**
 * Perform a reverse roadtype lookup to get the GRF internal ID.
-* @param roadtype The global (OpenTTD) roadtype.
+* @param rtid The global (OpenTTD) roadtype.
 * @param grffile The GRF to do the lookup for.
 * @return the GRF internal ID.
 */
-uint8 GetReverseRoadTypeTranslation(RoadTypeIdentifier rti, const GRFFile *grffile)
+uint8 GetReverseRoadTypeTranslation(RoadTypeIdentifier rtid, const GRFFile *grffile)
 {
 	/* No road type table present, return road type as-is */
-	if (grffile == NULL || grffile->roadtype_list[rti.basetype].Length() == 0) return rti.subtype;
+	if (grffile == NULL || grffile->roadtype_list[rtid.basetype].Length() == 0) return rtid.subtype;
 
 	/* Look for a matching road type label in the table */
-	RoadTypeLabel label = GetRoadTypeInfo(rti)->label;
-	int index = grffile->roadtype_list[rti.basetype].FindIndex(label);
+	RoadTypeLabel label = GetRoadTypeInfo(rtid)->label;
+	int index = grffile->roadtype_list[rtid.basetype].FindIndex(label);
 	if (index >= 0) return index;
 
 	/* If not found, return as invalid */

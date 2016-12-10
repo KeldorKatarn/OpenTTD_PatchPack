@@ -52,7 +52,8 @@ enum RoadTypeSpriteGroup {
 /** List of road type labels. */
 typedef SmallVector<RoadTypeLabel, 4> RoadTypeLabelList;
 
-struct RoadtypeInfo {
+class RoadtypeInfo {
+public:
 	/**
 	 * struct containing the sprites for the road GUI. @note only sprites referred to
 	 * directly in the code are listed

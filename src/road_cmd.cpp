@@ -55,17 +55,25 @@ uint8 _sorted_roadtypes_size[ROADTYPE_END];
  */
 void ResetRoadTypes()
 {
+	static const RoadtypeInfo empty_roadtype = {
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,{},{},{},{}},
+		ROADSUBTYPES_NONE, 0, ROTFB_NONE, 0, 0, 0, 0,
+		RoadTypeLabelList(), 0, 0, ROADSUBTYPES_NONE, ROADSUBTYPES_NONE, 0,
+		{}, {} };
+
 	/* Road type */
 	assert_compile(lengthof(_original_roadtypes) <= lengthof(_roadtypes[ROADTYPE_ROAD]));
 	uint i = 0;
 	for (; i < lengthof(_original_roadtypes);       i++) _roadtypes[ROADTYPE_ROAD][i] = _original_roadtypes[i];
-	for (; i < lengthof(_roadtypes[ROADTYPE_ROAD]); i++) _roadtypes[ROADTYPE_ROAD][i] = RoadtypeInfo(); // zero-init
+	for (; i < lengthof(_roadtypes[ROADTYPE_ROAD]); i++) _roadtypes[ROADTYPE_ROAD][i] = empty_roadtype;
 
 	/* Tram type */
 	assert_compile(lengthof(_original_tramtypes) <= lengthof(_roadtypes[ROADTYPE_TRAM]));
 	i = 0;
 	for (; i < lengthof(_original_tramtypes);       i++) _roadtypes[ROADTYPE_TRAM][i] = _original_tramtypes[i];
-	for (; i < lengthof(_roadtypes[ROADTYPE_TRAM]); i++) _roadtypes[ROADTYPE_TRAM][i] = RoadtypeInfo(); // zero-init
+	for (; i < lengthof(_roadtypes[ROADTYPE_TRAM]); i++) _roadtypes[ROADTYPE_TRAM][i] = empty_roadtype;
 }
 
 void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)

@@ -1244,11 +1244,23 @@ static CallBackFunction ToolbarScenGenIndustry(Window *w)
 	return CBF_NONE;
 }
 
-static CallBackFunction ToolbarScenBuildRoad(Window *w)
+static CallBackFunction ToolbarScenBuildRoadClick(Window *w)
 {
-	w->HandleButtonClick(WID_TE_ROADS);
+	ShowDropDownList(w, GetScenRoadTypeDropDownList(ROADTYPE_ROAD), _last_built_roadtype_identifier.Pack(), WID_TE_ROADS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
-	ShowBuildRoadScenToolbar();
+	return CBF_NONE;
+}
+
+/**
+ * Handle click on the entry in the Build Road menu.
+ *
+ * @param index packed RoadTypeIdentifier to show the build toolbar for.
+ * @return #CBF_NONE
+ */
+static CallBackFunction ToolbarScenBuildRoad(int index)
+{
+	_last_built_roadtype_identifier = RoadTypeIdentifier::Unpack(index);
+	ShowBuildRoadScenToolbar(_last_built_roadtype_identifier);
 	return CBF_NONE;
 }
 
@@ -2278,7 +2290,7 @@ static MenuClickedProc * const _scen_toolbar_dropdown_procs[] = {
 	NULL,                 // 11
 	NULL,                 // 12
 	NULL,                 // 13
-	NULL,                 // 14
+	ToolbarScenBuildRoad, // 14
 	NULL,                 // 15
 	NULL,                 // 16
 	NULL,                 // 17
@@ -2303,7 +2315,7 @@ static ToolbarButtonProc * const _scen_toolbar_button_procs[] = {
 	ToolbarScenGenLand,
 	ToolbarScenGenTown,
 	ToolbarScenGenIndustry,
-	ToolbarScenBuildRoad,
+	ToolbarScenBuildRoadClick,
 	ToolbarScenBuildDocks,
 	ToolbarScenPlantTrees,
 	ToolbarScenPlaceSign,

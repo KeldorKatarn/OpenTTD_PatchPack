@@ -684,15 +684,15 @@ struct BuildRoadToolbarWindow : Window {
 static EventState RoadToolbarGlobalHotkeys(int hotkey)
 {
 	Window *w = NULL;
+	extern RoadTypeIdentifier _last_built_roadtype_identifier;
 	switch (_game_mode) {
 		case GM_NORMAL: {
-			extern RoadTypeIdentifier _last_built_roadtype_identifier;
 			w = ShowBuildRoadToolbar(_last_built_roadtype_identifier);
 			break;
 		}
 
 		case GM_EDITOR:
-			w = ShowBuildRoadScenToolbar();
+			w = ShowBuildRoadScenToolbar(_last_built_roadtype_identifier);
 			break;
 
 		default:
@@ -857,9 +857,9 @@ static WindowDesc _build_road_scen_desc(
  * Show the road building toolbar in the scenario editor.
  * @return The just opened toolbar, or \c NULL if the toolbar was already open.
  */
-Window *ShowBuildRoadScenToolbar()
+Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id)
 {
-	_cur_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
+	_cur_roadtype_identifier = roadtype_id;
 
 	return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
 }
@@ -1197,6 +1197,39 @@ DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
 		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
+		*list->Append() = item;
+	}
+
+	return list;
+}
+
+DropDownList *GetScenRoadTypeDropDownList(RoadType roadtype)
+{
+	RoadTypes used_roadtypes = ROADTYPES_NONE;
+
+	/* Road is always visible and available. */
+	used_roadtypes |= ROADTYPES_ROAD;
+
+	/* Tram is only visible when there will be a tram, and available when that has been introduced. */
+	Engine *e;
+	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+		if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
+		if (!HasBit(e->info.misc_flags, EF_ROAD_TRAM)) continue;
+
+		used_roadtypes |= ROADTYPES_TRAM;
+		break;
+	}
+
+	DropDownList *list = new DropDownList();
+	RoadTypeIdentifier rtid;
+
+	FOR_ALL_SORTED_ROADTYPES(rtid, roadtype) {
+		/* If it's not used ever, don't show it to the user. */
+		if (!HasBit(used_roadtypes, roadtype)) continue;
+
+		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
+
+		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);
 		*list->Append() = item;
 	}
 

@@ -19,9 +19,10 @@
 #include "road.h"
 
 struct Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id);
-struct Window *ShowBuildRoadScenToolbar();
+struct Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id);
 void ConnectRoadToStructure(TileIndex tile, DiagDirection direction);
 DropDownList *GetRoadTypeDropDownList(RoadType roadtype);
+DropDownList *GetScenRoadTypeDropDownList(RoadType roadtype);
 void InitializeRoadGUI();
 
 #endif /* ROAD_GUI_H */

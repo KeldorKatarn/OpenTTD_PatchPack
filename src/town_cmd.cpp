@@ -1120,6 +1120,42 @@ static bool GrowTownWithBridge(const Town *t, const TileIndex tile, const DiagDi
 	return false;
 }
 
+
+/**
+ * Checks whether at least one surrounding roads allows to build a house here
+ *
+ * @param t the tile where the house will be built
+ * @return true if at least one surrounding roadtype allows building houses here
+ */
+static inline bool RoadTypesAllowHouseHere(TileIndex t)
+{
+	RoadTypeIdentifier rtid;
+	RoadTypeIdentifiers rtids;
+	
+	static const TileIndexDiffC tiles[] = { {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1} };
+	const TileIndexDiffC *ptr;
+	bool allow = false;
+
+	for (ptr = tiles; ptr != endof(tiles); ++ptr) {
+		TileIndex cur_tile = t + ToTileIndexDiff(*ptr);
+
+		if (!(IsTileType(cur_tile, MP_ROAD) || IsTileType(cur_tile, MP_STATION))) continue;
+		allow = true;
+
+		rtids = RoadTypeIdentifiers::FromTile(cur_tile);
+		FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids)
+		{
+			/* Found one road which allows the type, it is enough to allow building the house here */
+			if (!HasBit(GetRoadTypeInfo(rtid)->flags, ROTF_DISALLOW_HOUSES_ALONG)) return true;
+		}
+	}
+
+	/* If no road was found surrounding the tile we can allow building the house since there is 
+	 * nothing which forbids it, if a road was found but the execution reached this point, then
+	 * all the found roads don't allow houses to be built */
+	return !allow;
+}
+
 /**
  * Grows the given town.
  * There are at the moment 3 possible way's for
@@ -1266,6 +1302,8 @@ static void GrowTownInTile(TileIndex *tile_ptr, RoadBits cur_rb, DiagDirection t
 					break;
 			}
 		}
+
+		allow_house &= RoadTypesAllowHouseHere(house_tile);
 
 		if (allow_house) {
 			/* Build a house, but not if there already is a house there. */
@@ -2071,6 +2109,9 @@ static inline bool CanBuildHouseHere(TileIndex tile, TownID town, bool noslope)
 	/* cannot build on these slopes... */
 	Slope slope = GetTileSlope(tile);
 	if ((noslope && slope != SLOPE_FLAT) || IsSteepSlope(slope)) return false;
+
+	/* at least one RoadTypes allow building the house here? */
+	if (!RoadTypesAllowHouseHere(tile)) return false;
 
 	/* building under a bridge? */
 	if (IsBridgeAbove(tile)) return false;

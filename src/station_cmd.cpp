@@ -3162,7 +3162,10 @@ static TrackStatus GetTileTrackStatus_Station(TileIndex tile, TransportType mode
 			break;
 
 		case TRANSPORT_ROAD:
-			if ((GetRoadTypes(tile) & sub_mode) != 0 && IsRoadStop(tile)) {
+			if (IsRoadStop(tile)) {
+				RoadType rt = (RoadType)sub_mode;
+				if (!HasTileRoadType(tile, rt)) break;
+
 				DiagDirection dir = GetRoadStopDir(tile);
 				Axis axis = DiagDirToAxis(dir);
 

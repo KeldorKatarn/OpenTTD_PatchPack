@@ -1146,7 +1146,7 @@ static inline bool RoadTypesAllowHouseHere(TileIndex t)
 		FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids)
 		{
 			/* Found one road which allows the type, it is enough to allow building the house here */
-			if (!HasBit(GetRoadTypeInfo(rtid)->flags, ROTF_DISALLOW_HOUSES_ALONG)) return true;
+			if (!HasBit(GetRoadTypeInfo(rtid)->flags, ROTF_NO_HOUSES)) return true;
 		}
 	}
 

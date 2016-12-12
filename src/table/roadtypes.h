@@ -157,7 +157,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		0, // TODO
 
 		/* flags */
-		ROTFB_CATENARY | ROTFB_DISALLOW_HOUSES_ALONG,
+		ROTFB_CATENARY | ROTFB_NO_HOUSES,
 
 		/* cost multiplier */
 		16,

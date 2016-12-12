@@ -741,7 +741,7 @@ static DiagDirection GetTileSingleEntry(TileIndex tile, TransportType type, uint
 
 	if (type == TRANSPORT_ROAD) {
 		if (IsStandardRoadStopTile(tile)) return GetRoadStopDir(tile);
-		if (HasBit(subtype, ROADTYPE_TRAM)) return GetSingleTramBit(tile);
+		if (subtype == ROADTYPE_TRAM) return GetSingleTramBit(tile);
 	}
 
 	return INVALID_DIAGDIR;
@@ -809,7 +809,7 @@ static TrackdirBits GetDriveableTrackdirBits(TileIndex dst_tile, Trackdir src_tr
 {
 	TrackdirBits trackdirbits = TrackStatusToTrackdirBits(GetTileTrackStatus(dst_tile, type, subtype));
 
-	if (trackdirbits == 0 && type == TRANSPORT_ROAD && HasBit(subtype, ROADTYPE_TRAM)) {
+	if (trackdirbits == 0 && type == TRANSPORT_ROAD && subtype == ROADTYPE_TRAM) {
 		/* GetTileTrackStatus() returns 0 for single tram bits.
 		 * As we cannot change it there (easily) without breaking something, change it here */
 		switch (GetSingleTramBit(dst_tile)) {
@@ -893,7 +893,7 @@ static void NPFFollowTrack(AyStar *aystar, OpenListNode *current)
 
 		if (dst_tile == INVALID_TILE) {
 			/* We cannot enter the next tile. Road vehicles can reverse, others reach dead end */
-			if (type != TRANSPORT_ROAD || HasBit(subtype, ROADTYPE_TRAM)) return;
+			if (type != TRANSPORT_ROAD || subtype == ROADTYPE_TRAM) return;
 
 			dst_tile = src_tile;
 			src_trackdir = ReverseTrackdir(src_trackdir);
@@ -903,7 +903,7 @@ static void NPFFollowTrack(AyStar *aystar, OpenListNode *current)
 
 		if (trackdirbits == 0) {
 			/* We cannot enter the next tile. Road vehicles can reverse, others reach dead end */
-			if (type != TRANSPORT_ROAD || HasBit(subtype, ROADTYPE_TRAM)) return;
+			if (type != TRANSPORT_ROAD || subtype == ROADTYPE_TRAM) return;
 
 			dst_tile = src_tile;
 			src_trackdir = ReverseTrackdir(src_trackdir);
@@ -1123,7 +1123,7 @@ FindDepotData NPFRoadVehicleFindNearestDepot(const RoadVehicle *v, int max_penal
 {
 	Trackdir trackdir = v->GetVehicleTrackdir();
 
-	NPFFoundTargetData ftd = NPFRouteToDepotBreadthFirstTwoWay(v->tile, trackdir, false, v->tile, ReverseTrackdir(trackdir), false, NULL, TRANSPORT_ROAD, v->compatible_roadtypes, v->owner, INVALID_RAILTYPES, 0);
+	NPFFoundTargetData ftd = NPFRouteToDepotBreadthFirstTwoWay(v->tile, trackdir, false, v->tile, ReverseTrackdir(trackdir), false, NULL, TRANSPORT_ROAD, v->rtid.basetype, v->owner, INVALID_RAILTYPES, 0);
 
 	if (ftd.best_bird_dist != 0) return FindDepotData();
 
@@ -1142,7 +1142,7 @@ Trackdir NPFRoadVehicleChooseTrack(const RoadVehicle *v, TileIndex tile, DiagDir
 	NPFFillWithOrderData(&fstd, v);
 	Trackdir trackdir = DiagDirToDiagTrackdir(enterdir);
 
-	NPFFoundTargetData ftd = NPFRouteToStationOrTile(tile - TileOffsByDiagDir(enterdir), trackdir, true, &fstd, TRANSPORT_ROAD, v->compatible_roadtypes, v->owner, INVALID_RAILTYPES);
+	NPFFoundTargetData ftd = NPFRouteToStationOrTile(tile - TileOffsByDiagDir(enterdir), trackdir, true, &fstd, TRANSPORT_ROAD, v->rtid.basetype, v->owner, INVALID_RAILTYPES);
 	if (ftd.best_trackdir == INVALID_TRACKDIR) {
 		/* We are already at our target. Just do something
 		 * @todo: maybe display error?

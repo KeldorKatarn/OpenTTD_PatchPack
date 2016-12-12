@@ -745,8 +745,12 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 			if (GetRailTileType(tile) != RAIL_TILE_NORMAL) goto do_clear;
 
+			if (RoadNoLevelCrossing(rtid)) {
+				return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+			}
+
 			if (RailNoLevelCrossings(GetRailType(tile))) {
-				return_cmd_error(STR_ERROR_CROSSING_DISALLOWED);
+				return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_RAIL);
 			}
 
 			Axis roaddir;
@@ -1888,12 +1892,12 @@ static TrackStatus GetTileTrackStatus_Road(TileIndex tile, TransportType mode, u
 			if (IsLevelCrossing(tile)) trackdirbits = TrackBitsToTrackdirBits(GetCrossingRailBits(tile));
 			break;
 
-		case TRANSPORT_ROAD:
-			if ((GetRoadTypes(tile) & sub_mode) == 0) break;
+		case TRANSPORT_ROAD: {
+			RoadType rt = (RoadType)sub_mode;
+			if (!HasTileRoadType(tile, rt)) break;
 			switch (GetRoadTileType(tile)) {
 				case ROAD_TILE_NORMAL: {
 					const uint drd_to_multiplier[DRD_END] = { 0x101, 0x100, 0x1, 0x0 };
-					RoadType rt = (RoadType)FindFirstBit(sub_mode);
 					RoadBits bits = GetRoadBits(tile, rt);
 
 					/* no roadbit at this side of tile, return 0 */
@@ -1925,6 +1929,7 @@ static TrackStatus GetTileTrackStatus_Road(TileIndex tile, TransportType mode, u
 				}
 			}
 			break;
+		}
 
 		default: break;
 	}

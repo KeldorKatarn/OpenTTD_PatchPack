@@ -1793,7 +1793,7 @@ static void TileLoop_TunnelBridge(TileIndex tile)
 static TrackStatus GetTileTrackStatus_TunnelBridge(TileIndex tile, TransportType mode, uint sub_mode, DiagDirection side)
 {
 	TransportType transport_type = GetTunnelBridgeTransportType(tile);
-	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && (GetRoadTypes(tile) & sub_mode) == 0)) return 0;
+	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && !HasTileRoadType(tile, (RoadType)sub_mode))) return 0;
 
 	DiagDirection dir = GetTunnelBridgeDirection(tile);
 	if (side != INVALID_DIAGDIR && side != ReverseDiagDir(dir)) return 0;

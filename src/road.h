@@ -24,12 +24,14 @@
 
 /** Roadtype flags. Starts with RO instead of R because R is used for rails */
 enum RoadTypeFlags {
-	ROTF_CATENARY = 0,                     ///< Bit number for adding catenary
-	ROTF_NO_HOUSES,                        ///< Bit number for setting this roadtype as not house friendly
+	ROTF_CATENARY = 0,                                     ///< Bit number for adding catenary
+	ROTF_NO_LEVEL_CROSSING,                                ///< Bit number for disabling level crossing
+	ROTF_NO_HOUSES,                                        ///< Bit number for setting this roadtype as not house friendly
 
-	ROTFB_NONE = 0,                        ///< All flags cleared.
-	ROTFB_CATENARY = 1 << ROTF_CATENARY,   ///< Value for drawing a catenary.
-	ROTFB_NO_HOUSES = 1 << ROTF_NO_HOUSES, ///< Value for for setting this roadtype as not house friendly.
+	ROTFB_NONE = 0,                                        ///< All flags cleared.
+	ROTFB_CATENARY = 1 << ROTF_CATENARY,                   ///< Value for drawing a catenary.
+	ROTFB_NO_LEVEL_CROSSING = 1 << ROTF_NO_LEVEL_CROSSING, ///< Value for disabling a level crossing.
+	ROTFB_NO_HOUSES = 1 << ROTF_NO_HOUSES,                 ///< Value for for setting this roadtype as not house friendly.
 };
 DECLARE_ENUM_AS_BIT_SET(RoadTypeFlags)
 
@@ -249,6 +251,15 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 {
 	assert(rtid.IsValid());
 	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rtid)->cost_multiplier) >> 3;
+}
+
+/**
+ * 
+ */
+static inline bool RoadNoLevelCrossing(RoadTypeIdentifier rtid)
+{
+	assert(rtid.IsValid());
+	return HasBit(GetRoadTypeInfo(rtid)->flags, ROTF_NO_LEVEL_CROSSING);
 }
 
 RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, bool allow_alternate_labels = true);

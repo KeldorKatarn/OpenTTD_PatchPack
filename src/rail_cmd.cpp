@@ -509,9 +509,15 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 
 				if (GetDisallowedRoadDirections(tile) != DRD_NONE) return_cmd_error(STR_ERROR_CROSSING_ON_ONEWAY_ROAD);
 
-				if (RailNoLevelCrossings(railtype)) return_cmd_error(STR_ERROR_CROSSING_DISALLOWED);
+				if (RailNoLevelCrossings(railtype)) return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_RAIL);
 
+				RoadTypeIdentifier rtid;
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+
+				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+					if (RoadNoLevelCrossing(rtid)) return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+				}
+
 				RoadBits road = GetRoadBits(tile, ROADTYPE_ROAD);
 				RoadBits tram = GetRoadBits(tile, ROADTYPE_TRAM);
 				if ((track == TRACK_X && ((road | tram) & ROAD_X) == 0) ||
@@ -1576,7 +1582,7 @@ CommandCost CmdConvertRail(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			case MP_ROAD:
 				if (!IsLevelCrossing(tile)) continue;
 				if (RailNoLevelCrossings(totype)) {
-					error.MakeError(STR_ERROR_CROSSING_DISALLOWED);
+					error.MakeError(STR_ERROR_CROSSING_DISALLOWED_RAIL);
 					continue;
 				}
 				break;

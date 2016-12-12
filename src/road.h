@@ -29,7 +29,7 @@ enum RoadTypeFlags {
 
 	ROTFB_NONE = 0,                      ///< All flags cleared.
 	ROTFB_CATENARY = 1 << ROTF_CATENARY, ///< Value for drawing a catenary.
-	ROTFB_DISALLOW_HOUSES_ALONG,         ///< Value for disallowing houses along the road.
+	ROTFB_DISALLOW_HOUSES_ALONG = 1 << ROTF_DISALLOW_HOUSES_ALONG, ///< Value for disallowing houses along the road.
 };
 DECLARE_ENUM_AS_BIT_SET(RoadTypeFlags)
 

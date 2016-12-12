@@ -18,6 +18,7 @@
 #include "track_func.h"
 #include "road_type.h"
 #include "newgrf_engine.h"
+#include "road.h"
 
 struct RoadVehicle;
 
@@ -94,8 +95,7 @@ struct RoadVehicle FINAL : public GroundVehicle<RoadVehicle, VEH_ROAD> {
 	uint16 crashed_ctr;     ///< Animation counter when the vehicle has crashed. @see RoadVehIsCrashed
 	byte reverse_ctr;
 
-	RoadType roadtype;
-	RoadTypes compatible_roadtypes;
+	RoadTypeIdentifier rtid;
 
 	/** We don't want GCC to zero our struct! It already is zeroed and has an index! */
 	RoadVehicle() : GroundVehicleBase() {}
@@ -222,7 +222,7 @@ protected: // These functions should not be called outside acceleration code.
 	{
 		/* Trams have a slightly greater friction coefficient than trains.
 		 * The rest of road vehicles have bigger values. */
-		uint32 coeff = (this->roadtype == ROADTYPE_TRAM) ? 40 : 75;
+		uint32 coeff = this->rtid.IsTram() ? 40 : 75;
 		/* The friction coefficient increases with speed in a way that
 		 * it doubles at 128 km/h, triples at 256 km/h and so on. */
 		return coeff * (128 + this->GetCurrentSpeed()) / 128;
@@ -261,7 +261,7 @@ protected: // These functions should not be called outside acceleration code.
 	 */
 	inline bool TileMayHaveSlopedTrack() const
 	{
-		TrackStatus ts = GetTileTrackStatus(this->tile, TRANSPORT_ROAD, this->compatible_roadtypes);
+		TrackStatus ts = GetTileTrackStatus(this->tile, TRANSPORT_ROAD, this->rtid.basetype);
 		TrackBits trackbits = TrackStatusToTrackBits(ts);
 
 		return trackbits == TRACK_BIT_X || trackbits == TRACK_BIT_Y;

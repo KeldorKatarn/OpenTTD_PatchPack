@@ -429,8 +429,8 @@ void AfterLoadVehicles(bool part_of_load)
 		switch (v->type) {
 			case VEH_ROAD: {
 				RoadVehicle *rv = RoadVehicle::From(v);
-				rv->roadtype = HasBit(EngInfo(v->First()->engine_type)->misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD;
-				rv->compatible_roadtypes = RoadTypeToRoadTypes(rv->roadtype);
+				Engine* e = Engine::Get(v->First()->engine_type);
+				rv->rtid = e->GetRoadType();
 				/* FALL THROUGH */
 			}
 

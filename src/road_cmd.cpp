@@ -718,6 +718,10 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				}
 
 				case ROAD_TILE_CROSSING:
+					if (RoadNoLevelCrossing(rtid)) {
+						return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+					}
+
 					other_bits = GetCrossingRoadBits(tile);
 					if (pieces & ComplementRoadBits(other_bits)) goto do_clear;
 					pieces = other_bits; // we need to pay for both roadbits

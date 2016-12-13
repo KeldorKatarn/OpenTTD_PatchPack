@@ -16,7 +16,6 @@
 #include "tile_type.h"
 #include "direction_type.h"
 #include "widgets/dropdown_type.h"
-#include "road.h"
 
 struct Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id);
 struct Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id);

@@ -184,33 +184,6 @@ public:
 	}
 };
 
-struct RoadTypeIdentifier {
-	RoadType basetype;
-	RoadSubType subtype;
-
-	uint8 Pack() const;
-	bool UnpackIfValid(uint32 data);
-	static RoadTypeIdentifier Unpack(uint32 data);
-
-	bool IsValid() const
-	{
-		return (this->basetype == ROADTYPE_ROAD || this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	bool IsRoad() const
-	{
-		return (this->basetype == ROADTYPE_ROAD) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	bool IsTram() const
-	{
-		return (this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
-	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
-};
-
 /**
  * Returns a pointer to the Roadtype information for a given roadtype
  * @param roadtype the road type which the information is requested for

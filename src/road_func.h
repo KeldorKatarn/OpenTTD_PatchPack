@@ -14,7 +14,6 @@
 
 #include "core/bitmath_func.hpp"
 #include "road.h"
-#include "road_type.h"
 #include "economy_func.h"
 #include "transparency.h"
 

@@ -13,11 +13,9 @@
 #define ROAD_TYPE_H
 
 #include "core/enum_type.hpp"
+#include "core/math_func.hpp"
 
 typedef uint32 RoadTypeLabel;
-
-static const RoadTypeLabel ROAD_TYPE_ROAD = 'ROAD';
-static const RoadTypeLabel ROAD_TYPE_TRAM = 'TRAM';
 
 /**
  * The different roadtypes we support
@@ -65,6 +63,36 @@ enum RoadSubTypes {
 	ROADSUBTYPES_DEFAULT = 1 << ROADSUBTYPE_BEGIN,   ///< Default road/tram
 };
 DECLARE_ENUM_AS_BIT_SET(RoadSubTypes)
+
+/**
+ * Identifier for road and tram types.
+ */
+struct RoadTypeIdentifier {
+	RoadType basetype;
+	RoadSubType subtype;
+
+	uint8 Pack() const;
+	bool UnpackIfValid(uint32 data);
+	static RoadTypeIdentifier Unpack(uint32 data);
+
+	bool IsValid() const
+	{
+		return (this->basetype == ROADTYPE_ROAD || this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	bool IsRoad() const
+	{
+		return (this->basetype == ROADTYPE_ROAD) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	bool IsTram() const
+	{
+		return (this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
+	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
+};
 
 /**
  * Enumeration for the road parts on a tile.

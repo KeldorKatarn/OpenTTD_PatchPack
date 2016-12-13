@@ -14,7 +14,6 @@
 
 #include "direction_type.h"
 #include "road_type.h"
-#include "road.h"
 
 void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rtid);
 void UpdateNearestTownForRoadTiles(bool invalidate);

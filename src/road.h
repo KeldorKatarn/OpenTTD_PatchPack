@@ -201,17 +201,14 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
  * RoadType. This would normally just be an equality check, but for electrified
  * roads (which also support non-electric vehicles).
  * @return Whether the engine got power on this tile.
- * @param  vehicletype The RoadType of the engine we are considering.
- * @param  tiletype   The RoadType of the tile we are considering.
+ * @param  engine_rtid The RoadType of the engine we are considering.
+ * @param  tile_rtid   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(RoadTypeIdentifier rtid) // TODO
+static inline bool HasPowerOnRoad(RoadTypeIdentifier engine_rtid, RoadTypeIdentifier tile_rtid)
 {
-	uint8 a = GetRoadTypeInfo(rtid)->powered_roadtypes;
-	uint8 b = rtid.basetype;
+	return engine_rtid.basetype == tile_rtid.basetype && HasBit(GetRoadTypeInfo(engine_rtid)->powered_roadtypes, tile_rtid.subtype);
 
-	return HasBit(a, b);
 }
-
 
 /**
  * Returns the cost of building the specified roadtype.

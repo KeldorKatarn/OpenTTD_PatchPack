@@ -431,6 +431,7 @@ void AfterLoadVehicles(bool part_of_load)
 				RoadVehicle *rv = RoadVehicle::From(v);
 				Engine* e = Engine::Get(v->First()->engine_type);
 				rv->rtid = e->GetRoadType();
+				rv->compatible_subtypes = GetRoadTypeInfo(rv->rtid)->powered_roadtypes;
 				/* FALL THROUGH */
 			}
 

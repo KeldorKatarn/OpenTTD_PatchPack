@@ -227,6 +227,19 @@ static inline bool HasTileRoadType(TileIndex t, RoadType rt)
 }
 
 /**
+ * Check if a tile has one of the specified road subtypes.
+ * @param t  The tile to check.
+ * @param rt Road type to check.
+ * @param rst Allowed road subtypes.
+ * @return True if the tile has one of the specified road subtypes.
+ */
+static inline bool HasTileAnyRoadSubType(TileIndex t, RoadType rt, RoadSubTypes rst)
+{
+	RoadSubType st = GetRoadSubType(t, rt) ;
+	return st != INVALID_ROADSUBTYPE && HasBit(rst, st);
+}
+
+/**
  * Get the owner of a specific road type.
  * @param t  The tile to query.
  * @param rt The road type to get the owner of.

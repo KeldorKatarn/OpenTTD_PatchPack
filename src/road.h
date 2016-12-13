@@ -101,7 +101,7 @@ public:
 	} strings;                        ///< Strings associated with the rail type.
 
 	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype generates power */
-	RoadSubTypes powered_roadtypes; // TODO use
+	RoadSubTypes powered_roadtypes;
 
 	/**
 	 * Multiplier for curve maximum speed advantage

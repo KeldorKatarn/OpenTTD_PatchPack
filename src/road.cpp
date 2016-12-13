@@ -74,7 +74,7 @@ RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb)
 							/* Always connective */
 							connective = true;
 						} else {
-							const RoadBits neighbor_rb = GetAnyRoadBits(neighbor_tile, ROADTYPE_ROAD) | GetAnyRoadBits(neighbor_tile, ROADTYPE_TRAM);
+							const RoadBits neighbor_rb = GetAnyRoadBits(neighbor_tile, ROADTYPE_ROAD) | GetAnyRoadBits(neighbor_tile, ROADTYPE_TRAM); // TODO
 
 							/* Accept only connective tiles */
 							connective = (neighbor_rb & mirrored_rb) != ROAD_NONE;

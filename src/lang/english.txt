@@ -4295,7 +4295,6 @@ STR_ERROR_MUST_REMOVE_SIGNALS_FIRST                             :{WHITE}Must rem
 STR_ERROR_NO_SUITABLE_RAILROAD_TRACK                            :{WHITE}No suitable railway track
 STR_ERROR_MUST_REMOVE_RAILROAD_TRACK                            :{WHITE}Must remove railway track first
 STR_ERROR_CROSSING_ON_ONEWAY_ROAD                               :{WHITE}Road is one way or blocked
-STR_ERROR_CROSSING_DISALLOWED                                   :TODO: Deprecated, REMOVE ME, breaks squirrel scripts
 STR_ERROR_CROSSING_DISALLOWED_RAIL                              :{WHITE}Level crossings not allowed for this rail type
 STR_ERROR_CROSSING_DISALLOWED_ROAD                              :{WHITE}Level crossings not allowed for this road type
 STR_ERROR_CAN_T_BUILD_SIGNALS_HERE                              :{WHITE}Can't build signals here...

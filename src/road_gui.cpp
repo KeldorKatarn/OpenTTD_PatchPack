@@ -669,7 +669,7 @@ struct BuildRoadToolbarWindow : Window {
 				}
 
 				case DDSP_CONVERT_ROAD:
-					DoCommandP(end_tile, start_tile, _cur_roadtype_identifier.Pack() << 5, CMD_CONVERT_ROAD | CMD_MSG(rti->strings.err_convert_road), CcPlaySound_SPLAT_OTHER);
+					DoCommandP(end_tile, start_tile, _cur_roadtype_identifier.Pack(), CMD_CONVERT_ROAD | CMD_MSG(rti->strings.err_convert_road), CcPlaySound_SPLAT_OTHER);
 					break;
 
 			}

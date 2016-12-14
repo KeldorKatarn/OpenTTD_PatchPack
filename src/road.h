@@ -95,6 +95,7 @@ public:
 		StringID err_depot;             ///< Building a depot
 		StringID err_build_station[2];  ///< Building a bus or truck station
 		StringID err_remove_station[2]; ///< Removing of a bus or truck station
+		StringID err_convert_road;      ///< Converting a road type
 
 		StringID picker_title[2];       ///< Title for the station picker for bus or truck stations
 		StringID picker_tooltip[2];     ///< Tooltip for the station picker for bus or truck stations

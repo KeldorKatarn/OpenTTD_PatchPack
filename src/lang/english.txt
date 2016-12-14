@@ -3561,6 +3561,8 @@ STR_VEHICLE_LIST_AIRCRAFT_TOOLTIP                               :{BLACK}Aircraft
 STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR                     :{TINY_FONT}{BLACK}Profit this year: {CURRENCY_LONG} (last year: {CURRENCY_LONG})
 STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME            :{STRING2} (lifetime: {CURRENCY_LONG})
 
+STR_VEHICLE_NAME_AND_CARGO										:{TINY_FONT}{BLACK}{STRING1} [{CARGO_LIST}]
+
 STR_VEHICLE_LIST_AVAILABLE_TRAINS                               :Available Trains
 STR_VEHICLE_LIST_AVAILABLE_ROAD_VEHICLES                        :Available Vehicles
 STR_VEHICLE_LIST_AVAILABLE_SHIPS                                :Available Ships

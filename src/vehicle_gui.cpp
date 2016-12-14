@@ -1423,7 +1423,7 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 	int width = right - left;
 	bool rtl = _current_text_dir == TD_RTL;
 
-	int text_offset = max<int>(GetSpriteSize(SPR_PROFIT_LOT).width, GetDigitWidth() * this->unitnumber_digits) + WD_FRAMERECT_RIGHT;
+	int text_offset = max<int>(GetSpriteSize(SPR_PROFIT_LOT).width, GetDigitWidth() * this->unitnumber_digits + 1) + WD_FRAMERECT_RIGHT;
 	int text_left  = left  + (rtl ?           0 : text_offset);
 	int text_right = right - (rtl ? text_offset :           0);
 
@@ -1450,14 +1450,27 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 		DrawVehicleImage(v, image_left, image_right, y + FONT_HEIGHT_SMALL - 1, selected_vehicle, EIT_IN_LIST, 0);
 		DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
 
+		uint32 vehicle_cargoes = 0;
+		auto temp_v = v;
+
+		do {
+			if (temp_v->cargo_cap == 0) continue;
+
+			SetBit(vehicle_cargoes, temp_v->cargo_type);
+		} while ((temp_v = temp_v->Next()) != NULL);
+		
 		if (v->name != NULL) {
 			/* The vehicle got a name so we will print it */
-			SetDParam(0, v->index);
-			DrawString(text_left, text_right, y, STR_TINY_BLACK_VEHICLE);
+			SetDParam(0, STR_TINY_BLACK_VEHICLE);
+			SetDParam(1, v->index);
+			SetDParam(2, vehicle_cargoes);
+			DrawString(text_left, text_right, y, STR_VEHICLE_NAME_AND_CARGO);
 		} else if (v->group_id != DEFAULT_GROUP) {
 			/* The vehicle has no name, but is member of a group, so print group name */
-			SetDParam(0, v->group_id);
-			DrawString(text_left, text_right, y, STR_TINY_GROUP, TC_BLACK);
+			SetDParam(0, STR_TINY_GROUP);
+			SetDParam(1, v->group_id);
+			SetDParam(2, vehicle_cargoes);
+			DrawString(text_left, text_right, y, STR_VEHICLE_NAME_AND_CARGO);
 		}
 
 		if (show_orderlist) DrawSmallOrderList(v, orderlist_left, orderlist_right, y, v->cur_real_order_index);

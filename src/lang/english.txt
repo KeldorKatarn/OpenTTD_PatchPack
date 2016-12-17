@@ -3567,6 +3567,7 @@ STR_REPLACE_ENGINE_WAGON_SELECT_HELP                            :{BLACK}Switch b
 STR_REPLACE_ENGINES                                             :Engines
 STR_REPLACE_WAGONS                                              :Wagons
 STR_REPLACE_ALL_RAILTYPE                                        :All rail vehicles
+STR_REPLACE_ALL_ROADTYPE                                        :All road vehicles
 
 STR_REPLACE_HELP_RAILTYPE                                       :{BLACK}Choose the rail type you want to replace engines for
 STR_REPLACE_HELP_REPLACE_INFO_TAB                               :{BLACK}Displays which engine the left selected engine is being replaced with, if any

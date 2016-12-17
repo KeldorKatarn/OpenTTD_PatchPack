@@ -891,7 +891,7 @@ static CallBackFunction MenuClickBuildRail(int index)
 
 static CallBackFunction ToolbarBuildRoadClick(Window *w)
 {
-	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_ROAD), _last_built_roadtype_identifier.Pack(), WID_TN_ROADS, 140, true, true);
+	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPES_ROAD), _last_built_roadtype_identifier.Pack(), WID_TN_ROADS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }
@@ -913,7 +913,7 @@ static CallBackFunction MenuClickBuildRoad(int index)
 
 static CallBackFunction ToolbarBuildTramClick(Window *w)
 {
-	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPE_TRAM), _last_built_tramtype_identifier.Pack(), WID_TN_TRAMS, 140, true, true);
+	ShowDropDownList(w, GetRoadTypeDropDownList(ROADTYPES_TRAM), _last_built_tramtype_identifier.Pack(), WID_TN_TRAMS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }
@@ -1246,7 +1246,7 @@ static CallBackFunction ToolbarScenGenIndustry(Window *w)
 
 static CallBackFunction ToolbarScenBuildRoadClick(Window *w)
 {
-	ShowDropDownList(w, GetScenRoadTypeDropDownList(ROADTYPE_ROAD), _last_built_roadtype_identifier.Pack(), WID_TE_ROADS, 140, true, true);
+	ShowDropDownList(w, GetScenRoadTypeDropDownList(ROADTYPES_ROAD), _last_built_roadtype_identifier.Pack(), WID_TE_ROADS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }

@@ -1169,9 +1169,9 @@ void InitializeRoadGUI()
 	if (w != NULL) w->ModifyRoadType(_cur_roadtype_identifier);
 }
 
-DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
+DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement, bool all_option)
 {
-	RoadTypes used_roadtypes = ROADTYPES_NONE;
+	RoadTypes used_roadtypes = ROADTYPES_NONE; // TODO
 
 	/* Road is always visible and available. */
 	used_roadtypes |= ROADTYPES_ROAD;
@@ -1190,20 +1190,28 @@ DropDownList *GetRoadTypeDropDownList(RoadType roadtype)
 	DropDownList *list = new DropDownList();
 	RoadTypeIdentifier rtid;
 
-	FOR_ALL_SORTED_ROADTYPES(rtid, roadtype) {
-		/* If it's not used ever, don't show it to the user. */
-		if (!HasBit(used_roadtypes, roadtype)) continue;
-
-		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
-
-		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
+	if (all_option) {
+		DropDownListStringItem *item = new DropDownListStringItem(STR_REPLACE_ALL_ROADTYPE, -1, false);
 		*list->Append() = item;
+	}
+
+	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
+		if (!HasBit(roadtypes, rt)) continue;
+		/* If it's not used ever, don't show it to the user. */
+		if (!HasBit(used_roadtypes, rt)) continue;
+		FOR_ALL_SORTED_ROADTYPES(rtid, rt) {
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
+
+			// TODO show max speed
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(for_replacement ? rti->strings.replace_text : rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
+			*list->Append() = item;
+		}
 	}
 
 	return list;
 }
 
-DropDownList *GetScenRoadTypeDropDownList(RoadType roadtype)
+DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 {
 	RoadTypes used_roadtypes = ROADTYPES_NONE;
 
@@ -1223,14 +1231,16 @@ DropDownList *GetScenRoadTypeDropDownList(RoadType roadtype)
 	DropDownList *list = new DropDownList();
 	RoadTypeIdentifier rtid;
 
-	FOR_ALL_SORTED_ROADTYPES(rtid, roadtype) {
+	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
+		if (!HasBit(roadtypes, rt)) continue;
 		/* If it's not used ever, don't show it to the user. */
-		if (!HasBit(used_roadtypes, roadtype)) continue;
+		if (!HasBit(used_roadtypes, rt)) continue;
+		FOR_ALL_SORTED_ROADTYPES(rtid, rt) {
+			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
-		const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
-
-		DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);
-		*list->Append() = item;
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);
+			*list->Append() = item;
+		}
 	}
 
 	return list;

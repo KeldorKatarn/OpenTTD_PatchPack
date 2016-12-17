@@ -20,8 +20,8 @@
 struct Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id);
 struct Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id);
 void ConnectRoadToStructure(TileIndex tile, DiagDirection direction);
-DropDownList *GetRoadTypeDropDownList(RoadType roadtype);
-DropDownList *GetScenRoadTypeDropDownList(RoadType roadtype);
+DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement = false, bool all_option = false);
+DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes);
 void InitializeRoadGUI();
 
 #endif /* ROAD_GUI_H */

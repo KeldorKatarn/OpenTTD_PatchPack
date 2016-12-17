@@ -71,6 +71,16 @@ struct RoadTypeIdentifier {
 	RoadType basetype;
 	RoadSubType subtype;
 
+	bool operator==(const RoadTypeIdentifier &other) const
+	{
+		return this->basetype == other.basetype && this->subtype == other.subtype;
+	}
+
+	bool operator!=(const RoadTypeIdentifier &other) const
+	{
+		return this->basetype != other.basetype || this->subtype != other.subtype;
+	}
+
 	uint8 Pack() const;
 	bool UnpackIfValid(uint32 data);
 	static RoadTypeIdentifier Unpack(uint32 data);

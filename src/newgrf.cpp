@@ -4322,12 +4322,12 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			int n = buf->ReadByte();
 			for (int j = 0; j != n; j++) {
 				RoadTypeLabel label = buf->ReadDWord();
-				RoadTypeIdentifier rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
-				if (!rtid.IsValid()) {
+				RoadTypeIdentifier c_rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
+				if (c_rtid.IsValid()) {
 					switch (prop) {
-					case 0x0F: SetBit(rti->powered_roadtypes, rtid.basetype);               break;
-					case 0x18: SetBit(rti->introduction_required_roadtypes, rtid.basetype); break;
-					case 0x19: SetBit(rti->introduces_roadtypes, rtid.basetype);            break;
+					case 0x0F: SetBit(rti->powered_roadtypes, c_rtid.subtype);               break;
+					case 0x18: SetBit(rti->introduction_required_roadtypes, c_rtid.subtype); break;
+					case 0x19: SetBit(rti->introduces_roadtypes, c_rtid.subtype);            break;
 					}
 				}
 			}

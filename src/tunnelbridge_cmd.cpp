@@ -487,7 +487,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	}
 
 	RoadTypes prev_roadtypes = rtids.PresentRoadTypes();
-	rtids.MergeRoadType(rtid);
+	if (transport_type == TRANSPORT_ROAD) rtids.MergeRoadType(rtid);
 
 	/* do the drill? */
 	if (flags & DC_EXEC) {

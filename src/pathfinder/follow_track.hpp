@@ -32,7 +32,7 @@ struct CFollowTrackT
 	enum ErrorCode {
 		EC_NONE,
 		EC_OWNER,
-		EC_RAIL_TYPE,
+		EC_RAIL_ROAD_TYPE,
 		EC_90DEG,
 		EC_NO_WAY,
 		EC_RESERVED,
@@ -153,7 +153,7 @@ struct CFollowTrackT
 			if (IsRoadTT() && !IsTram() && TryReverse()) return true;
 
 			/* CanEnterNewTile already set a reason.
-			 * Do NOT overwrite it (important for example for EC_RAIL_TYPE).
+			 * Do NOT overwrite it (important for example for EC_RAIL_ROAD_TYPE).
 			 * Only set a reason if CanEnterNewTile was not called */
 			if (m_new_td_bits == TRACKDIR_BIT_NONE) m_err = EC_NO_WAY;
 
@@ -355,7 +355,18 @@ protected:
 			RailType rail_type = GetTileRailType(m_new_tile);
 			if (!HasBit(m_railtypes, rail_type)) {
 				/* incompatible rail type */
-				m_err = EC_RAIL_TYPE;
+				m_err = EC_RAIL_ROAD_TYPE;
+				return false;
+			}
+		}
+
+		/* road transport is possibly only on compatible road types */
+		if (IsRoadTT()) {
+			const RoadVehicle *v = RoadVehicle::From(m_veh);
+			RoadSubType subtype = GetRoadSubType(m_new_tile, v->rtid.basetype);
+			if (!HasBit(v->compatible_subtypes, subtype)) {
+				/* incompatible road type */
+				m_err = EC_RAIL_ROAD_TYPE;
 				return false;
 			}
 		}

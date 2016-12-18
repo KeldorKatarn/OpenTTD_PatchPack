@@ -1867,6 +1867,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rtids, axis);
 				road_stop->MakeDriveThrough();
 			} else {
+				rtids.MergeRoadType(rtid);
 				/* Non-drive-through stop never overbuild and always count as two road bits. */
 				Company::Get(st->owner)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 				MakeRoadStop(cur_tile, st->owner, st->index, rs_type, rtids, ddir);
@@ -2918,7 +2919,7 @@ draw_default_foundation:
 
 		RoadBits catenary_bits;
 		if (IsDriveThroughStopTile(ti->tile)) {
-			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y; // TODO drive-in stops
+			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
 			catenary_bits = axis == AXIS_X ? ROAD_X : ROAD_Y;
 			uint sprite_offset = axis == AXIS_X ? 1 : 0;
 
@@ -2959,7 +2960,7 @@ draw_default_foundation:
 			DiagDirection dir = GetRoadStopDir(ti->tile);
 			catenary_bits = DiagDirToRoadBits(dir);
 
-			// assert(road_rti != NULL && tram_rti == NULL);  TODO reenable when savegame conversion is completed
+			assert(road_rti != NULL && tram_rti == NULL);
 
 			if (road_rti->UsesOverlay()) {
 				SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_ROADSTOP);

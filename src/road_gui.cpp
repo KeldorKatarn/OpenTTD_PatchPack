@@ -1208,6 +1208,11 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 		}
 	}
 
+	if (list->Length() == 0) {
+		/* Empty dropdowns are not allowed */
+		*list->Append() = new DropDownListStringItem(STR_NONE, -1, true);
+	}
+
 	return list;
 }
 
@@ -1241,6 +1246,11 @@ DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);
 			*list->Append() = item;
 		}
+	}
+
+	if (list->Length() == 0) {
+		/* Empty dropdowns are not allowed */
+		*list->Append() = new DropDownListStringItem(STR_NONE, -1, true);
 	}
 
 	return list;

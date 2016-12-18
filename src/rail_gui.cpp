@@ -2020,5 +2020,11 @@ DropDownList *GetRailTypeDropDownList(bool for_replacement, bool all_option)
 		item->SetParam(1, rti->max_speed);
 		*list->Append() = item;
 	}
+
+	if (list->Length() == 0) {
+		/* Empty dropdowns are not allowed */
+		*list->Append() = new DropDownListStringItem(STR_NONE, INVALID_RAILTYPE, true);
+	}
+
 	return list;
 }

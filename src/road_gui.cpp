@@ -300,7 +300,8 @@ struct BuildRoadToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		bool can_build = CanBuildVehicleInfrastructure(VEH_ROAD);
+		bool can_build = CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype);
+
 		this->SetWidgetsDisabledState(!can_build,
 				WID_ROT_DEPOT,
 				WID_ROT_BUS_STATION,
@@ -310,6 +311,8 @@ struct BuildRoadToolbarWindow : Window {
 			DeleteWindowById(WC_BUILD_DEPOT, TRANSPORT_ROAD);
 			DeleteWindowById(WC_BUS_STATION, TRANSPORT_ROAD);
 			DeleteWindowById(WC_TRUCK_STATION, TRANSPORT_ROAD);
+
+			if (this->roadtype_identifier.IsTram()) delete this;
 		}
 	}
 
@@ -432,7 +435,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
 				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(roadtype_identifier)->cursor.depot, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
@@ -440,7 +443,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUS_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
 				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.bus_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
@@ -448,7 +451,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_TRUCK_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
 				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.truck_station, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
@@ -674,26 +677,29 @@ struct BuildRoadToolbarWindow : Window {
 		return ES_NOT_HANDLED;
 	}
 
-	static HotkeyList hotkeys;
+	static HotkeyList road_hotkeys;
+	static HotkeyList tram_hotkeys;
 };
 
 /**
  * Handler for global hotkeys of the BuildRoadToolbarWindow.
  * @param hotkey Hotkey
+ * @param last_build Last build road type
  * @return ES_HANDLED if hotkey was accepted.
  */
-static EventState RoadToolbarGlobalHotkeys(int hotkey)
+static EventState RoadTramToolbarGlobalHotkeys(int hotkey, RoadTypeIdentifier last_build)
 {
+	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_ROAD, last_build.basetype)) return ES_NOT_HANDLED;
+
 	Window *w = NULL;
-	extern RoadTypeIdentifier _last_built_roadtype_identifier;
 	switch (_game_mode) {
 		case GM_NORMAL: {
-			w = ShowBuildRoadToolbar(_last_built_roadtype_identifier);
+			w = ShowBuildRoadToolbar(last_build);
 			break;
 		}
 
 		case GM_EDITOR:
-			w = ShowBuildRoadScenToolbar(_last_built_roadtype_identifier);
+			w = ShowBuildRoadScenToolbar(last_build);
 			break;
 
 		default:
@@ -702,6 +708,18 @@ static EventState RoadToolbarGlobalHotkeys(int hotkey)
 
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);
+}
+
+static EventState RoadToolbarGlobalHotkeys(int hotkey)
+{
+	extern RoadTypeIdentifier _last_built_roadtype_identifier;
+	return RoadTramToolbarGlobalHotkeys(hotkey, _last_built_roadtype_identifier);
+}
+
+static EventState TramToolbarGlobalHotkeys(int hotkey)
+{
+	extern RoadTypeIdentifier _last_built_tramtype_identifier;
+	return RoadTramToolbarGlobalHotkeys(hotkey, _last_built_tramtype_identifier);
 }
 
 static Hotkey roadtoolbar_hotkeys[] = {
@@ -718,7 +736,8 @@ static Hotkey roadtoolbar_hotkeys[] = {
 	Hotkey('R', "remove", WID_ROT_REMOVE),
 	HOTKEY_LIST_END
 };
-HotkeyList BuildRoadToolbarWindow::hotkeys("roadtoolbar", roadtoolbar_hotkeys, RoadToolbarGlobalHotkeys);
+HotkeyList BuildRoadToolbarWindow::road_hotkeys("roadtoolbar", roadtoolbar_hotkeys, RoadToolbarGlobalHotkeys);
+HotkeyList BuildRoadToolbarWindow::tram_hotkeys("tramtoolbar", roadtoolbar_hotkeys, TramToolbarGlobalHotkeys);
 
 
 static const NWidgetPart _nested_build_road_widgets[] = {
@@ -759,7 +778,7 @@ static WindowDesc _build_road_desc(
 	WC_BUILD_TOOLBAR, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_build_road_widgets, lengthof(_nested_build_road_widgets),
-	&BuildRoadToolbarWindow::hotkeys
+	&BuildRoadToolbarWindow::road_hotkeys
 );
 
 static const NWidgetPart _nested_build_tramway_widgets[] = {
@@ -799,7 +818,7 @@ static WindowDesc _build_tramway_desc(
 	WC_BUILD_TOOLBAR, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_build_tramway_widgets, lengthof(_nested_build_tramway_widgets),
-	&BuildRoadToolbarWindow::hotkeys
+	&BuildRoadToolbarWindow::tram_hotkeys
 );
 
 /**
@@ -851,7 +870,7 @@ static WindowDesc _build_road_scen_desc(
 	WC_SCEN_BUILD_TOOLBAR, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_build_road_scen_widgets, lengthof(_nested_build_road_scen_widgets),
-	&BuildRoadToolbarWindow::hotkeys
+	&BuildRoadToolbarWindow::road_hotkeys
 );
 
 /**

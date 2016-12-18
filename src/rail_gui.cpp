@@ -443,7 +443,7 @@ struct BuildRailToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		if (!CanBuildVehicleInfrastructure(VEH_TRAIN)) delete this;
+		if (!CanBuildVehicleInfrastructure(VEH_TRAIN, 0)) delete this;
 	}
 
 	/**
@@ -777,7 +777,7 @@ struct BuildRailToolbarWindow : Window {
  */
 static EventState RailToolbarGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_TRAIN)) return ES_NOT_HANDLED;
+	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_TRAIN, 0)) return ES_NOT_HANDLED;
 	extern RailType _last_built_railtype;
 	Window *w = ShowBuildRailToolbar(_last_built_railtype);
 	if (w == NULL) return ES_NOT_HANDLED;

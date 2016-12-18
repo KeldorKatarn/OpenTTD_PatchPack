@@ -91,7 +91,7 @@ struct BuildAirToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		if (!CanBuildVehicleInfrastructure(VEH_AIRCRAFT)) delete this;
+		if (!CanBuildVehicleInfrastructure(VEH_AIRCRAFT, 0)) delete this;
 	}
 
 	virtual void OnClick(Point pt, int widget, int click_count)
@@ -159,7 +159,7 @@ struct BuildAirToolbarWindow : Window {
  */
 static EventState AirportToolbarGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_AIRCRAFT)) return ES_NOT_HANDLED;
+	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_AIRCRAFT, 0)) return ES_NOT_HANDLED;
 	Window *w = ShowBuildAirToolbar();
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);

@@ -95,6 +95,7 @@ public:
 		StringID err_depot;             ///< Building a depot
 		StringID err_build_station[2];  ///< Building a bus or truck station
 		StringID err_remove_station[2]; ///< Removing of a bus or truck station
+		StringID err_convert_road;      ///< Converting a road type
 
 		StringID picker_title[2];       ///< Title for the station picker for bus or truck stations
 		StringID picker_tooltip[2];     ///< Tooltip for the station picker for bus or truck stations
@@ -219,6 +220,32 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 {
 	assert(rtid.IsValid());
 	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rtid)->cost_multiplier) >> 3;
+}
+
+/**
+ * Calculates the cost of rail conversion
+ * @param from The railtype we are converting from
+ * @param to   The railtype we are converting to
+ * @return Cost per TrackBit
+ */
+static inline Money RoadConvertCost(RoadTypeIdentifier from, RoadTypeIdentifier to)
+{
+	/* Get the costs for removing and building anew
+	 * A conversion can never be more costly */
+	Money rebuildcost = RoadBuildCost(to) - _price[PR_CLEAR_ROAD];
+
+	/* Conversion between somewhat compatible roadtypes:
+	 * Pay 1/8 of the target road cost (labour costs) and additionally any difference in the
+	 * build costs, if the target type is more expensive (material upgrade costs).
+	 * Upgrade can never be more expensive than re-building. */
+	if (HasPowerOnRoad(from, to) || HasPowerOnRoad(to, from)) {
+		Money upgradecost = RoadBuildCost(to) / 8 + max((Money)0, RoadBuildCost(to) - RoadBuildCost(from));
+		return min(upgradecost, rebuildcost);
+	}
+
+	/* make the price the same as remove + build new type for rail types
+	 * which are not compatible in any way */
+	return rebuildcost;
 }
 
 /**

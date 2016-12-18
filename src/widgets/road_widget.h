@@ -27,6 +27,7 @@ enum RoadToolbarWidgets {
 	WID_ROT_BUILD_BRIDGE,   ///< Build bridge.
 	WID_ROT_BUILD_TUNNEL,   ///< Build tunnel.
 	WID_ROT_REMOVE,         ///< Remove road.
+	WID_ROT_CONVERT_ROAD,   ///< Convert road.
 };
 
 /** Widgets of the #BuildRoadDepotWindow class. */

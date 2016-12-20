@@ -689,7 +689,7 @@ struct BuildRoadToolbarWindow : Window {
  */
 static EventState RoadTramToolbarGlobalHotkeys(int hotkey, RoadTypeIdentifier last_build)
 {
-	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_ROAD, last_build.basetype)) return ES_NOT_HANDLED;
+	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_ROAD, last_build.basetype))) return ES_NOT_HANDLED;
 
 	Window *w = NULL;
 	switch (_game_mode) {
@@ -831,9 +831,10 @@ static WindowDesc _build_tramway_desc(
 Window *ShowBuildRoadToolbar(RoadTypeIdentifier roadtype_id)
 {
 	if (!Company::IsValidID(_local_company)) return NULL;
-	_cur_roadtype_identifier = roadtype_id;
+	if (!ValParamRoadType(roadtype_id)) return NULL;
 
 	DeleteWindowByClass(WC_BUILD_TOOLBAR);
+	_cur_roadtype_identifier = roadtype_id;
 
 	return AllocateWindowDescFront<BuildRoadToolbarWindow>(_cur_roadtype_identifier.IsRoad() ? &_build_road_desc : &_build_tramway_desc, TRANSPORT_ROAD);
 }

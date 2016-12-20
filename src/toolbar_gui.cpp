@@ -2030,7 +2030,6 @@ struct MainToolbarWindow : Window {
 		this->SetWidgetDisabledState(WID_TN_STORY, StoryPage::GetNumItems() == 0);
 
 		this->SetWidgetDisabledState(WID_TN_RAILS, !CanBuildVehicleInfrastructure(VEH_TRAIN, 0));
-		this->SetWidgetDisabledState(WID_TN_ROADS, !CanBuildVehicleInfrastructure(VEH_ROAD, ROADTYPE_ROAD));
 		this->SetWidgetDisabledState(WID_TN_TRAMS, !CanBuildVehicleInfrastructure(VEH_ROAD, ROADTYPE_TRAM));
 		this->SetWidgetDisabledState(WID_TN_AIR, !CanBuildVehicleInfrastructure(VEH_AIRCRAFT, 0));
 
@@ -2074,7 +2073,7 @@ struct MainToolbarWindow : Window {
 			case MTHK_ZOOM_IN: ToolbarZoomInClick(this); break;
 			case MTHK_ZOOM_OUT: ToolbarZoomOutClick(this); break;
 			case MTHK_BUILD_RAIL: if (CanBuildVehicleInfrastructure(VEH_TRAIN, 0)) ShowBuildRailToolbar(_last_built_railtype); break;
-			case MTHK_BUILD_ROAD: if (CanBuildVehicleInfrastructure(VEH_ROAD, ROADTYPE_ROAD)) ShowBuildRoadToolbar(_last_built_roadtype_identifier); break;
+			case MTHK_BUILD_ROAD: ShowBuildRoadToolbar(_last_built_roadtype_identifier); break;
 			case MTHK_BUILD_TRAM: if (CanBuildVehicleInfrastructure(VEH_ROAD, ROADTYPE_TRAM)) ShowBuildRoadToolbar(_last_built_tramtype_identifier); break;
 			case MTHK_BUILD_DOCKS: ShowBuildDocksToolbar(); break;
 			case MTHK_BUILD_AIRPORT: if (CanBuildVehicleInfrastructure(VEH_AIRCRAFT, 0)) ShowBuildAirToolbar(); break;

@@ -175,6 +175,8 @@ RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt)
 {
 	RoadSubTypes rst = ROADSUBTYPES_NONE;
 
+	if (rt == ROADTYPE_ROAD) rst |= ROADSUBTYPES_NORMAL; // Road is always available. // TODO
+
 	Engine *e;
 	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
 		const EngineInfo *ei = &e->info;

@@ -87,7 +87,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,
@@ -172,7 +172,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,
@@ -260,7 +260,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,
@@ -345,7 +345,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,

@@ -65,9 +65,6 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		/* Powered roadtypes */
 		ROADSUBTYPES_NORMAL | ROADSUBTYPES_ELECTRIC,
 
-		/* curve speed advantage (multiplier) */
-		0, // TODO
-
 		/* flags */
 		ROTFB_NONE,
 
@@ -149,9 +146,6 @@ static const RoadtypeInfo _original_roadtypes[] = {
 
 		/* Powered roadtypes */
 		ROADSUBTYPES_ELECTRIC,
-
-		/* curve speed advantage (multiplier) */
-		0, // TODO
 
 		/* flags */
 		ROTFB_CATENARY,
@@ -238,9 +232,6 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		/* Powered roadtypes */
 		ROADSUBTYPES_NORMAL | ROADSUBTYPES_ELECTRIC,
 
-		/* curve speed advantage (multiplier) */
-		0, // TODO
-
 		/* flags */
 		ROTFB_NONE,
 
@@ -322,9 +313,6 @@ static const RoadtypeInfo _original_tramtypes[] = {
 
 		/* Powered roadtypes */
 		ROADSUBTYPES_ELECTRIC,
-
-		/* curve speed advantage (multiplier) */
-		0, // TODO
 
 		/* flags */
 		ROTFB_CATENARY,

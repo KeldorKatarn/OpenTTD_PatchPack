@@ -4345,10 +4345,6 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			rti->flags = (RoadTypeFlags)buf->ReadByte();
 			break;
 
-		case 0x11: // Curve speed advantage
-			rti->curve_speed = buf->ReadByte();
-			break;
-
 		case 0x13: // Construction cost factor
 			rti->cost_multiplier = buf->ReadWord();
 			break;
@@ -4464,7 +4460,6 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				break;
 
 			case 0x10: // Road Type flags
-			case 0x11: // Curve speed advantage
 			case 0x12: // Station graphic
 			case 0x15: // Acceleration model
 			case 0x16: // Map colour

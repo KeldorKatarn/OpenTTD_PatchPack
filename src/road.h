@@ -104,11 +104,6 @@ public:
 	RoadSubTypes powered_roadtypes;
 
 	/**
-	 * Multiplier for curve maximum speed advantage
-	 */
-	byte curve_speed; // TODO use
-
-	/**
 	 * Bit mask of road type flags
 	 */
 	RoadTypeFlags flags;
@@ -141,7 +136,7 @@ public:
 	/**
 	 * Colour on mini-map
 	 */
-	byte map_colour; // TODO use
+	byte map_colour;
 
 	/**
 	 * Introduction date.

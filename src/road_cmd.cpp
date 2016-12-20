@@ -59,7 +59,7 @@ void ResetRoadTypes()
 		{0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,{},{},{},{}},
-		ROADSUBTYPES_NONE, 0, ROTFB_NONE, 0, 0, 0, 0,
+		ROADSUBTYPES_NONE, ROTFB_NONE, 0, 0, 0, 0,
 		RoadTypeLabelList(), 0, 0, ROADSUBTYPES_NONE, ROADSUBTYPES_NONE, 0,
 		{}, {} };
 

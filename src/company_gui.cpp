@@ -1578,7 +1578,7 @@ struct CompanyInfrastructureWindow : Window
 	void UpdateRailRoadTypes()
 	{
 		this->railtypes = RAILTYPES_NONE;
-		this->roadtypes[ROADTYPE_ROAD] = ROADSUBTYPES_DEFAULT; // Road is always available. // TODO
+		this->roadtypes[ROADTYPE_ROAD] = ROADSUBTYPES_NORMAL; // Road is always available. // TODO
 		this->roadtypes[ROADTYPE_TRAM] = ROADSUBTYPES_NONE;
 
 		/* Find the used railtypes. */

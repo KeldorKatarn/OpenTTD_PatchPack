@@ -112,7 +112,7 @@ RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb)
 bool HasRoadTypeAvail(const CompanyID company, RoadTypeIdentifier rtid)
 {
 	if (company == OWNER_DEITY || company == OWNER_TOWN || _game_mode == GM_EDITOR || _generating_world) {
-		return rtid.basetype == ROADTYPE_ROAD && rtid.subtype == ROADSUBTYPE_BEGIN; // TODO
+		return rtid.basetype == ROADTYPE_ROAD && rtid.subtype == ROADSUBTYPE_NORMAL; // TODO
 	} else {
 		Company *c = Company::GetIfValid(company);
 		if (c == NULL) return false;

@@ -1205,7 +1205,7 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 		RoadSubTypes used_roadtypes = ROADSUBTYPES_NONE;
 
 		/* Road is always visible and available. */
-		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_DEFAULT; // TODO
+		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_NORMAL; // TODO
 
 		/* Find used roadtypes */
 		Engine *e;

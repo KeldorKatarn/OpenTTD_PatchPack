@@ -431,17 +431,15 @@ STR_INDUSTRY_MENU_INDUSTRY_CHAIN                                :Industry chains
 STR_INDUSTRY_MENU_FUND_NEW_INDUSTRY                             :Fund new industry
 ############ range ends here
 
-############ range for railway construction menu starts
 STR_RAIL_MENU_RAILROAD_CONSTRUCTION                             :Railway construction
 STR_RAIL_MENU_ELRAIL_CONSTRUCTION                               :Electrified railway construction
 STR_RAIL_MENU_MONORAIL_CONSTRUCTION                             :Monorail construction
 STR_RAIL_MENU_MAGLEV_CONSTRUCTION                               :Maglev construction
-############ range ends here
 
-############ range for road construction menu starts
 STR_ROAD_MENU_ROAD_CONSTRUCTION                                 :Road construction
+STR_ROAD_MENU_ELROAD_CONSTRUCTION                               :Electrified road construction
 STR_ROAD_MENU_TRAM_CONSTRUCTION                                 :Tramway construction
-############ range ends here
+STR_ROAD_MENU_ELTRAM_CONSTRUCTION                               :Electrified tramway construction
 
 ############ range for waterways construction menu starts
 STR_WATERWAYS_MENU_WATERWAYS_CONSTRUCTION                       :Waterways construction
@@ -2388,7 +2386,9 @@ STR_BRIDGE_TUBULAR_SILICON                                      :Tubular, Silico
 
 # Road construction toolbar
 STR_ROAD_TOOLBAR_ROAD_CONSTRUCTION_CAPTION                      :{WHITE}Road Construction
+STR_ROAD_TOOLBAR_ELROAD_CONSTRUCTION_CAPTION                    :{WHITE}Electrified Road Construction
 STR_ROAD_TOOLBAR_TRAM_CONSTRUCTION_CAPTION                      :{WHITE}Tramway Construction
+STR_ROAD_TOOLBAR_ELTRAM_CONSTRUCTION_CAPTION                    :{WHITE}Electrified Tramway Construction
 STR_ROAD_TOOLBAR_TOOLTIP_BUILD_ROAD_SECTION                     :{BLACK}Build road section. Ctrl toggles build/remove for road construction. Shift toggles building/showing cost estimate
 STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_SECTION                  :{BLACK}Build tramway section. Ctrl toggles build/remove for tramway construction. Shift toggles building/showing cost estimate
 STR_ROAD_TOOLBAR_TOOLTIP_BUILD_AUTOROAD                         :{BLACK}Build road section using the Autoroad mode. Ctrl toggles build/remove for road construction. Shift toggles building/showing cost estimate
@@ -2408,7 +2408,9 @@ STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_ROAD           :{BLACK}Toggle b
 STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_TRAMWAYS       :{BLACK}Toggle build/remove for tramway construction
 
 STR_ROAD_NAME_ROAD                                              :Road
+STR_ROAD_NAME_ELROAD                                            :Electrified road
 STR_ROAD_NAME_TRAM                                              :Tramway
+STR_ROAD_NAME_ELTRAM                                            :Electrified tramway
 
 # Road depot construction window
 STR_BUILD_DEPOT_ROAD_ORIENTATION_CAPTION                        :{WHITE}Road Depot Orientation
@@ -3375,10 +3377,17 @@ STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :New Electric Ra
 STR_BUY_VEHICLE_TRAIN_MONORAIL_CAPTION                          :New Monorail Vehicles
 STR_BUY_VEHICLE_TRAIN_MAGLEV_CAPTION                            :New Maglev Vehicles
 
-STR_BUY_VEHICLE_TRAIN_ALL_CAPTION                               :New Rail Vehicles
 STR_BUY_VEHICLE_ROAD_VEHICLE_CAPTION                            :New Road Vehicles
+STR_BUY_VEHICLE_ELROAD_VEHICLE_CAPTION                          :New Electric Road Vehicles
+STR_BUY_VEHICLE_TRAM_VEHICLE_CAPTION                            :New Tram Vehicles
+STR_BUY_VEHICLE_ELTRAM_VEHICLE_CAPTION                          :New Electric Tram Vehicles
+
+############ range for vehicle availability starts
+STR_BUY_VEHICLE_TRAIN_ALL_CAPTION                               :New Rail Vehicles
+STR_BUY_VEHICLE_ROAD_VEHICLE_ALL_CAPTION                        :New Road Vehicles
 STR_BUY_VEHICLE_SHIP_CAPTION                                    :New Ships
 STR_BUY_VEHICLE_AIRCRAFT_CAPTION                                :New Aircraft
+############ range for vehicle availability ends
 
 STR_PURCHASE_INFO_COST_WEIGHT                                   :{BLACK}Cost: {GOLD}{CURRENCY_LONG}{BLACK} Weight: {GOLD}{WEIGHT_SHORT}
 STR_PURCHASE_INFO_SPEED_POWER                                   :{BLACK}Speed: {GOLD}{VELOCITY}{BLACK} Power: {GOLD}{POWER}
@@ -3524,12 +3533,19 @@ STR_DEPOT_SELL_CONFIRMATION_TEXT                                :{YELLOW}You are
 # Engine preview window
 STR_ENGINE_PREVIEW_CAPTION                                      :{WHITE}Message from vehicle manufacturer
 STR_ENGINE_PREVIEW_MESSAGE                                      :{GOLD}We have just designed a new {STRING} - would you be interested in a year's exclusive use of this vehicle, so we can see how it performs before making it universally available?
+
 STR_ENGINE_PREVIEW_RAILROAD_LOCOMOTIVE                          :railway locomotive
-STR_ENGINE_PREVIEW_ROAD_VEHICLE                                 :road vehicle
-STR_ENGINE_PREVIEW_AIRCRAFT                                     :aircraft
-STR_ENGINE_PREVIEW_SHIP                                         :ship
+STR_ENGINE_PREVIEW_ELRAIL_LOCOMOTIVE                            :electrified railway locomotive
 STR_ENGINE_PREVIEW_MONORAIL_LOCOMOTIVE                          :monorail locomotive
 STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :maglev locomotive
+
+STR_ENGINE_PREVIEW_ROAD_VEHICLE                                 :road vehicle
+STR_ENGINE_PREVIEW_ELROAD_VEHICLE                               :electrified road vehicle
+STR_ENGINE_PREVIEW_TRAM_VEHICLE                                 :tramway vehicle
+STR_ENGINE_PREVIEW_ELTRAM_VEHICLE                               :electrified tramway vehicle
+
+STR_ENGINE_PREVIEW_AIRCRAFT                                     :aircraft
+STR_ENGINE_PREVIEW_SHIP                                         :ship
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Cost: {CURRENCY_LONG} Weight: {WEIGHT_SHORT}{}Speed: {VELOCITY}  Power: {POWER}{}Running Cost: {CURRENCY_LONG}/yr{}Capacity: {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Cost: {CURRENCY_LONG} Weight: {WEIGHT_SHORT}{}Speed: {VELOCITY}  Power: {POWER}  Max. T.E.: {6:FORCE}{}Running Cost: {4:CURRENCY_LONG}/yr{}Capacity: {5:CARGO_LONG}
@@ -3575,6 +3591,11 @@ STR_REPLACE_RAIL_VEHICLES                                       :Rail Vehicles
 STR_REPLACE_ELRAIL_VEHICLES                                     :Electrified Rail Vehicles
 STR_REPLACE_MONORAIL_VEHICLES                                   :Monorail Vehicles
 STR_REPLACE_MAGLEV_VEHICLES                                     :Maglev Vehicles
+
+STR_REPLACE_ROAD_VEHICLES                                       :Road Vehicles
+STR_REPLACE_ELROAD_VEHICLES                                     :Electrified Road Vehicles
+STR_REPLACE_TRAM_VEHICLES                                       :Tramway Vehicles
+STR_REPLACE_ELTRAM_VEHICLES                                     :Electrified Tramway Vehicles
 
 STR_REPLACE_REMOVE_WAGON                                        :{BLACK}Wagon removal: {ORANGE}{STRING}
 STR_REPLACE_REMOVE_WAGON_HELP                                   :{BLACK}Make autoreplace keep the length of a train the same by removing wagons (starting at the front), if replacing the engine would make the train longer

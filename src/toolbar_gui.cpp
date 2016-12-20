@@ -2611,8 +2611,8 @@ static WindowDesc _toolb_scen_desc(
 void AllocateToolbar()
 {
 	/* Clean old GUI values; railtype is (re)set by rail_gui.cpp */
-	_last_built_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
-	_last_built_tramtype_identifier = RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_BEGIN);
+	_last_built_roadtype_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL);
+	_last_built_tramtype_identifier = RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_ELECTRIC);
 
 	if (_game_mode == GM_EDITOR) {
 		new ScenarioEditorToolbarWindow(&_toolb_scen_desc);

@@ -147,7 +147,7 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 
 		if (rti->label == 0) {
 			/* Set up new road type */
-			*rti = (basetype == ROADTYPE_ROAD ? _original_roadtypes[ROADSUBTYPE_BEGIN] : _original_tramtypes[ROADSUBTYPE_BEGIN]);
+			*rti = (basetype == ROADTYPE_ROAD ? _original_roadtypes[ROADSUBTYPE_NORMAL] : _original_tramtypes[ROADSUBTYPE_NORMAL]);
 			rti->label = label;
 			rti->alternate_labels.Clear();
 
@@ -1851,7 +1851,7 @@ static void TileLoop_Road(TileIndex tile)
 			const RoadBits new_rb = CleanUpRoadBits(tile, old_rb);
 
 			if (old_rb != new_rb) {
-				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN), true);
+				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL), true);
 			}
 		}
 

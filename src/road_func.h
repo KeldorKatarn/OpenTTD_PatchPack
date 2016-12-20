@@ -188,6 +188,7 @@ static inline bool HasRoadCatenaryDrawn(RoadTypeIdentifier rti)
 bool HasRoadTypeAvail(CompanyID company, RoadTypeIdentifier rtid);
 bool ValParamRoadType(RoadTypeIdentifier rtid);
 RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt);
+RoadSubTypes AddDateIntroducedRoadTypes(RoadType rt, RoadSubTypes current, Date date);
 
 void UpdateLevelCrossing(TileIndex tile, bool sound = true);
 

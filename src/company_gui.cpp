@@ -1563,7 +1563,7 @@ static const NWidgetPart _nested_company_infrastructure_widgets[] = {
 struct CompanyInfrastructureWindow : Window
 {
 	RailTypes railtypes; ///< Valid railtypes.
-	bool roadtypes[ROADTYPE_END][ROADSUBTYPE_END]; ///< Valid roadtypes.
+	RoadSubTypes roadtypes[ROADTYPE_END]; ///< Valid roadtypes.
 
 	uint total_width; ///< String width of the total cost line.
 
@@ -1578,8 +1578,8 @@ struct CompanyInfrastructureWindow : Window
 	void UpdateRailRoadTypes()
 	{
 		this->railtypes = RAILTYPES_NONE;
-		memset(this->roadtypes, 0, sizeof(this->roadtypes));
-		this->roadtypes[ROADTYPE_ROAD][ROADTYPE_BEGIN] = true; // Road is always available. // TODO
+		this->roadtypes[ROADTYPE_ROAD] = ROADSUBTYPES_DEFAULT; // Road is always available. // TODO
+		this->roadtypes[ROADTYPE_TRAM] = ROADSUBTYPES_NONE;
 
 		/* Find the used railtypes. */
 		Engine *e;
@@ -1592,22 +1592,17 @@ struct CompanyInfrastructureWindow : Window
 		/* Get the date introduced railtypes as well. */
 		this->railtypes = AddDateIntroducedRailTypes(this->railtypes, MAX_DAY);
 
-		/* Tram is only visible when there will be a tram. */
+		/* Find the used roadtypes. */
 		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
 			if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
 
-			if (HasBit(e->info.misc_flags, EF_ROAD_TRAM)) {
-				RoadTypeIdentifier rtid;
-				FOR_ALL_SORTED_ROADTYPES(rtid, ROADTYPE_TRAM) { // TODO
-					this->roadtypes[rtid.basetype][rtid.subtype] = true;
-				}
-			} else {
-				RoadTypeIdentifier rtid;
-				FOR_ALL_SORTED_ROADTYPES(rtid, ROADTYPE_ROAD) { // TODO
-					this->roadtypes[rtid.basetype][rtid.subtype] = true;
-				}
-			}
+			RoadTypeIdentifier rtid = e->GetRoadType();
+			this->roadtypes[rtid.basetype] |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
 		}
+
+		/* Get the date introduced roadtypes as well. */
+		this->roadtypes[ROADTYPE_ROAD] = AddDateIntroducedRoadTypes(ROADTYPE_ROAD, this->roadtypes[ROADTYPE_ROAD], MAX_DAY);
+		this->roadtypes[ROADTYPE_TRAM] = AddDateIntroducedRoadTypes(ROADTYPE_TRAM, this->roadtypes[ROADTYPE_TRAM], MAX_DAY);
 	}
 
 	/** Get total infrastructure maintenance cost. */
@@ -1625,8 +1620,8 @@ struct CompanyInfrastructureWindow : Window
 		uint32 road_total = c->infrastructure.GetRoadTotal(ROADTYPE_ROAD);
 		uint32 tram_total = c->infrastructure.GetRoadTotal(ROADTYPE_TRAM);
 		for (RoadSubType rst = ROADSUBTYPE_BEGIN; rst < ROADSUBTYPE_END; rst++) {
-			if (this->roadtypes[ROADTYPE_ROAD][rst]) total += RoadMaintenanceCost(RoadTypeIdentifier(ROADTYPE_ROAD, rst), c->infrastructure.road[ROADTYPE_ROAD][rst], road_total);
-			if (this->roadtypes[ROADTYPE_TRAM][rst]) total += RoadMaintenanceCost(RoadTypeIdentifier(ROADTYPE_TRAM, rst), c->infrastructure.road[ROADTYPE_TRAM][rst], tram_total);
+			if (HasBit(this->roadtypes[ROADTYPE_ROAD], rst)) total += RoadMaintenanceCost(RoadTypeIdentifier(ROADTYPE_ROAD, rst), c->infrastructure.road[ROADTYPE_ROAD][rst], road_total);
+			if (HasBit(this->roadtypes[ROADTYPE_TRAM], rst)) total += RoadMaintenanceCost(RoadTypeIdentifier(ROADTYPE_TRAM, rst), c->infrastructure.road[ROADTYPE_TRAM][rst], tram_total);
 		}
 
 		total += CanalMaintenanceCost(c->infrastructure.water);
@@ -1679,7 +1674,7 @@ struct CompanyInfrastructureWindow : Window
 
 				RoadTypeIdentifier rtid;
 				FOR_ALL_SORTED_ROADTYPES(rtid, widget == WID_CI_ROAD_DESC ? ROADTYPE_ROAD : ROADTYPE_TRAM) {
-					if (this->roadtypes[rtid.basetype][rtid.subtype]) {
+					if (HasBit(this->roadtypes[rtid.basetype], rtid.subtype)) {
 						lines++;
 						SetDParam(0, GetRoadTypeInfo(rtid)->strings.name);
 						size->width = max(size->width, GetStringBoundingBox(STR_WHITE_STRING).width + WD_FRAMERECT_LEFT);
@@ -1824,7 +1819,7 @@ struct CompanyInfrastructureWindow : Window
 				/* Draw name of each valid roadtype. */
 				RoadTypeIdentifier rtid;
 				FOR_ALL_SORTED_ROADTYPES(rtid, widget == WID_CI_ROAD_DESC ? ROADTYPE_ROAD : ROADTYPE_TRAM) {
-					if (this->roadtypes[rtid.basetype][rtid.subtype]) {
+					if (HasBit(this->roadtypes[rtid.basetype], rtid.subtype)) {
 						SetDParam(0, GetRoadTypeInfo(rtid)->strings.name);
 						DrawString(r.left + offs_left, r.right - offs_right, y += FONT_HEIGHT_NORMAL, STR_WHITE_STRING);
 					}
@@ -1839,7 +1834,7 @@ struct CompanyInfrastructureWindow : Window
 				uint32 road_total = c->infrastructure.GetRoadTotal(rt);
 				RoadTypeIdentifier rtid;
 				FOR_ALL_SORTED_ROADTYPES(rtid, rt) {
-					if (this->roadtypes[rtid.basetype][rtid.subtype]) {
+					if (HasBit(this->roadtypes[rtid.basetype], rtid.subtype)) {
 						this->DrawCountLine(r, y, c->infrastructure.road[rtid.basetype][rtid.subtype], RoadMaintenanceCost(rtid, c->infrastructure.road[rtid.basetype][rtid.subtype], road_total));
 					}
 				}

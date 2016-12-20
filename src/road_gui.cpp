@@ -1191,24 +1191,8 @@ void InitializeRoadGUI()
 
 DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement, bool all_option)
 {
-	RoadTypes used_roadtypes = ROADTYPES_NONE; // TODO
-
-	/* Road is always visible and available. */
-	used_roadtypes |= ROADTYPES_ROAD;
-
-	/* Tram is only visible when there will be a tram, and available when that has been introduced. */
-	Engine *e;
-	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-		if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
-		if (!HasBit(e->info.misc_flags, EF_ROAD_TRAM)) continue;
-
-		used_roadtypes |= ROADTYPES_TRAM;
-		break;
-	}
-
 	const Company *c = Company::Get(_local_company);
 	DropDownList *list = new DropDownList();
-	RoadTypeIdentifier rtid;
 
 	if (all_option) {
 		DropDownListStringItem *item = new DropDownListStringItem(STR_REPLACE_ALL_ROADTYPE, -1, false);
@@ -1217,9 +1201,31 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 
 	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
 		if (!HasBit(roadtypes, rt)) continue;
+
+		RoadSubTypes used_roadtypes = ROADSUBTYPES_NONE;
+
+		/* Road is always visible and available. */
+		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_DEFAULT; // TODO
+
+		/* Find used roadtypes */
+		Engine *e;
+		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+			if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
+
+			RoadTypeIdentifier rtid = e->GetRoadType();
+			if (rtid.basetype != rt) continue;
+
+			used_roadtypes |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
+		}
+
+		/* Get the date introduced roadtypes as well. */
+		used_roadtypes = AddDateIntroducedRoadTypes(rt, used_roadtypes, MAX_DAY);
+
 		/* If it's not used ever, don't show it to the user. */
-		if (!HasBit(used_roadtypes, rt)) continue;
+		RoadTypeIdentifier rtid;
 		FOR_ALL_SORTED_ROADTYPES(rtid, rt) {
+			if (!HasBit(used_roadtypes, rtid.subtype)) continue;
+
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
 			// TODO show max speed

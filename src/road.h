@@ -136,7 +136,7 @@ public:
 	/**
 	 * Road type labels this type provides in addition to the main label.
 	 */
-	RoadTypeLabelList alternate_labels; // TODO use
+	RoadTypeLabelList alternate_labels;
 
 	/**
 	 * Colour on mini-map
@@ -150,18 +150,18 @@ public:
 	 * The introduction at this date is furthermore limited by the
 	 * #introduction_required_types.
 	 */
-	Date introduction_date; // TODO use
+	Date introduction_date;
 
 	/**
 	 * Bitmask of roadtypes that are required for this roadtype to be introduced
 	 * at a given #introduction_date.
 	 */
-	RoadSubTypes introduction_required_roadtypes; // TODO use
+	RoadSubTypes introduction_required_roadtypes;
 
 	/**
 	 * Bitmask of which other roadtypes are introduced when this roadtype is introduced.
 	 */
-	RoadSubTypes introduces_roadtypes; // TODO use
+	RoadSubTypes introduces_roadtypes;
 
 	/**
 	 * The sorting order of this roadtype for the toolbar dropdown.

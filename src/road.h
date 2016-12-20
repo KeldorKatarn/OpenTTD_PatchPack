@@ -83,12 +83,12 @@ public:
 	} cursor;                       ///< Cursors associated with the road type.
 
 	struct {
-		StringID name;            ///< Name of this rail type. // TODO use
+		StringID name;            ///< Name of this rail type.
 		StringID toolbar_caption; ///< Caption in the construction toolbar GUI for this rail type.
 		StringID menu_text;       ///< Name of this rail type in the main toolbar dropdown.
-		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type. // TODO use
-		StringID replace_text;    ///< Text used in the autoreplace GUI. // TODO use
-		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI. // TODO use
+		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type.
+		StringID replace_text;    ///< Text used in the autoreplace GUI.
+		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI.
 
 		StringID err_build_road;        ///< Building a normal piece of road
 		StringID err_remove_road;       ///< Removing a normal piece of road
@@ -111,7 +111,7 @@ public:
 	/**
 	 * Bit mask of road type flags
 	 */
-	RoadTypeFlags flags; // TODO more flags
+	RoadTypeFlags flags;
 
 	/**
 	 * Cost multiplier for building this road type

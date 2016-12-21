@@ -27,6 +27,24 @@ enum RoadTileType {
 };
 
 /**
+ * Test whether a tile can have road/tram subtypes.
+ * @param t Tile to query.
+ * @return true if tile can be queried about road/tram subtypes.
+ */
+static inline bool MayHaveRoad(TileIndex t)
+{
+	switch (GetTileType(t)) {
+		case MP_ROAD:
+		case MP_STATION:
+		case MP_TUNNELBRIDGE:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+/**
  * Get the type of the road tile.
  * @param t Tile to query.
  * @pre IsTileType(t, MP_ROAD)

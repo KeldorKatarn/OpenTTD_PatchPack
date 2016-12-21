@@ -1390,6 +1390,25 @@ void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
 		if (height <= GetTileMaxZ(ti->tile) + 1) return;
 	}
 
+	if (CountBits(rb) > 2) {
+		/* On junctions we check whether neighbouring tiles also have catenary, and possibly
+		 * do not draw catenary towards those neighbours, which do not have catenary. */
+		RoadBits rb_new = ROAD_NONE;
+		for (DiagDirection dir = DIAGDIR_BEGIN; dir < DIAGDIR_END; dir++) {
+			if (rb & DiagDirToRoadBits(dir)) {
+				TileIndex neighbour = TileAddByDiagDir(ti->tile, dir);
+				if (MayHaveRoad(neighbour)) {
+					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(neighbour);
+					if ((rtids.HasRoad() && HasRoadCatenary(rtids.road_identifier)) ||
+							(rtids.HasTram() && HasRoadCatenary(rtids.tram_identifier))) {
+						rb_new |= DiagDirToRoadBits(dir);
+					}
+				}
+			}
+		}
+		if (CountBits(rb_new) >= 2) rb = rb_new;
+	}
+
 	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 	SpriteID front = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_FRONT);
 	SpriteID back = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_BACK);

@@ -178,11 +178,13 @@ static inline void SetRoadBits(TileIndex t, RoadBits r, RoadType rt)
 
 static inline RoadSubType GetRoadSubTypeRoad(TileIndex t)
 {
+	assert(MayHaveRoad(t));
 	return (RoadSubType)GB(_m[t].m4, 0, 4);
 }
 
 static inline RoadSubType GetRoadSubTypeTram(TileIndex t)
 {
+	assert(MayHaveRoad(t));
 	return (RoadSubType)GB(_m[t].m4, 4, 4);
 }
 
@@ -218,8 +220,10 @@ static inline RoadTypeIdentifier GetRoadType(TileIndex t, RoadType rt)
 static inline RoadTypes GetRoadTypes(TileIndex t)
 {
 	RoadTypes result = ROADTYPES_NONE;
-	if (GetRoadSubTypeRoad(t) != INVALID_ROADSUBTYPE) result |= ROADTYPES_ROAD;
-	if (GetRoadSubTypeTram(t) != INVALID_ROADSUBTYPE) result |= ROADTYPES_TRAM;
+	if (MayHaveRoad(t)) {
+		if (GetRoadSubTypeRoad(t) != INVALID_ROADSUBTYPE) result |= ROADTYPES_ROAD;
+		if (GetRoadSubTypeTram(t) != INVALID_ROADSUBTYPE) result |= ROADTYPES_TRAM;
+	}
 	return result;
 }
 
@@ -253,6 +257,7 @@ static inline bool HasTileRoadType(TileIndex t, RoadType rt)
  */
 static inline bool HasTileAnyRoadSubType(TileIndex t, RoadType rt, RoadSubTypes rst)
 {
+	if (!MayHaveRoad(t)) return false;
 	RoadSubType st = GetRoadSubType(t, rt) ;
 	return st != INVALID_ROADSUBTYPE && HasBit(rst, st);
 }
@@ -265,7 +270,7 @@ static inline bool HasTileAnyRoadSubType(TileIndex t, RoadType rt, RoadSubTypes 
  */
 static inline Owner GetRoadOwner(TileIndex t, RoadType rt)
 {
-	assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
+	assert(MayHaveRoad(t));
 	switch (rt) {
 		default: NOT_REACHED();
 		case ROADTYPE_ROAD: return (Owner)GB(IsNormalRoadTile(t) ? _m[t].m1 : _me[t].m7, 0, 5);
@@ -620,7 +625,7 @@ struct RoadTypeIdentifiers {
 	 */
 	static RoadTypeIdentifiers FromTile(TileIndex t)
 	{
-		assert(IsTileType(t, MP_ROAD) || IsTileType(t, MP_STATION) || IsTileType(t, MP_TUNNELBRIDGE));
+		assert(MayHaveRoad(t));
 
 		RoadTypeIdentifiers rtids;
 		rtids.road_identifier = GetRoadTypeRoad(t);
@@ -766,6 +771,7 @@ struct RoadTypeIdentifiers {
  */
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
+	assert(MayHaveRoad(t));
 	SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
 	SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
 }

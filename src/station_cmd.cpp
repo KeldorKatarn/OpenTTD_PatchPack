@@ -1821,7 +1821,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 		TILE_AREA_LOOP(cur_tile, roadstop_area) {
 			RoadTypeIdentifiers rtids;
 
-			if (IsTileType(cur_tile, MP_ROAD) || IsTileType(cur_tile, MP_STATION)) {
+			if (MayHaveRoad(cur_tile)) {
 				rtids = RoadTypeIdentifiers::FromTile(cur_tile);
 			}
 

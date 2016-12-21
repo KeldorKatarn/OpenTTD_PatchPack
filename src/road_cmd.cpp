@@ -1669,16 +1669,29 @@ static void DrawTile_Road(TileInfo *ti)
 			const RoadtypeInfo* rti = GetRoadTypeInfo(rtids.HasRoad() ? rtids.road_identifier : rtids.tram_identifier);
 
 			int relocation = GetCustomRoadSprite(rti, ti->tile, ROTSG_DEPOT);
-			if (relocation == 0) {
-				if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
+			bool default_gfx = relocation == 0;
+			if (default_gfx) {
+				if (HasBit(rti->flags, ROTF_CATENARY)) {
 					relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
 				}
 			} else {
 				relocation -= SPR_ROAD_DEPOT;
 			}
 
-			const DrawTileSprites *dts = &_road_depot[GetRoadDepotDirection(ti->tile)];
+			DiagDirection dir = GetRoadDepotDirection(ti->tile);
+			const DrawTileSprites *dts = &_road_depot[dir];
 			DrawGroundSprite(dts->ground.sprite, PAL_NONE);
+
+			if (default_gfx) {
+				uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
+				if (rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(rti, ti->tile, ROTSG_OVERLAY);
+					DrawGroundSprite(ground + offset, PAL_NONE);
+				} else if (rtids.HasTram()) {
+					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE);
+				}
+			}
+
 			DrawRailTileSeq(ti, dts, TO_BUILDINGS, relocation, 0, palette);
 			break;
 		}
@@ -1699,8 +1712,9 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 
 	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 	int relocation = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_DEPOT);
-	if (relocation == 0) {
-		if (rtid.IsTram()) {
+	bool default_gfx = relocation == 0;
+	if (default_gfx) {
+		if (HasBit(rti->flags, ROTF_CATENARY)) {
 			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
 		}
 	} else {
@@ -1709,6 +1723,17 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 
 	const DrawTileSprites *dts = &_road_depot[dir];
 	DrawSprite(dts->ground.sprite, PAL_NONE, x, y);
+
+	if (default_gfx) {
+		uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
+		if (rti->UsesOverlay()) {
+			SpriteID ground = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
+			DrawSprite(ground + offset, PAL_NONE, x, y);
+		} else if (rtid.IsTram()) {
+			DrawSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE, x, y);
+		}
+	}
+
 	DrawRailTileSeqInGUI(x, y, dts, relocation, 0, palette);
 }
 

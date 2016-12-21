@@ -1224,6 +1224,7 @@ again:
 				}
 				if ((v->Previous() != NULL && v->Previous()->tile == tile) ||
 						(v->IsFrontEngine() && IsNormalRoadTile(tile) && !HasRoadWorks(tile) &&
+							HasTileAnyRoadSubType(tile, v->rtid.basetype, v->compatible_subtypes) &&
 							(needed & GetRoadBits(tile, ROADTYPE_TRAM)) != ROAD_NONE)) {
 					/*
 					 * Taking the 'big' corner for trams only happens when:

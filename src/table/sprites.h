@@ -56,7 +56,7 @@ static const SpriteID SPR_LARGE_SMALL_WINDOW = 682;
 
 /** Extra graphic spritenumbers */
 static const SpriteID SPR_OPENTTD_BASE   = 4896;
-static const uint16 OPENTTD_SPRITE_COUNT = 176;
+static const uint16 OPENTTD_SPRITE_COUNT = 180;
 
 /* Halftile-selection sprites */
 static const SpriteID SPR_HALFTILE_SELECTION_FLAT = SPR_OPENTTD_BASE;
@@ -1334,6 +1334,11 @@ static const SpriteID SPR_IMG_VIEW_LOCATION  = SPR_OPENTTD_BASE + 170;
 static const SpriteID SPR_IMG_GOAL           = SPR_OPENTTD_BASE + 171;
 static const SpriteID SPR_IMG_GOAL_COMPLETED = SPR_OPENTTD_BASE + 172;
 static const SpriteID SPR_IMG_GOAL_BROKEN_REF= SPR_OPENTTD_BASE + 173;
+
+static const SpriteID SPR_IMG_CONVERT_ROAD           = SPR_OPENTTD_BASE + 176;
+static const CursorID SPR_CURSOR_CONVERT_ROAD        = SPR_OPENTTD_BASE + 177;
+static const SpriteID SPR_IMG_CONVERT_TRAM           = SPR_OPENTTD_BASE + 178;
+static const CursorID SPR_CURSOR_CONVERT_TRAM        = SPR_OPENTTD_BASE + 179;
 
 /* intro_gui.cpp, genworld_gui.cpp */
 static const SpriteID SPR_SELECT_TEMPERATE           = 4882;

@@ -58,7 +58,7 @@
 
 /* static */ bool ScriptRoad::IsRoadTypeAvailable(RoadType road_type)
 {
-	RoadTypeIdentifier rtid((::RoadType)road_type, ROADSUBTYPE_BEGIN); // TODO
+	RoadTypeIdentifier rtid((::RoadType)road_type, ROADSUBTYPE_NORMAL); // TODO
 	return rtid.IsValid() && ::HasRoadTypeAvail(ScriptObject::GetCompany(), rtid);
 }
 
@@ -71,7 +71,7 @@
 {
 	if (!IsRoadTypeAvailable(road_type)) return;
 
-	ScriptObject::SetRoadType(RoadTypeIdentifier((::RoadType)road_type, ROADSUBTYPE_BEGIN)); // TODO
+	ScriptObject::SetRoadType(RoadTypeIdentifier((::RoadType)road_type, ROADSUBTYPE_NORMAL)); // TODO
 }
 
 /* static */ bool ScriptRoad::HasRoadType(TileIndex tile, RoadType road_type)
@@ -588,7 +588,7 @@ static bool NeighbourHasReachableRoad(::RoadTypes rts, TileIndex start_tile, Dia
 {
 	if (!ScriptRoad::IsRoadTypeAvailable(roadtype)) return -1;
 
-	RoadTypeIdentifier rtid((::RoadType)roadtype, ROADSUBTYPE_BEGIN); // TODO
+	RoadTypeIdentifier rtid((::RoadType)roadtype, ROADSUBTYPE_NORMAL); // TODO
 
 	switch (build_type) {
 		case BT_ROAD:       return ::RoadBuildCost(rtid);

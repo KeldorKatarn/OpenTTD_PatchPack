@@ -1244,8 +1244,8 @@ bool AfterLoadGame()
 
 			if (has_road) {
 				RoadTypeIdentifiers rtids;
-				if (HasBit(_me[t].m7, 6)) rtids.road_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN);
-				if (HasBit(_me[t].m7, 7)) rtids.tram_identifier = RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_BEGIN);
+				if (HasBit(_me[t].m7, 6)) rtids.road_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL);
+				if (HasBit(_me[t].m7, 7)) rtids.tram_identifier = RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_ELECTRIC);
 				assert(rtids.PresentRoadTypes() != ROADTYPES_NONE);
 				SetRoadTypes(t, rtids);
 				SB(_me[t].m7, 6, 2, 0);

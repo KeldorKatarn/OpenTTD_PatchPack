@@ -112,7 +112,7 @@ RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb)
 bool HasRoadTypeAvail(const CompanyID company, RoadTypeIdentifier rtid)
 {
 	if (company == OWNER_DEITY || company == OWNER_TOWN || _game_mode == GM_EDITOR || _generating_world) {
-		return rtid.basetype == ROADTYPE_ROAD && GetRoadTypeInfo(rtid)->label != 0; // TODO
+		return rtid.basetype == ROADTYPE_ROAD && rtid.subtype == ROADSUBTYPE_NORMAL; // TODO
 	} else {
 		Company *c = Company::GetIfValid(company);
 		if (c == NULL) return false;
@@ -131,6 +131,41 @@ bool ValParamRoadType(RoadTypeIdentifier rtid)
 }
 
 /**
+ * Add the road types that are to be introduced at the given date.
+ * @param rt      Roadtype
+ * @param current The currently available roadsubtypes.
+ * @param date    The date for the introduction comparisons.
+ * @return The road types that should be available when date
+ *         introduced road types are taken into account as well.
+ */
+RoadSubTypes AddDateIntroducedRoadTypes(RoadType rt, RoadSubTypes current, Date date)
+{
+	RoadSubTypes rts = current;
+
+	for (RoadSubType rst = ROADSUBTYPE_BEGIN; rst != ROADSUBTYPE_END; rst++) {
+		const RoadtypeInfo *rti = GetRoadTypeInfo(RoadTypeIdentifier(rt, rst));
+		/* Unused road type. */
+		if (rti->label == 0) continue;
+
+		/* Not date introduced. */
+		if (!IsInsideMM(rti->introduction_date, 0, MAX_DAY)) continue;
+
+		/* Not yet introduced at this date. */
+		if (rti->introduction_date > date) continue;
+
+		/* Have we introduced all required roadtypes? */
+		RoadSubTypes required = rti->introduction_required_roadtypes;
+		if ((rts & required) != required) continue;
+
+		rts |= rti->introduces_roadtypes;
+	}
+
+	/* When we added roadtypes we need to run this method again; the added
+	 * roadtypes might enable more rail types to become introduced. */
+	return rts == current ? rts : AddDateIntroducedRoadTypes(rt, rts, date);
+}
+
+/**
  * Get the road (sub) types the given company can build.
  * @param company the company to get the roadtypes for.
  * @param rt the base road type to check
@@ -140,6 +175,8 @@ RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt)
 {
 	RoadSubTypes rst = ROADSUBTYPES_NONE;
 
+	if (rt == ROADTYPE_ROAD) rst |= ROADSUBTYPES_NORMAL; // Road is always available. // TODO
+
 	Engine *e;
 	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
 		const EngineInfo *ei = &e->info;
@@ -147,14 +184,11 @@ RoadSubTypes GetCompanyRoadtypes(CompanyID company, RoadType rt)
 		if (HasBit(ei->climates, _settings_game.game_creation.landscape) &&
 				(HasBit(e->company_avail, company) || _date >= e->intro_date + DAYS_IN_YEAR) &&
 				rt == (HasBit(ei->misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD)) {
-			RoadTypeIdentifier rtid;
-			FOR_ALL_SORTED_ROADTYPES(rtid, rt) { // TODO
-				SetBit(rst, rtid.subtype);
-			}
+			rst |= GetRoadTypeInfo(e->GetRoadType())->introduces_roadtypes;
 		}
 	}
 
-	return rst;
+	return AddDateIntroducedRoadTypes(rt, rst, _date);
 }
 
 /**

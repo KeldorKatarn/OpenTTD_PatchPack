@@ -30,7 +30,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_ROAD,
 		},
 
 		{
@@ -41,7 +41,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_ROAD,
 		},
 
 		/* strings */
@@ -50,7 +50,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			STR_ROAD_TOOLBAR_ROAD_CONSTRUCTION_CAPTION,
 			STR_ROAD_MENU_ROAD_CONSTRUCTION,
 			STR_BUY_VEHICLE_ROAD_VEHICLE_CAPTION,
-			STR_REPLACE_VEHICLE_ROAD_VEHICLE,
+			STR_REPLACE_ROAD_VEHICLES,
 			STR_ENGINE_PREVIEW_ROAD_VEHICLE,
 
 			STR_ERROR_CAN_T_BUILD_ROAD_HERE,
@@ -64,10 +64,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		},
 
 		/* Powered roadtypes */
-		ROADSUBTYPES_DEFAULT,
-
-		/* curve speed advantage (multiplier) */
-		0, // TODO
+		ROADSUBTYPES_NORMAL | ROADSUBTYPES_ELECTRIC,
 
 		/* flags */
 		ROTFB_NONE,
@@ -88,7 +85,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,
@@ -97,10 +94,93 @@ static const RoadtypeInfo _original_roadtypes[] = {
 		ROADSUBTYPES_NONE,
 
 		/* introduction road types */
-		ROADSUBTYPES_DEFAULT,
+		ROADSUBTYPES_NORMAL,
 
 		/* sort order */
-		7,
+		0x07,
+
+		{ NULL },
+		{ NULL },
+	},
+	/** Electrified Road */
+	{
+		/* GUI sprites */
+		{
+			SPR_IMG_ROAD_X_DIR,
+			SPR_IMG_ROAD_Y_DIR,
+			SPR_IMG_AUTOROAD,
+			SPR_IMG_ROAD_DEPOT,
+			SPR_IMG_BUS_STATION,
+			SPR_IMG_TRUCK_BAY,
+			SPR_IMG_ROAD_TUNNEL,
+			SPR_IMG_CONVERT_ROAD,
+		},
+
+		{
+			SPR_CURSOR_ROAD_NESW,
+			SPR_CURSOR_ROAD_NWSE,
+			SPR_CURSOR_AUTOROAD,
+			SPR_CURSOR_ROAD_DEPOT,
+			SPR_CURSOR_BUS_STATION,
+			SPR_CURSOR_TRUCK_STATION,
+			SPR_CURSOR_TUNNEL_RAIL,
+			SPR_CURSOR_CONVERT_ROAD,
+		},
+
+		/* strings */
+		{
+			STR_ROAD_NAME_ELROAD,
+			STR_ROAD_TOOLBAR_ELROAD_CONSTRUCTION_CAPTION,
+			STR_ROAD_MENU_ELROAD_CONSTRUCTION,
+			STR_BUY_VEHICLE_ELROAD_VEHICLE_CAPTION,
+			STR_REPLACE_ELROAD_VEHICLES,
+			STR_ENGINE_PREVIEW_ELROAD_VEHICLE,
+
+			STR_ERROR_CAN_T_BUILD_ROAD_HERE,
+			STR_ERROR_CAN_T_REMOVE_ROAD_FROM,
+			STR_ERROR_CAN_T_BUILD_ROAD_DEPOT,
+			{ STR_ERROR_CAN_T_BUILD_BUS_STATION,         STR_ERROR_CAN_T_BUILD_TRUCK_STATION },
+			{ STR_ERROR_CAN_T_REMOVE_BUS_STATION,        STR_ERROR_CAN_T_REMOVE_TRUCK_STATION },
+			STR_ERROR_CAN_T_CONVERT_ROAD,
+			{ STR_STATION_BUILD_BUS_ORIENTATION,         STR_STATION_BUILD_TRUCK_ORIENTATION },
+			{ STR_STATION_BUILD_BUS_ORIENTATION_TOOLTIP, STR_STATION_BUILD_TRUCK_ORIENTATION_TOOLTIP },
+		},
+
+		/* Powered roadtypes */
+		ROADSUBTYPES_ELECTRIC,
+
+		/* flags */
+		ROTFB_CATENARY,
+
+		/* cost multiplier */
+		16,
+
+		/* maintenance cost multiplier */
+		24,
+
+		/* max speed */
+		0,
+
+		/* road type label */
+		'ELRD',
+
+		/* alternate labels */
+		RoadTypeLabelList(),
+
+		/* map colour */
+		0x01,
+
+		/* introduction date */
+		INVALID_DATE,
+
+		/* roadtypes required for this to be introduced */
+		ROADSUBTYPES_NONE,
+
+		/* introduction road types */
+		ROADSUBTYPES_ELECTRIC,
+
+		/* sort order */
+		0x17,
 
 		{ NULL },
 		{ NULL },
@@ -119,7 +199,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_TRAM,
 		},
 
 		{
@@ -130,7 +210,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_TRAM,
 		},
 
 		/* strings */
@@ -138,9 +218,9 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			STR_ROAD_NAME_TRAM,
 			STR_ROAD_TOOLBAR_TRAM_CONSTRUCTION_CAPTION,
 			STR_ROAD_MENU_TRAM_CONSTRUCTION,
-			STR_BUY_VEHICLE_ROAD_VEHICLE_CAPTION,
-			STR_REPLACE_VEHICLE_ROAD_VEHICLE,
-			STR_ENGINE_PREVIEW_ROAD_VEHICLE,
+			STR_BUY_VEHICLE_TRAM_VEHICLE_CAPTION,
+			STR_REPLACE_TRAM_VEHICLES,
+			STR_ENGINE_PREVIEW_TRAM_VEHICLE,
 
 			STR_ERROR_CAN_T_BUILD_TRAMWAY_HERE,
 			STR_ERROR_CAN_T_REMOVE_TRAMWAY_FROM,
@@ -153,10 +233,90 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		},
 
 		/* Powered roadtypes */
-		ROADSUBTYPES_DEFAULT,
+		ROADSUBTYPES_NORMAL | ROADSUBTYPES_ELECTRIC,
 
-		/* curve speed advantage (multiplier) */
+		/* flags */
+		ROTFB_NONE,
+
+		/* cost multiplier */
+		8,
+
+		/* maintenance cost multiplier */
+		16,
+
+		/* max speed */
 		0, // TODO
+
+		/* road type label */
+		'RAIL',
+
+		/* alternate labels */
+		RoadTypeLabelList(),
+
+		/* map colour */
+		0x01,
+
+		/* introduction date */
+		INVALID_DATE,
+
+		/* roadtypes required for this to be introduced */
+		ROADSUBTYPES_NONE,
+
+		/* introduction road types */
+		ROADSUBTYPES_NORMAL,
+
+		/* sort order */
+		0x07,
+
+		{ NULL },
+		{ NULL },
+	},
+	/** Electrified Tram */
+	{
+		/* GUI sprites */
+		{
+			SPR_IMG_TRAMWAY_X_DIR,
+			SPR_IMG_TRAMWAY_Y_DIR,
+			SPR_IMG_AUTOTRAM,
+			SPR_IMG_ROAD_DEPOT,
+			SPR_IMG_BUS_STATION,
+			SPR_IMG_TRUCK_BAY,
+			SPR_IMG_ROAD_TUNNEL,
+			SPR_IMG_CONVERT_TRAM,
+		},
+
+		{
+			SPR_CURSOR_TRAMWAY_NESW,
+			SPR_CURSOR_TRAMWAY_NWSE,
+			SPR_CURSOR_AUTOTRAM,
+			SPR_CURSOR_ROAD_DEPOT,
+			SPR_CURSOR_BUS_STATION,
+			SPR_CURSOR_TRUCK_STATION,
+			SPR_CURSOR_TUNNEL_RAIL,
+			SPR_CURSOR_CONVERT_TRAM,
+		},
+
+		/* strings */
+		{
+			STR_ROAD_NAME_ELTRAM,
+			STR_ROAD_TOOLBAR_ELTRAM_CONSTRUCTION_CAPTION,
+			STR_ROAD_MENU_ELTRAM_CONSTRUCTION,
+			STR_BUY_VEHICLE_ELTRAM_VEHICLE_CAPTION,
+			STR_REPLACE_ELTRAM_VEHICLES,
+			STR_ENGINE_PREVIEW_ELTRAM_VEHICLE,
+
+			STR_ERROR_CAN_T_BUILD_TRAMWAY_HERE,
+			STR_ERROR_CAN_T_REMOVE_TRAMWAY_FROM,
+			STR_ERROR_CAN_T_BUILD_TRAM_DEPOT,
+			{ STR_ERROR_CAN_T_BUILD_PASSENGER_TRAM_STATION,         STR_ERROR_CAN_T_BUILD_CARGO_TRAM_STATION },
+			{ STR_ERROR_CAN_T_REMOVE_PASSENGER_TRAM_STATION,        STR_ERROR_CAN_T_REMOVE_CARGO_TRAM_STATION },
+			STR_ERROR_CAN_T_CONVERT_TRAMWAY,
+			{ STR_STATION_BUILD_PASSENGER_TRAM_ORIENTATION,         STR_STATION_BUILD_CARGO_TRAM_ORIENTATION },
+			{ STR_STATION_BUILD_PASSENGER_TRAM_ORIENTATION_TOOLTIP, STR_STATION_BUILD_CARGO_TRAM_ORIENTATION_TOOLTIP },
+		},
+
+		/* Powered roadtypes */
+		ROADSUBTYPES_ELECTRIC,
 
 		/* flags */
 		ROTFB_CATENARY,
@@ -171,13 +331,13 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		0, // TODO
 
 		/* road type label */
-		'TRAM',
+		'ELRL',
 
 		/* alternate labels */
 		RoadTypeLabelList(),
 
 		/* map colour */
-		0x0A, // TODO
+		0x01,
 
 		/* introduction date */
 		INVALID_DATE,
@@ -186,10 +346,10 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		ROADSUBTYPES_NONE,
 
 		/* introduction road types */
-		ROADSUBTYPES_DEFAULT,
+		ROADSUBTYPES_ELECTRIC,
 
 		/* sort order */
-		7,
+		0x17,
 
 		{ NULL },
 		{ NULL },

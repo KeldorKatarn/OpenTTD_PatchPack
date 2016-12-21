@@ -83,12 +83,12 @@ public:
 	} cursor;                       ///< Cursors associated with the road type.
 
 	struct {
-		StringID name;            ///< Name of this rail type. // TODO use
+		StringID name;            ///< Name of this rail type.
 		StringID toolbar_caption; ///< Caption in the construction toolbar GUI for this rail type.
 		StringID menu_text;       ///< Name of this rail type in the main toolbar dropdown.
-		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type. // TODO use
-		StringID replace_text;    ///< Text used in the autoreplace GUI. // TODO use
-		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI. // TODO use
+		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type.
+		StringID replace_text;    ///< Text used in the autoreplace GUI.
+		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI.
 
 		StringID err_build_road;        ///< Building a normal piece of road
 		StringID err_remove_road;       ///< Removing a normal piece of road
@@ -105,14 +105,9 @@ public:
 	RoadSubTypes powered_roadtypes;
 
 	/**
-	 * Multiplier for curve maximum speed advantage
-	 */
-	byte curve_speed; // TODO use
-
-	/**
 	 * Bit mask of road type flags
 	 */
-	RoadTypeFlags flags; // TODO more flags
+	RoadTypeFlags flags;
 
 	/**
 	 * Cost multiplier for building this road type
@@ -137,12 +132,12 @@ public:
 	/**
 	 * Road type labels this type provides in addition to the main label.
 	 */
-	RoadTypeLabelList alternate_labels; // TODO use
+	RoadTypeLabelList alternate_labels;
 
 	/**
 	 * Colour on mini-map
 	 */
-	byte map_colour; // TODO use
+	byte map_colour;
 
 	/**
 	 * Introduction date.
@@ -151,18 +146,18 @@ public:
 	 * The introduction at this date is furthermore limited by the
 	 * #introduction_required_types.
 	 */
-	Date introduction_date; // TODO use
+	Date introduction_date;
 
 	/**
 	 * Bitmask of roadtypes that are required for this roadtype to be introduced
 	 * at a given #introduction_date.
 	 */
-	RoadSubTypes introduction_required_roadtypes; // TODO use
+	RoadSubTypes introduction_required_roadtypes;
 
 	/**
 	 * Bitmask of which other roadtypes are introduced when this roadtype is introduced.
 	 */
-	RoadSubTypes introduces_roadtypes; // TODO use
+	RoadSubTypes introduces_roadtypes;
 
 	/**
 	 * The sorting order of this roadtype for the toolbar dropdown.

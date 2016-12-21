@@ -2769,6 +2769,7 @@ STR_LAND_AREA_INFORMATION_AIRPORTTILE_NAME                      :{BLACK}Зона
 STR_LAND_AREA_INFORMATION_NEWGRF_NAME                           :{BLACK}NewGRF: {LTBLUE}{STRING}
 STR_LAND_AREA_INFORMATION_CARGO_ACCEPTED                        :{BLACK}Принимает: {LTBLUE}
 STR_LAND_AREA_INFORMATION_CARGO_EIGHTS                          :({COMMA}/8 {STRING})
+STR_LANG_AREA_INFORMATION_RAIL_TYPE                             :{BLACK}Тип ж/д полотна: {LTBLUE}{STRING}
 STR_LANG_AREA_INFORMATION_RAIL_SPEED_LIMIT                      :{BLACK}Макс. скорость ж/д: {LTBLUE}{VELOCITY}
 STR_LANG_AREA_INFORMATION_ROAD_SPEED_LIMIT                      :{BLACK}Макс. скорость авто: {LTBLUE}{VELOCITY}
 
@@ -2788,21 +2789,21 @@ STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXITSIGNALS                 :Ж/д путь 
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBOSIGNALS                :Ж/д путь с комбинированными сигналами
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBSSIGNALS                  :Ж/д путь с маршрутными сигналами
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRYSIGNALS              :Ж/д путь с односторонними маршрутными сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PRESIGNALS           :Ж/д путь с обычными и входными сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_EXITSIGNALS          :Ж/д путь с обычными и выходными сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_COMBOSIGNALS         :Ж/д путь с обычными и комбиниров. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSSIGNALS           :Ж/д путь с обычными и маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS       :Ж/д путь с обычными и одностор. маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_EXITSIGNALS             :Ж/д путь с входными и выходными сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_COMBOSIGNALS            :Ж/д путь с входными и комбинир. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_PBSSIGNALS              :Ж/д путь с входными и маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_NOENTRYSIGNALS          :Ж/д путь с входными и одностор. маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_COMBOSIGNALS           :Ж/д путь с выходными и комбиниров. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSSIGNALS             :Ж/д путь с выходными и маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS         :Ж/д путь с выходными и односторонн. маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS            :Ж/д путь с комбинир. и маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS        :Ж/д путь с комбинир. и односторонн. маршрутн. сигналами
-STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS          :Ж/д путь с маршрутным и одностор. маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PRESIGNALS           :Ж/д путь с обычным и входным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_EXITSIGNALS          :Ж/д путь с обычным и выходным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_COMBOSIGNALS         :Ж/д путь с обычными и комбинированными сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSSIGNALS           :Ж/д путь с обычными и маршрутными сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS       :Ж/д путь с обычным и односторонним маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_EXITSIGNALS             :Ж/д путь с входным и выходным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_COMBOSIGNALS            :Ж/д путь с входным и комбинированным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_PBSSIGNALS              :Ж/д путь с входными и маршрутными сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_NOENTRYSIGNALS          :Ж/д путь с входным и односторонним маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_COMBOSIGNALS           :Ж/д путь с выходными и комбинированными сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSSIGNALS             :Ж/д путь с выходным и маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS         :Ж/д путь с выходным и односторонним маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS            :Ж/д путь с комбинированным и маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS        :Ж/д путь с комбинированным и односторонним маршрутным сигналами
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS          :Ж/д путь с маршрутным и односторонним маршрутным сигналами
 STR_LAI_RAIL_DESCRIPTION_TRAIN_DEPOT                            :Ж/д депо
 
 STR_LAI_ROAD_DESCRIPTION_ROAD                                   :Дорога
@@ -2953,7 +2954,7 @@ STR_SE_MAPGEN_FLAT_WORLD_HEIGHT_QUERY_CAPT                      :{WHITE}Изме
 STR_GENERATION_WORLD                                            :{WHITE}Создание мира...
 STR_GENERATION_ABORT                                            :{BLACK}Прервать
 STR_GENERATION_ABORT_CAPTION                                    :{WHITE}Прервать создание игрового мира
-STR_GENERATION_ABORT_MESSAGE                                    :{YELLOW}Вы серьезно хотите прервать создание мира?
+STR_GENERATION_ABORT_MESSAGE                                    :{YELLOW}Вы действительно хотите прервать создание мира?
 STR_GENERATION_PROGRESS                                         :{WHITE}{NUM}% готово
 STR_GENERATION_PROGRESS_NUM                                     :{BLACK}{NUM} / {NUM}
 STR_GENERATION_WORLD_GENERATION                                 :{BLACK}Создание мира
@@ -3748,6 +3749,7 @@ STR_REPLACE_HELP_STOP_BUTTON                                    :{BLACK}Прек
 STR_REPLACE_ENGINE_WAGON_SELECT_HELP                            :{BLACK}Переключение между окнами замены локомотивов и вагонов
 STR_REPLACE_ENGINES                                             :Локомотивы
 STR_REPLACE_WAGONS                                              :Вагоны
+STR_REPLACE_ALL_RAILTYPE                                        :Весь ж/д транспорт
 
 STR_REPLACE_HELP_RAILTYPE                                       :{BLACK}Тип ж/д транспорта, подлежащего замене
 STR_REPLACE_HELP_REPLACE_INFO_TAB                               :{BLACK}Транспорт, на который происходит замена
@@ -3871,8 +3873,8 @@ STR_QUERY_RENAME_SHIP_CAPTION                                   :{WHITE}Назв
 STR_QUERY_RENAME_AIRCRAFT_CAPTION                               :{WHITE}Название возд. судна
 
 # Extra buttons for train details windows
-STR_VEHICLE_DETAILS_TRAIN_ENGINE_BUILT_AND_VALUE                :{LTBLUE}{ENGINE}{BLACK}  Построен в {LTBLUE}{NUM} г.{BLACK} Стоимость: {LTBLUE}{CURRENCY_LONG}
-STR_VEHICLE_DETAILS_TRAIN_WAGON_VALUE                           :{LTBLUE}{ENGINE}{BLACK}   Стоимость: {LTBLUE}{CURRENCY_LONG}
+STR_VEHICLE_DETAILS_TRAIN_ENGINE_BUILT_AND_VALUE                :{LTBLUE}{ENGINE}{BLACK} Построен в {LTBLUE}{NUM} г. {BLACK}Стоимость: {LTBLUE}{CURRENCY_LONG}
+STR_VEHICLE_DETAILS_TRAIN_WAGON_VALUE                           :{LTBLUE}{ENGINE}{BLACK} Стоимость: {LTBLUE}{CURRENCY_LONG}
 
 STR_VEHICLE_DETAILS_TRAIN_TOTAL_CAPACITY_TEXT                   :{BLACK}Общая загруженность состава:
 STR_VEHICLE_DETAILS_TRAIN_TOTAL_CAPACITY                        :{LTBLUE}- {CARGO_LONG} (Всего: {CARGO_SHORT})
@@ -4360,7 +4362,7 @@ STR_ERROR_NO_SPACE_FOR_TOWN                                     :{WHITE}... не
 STR_ERROR_TOWN_EXPAND_WARN_NO_ROADS                             :{WHITE}Города не будут строить дороги сами. Вы можете включить строительство дорог в разделе «Настройки -> Окр.{NBSP}среда -> Города».
 STR_ERROR_ROAD_WORKS_IN_PROGRESS                                :{WHITE}Идут дорожные работы...
 STR_ERROR_TOWN_CAN_T_DELETE                                     :{WHITE}Невозможно уничтожить город:{}к нему относится станция или депо, либо невозможно очистить одну из занимаемых им клеток.
-STR_ERROR_STATUE_NO_SUITABLE_PLACE                              :{WHITE}...в центре города нет места для статуи
+STR_ERROR_STATUE_NO_SUITABLE_PLACE                              :{WHITE}... в центре города нет места для статуи
 
 # Industry related errors
 STR_ERROR_TOO_MANY_INDUSTRIES                                   :{WHITE}... слишком много предприятий
@@ -4416,7 +4418,7 @@ STR_ERROR_CAN_T_REMOVE_TRUCK_STATION                            :{WHITE}Нево
 STR_ERROR_CAN_T_REMOVE_PASSENGER_TRAM_STATION                   :{WHITE}Невозможно удалить пассажирскую трамвайную остановку...
 STR_ERROR_CAN_T_REMOVE_CARGO_TRAM_STATION                       :{WHITE}Невозможно удалить грузовую трамвайную остановку...
 STR_ERROR_MUST_REMOVE_ROAD_STOP_FIRST                           :{WHITE}Сначала удалите остановку
-STR_ERROR_THERE_IS_NO_STATION                                   :{WHITE}...здесь нет станции
+STR_ERROR_THERE_IS_NO_STATION                                   :{WHITE}... здесь нет станции
 
 STR_ERROR_MUST_DEMOLISH_RAILROAD                                :{WHITE}Сначала снесите ж/д станцию
 STR_ERROR_MUST_DEMOLISH_BUS_STATION_FIRST                       :{WHITE}Сначала снесите автобусную остановку
@@ -4476,13 +4478,14 @@ STR_ERROR_MUST_REMOVE_SIGNALS_FIRST                             :{WHITE}Снач
 STR_ERROR_NO_SUITABLE_RAILROAD_TRACK                            :{WHITE}Нет подходящих рельсов
 STR_ERROR_MUST_REMOVE_RAILROAD_TRACK                            :{WHITE}Сначала удалите рельсы
 STR_ERROR_CROSSING_ON_ONEWAY_ROAD                               :{WHITE}Дорога односторонняя или блокирована
+STR_ERROR_CROSSING_DISALLOWED_RAIL                              :{WHITE}Через этот вид рельсов запрещено строить переезды
 STR_ERROR_CAN_T_BUILD_SIGNALS_HERE                              :{WHITE}Здесь невозможно поставить сигнал...
 STR_ERROR_CAN_T_BUILD_RAILROAD_TRACK                            :{WHITE}Здесь невозможно проложить рельсы...
 STR_ERROR_CAN_T_REMOVE_RAILROAD_TRACK                           :{WHITE}Не удалось удалить рельсы...
 STR_ERROR_CAN_T_REMOVE_SIGNALS_FROM                             :{WHITE}Не удалось удалить сигнал...
 STR_ERROR_SIGNAL_CAN_T_CONVERT_SIGNALS_HERE                     :{WHITE}Невозможно преобразовать здесь сигнал...
-STR_ERROR_THERE_IS_NO_RAILROAD_TRACK                            :{WHITE}...здесь нет железной дороги
-STR_ERROR_THERE_ARE_NO_SIGNALS                                  :{WHITE}...сигналы отсутствуют
+STR_ERROR_THERE_IS_NO_RAILROAD_TRACK                            :{WHITE}... здесь нет железной дороги
+STR_ERROR_THERE_ARE_NO_SIGNALS                                  :{WHITE}... сигналы отсутствуют
 
 STR_ERROR_CAN_T_CONVERT_RAIL                                    :{WHITE}Здесь невозможно преобразовать тип рельса...
 
@@ -4493,8 +4496,8 @@ STR_ERROR_CAN_T_BUILD_ROAD_HERE                                 :{WHITE}Здес
 STR_ERROR_CAN_T_BUILD_TRAMWAY_HERE                              :{WHITE}Здесь невозможно проложить трамвайные пути...
 STR_ERROR_CAN_T_REMOVE_ROAD_FROM                                :{WHITE}Не удалось удалить дорогу...
 STR_ERROR_CAN_T_REMOVE_TRAMWAY_FROM                             :{WHITE}Не удалось удалить трамвайные пути...
-STR_ERROR_THERE_IS_NO_ROAD                                      :{WHITE}...здесь нет дороги
-STR_ERROR_THERE_IS_NO_TRAMWAY                                   :{WHITE}...здесь нет трамвайных путей
+STR_ERROR_THERE_IS_NO_ROAD                                      :{WHITE}... здесь нет дороги
+STR_ERROR_THERE_IS_NO_TRAMWAY                                   :{WHITE}... здесь нет трамвайных путей
 
 # Waterway construction errors
 STR_ERROR_CAN_T_BUILD_CANALS                                    :{WHITE}Здесь невозможно построить канал...
@@ -4627,7 +4630,7 @@ STR_ERROR_CAN_T_SKIP_ORDER                                      :{WHITE}Не у�
 STR_ERROR_CAN_T_SKIP_TO_ORDER                                   :{WHITE}Не удалось перейти к выделенному заданию...
 STR_ERROR_CAN_T_COPY_SHARE_ORDER                                :{WHITE}... ТС не может достигнуть всех станций
 STR_ERROR_CAN_T_ADD_ORDER                                       :{WHITE}... ТС не может достигнуть этой станции
-STR_ERROR_CAN_T_ADD_ORDER_SHARED                                :{WHITE}...ТС с общим маршрутом не может достигнуть этой станции
+STR_ERROR_CAN_T_ADD_ORDER_SHARED                                :{WHITE}... ТС с общим маршрутом не может достигнуть этой станции
 
 STR_ERROR_CAN_T_SHARE_ORDER_LIST                                :{WHITE}Невозможно использовать общий маршрут...
 STR_ERROR_CAN_T_STOP_SHARING_ORDER_LIST                         :{WHITE}Невозможно создать индивидуальный маршрут...
@@ -4943,7 +4946,7 @@ STR_VEHICLE_NAME_ROAD_VEHICLE_DW_COAL_TRUCK                     :Грузови�
 STR_VEHICLE_NAME_ROAD_VEHICLE_MPS_MAIL_TRUCK                    :Почтовый фургон MPS
 STR_VEHICLE_NAME_ROAD_VEHICLE_REYNARD_MAIL_TRUCK                :Почтовый фургон Reynard
 STR_VEHICLE_NAME_ROAD_VEHICLE_PERRY_MAIL_TRUCK                  :Почтовый фургон Perry
-STR_VEHICLE_NAME_ROAD_VEHICLE_MIGHTYMOVER_MAIL_TRUCK            :Почтовый фургон «MightyMover»
+STR_VEHICLE_NAME_ROAD_VEHICLE_MIGHTYMOVER_MAIL_TRUCK            :Почтовый фургон MightyMover
 STR_VEHICLE_NAME_ROAD_VEHICLE_POWERNAUGHT_MAIL_TRUCK            :Почтовый фургон Powernaught
 STR_VEHICLE_NAME_ROAD_VEHICLE_WIZZOWOW_MAIL_TRUCK               :Почтовый фургон Wizzowow
 STR_VEHICLE_NAME_ROAD_VEHICLE_WITCOMBE_OIL_TANKER               :Цистерна Witcombe (нефть)

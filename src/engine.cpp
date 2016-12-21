@@ -48,11 +48,6 @@ EngineOverrideManager _engine_mngr;
  */
 static Year _year_engine_aging_stops;
 
-/**
- * The railtypes that have been or never will be introduced, or
- * an inverse bitmap of rail types that have to be introduced. */
-static uint16 _introduced_railtypes;
-
 /** Number of engines of each vehicle type in original engine data */
 const uint8 _engine_counts[4] = {
 	lengthof(_orig_rail_vehicle_info),
@@ -553,29 +548,6 @@ void SetupEngines()
 		const Engine *e = new Engine(eid->type, eid->internal_id);
 		assert(e->index == index);
 	}
-
-	_introduced_railtypes = 0;
-}
-
-/**
- * Check whether the railtypes should be introduced.
- */
-static void CheckRailIntroduction()
-{
-	/* All railtypes have been introduced. */
-	if (_introduced_railtypes == UINT16_MAX || Company::GetPoolSize() == 0) return;
-
-	/* We need to find the railtypes that are known to all companies. */
-	RailTypes rts = (RailTypes)UINT16_MAX;
-
-	/* We are at, or past the introduction date of the rail. */
-	Company *c;
-	FOR_ALL_COMPANIES(c) {
-		c->avail_railtypes = AddDateIntroducedRailTypes(c->avail_railtypes, _date);
-		rts &= c->avail_railtypes;
-	}
-
-	_introduced_railtypes |= rts;
 }
 
 void ShowEnginePreviewWindow(EngineID engine);
@@ -722,19 +694,6 @@ void StartupEngines()
 		c->avail_roadtypes[ROADTYPE_TRAM] = GetCompanyRoadtypes(c->index, ROADTYPE_TRAM);
 	}
 
-	/* Rail types that are invalid or never introduced are marked as
-	 * being introduced upon start. That way we can easily check whether
-	 * there is any date related introduction that is still going to
-	 * happen somewhere in the future. */
-	for (RailType rt = RAILTYPE_BEGIN; rt != RAILTYPE_END; rt++) {
-		const RailtypeInfo *rti = GetRailTypeInfo(rt);
-		if (rti->label != 0 && IsInsideMM(rti->introduction_date, 0, MAX_DAY)) continue;
-
-		SetBit(_introduced_railtypes, rt);
-	}
-
-	CheckRailIntroduction();
-
 	/* Invalidate any open purchase lists */
 	InvalidateWindowClassesData(WC_BUILD_VEHICLE);
 }
@@ -754,10 +713,8 @@ static void AcceptEnginePreview(EngineID eid, CompanyID company)
 		assert(e->u.rail.railtype < RAILTYPE_END);
 		c->avail_railtypes = AddDateIntroducedRailTypes(c->avail_railtypes | GetRailTypeInfo(e->u.rail.railtype)->introduces_railtypes, _date);
 	} else if (e->type == VEH_ROAD) {
-		RoadTypeIdentifier rtid;
-		FOR_ALL_SORTED_ROADTYPES(rtid, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD) { // TODO
-			SetBit(c->avail_roadtypes[rtid.subtype], rtid.subtype);
-		}
+		RoadTypeIdentifier rtid = e->GetRoadType();
+		c->avail_roadtypes[rtid.basetype] = AddDateIntroducedRoadTypes(rtid.basetype, c->avail_roadtypes[rtid.basetype] | GetRoadTypeInfo(rtid)->introduces_roadtypes, _date);
 	}
 
 	e->preview_company = INVALID_COMPANY;
@@ -834,7 +791,12 @@ static bool IsVehicleTypeDisabled(VehicleType type, bool ai)
 /** Daily check to offer an exclusive engine preview to the companies. */
 void EnginesDailyLoop()
 {
-	CheckRailIntroduction();
+	Company *c;
+	FOR_ALL_COMPANIES(c) {
+		c->avail_railtypes = AddDateIntroducedRailTypes(c->avail_railtypes, _date);
+		c->avail_roadtypes[ROADTYPE_ROAD] = AddDateIntroducedRoadTypes(ROADTYPE_ROAD, c->avail_roadtypes[ROADTYPE_ROAD], _date);
+		c->avail_roadtypes[ROADTYPE_TRAM] = AddDateIntroducedRoadTypes(ROADTYPE_TRAM, c->avail_roadtypes[ROADTYPE_TRAM], _date);
+	}
 
 	if (_cur_year >= _year_engine_aging_stops) return;
 
@@ -976,10 +938,8 @@ static void NewVehicleAvailable(Engine *e)
 	} else if (e->type == VEH_ROAD) {
 		/* maybe make another road type available */
 		FOR_ALL_COMPANIES(c) {
-			RoadTypeIdentifier rtid;
-			FOR_ALL_SORTED_ROADTYPES(rtid, HasBit(e->info.misc_flags, EF_ROAD_TRAM) ? ROADTYPE_TRAM : ROADTYPE_ROAD) { // TODO
-				SetBit(c->avail_roadtypes[rtid.subtype], rtid.subtype);
-			}
+			RoadTypeIdentifier rtid = e->GetRoadType();
+			c->avail_roadtypes[rtid.basetype] = AddDateIntroducedRoadTypes(rtid.basetype, c->avail_roadtypes[rtid.basetype] | GetRoadTypeInfo(rtid)->introduces_roadtypes, _date);
 		}
 	}
 

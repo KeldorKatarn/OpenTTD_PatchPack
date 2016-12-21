@@ -30,7 +30,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_ROAD,
 		},
 
 		{
@@ -41,7 +41,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_ROAD,
 		},
 
 		/* strings */
@@ -112,7 +112,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_ROAD,
 		},
 
 		{
@@ -123,7 +123,7 @@ static const RoadtypeInfo _original_roadtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_ROAD,
 		},
 
 		/* strings */
@@ -197,7 +197,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_TRAM,
 		},
 
 		{
@@ -208,7 +208,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_TRAM,
 		},
 
 		/* strings */
@@ -279,7 +279,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_IMG_BUS_STATION,
 			SPR_IMG_TRUCK_BAY,
 			SPR_IMG_ROAD_TUNNEL,
-			SPR_IMG_QUERY // TODO
+			SPR_IMG_CONVERT_TRAM,
 		},
 
 		{
@@ -290,7 +290,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 			SPR_CURSOR_BUS_STATION,
 			SPR_CURSOR_TRUCK_STATION,
 			SPR_CURSOR_TUNNEL_RAIL,
-			SPR_IMG_QUERY // TODO
+			SPR_CURSOR_CONVERT_TRAM,
 		},
 
 		/* strings */

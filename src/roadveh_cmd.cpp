@@ -453,16 +453,16 @@ void RoadVehicle::UpdateDeltaXY(Direction direction)
  */
 inline int RoadVehicle::GetCurrentMaxSpeed() const
 {
-	int max_speed = this->vcache.cached_max_speed;
+	int max_speed = this->gcache.cached_max_track_speed;
 
 	/* Limit speed to 50% while reversing, 75% in curves. */
 	for (const RoadVehicle *u = this; u != NULL; u = u->Next()) {
 		if (_settings_game.vehicle.roadveh_acceleration_model == AM_REALISTIC) {
 			if (this->state <= RVSB_TRACKDIR_MASK && IsReversingRoadTrackdir((Trackdir)this->state)) {
-				max_speed = this->vcache.cached_max_speed / 2;
+				max_speed = this->gcache.cached_max_track_speed / 2;
 				break;
 			} else if ((u->direction & 1) == 0) {
-				max_speed = this->vcache.cached_max_speed * 3 / 4;
+				max_speed = this->gcache.cached_max_track_speed * 3 / 4;
 			}
 		}
 
@@ -872,7 +872,7 @@ static void RoadZPosAffectSpeed(RoadVehicle *v, int old_z)
 		v->cur_speed = v->cur_speed * 232 / 256; // slow down by ~10%
 	} else {
 		uint16 spd = v->cur_speed + 2;
-		if (spd <= v->vcache.cached_max_speed) v->cur_speed = spd;
+		if (spd <= v->gcache.cached_max_track_speed) v->cur_speed = spd;
 	}
 }
 
@@ -1316,9 +1316,15 @@ again:
 		}
 
 		if (!HasBit(r, VETS_ENTERED_WORMHOLE)) {
+			TileIndex old_tile = v->tile;
+
 			v->tile = tile;
 			v->state = (byte)dir;
 			v->frame = start_frame;
+
+			if (GetRoadType(old_tile, v->rtid.basetype) != GetRoadType(tile, v->rtid.basetype)) {
+				v->First()->CargoChanged();
+			}
 		}
 		if (new_dir != v->direction) {
 			v->direction = new_dir;

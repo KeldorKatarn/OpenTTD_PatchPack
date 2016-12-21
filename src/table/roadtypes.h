@@ -242,7 +242,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		16,
 
 		/* max speed */
-		0, // TODO
+		0,
 
 		/* road type label */
 		'RAIL',
@@ -324,7 +324,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		24,
 
 		/* max speed */
-		0, // TODO
+		0,
 
 		/* road type label */
 		'ELRL',

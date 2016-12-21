@@ -16,7 +16,8 @@
 #include "engine_base.h"
 #include "cargotype.h"
 #include "track_func.h"
-#include "road_type.h"
+#include "road.h"
+#include "road_map.h"
 #include "newgrf_engine.h"
 
 struct RoadVehicle;
@@ -252,7 +253,7 @@ protected: // These functions should not be called outside acceleration code.
 	 */
 	inline uint16 GetMaxTrackSpeed() const
 	{
-		return 0;
+		return GetRoadTypeInfo(GetRoadType(this->tile, this->rtid.basetype))->max_speed;
 	}
 
 	/**

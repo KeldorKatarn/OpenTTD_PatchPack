@@ -121,7 +121,7 @@ public:
 	/**
 	 * Maximum speed for vehicles travelling on this road type
 	 */
-	uint16 max_speed; // TODO use
+	uint16 max_speed;
 
 	/**
 	 * Unique 32 bit road type identifier

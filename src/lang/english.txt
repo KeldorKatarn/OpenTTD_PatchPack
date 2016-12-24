@@ -2406,6 +2406,8 @@ STR_ROAD_TOOLBAR_TOOLTIP_BUILD_ROAD_TUNNEL                      :{BLACK}Build ro
 STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_TUNNEL                   :{BLACK}Build tramway tunnel. Shift toggles building/showing cost estimate
 STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_ROAD           :{BLACK}Toggle build/remove for road construction
 STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_TRAMWAYS       :{BLACK}Toggle build/remove for tramway construction
+STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_ROAD                           :{BLACK}Convert/Upgrade the type of road. Shift toggles building/showing cost estimate
+STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_TRAM                           :{BLACK}Convert/Upgrade the type of tram. Shift toggles building/showing cost estimate
 
 STR_ROAD_NAME_ROAD                                              :Road
 STR_ROAD_NAME_ELROAD                                            :Electrified road
@@ -4338,6 +4340,10 @@ STR_ERROR_CAN_T_REMOVE_ROAD_FROM                                :{WHITE}Can't re
 STR_ERROR_CAN_T_REMOVE_TRAMWAY_FROM                             :{WHITE}Can't remove tramway from here...
 STR_ERROR_THERE_IS_NO_ROAD                                      :{WHITE}... there is no road
 STR_ERROR_THERE_IS_NO_TRAMWAY                                   :{WHITE}... there is no tramway
+STR_ERROR_CAN_T_CONVERT_ROAD                                    :{WHITE}Can't convert road type here...
+STR_ERROR_CAN_T_CONVERT_TRAMWAY                                 :{WHITE}Can't convert tram type here...
+STR_ERROR_NO_SUITABLE_ROAD                                      :{WHITE}No suitable road
+STR_ERROR_NO_SUITABLE_TRAMWAY                                   :{WHITE}No suitable tramway
 
 # Waterway construction errors
 STR_ERROR_CAN_T_BUILD_CANALS                                    :{WHITE}Can't build canals here...

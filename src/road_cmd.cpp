@@ -45,6 +45,8 @@
 
 #include "safeguards.h"
 
+/** Helper type for lists/vectors of road vehicles */
+typedef SmallVector<RoadVehicle *, 16> RoadVehicleList;
 
 RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
@@ -58,7 +60,7 @@ void ResetRoadTypes()
 	static const RoadtypeInfo empty_roadtype = {
 		{0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,{},{},{},{}},
+		{0,0,0,0,0,0,0,0,0,{},{},0,{},{}},
 		ROADSUBTYPES_NONE, ROTFB_NONE, 0, 0, 0, 0,
 		RoadTypeLabelList(), 0, 0, ROADSUBTYPES_NONE, ROADSUBTYPES_NONE, 0,
 		{}, {} };
@@ -112,7 +114,6 @@ static int CDECL CompareRoadTypes(const RoadTypeIdentifier *first, const RoadTyp
 
 /**
  * Resolve sprites of custom road types
- * TODO: Sprite structure
  */
 void InitRoadTypes()
 {
@@ -2189,6 +2190,17 @@ static CommandCost TerraformTile_Road(TileIndex tile, DoCommandFlag flags, int z
 	return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 }
 
+/** Update power of train under which is the railtype being converted */
+static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
+{
+	if (v->type != VEH_ROAD) return NULL;
+
+	RoadVehicleList *affected_trains = static_cast<RoadVehicleList*>(data);
+	affected_trains->Include(RoadVehicle::From(v)->First());
+
+	return NULL;
+}
+
 /**
  * Convert one road subtype to another.
  * Not meant to convert from road to tram.
@@ -2212,14 +2224,24 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	if (!ValParamRoadType(to_type)) return CMD_ERROR;
 	if (area_start >= MapSize()) return CMD_ERROR;
 
+	RoadVehicleList affected_rvs;
+
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	CommandCost error = CommandCost(to_type.IsRoad() ? STR_ERROR_NO_SUITABLE_ROAD : STR_ERROR_NO_SUITABLE_TRAMWAY); // by default, there is no road to convert.
 
 	TileIterator *iter = new OrthogonalTileIterator(area_start, area_end);
 	for (; (tile = *iter) != INVALID_TILE; ++(*iter)) {
-		TileType tt = GetTileType(tile);
+		/* Is road present on tile? */
+		if (!MayHaveRoad(tile)) continue;
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+		if (!rtids.HasType(to_type.basetype)) continue;
+
+		/* Converting to the same subtype? */
+		RoadTypeIdentifier from_type = rtids.GetType(to_type.basetype);
+		if (from_type.subtype == to_type.subtype) continue;
 
 		/* Check if there is any infrastructure on tile */
+		TileType tt = GetTileType(tile);
 		switch (tt) {
 			case MP_STATION:
 				if (!IsRoadStop(tile)) continue;
@@ -2236,34 +2258,34 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			default: continue;
 		}
 
-		/* The original roadtype we are converting from */
-		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-		if (!rtids.HasType(to_type.basetype)) return error;
-
-		RoadTypeIdentifier from_type = rtids.GetType(to_type.basetype);
-
-		/* Converting to the same subtype? */
-		if (from_type.subtype == to_type.subtype) continue;
-
-		/* Trying to convert other's road */
-		CommandCost ret = CheckTileOwnership(tile);
-		if (ret.Failed()) {
-			error = ret;
-			continue;
+		/* Trying to convert other's road */ // TODO allow upgrade?
+		Owner owner = GetRoadOwner(tile, to_type.basetype);
+		if (owner != OWNER_NONE) {
+			CommandCost ret = CheckOwnership(owner, tile);
+			if (ret.Failed()) {
+				error = ret;
+				continue;
+			}
 		}
 
 		/* Vehicle on the tile when not converting normal <-> powered
 		 * Tunnels and bridges have special check later */
 		if (tt != MP_TUNNELBRIDGE) {
-			// TODO: check for roadtype compatibility
+			if (!HasPowerOnRoad(from_type, to_type)) {
+				CommandCost ret = EnsureNoVehicleOnGround(tile);
+				if (ret.Failed()) {
+					error = ret;
+					continue;
+				}
+			}
+
+			uint num_pieces = CountBits(GetAnyRoadBits(tile, from_type.basetype));;
+			cost.AddCost(num_pieces * RoadConvertCost(from_type, to_type));
 
 			if (flags & DC_EXEC) { // we can safely convert, too
-				/* TODO: No power on new road type, reroute. */
-
 				/* Update the company infrastructure counters. */
-				if (!IsRoadStopTile(tile)) {
-					Company *c = Company::Get(GetTileOwner(tile));
-					uint num_pieces = IsLevelCrossingTile(tile) ? LEVELCROSSING_TRACKBIT_FACTOR : CountBits(GetRoadBits(tile, from_type.basetype));
+				if (!IsRoadStopTile(tile) && owner != OWNER_NONE) { // TODO transfer ownership?
+					Company *c = Company::Get(owner);
 					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
 					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
 					DirtyCompanyInfrastructureWindows(c->index);
@@ -2274,86 +2296,71 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				SetRoadTypes(tile, rtids);
 				MarkTileDirtyByTile(tile);
 
-				/* TODO: Update power of vehicle on this tile */
+				/* update power of train on this tile */
+				FindVehicleOnPos(tile, &affected_rvs, &UpdateRoadVehPowerProc);
+
+				if (IsRoadDepot(tile)) {
+					/* Update build vehicle window related to this depot */
+					InvalidateWindowData(WC_VEHICLE_DEPOT, tile);
+					InvalidateWindowData(WC_BUILD_VEHICLE, tile);
+				}
 			}
-		}
+		} else {
+			TileIndex endtile = GetOtherTunnelBridgeEnd(tile);
 
-		switch (tt) {
-			case MP_ROAD:
-				switch (GetRoadTileType(tile)) {
-					case ROAD_TILE_CROSSING:
-						cost.AddCost(RoadConvertCost(from_type, to_type) * LEVELCROSSING_TRACKBIT_FACTOR);
-						break;
+			/* If both ends of tunnel/bridge are in the range, do not try to convert twice -
+			 * it would cause assert because of different test and exec runs */
+			if (endtile < tile) {
+				if (OrthogonalTileArea(area_start, area_end).Contains(endtile)) continue;
+			}
 
-					case ROAD_TILE_DEPOT:
-						if (flags & DC_EXEC) {
-							/* TODO: notify YAPF about the track layout change */
-
-							/* Update build vehicle window related to this depot */
-							InvalidateWindowData(WC_VEHICLE_DEPOT, tile);
-							InvalidateWindowData(WC_BUILD_VEHICLE, tile);
-						}
-						cost.AddCost(RoadConvertCost(from_type, to_type));
-						break;
-
-					default: // ROAD_TILE_NORMAL
-						if (flags & DC_EXEC) {
-							/* TODO: notify YAPF about the track layout change */
-						}
-						cost.AddCost(RoadConvertCost(from_type, to_type) * CountBits(GetRoadBits(tile, from_type.basetype)));
-						break;
+			/* When not converting rail <-> el. rail, any vehicle cannot be in tunnel/bridge */
+			if (!HasPowerOnRoad(from_type, to_type)) {
+				CommandCost ret = TunnelBridgeIsFree(tile, endtile);
+				if (ret.Failed()) {
+					error = ret;
+					continue;
 				}
-				break;
+			}
 
-			case MP_TUNNELBRIDGE: {
-				TileIndex endtile = GetOtherTunnelBridgeEnd(tile);
+			/* There are 2 pieces on *every* tile of the bridge or tunnel */
+			uint num_pieces = (GetTunnelBridgeLength(tile, endtile) + 2) * 2;
+			cost.AddCost(num_pieces * RoadConvertCost(from_type, to_type));
 
-				/* If both ends of tunnel/bridge are in the range, do not try to convert twice -
-				 * it would cause assert because of different test and exec runs */
-				if (endtile < tile) {
-					if (OrthogonalTileArea(area_start, area_end).Contains(endtile)) continue;
-				}
-
-				/* TODO: When not converting normal <-> powered, any vehicle cannot be in tunnel/bridge */
-				if (flags & DC_EXEC) {
-					/* Update the company infrastructure counters. There are 2 pieces on *every* tile of the bridge or tunnel */
-					uint num_pieces = (GetTunnelBridgeLength(tile, endtile) + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR * 2;
-					Company *c = Company::Get(GetTileOwner(tile));
+			if (flags & DC_EXEC) {
+				/* Update the company infrastructure counters. */
+				if (owner != OWNER_NONE) { // TODO transfer ownership?
+					Company *c = Company::Get(owner);
 					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
 					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
 					DirtyCompanyInfrastructureWindows(c->index);
-
-					/* Perform the conversion */
-					rtids.MergeRoadType(to_type);
-					SetRoadTypes(tile, rtids);
-					SetRoadTypes(endtile, rtids);
-
-					/* TODO: Update vehicle power status */
-					/* TODO: Update YAPF */
-
-					if (IsBridge(tile)) {
-						MarkBridgeDirty(tile);
-					} else {
-						MarkTileDirtyByTile(tile);
-						MarkTileDirtyByTile(endtile);
-					}
 				}
 
-				/* There are 2 pieces on *every* tile of the bridge or tunnel */
-				cost.AddCost((GetTunnelBridgeLength(tile, endtile) + 2) * RoadConvertCost(from_type, to_type) * 2);
-				break;
+				/* Perform the conversion */
+				rtids.MergeRoadType(to_type);
+				SetRoadTypes(tile, rtids);
+				SetRoadTypes(endtile, rtids);
+
+				FindVehicleOnPos(tile, &affected_rvs, &UpdateRoadVehPowerProc);
+				FindVehicleOnPos(endtile, &affected_rvs, &UpdateRoadVehPowerProc);
+
+				if (IsBridge(tile)) {
+					MarkBridgeDirty(tile);
+				} else {
+					MarkTileDirtyByTile(tile);
+					MarkTileDirtyByTile(endtile);
+				}
 			}
-
-			default: // MP_STATION, MP_RAILWAY
-				if (flags & DC_EXEC) {
-					/* TODO: Update YAPF */
-				}
-
-				cost.AddCost(RoadConvertCost(from_type, to_type) * 2);
-				break;
 		}
 	}
-	
+
+	if (flags & DC_EXEC) {
+		/* Roadtype changed, update roadvehicles as when entering different track */
+		for (RoadVehicle **v = affected_rvs.Begin(); v != affected_rvs.End(); v++) {
+			(*v)->CargoChanged();
+		}
+	}
+
 	delete iter;
 	return (cost.GetCost() == 0) ? error : cost;
 }

@@ -218,10 +218,10 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 }
 
 /**
- * Calculates the cost of rail conversion
- * @param from The railtype we are converting from
- * @param to   The railtype we are converting to
- * @return Cost per TrackBit
+ * Calculates the cost of road conversion
+ * @param from The roadtype we are converting from
+ * @param to   The roadtype we are converting to
+ * @return Cost per RoadBit
  */
 static inline Money RoadConvertCost(RoadTypeIdentifier from, RoadTypeIdentifier to)
 {
@@ -238,7 +238,7 @@ static inline Money RoadConvertCost(RoadTypeIdentifier from, RoadTypeIdentifier 
 		return min(upgradecost, rebuildcost);
 	}
 
-	/* make the price the same as remove + build new type for rail types
+	/* make the price the same as remove + build new type for road types
 	 * which are not compatible in any way */
 	return rebuildcost;
 }

@@ -2299,7 +2299,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				/* update power of train on this tile */
 				FindVehicleOnPos(tile, &affected_rvs, &UpdateRoadVehPowerProc);
 
-				if (IsRoadDepot(tile)) {
+				if (IsRoadDepotTile(tile)) {
 					/* Update build vehicle window related to this depot */
 					InvalidateWindowData(WC_VEHICLE_DEPOT, tile);
 					InvalidateWindowData(WC_BUILD_VEHICLE, tile);

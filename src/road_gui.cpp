@@ -753,7 +753,23 @@ static Hotkey roadtoolbar_hotkeys[] = {
 	HOTKEY_LIST_END
 };
 HotkeyList BuildRoadToolbarWindow::road_hotkeys("roadtoolbar", roadtoolbar_hotkeys, RoadToolbarGlobalHotkeys);
-HotkeyList BuildRoadToolbarWindow::tram_hotkeys("tramtoolbar", roadtoolbar_hotkeys, TramToolbarGlobalHotkeys);
+
+static Hotkey tramtoolbar_hotkeys[] = {
+	Hotkey('1', "build_x", WID_ROT_ROAD_X),
+	Hotkey('2', "build_y", WID_ROT_ROAD_Y),
+	Hotkey('3', "autoroad", WID_ROT_AUTOROAD),
+	Hotkey('4', "demolish", WID_ROT_DEMOLISH),
+	Hotkey('5', "depot", WID_ROT_DEPOT),
+	Hotkey('6', "bus_station", WID_ROT_BUS_STATION),
+	Hotkey('7', "truck_station", WID_ROT_TRUCK_STATION),
+	Hotkey('8', "oneway", WID_ROT_ONE_WAY),
+	Hotkey('B', "bridge", WID_ROT_BUILD_BRIDGE),
+	Hotkey('T', "tunnel", WID_ROT_BUILD_TUNNEL),
+	Hotkey('R', "remove", WID_ROT_REMOVE),
+	Hotkey('C', "convert", WID_ROT_CONVERT_ROAD),
+	HOTKEY_LIST_END
+};
+HotkeyList BuildRoadToolbarWindow::tram_hotkeys("tramtoolbar", tramtoolbar_hotkeys, TramToolbarGlobalHotkeys);
 
 
 static const NWidgetPart _nested_build_road_widgets[] = {

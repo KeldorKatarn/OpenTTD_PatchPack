@@ -58,8 +58,8 @@ uint8 _sorted_roadtypes_size[ROADTYPE_END];
 void ResetRoadTypes()
 {
 	static const RoadtypeInfo empty_roadtype = {
-		{0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0},
+		{0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,{},{},0,{},{}},
 		ROADSUBTYPES_NONE, ROTFB_NONE, 0, 0, 0, 0,
 		RoadTypeLabelList(), 0, 0, ROADSUBTYPES_NONE, ROADSUBTYPES_NONE, 0,
@@ -86,18 +86,14 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
 		rti->gui_sprites.build_y_road = cursors_base + 1;
 		rti->gui_sprites.auto_road = cursors_base + 2;
 		rti->gui_sprites.build_depot = cursors_base + 3;
-		rti->gui_sprites.build_bus_station = cursors_base + 4;
-		rti->gui_sprites.build_truck_station = cursors_base + 5;
-		rti->gui_sprites.build_tunnel = cursors_base + 6;
-		rti->gui_sprites.convert_road = cursors_base + 7;
-		rti->cursor.road_swne = cursors_base + 8;
-		rti->cursor.road_nwse = cursors_base + 9;
-		rti->cursor.autoroad = cursors_base + 10;
-		rti->cursor.depot = cursors_base + 11;
-		rti->cursor.bus_station = cursors_base + 12;
-		rti->cursor.truck_station = cursors_base + 13;
-		rti->cursor.tunnel = cursors_base + 14;
-		rti->cursor.convert_road = cursors_base + 15;
+		rti->gui_sprites.build_tunnel = cursors_base + 4;
+		rti->gui_sprites.convert_road = cursors_base + 5;
+		rti->cursor.road_swne = cursors_base + 6;
+		rti->cursor.road_nwse = cursors_base + 7;
+		rti->cursor.autoroad = cursors_base + 8;
+		rti->cursor.depot = cursors_base + 9;
+		rti->cursor.tunnel = cursors_base + 10;
+		rti->cursor.convert_road = cursors_base + 11;
 	}
 }
 

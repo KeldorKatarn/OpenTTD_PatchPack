@@ -334,8 +334,6 @@ struct BuildRoadToolbarWindow : Window {
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
 		if (_game_mode != GM_EDITOR) {
 			this->GetWidget<NWidgetCore>(WID_ROT_DEPOT)->widget_data = rti->gui_sprites.build_depot;
-			this->GetWidget<NWidgetCore>(WID_ROT_BUS_STATION)->widget_data = rti->gui_sprites.build_bus_station;
-			this->GetWidget<NWidgetCore>(WID_ROT_TRUCK_STATION)->widget_data = rti->gui_sprites.build_truck_station;
 			this->GetWidget<NWidgetCore>(WID_ROT_CONVERT_ROAD)->widget_data = rti->gui_sprites.convert_road;
 		}
 		this->GetWidget<NWidgetCore>(WID_ROT_BUILD_TUNNEL)->widget_data = rti->gui_sprites.build_tunnel;
@@ -451,7 +449,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_BUS_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
-				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.bus_station, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, SPR_CURSOR_BUS_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
 				}
@@ -459,7 +457,7 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_TRUCK_STATION:
 				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
-				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, GetRoadTypeInfo(roadtype_identifier)->cursor.truck_station, HT_RECT)) {
+				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, SPR_CURSOR_TRUCK_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
 				}

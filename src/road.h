@@ -65,8 +65,6 @@ public:
 		SpriteID build_y_road;        ///< button for building single rail in Y direction
 		SpriteID auto_road;           ///< button for the autoroad construction
 		SpriteID build_depot;         ///< button for building depots
-		SpriteID build_bus_station;   ///< button for building bus stations
-		SpriteID build_truck_station; ///< button for building truck stations
 		SpriteID build_tunnel;        ///< button for building a tunnel
 		SpriteID convert_road;        ///< button for converting road types
 	} gui_sprites;
@@ -76,8 +74,6 @@ public:
 		CursorID road_nwse;     ///< Cursor for building rail in Y direction
 		CursorID autoroad;      ///< Cursor for autorail tool
 		CursorID depot;         ///< Cursor for building a depot
-		CursorID bus_station;   ///< Cursor for building a bus station
-		CursorID truck_station; ///< Cursor for building a truck station
 		CursorID tunnel;        ///< Cursor for building a tunnel
 		SpriteID convert_road;  ///< Cursor for converting road types
 	} cursor;                       ///< Cursors associated with the road type.

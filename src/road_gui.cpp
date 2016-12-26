@@ -355,7 +355,13 @@ struct BuildRoadToolbarWindow : Window {
 	virtual void SetStringParameters(int widget) const
 	{
 		if (widget == WID_ROT_CAPTION) {
-			SetDParam(0, rti->strings.toolbar_caption);
+			if (this->rti->max_speed > 0) {
+				SetDParam(0, STR_TOOLBAR_RAILTYPE_VELOCITY);
+				SetDParam(1, this->rti->strings.toolbar_caption);
+				SetDParam(2, this->rti->max_speed / 2);
+			} else {
+				SetDParam(0, this->rti->strings.toolbar_caption);
+			}
 		}
 	}
 
@@ -1265,8 +1271,10 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
-			// TODO show max speed
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(for_replacement ? rti->strings.replace_text : rti->strings.menu_text, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
+			StringID str = for_replacement ? rti->strings.replace_text : (rti->max_speed > 0 ? STR_TOOLBAR_RAILTYPE_VELOCITY : STR_JUST_STRING);
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(str, rtid.Pack(), !HasBit(c->avail_roadtypes[rtid.basetype], rtid.subtype));
+			item->SetParam(0, rti->strings.menu_text);
+			item->SetParam(1, rti->max_speed / 2);
 			*list->Append() = item;
 		}
 	}
@@ -1311,7 +1319,10 @@ DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
-			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);
+			StringID str = rti->max_speed > 0 ? STR_TOOLBAR_RAILTYPE_VELOCITY : STR_JUST_STRING;
+			DropDownListParamStringItem *item = new DropDownListParamStringItem(str, rtid.Pack(), false);
+			item->SetParam(0, rti->strings.menu_text);
+			item->SetParam(1, rti->max_speed);
 			*list->Append() = item;
 		}
 	}

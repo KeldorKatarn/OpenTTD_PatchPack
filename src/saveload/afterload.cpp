@@ -49,7 +49,6 @@
 #include "../newgrf.h"
 #include "../engine_func.h"
 #include "../rail_gui.h"
-#include "../road_gui.h"
 #include "../core/backup_type.hpp"
 #include "../smallmap_gui.h"
 #include "../news_func.h"
@@ -3030,10 +3029,6 @@ bool AfterLoadGame()
 	ResetSignalHandlers();
 
 	AfterLoadLinkGraphs();
-
-	if (IsSavegameVersionBefore(196)) {
-		InitializeRoadGUI();
-	}
 	return true;
 }
 

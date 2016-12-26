@@ -1522,7 +1522,7 @@ static void DrawRoadBits(TileInfo *ti)
 	if (road_rti != NULL) {
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-			DrawGroundSprite(ground + road_offset, PAL_NONE);
+			if (ground != 0) DrawGroundSprite(ground + road_offset, PAL_NONE);
 		}
 	}
 
@@ -1530,7 +1530,7 @@ static void DrawRoadBits(TileInfo *ti)
 	if (tram_rti != NULL) {
 		if (tram_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-			DrawGroundSprite(ground + tram_offset, PAL_NONE);
+			if (ground != 0) DrawGroundSprite(ground + tram_offset, PAL_NONE);
 		} else if (road_rti != NULL) {
 			DrawGroundSprite(SPR_TRAMWAY_OVERLAY + tram_offset, PAL_NONE);
 		}
@@ -1655,7 +1655,7 @@ static void DrawTile_Road(TileInfo *ti)
 			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + axis, PAL_NONE);
+					if (ground != 0) DrawGroundSprite(ground + axis, PAL_NONE);
 				}
 			}
 	
@@ -1663,7 +1663,7 @@ static void DrawTile_Road(TileInfo *ti)
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + axis, PAL_NONE);
+					if (ground != 0) DrawGroundSprite(ground + axis, PAL_NONE);
 				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + axis, PAL_NONE);
 				}
@@ -1723,7 +1723,7 @@ static void DrawTile_Road(TileInfo *ti)
 				uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
 				if (rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + offset, PAL_NONE);
+					if (ground != 0) DrawGroundSprite(ground + offset, PAL_NONE);
 				} else if (rtids.HasTram()) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE);
 				}
@@ -1765,7 +1765,7 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 		uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
 		if (rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
-			DrawSprite(ground + offset, PAL_NONE, x, y);
+			if (ground != 0) DrawSprite(ground + offset, PAL_NONE, x, y);
 		} else if (rtid.IsTram()) {
 			DrawSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE, x, y);
 		}

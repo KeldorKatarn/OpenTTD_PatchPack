@@ -2972,7 +2972,7 @@ draw_default_foundation:
 			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				}
 			}
 	
@@ -2980,7 +2980,7 @@ draw_default_foundation:
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}
@@ -3048,7 +3048,7 @@ void StationPickerDrawSprite(int x, int y, StationType st, RailType railtype, Ro
 				DrawSprite(ground + sprite_offset, PAL_NONE, x, y);
 
 				SpriteID overlay = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
-				DrawSprite(overlay + sprite_offset, PAL_NONE, x, y);
+				if (overlay) DrawSprite(overlay + sprite_offset, PAL_NONE, x, y);
 			} else if (rtid.IsTram()) {
 				DrawSprite(SPR_TRAMWAY_TRAM + sprite_offset, PAL_NONE, x, y);
 			}

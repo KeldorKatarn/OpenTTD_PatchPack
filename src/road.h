@@ -37,17 +37,17 @@ struct SpriteGroup;
 
 /** Sprite groups for a roadtype. */
 enum RoadTypeSpriteGroup {
-	ROTSG_CURSORS,        ///< Cursor and toolbar icon images
-	ROTSG_OVERLAY,        ///< Images for overlaying track
-	ROTSG_GROUND,         ///< Main group of ground images
-	ROTSG_reserved1,      ///< Placeholder, if we need specific tunnel sprites.
-	ROTSG_CATENARY_FRONT, ///< Catenary front
-	ROTSG_CATENARY_BACK,  ///< Catenary back
-	ROTSG_BRIDGE,         ///< Bridge surface images
-	ROTSG_reserved2,      ///< Placeholder, if we need specific level crossing sprites.
-	ROTSG_DEPOT,          ///< Depot images
-	ROTSG_reserved3,      ///< Placeholder, if we add road fences (for highways).
-	ROTSG_ROADSTOP,       ///< Drive-in stop surface
+	ROTSG_CURSORS,        ///< Optional: Cursor and toolbar icon images
+	ROTSG_OVERLAY,        ///< Optional: Images for overlaying track
+	ROTSG_GROUND,         ///< Required: Main group of ground images
+	ROTSG_reserved1,      ///<           Placeholder, if we need specific tunnel sprites.
+	ROTSG_CATENARY_FRONT, ///< Optional: Catenary front
+	ROTSG_CATENARY_BACK,  ///< Optional: Catenary back
+	ROTSG_BRIDGE,         ///< Required: Bridge surface images
+	ROTSG_reserved2,      ///<           Placeholder, if we need specific level crossing sprites.
+	ROTSG_DEPOT,          ///< Optional: Depot images
+	ROTSG_reserved3,      ///<           Placeholder, if we add road fences (for highways).
+	ROTSG_ROADSTOP,       ///< Required: Drive-in stop surface
 	ROTSG_END,
 };
 

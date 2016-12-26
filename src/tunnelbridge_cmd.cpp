@@ -1143,7 +1143,8 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 		trans_back[1] = !head && IsTransparencySet(TO_BRIDGES);
 		if (road_rti != NULL) {
 			if (road_rti->UsesOverlay()) {
-				seq_back[1] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
+				seq_back[1] = GetCustomRoadSprite(road_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+				if (seq_back[1] != 0) seq_back[1] += overlay_offsets[offset];
 			}
 		}
 
@@ -1151,7 +1152,8 @@ static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int off
 		trans_back[2] = !head && IsTransparencySet(TO_BRIDGES);
 		if (tram_rti != NULL) {
 			if (tram_rti->UsesOverlay()) {
-				seq_back[2] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE) + overlay_offsets[offset];
+				seq_back[2] = GetCustomRoadSprite(tram_rti, head_tile, ROTSG_OVERLAY, head ? TCX_NORMAL : TCX_ON_BRIDGE);
+				if (seq_back[2] != 0) seq_back[2] += overlay_offsets[offset];
 			} else if (road_rti != NULL) {
 				seq_back[2] = SPR_TRAMWAY_OVERLAY + overlay_offsets[offset];
 			}
@@ -1296,7 +1298,7 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				}
 			}
 
@@ -1304,7 +1306,7 @@ static void DrawTile_TunnelBridge(TileInfo *ti)
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}

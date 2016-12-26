@@ -1281,29 +1281,34 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 
 DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 {
-	RoadTypes used_roadtypes = ROADTYPES_NONE;
-
-	/* Road is always visible and available. */
-	used_roadtypes |= ROADTYPES_ROAD;
-
-	/* Tram is only visible when there will be a tram, and available when that has been introduced. */
-	Engine *e;
-	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-		if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
-		if (!HasBit(e->info.misc_flags, EF_ROAD_TRAM)) continue;
-
-		used_roadtypes |= ROADTYPES_TRAM;
-		break;
-	}
-
 	DropDownList *list = new DropDownList();
-	RoadTypeIdentifier rtid;
+	RoadSubTypes used_roadtypes = ROADSUBTYPES_NONE;
 
 	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
 		if (!HasBit(roadtypes, rt)) continue;
+
+		/* Road is always visible and available. */
+		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_NORMAL; // TODO
+
+		/* Find used roadtypes */
+		Engine *e;
+		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+			if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
+
+			RoadTypeIdentifier rtid = e->GetRoadType();
+			if (rtid.basetype != rt) continue;
+
+			used_roadtypes |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
+		}
+
+		/* Get the date introduced roadtypes as well. */
+		used_roadtypes = AddDateIntroducedRoadTypes(rt, used_roadtypes, MAX_DAY);
+
 		/* If it's not used ever, don't show it to the user. */
-		if (!HasBit(used_roadtypes, rt)) continue;
+		RoadTypeIdentifier rtid;
 		FOR_ALL_SORTED_ROADTYPES(rtid, rt) {
+			if (!HasBit(used_roadtypes, rtid.subtype)) continue;
+
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
 
 			DropDownListParamStringItem *item = new DropDownListParamStringItem(rti->strings.menu_text, rtid.Pack(), false);

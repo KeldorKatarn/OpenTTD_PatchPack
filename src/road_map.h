@@ -732,19 +732,17 @@ struct RoadTypeIdentifiers {
 	}
 
 	/**
-	 * Merge a new road type identifier into the current one
+	 * Merge a new road type identifier into the current one.
+	 * If the roadtype is already present, the new subtype replaces the old one.
 	 * @param rtid The new RoadTypeIdentifier to merge into the current one
-	 * @return true on success (current behaviour = always success)
 	 */
-	bool MergeRoadType(RoadTypeIdentifier rtid)
+	void MergeRoadType(RoadTypeIdentifier rtid)
 	{
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
 			case ROADTYPE_ROAD: road_identifier = rtid; break;
 			case ROADTYPE_TRAM: tram_identifier = rtid; break;
 		}
-
-		return true;
 	};
 
 	/**

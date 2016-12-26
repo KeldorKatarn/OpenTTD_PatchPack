@@ -876,6 +876,23 @@ do_clear:;
 		CommandCost ret = EnsureNoVehicleOnGround(tile);
 		if (ret.Failed()) return ret;
 
+		if (IsNormalRoadTile(tile)) {
+			/* If the road types don't match, try to convert only if vehicles of
+			 * the new road type are not powered on the present road type and vehicles of
+			 * the present road type are powered on the new road type. */
+			RoadTypeIdentifier existing_rtid = GetRoadType(tile, rtid.basetype);
+			if (existing_rtid.IsValid() && existing_rtid != rtid) {
+				if (HasPowerOnRoad(rtid, existing_rtid)) {
+					rtid = existing_rtid;
+				} else if (HasPowerOnRoad(existing_rtid, rtid)) {
+					CommandCost ret = DoCommand(tile, tile, rtid.Pack(), flags, CMD_CONVERT_ROAD);
+					if (ret.Failed()) return ret;
+					cost.AddCost(ret);
+				} else {
+					return CMD_ERROR;
+				}
+			}
+		}
 	}
 
 	uint num_pieces = (!need_to_clear && IsTileType(tile, MP_TUNNELBRIDGE)) ?

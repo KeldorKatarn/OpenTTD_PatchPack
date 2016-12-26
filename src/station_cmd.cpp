@@ -960,8 +960,18 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (ret.Failed()) return ret;
 					}
 
-					/* Pay to complete the bits */
-					cost.AddCost(RoadBuildCost(rtids.road_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD))));
+					/* Pay to upgrade/complete the bits */
+					uint num_pieces = CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD));
+					if (rtid.IsRoad()) {
+						if (HasPowerOnRoad(rtids.road_identifier, rtid)) {
+							cost.AddCost(num_pieces * RoadConvertCost(rtids.road_identifier, rtid));
+						} else {
+							return_cmd_error(STR_ERROR_NO_SUITABLE_ROAD);
+						}
+						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
+					} else {
+						cost.AddCost(RoadBuildCost(rtids.road_identifier) * (2 - num_pieces));
+					}
 				}
 
 				/* There is a tram, check if we can build road+tram stop over it. */
@@ -976,8 +986,18 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (ret.Failed()) return ret;
 					}
 
-					/* Pay to complete the bits */
-					cost.AddCost(RoadBuildCost(rtids.tram_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM))));
+					/* Pay to upgrade/complete the bits */
+					uint num_pieces = CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM));
+					if (rtid.IsTram()) {
+						if (HasPowerOnRoad(rtids.tram_identifier, rtid)) {
+							cost.AddCost(num_pieces * RoadConvertCost(rtids.tram_identifier, rtid));
+						} else {
+							return_cmd_error(STR_ERROR_NO_SUITABLE_TRAMWAY);
+						}
+						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
+					} else {
+						cost.AddCost(RoadBuildCost(rtids.tram_identifier) * (2 - num_pieces));
+					}
 				}
 			} else {
 				ret = DoCommand(cur_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
@@ -1850,16 +1870,26 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 			RoadStopType rs_type = type ? ROADSTOP_TRUCK : ROADSTOP_BUS;
 			if (is_drive_through) {
-				RoadTypes cur_rts = rtids.PresentRoadTypes();
+				RoadTypeIdentifier cur_rtid;
+
+				/* Update company infrastructure counts. If the current tile is a normal, remove the old
+				 * bits first. */
+				if (IsNormalRoadTile(cur_tile)) {
+					FOR_EACH_SET_ROADTYPEIDENTIFIER(cur_rtid, rtids) {
+						Company *c = Company::GetIfValid(cur_rtid.basetype == ROADTYPE_ROAD ? road_owner : tram_owner);
+						if (c != NULL) {
+							c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] -= CountBits(GetRoadBits(cur_tile, cur_rtid.basetype));
+							DirtyCompanyInfrastructureWindows(c->index);
+						}
+					}
+				}
+
 				rtids.MergeRoadType(rtid);
 
-				/* Update company infrastructure counts. If the current tile is a normal
-				 * road tile, count only the new road bits needed to get a full diagonal road. */
-				RoadTypeIdentifier cur_rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(cur_rtid, rtids) {
 					Company *c = Company::GetIfValid(cur_rtid.basetype == ROADTYPE_ROAD ? road_owner : tram_owner);
 					if (c != NULL) {
-						c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] += 2 - (IsNormalRoadTile(cur_tile) && HasBit(cur_rts, cur_rtid.basetype) ? CountBits(GetRoadBits(cur_tile, cur_rtid.basetype)) : 0);
+						c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] += 2;
 						DirtyCompanyInfrastructureWindows(c->index);
 					}
 				}

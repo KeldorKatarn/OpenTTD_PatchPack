@@ -333,8 +333,27 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			GetTunnelBridgeTransportType(tile_start) == transport_type) {
 		/* Replace a current bridge. */
 
+		switch (transport_type) {
+			case TRANSPORT_RAIL:
+				/* Keep the reservation, the path stays valid. */
+				pbs_reservation = HasTunnelBridgeReservation(tile_start);
+				break;
+
+			case TRANSPORT_ROAD:
+				/* Do not remove road types when upgrading a bridge */
+				rtids = RoadTypeIdentifiers::FromTile(tile_start);
+				break;
+
+			default: break;
+		}
+
 		/* If this is a railway bridge, make sure the railtypes match. */
 		if (transport_type == TRANSPORT_RAIL && GetRailType(tile_start) != railtype) {
+			return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+		}
+
+		/* If this is a road bridge, make sure the roadtype matches. */
+		if (transport_type == TRANSPORT_ROAD && rtids.HasType(rtid.basetype) && rtids.GetType(rtid.basetype) != rtid) {
 			return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 		}
 
@@ -353,7 +372,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		}
 
 		/* Do not replace the bridge with the same bridge type. */
-		if (!(flags & DC_QUERY_COST) && (bridge_type == GetBridgeType(tile_start)) && (transport_type != TRANSPORT_ROAD || HasTileRoadType(tile_start, rtid.basetype))) {
+		if (!(flags & DC_QUERY_COST) && (bridge_type == GetBridgeType(tile_start)) && (transport_type != TRANSPORT_ROAD || rtids.HasType(rtid.basetype))) {
 			return_cmd_error(STR_ERROR_ALREADY_BUILT);
 		}
 
@@ -368,20 +387,6 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		/* If bridge belonged to bankrupt company, it has a new owner now */
 		is_new_owner = (owner == OWNER_NONE);
 		if (is_new_owner) owner = company;
-
-		switch (transport_type) {
-			case TRANSPORT_RAIL:
-				/* Keep the reservation, the path stays valid. */
-				pbs_reservation = HasTunnelBridgeReservation(tile_start);
-				break;
-
-			case TRANSPORT_ROAD:
-				/* Do not remove road types when upgrading a bridge */
-				rtids = RoadTypeIdentifiers::FromTile(tile_start);
-				break;
-
-			default: break;
-		}
 	} else {
 		/* Build a new bridge. */
 
@@ -732,22 +737,18 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 		Company *c = Company::GetIfValid(company);
 		uint num_pieces = (tiles + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
 		if (transport_type == TRANSPORT_RAIL) {
-			if (!IsTunnelTile(start_tile) && c != NULL) c->infrastructure.rail[railtype] += num_pieces;
+			if (c != NULL) c->infrastructure.rail[railtype] += num_pieces;
 			MakeRailTunnel(start_tile, company, direction,                 railtype);
 			MakeRailTunnel(end_tile,   company, ReverseDiagDir(direction), railtype);
 			AddSideToSignalBuffer(start_tile, INVALID_DIAGDIR, company);
 			YapfNotifyTrackLayoutChange(start_tile, DiagDirToDiagTrack(direction));
 		} else {
 			RoadTypeIdentifiers rtids;
-			if (IsTunnelTile(start_tile)) rtids = RoadTypeIdentifiers::FromTile(start_tile);
-			RoadTypes prev_rts = rtids.PresentRoadTypes();
 			rtids.MergeRoadType(rtid);
 			if (c != NULL) {
 				RoadTypeIdentifier new_rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(new_rtid, rtids) {
-					if (!HasBit(prev_rts, new_rtid.basetype)) {
-						c->infrastructure.road[new_rtid.basetype][new_rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
-					}
+					c->infrastructure.road[new_rtid.basetype][new_rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
 				}
 			}
 			MakeRoadTunnel(start_tile, company, direction,                 rtids);

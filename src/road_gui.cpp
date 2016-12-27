@@ -123,7 +123,7 @@ void ConnectRoadToStructure(TileIndex tile, DiagDirection direction)
 	/* if there is a roadpiece just outside of the station entrance, build a connecting route */
 	if (IsNormalRoadTile(tile)) {
 		if (GetRoadBits(tile, _cur_roadtype_identifier.basetype) != ROAD_NONE) {
-			DoCommandP(tile, _cur_roadtype_identifier.basetype << 4 | DiagDirToRoadBits(ReverseDiagDir(direction)), 0, CMD_BUILD_ROAD);
+			DoCommandP(tile, _cur_roadtype_identifier.Pack() << 4 | DiagDirToRoadBits(ReverseDiagDir(direction)), 0, CMD_BUILD_ROAD);
 		}
 	}
 }

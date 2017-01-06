@@ -4248,6 +4248,9 @@ STR_TIMETABLE_STATUS_START_AT                                   :{BLACK}This tim
 STR_TIMETABLE_STARTING_DATE                                     :{BLACK}Start date
 STR_TIMETABLE_STARTING_DATE_TOOLTIP                             :{BLACK}Select a date as starting point of this timetable. Ctrl+Click sets the starting point of this timetable and distributes all vehicles sharing this order evenly based on their relative order, if the order is completely timetabled
 
+STR_TIMETABLE_CONFIRM_ALL                                       :{BLACK}Confirm all
+STR_TIMETABLE_CONFIRM_ALL_TOOLTIP                               :{BLACK}Confirm all estimated wait and travel times as timetabled.
+
 STR_TIMETABLE_CHANGE_TIME                                       :{BLACK}Change Time
 STR_TIMETABLE_WAIT_TIME_TOOLTIP                                 :{BLACK}Change the amount of time that the highlighted order should take. Ctrl+Click sets the time for all orders
 

@@ -346,7 +346,7 @@ enum Commands {
 	CMD_CHANGE_TIMETABLE,             ///< change the timetable for a vehicle
 	CMD_SET_VEHICLE_ON_TIME,          ///< set the vehicle on time feature (timetable)
 	CMD_AUTOFILL_TIMETABLE,           ///< autofill the timetable
-	CMD_SET_TIMETABLE_START,          ///< set the date that a timetable should start
+	CMD_CONFIRM_ALL,                  ///< confirms all estimated wait and travel times as timetabled
 	CMD_REINIT_SEPARATION,            ///< reinit timetable separation with new parameters
 
 	CMD_OPEN_CLOSE_AIRPORT,           ///< open/close an airport to incoming aircraft

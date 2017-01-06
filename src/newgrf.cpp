@@ -668,8 +668,15 @@ static Engine *GetNewEngine(const GRFFile *file, VehicleType type, uint16 intern
 		size_t len = (Engine::GetPoolSize() - engine_pool_size) * sizeof(*_gted);
 		memset(_gted + engine_pool_size, 0, len);
 	}
-	if (type == VEH_TRAIN) {
-		_gted[e->index].railtypelabel = GetRailTypeInfo(e->u.rail.railtype)->label;
+	switch (type) {
+		case VEH_TRAIN:
+			_gted[e->index].railtypelabel = GetRailTypeInfo(e->u.rail.railtype)->label;
+			break;
+		case VEH_ROAD:
+			_gted[e->index].roadsubtype = 0xFF;
+			break;
+		default:
+			break;
 	}
 
 	grfmsg(5, "Created new engine at index %d for GRFID %x, type %d, index %d", e->index, BSWAP32(file->grfid), type, internal_id);
@@ -4322,12 +4329,12 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 			int n = buf->ReadByte();
 			for (int j = 0; j != n; j++) {
 				RoadTypeLabel label = buf->ReadDWord();
-				RoadTypeIdentifier rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
-				if (!rtid.IsValid()) {
+				RoadTypeIdentifier c_rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
+				if (c_rtid.IsValid()) {
 					switch (prop) {
-					case 0x0F: SetBit(rti->powered_roadtypes, rtid.basetype);               break;
-					case 0x18: SetBit(rti->introduction_required_roadtypes, rtid.basetype); break;
-					case 0x19: SetBit(rti->introduces_roadtypes, rtid.basetype);            break;
+					case 0x0F: SetBit(rti->powered_roadtypes, c_rtid.subtype);               break;
+					case 0x18: SetBit(rti->introduction_required_roadtypes, c_rtid.subtype); break;
+					case 0x19: SetBit(rti->introduces_roadtypes, c_rtid.subtype);            break;
 					}
 				}
 			}
@@ -4336,10 +4343,6 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 
 		case 0x10: // Road Type flags
 			rti->flags = (RoadTypeFlags)buf->ReadByte();
-			break;
-
-		case 0x11: // Curve speed advantage
-			rti->curve_speed = buf->ReadByte();
 			break;
 
 		case 0x13: // Construction cost factor
@@ -4457,7 +4460,6 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 				break;
 
 			case 0x10: // Road Type flags
-			case 0x11: // Curve speed advantage
 			case 0x12: // Station graphic
 			case 0x15: // Acceleration model
 			case 0x16: // Map colour
@@ -8532,8 +8534,10 @@ GRFFile::GRFFile(const GRFConfig *config)
 
 	/* Initialise road type map with default road types */
 	memset(this->roadtype_map, INVALID_ROADSUBTYPE, sizeof(this->roadtype_map));
-	this->roadtype_map[ROADTYPE_ROAD][0] = ROADSUBTYPE_BEGIN;
-	this->roadtype_map[ROADTYPE_TRAM][0] = ROADSUBTYPE_BEGIN;
+	this->roadtype_map[ROADTYPE_ROAD][0] = ROADSUBTYPE_NORMAL;
+	this->roadtype_map[ROADTYPE_ROAD][1] = ROADSUBTYPE_ELECTRIC;
+	this->roadtype_map[ROADTYPE_TRAM][0] = ROADSUBTYPE_NORMAL;
+	this->roadtype_map[ROADTYPE_TRAM][1] = ROADSUBTYPE_ELECTRIC;
 
 	/* Copy the initial parameter list
 	 * 'Uninitialised' parameters are zeroed as that is their default value when dynamically creating them. */
@@ -9502,6 +9506,8 @@ static void AfterLoadGRFs()
 				/* Road type is not available, so disable this engine */
 				e->info.climates = 0;
 			}
+		} else {
+			e->u.road.roadsubtype = rt == ROADTYPE_TRAM ? ROADSUBTYPE_ELECTRIC : ROADSUBTYPE_NORMAL;
 		}
 
 		if (_gted[e->index].rv_max_speed != 0) {

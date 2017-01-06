@@ -39,17 +39,17 @@ struct SpriteGroup;
 
 /** Sprite groups for a roadtype. */
 enum RoadTypeSpriteGroup {
-	ROTSG_CURSORS,        ///< Cursor and toolbar icon images
-	ROTSG_OVERLAY,        ///< Images for overlaying track
-	ROTSG_GROUND,         ///< Main group of ground images
-	ROTSG_reserved1,      ///< Placeholder, if we need specific tunnel sprites.
-	ROTSG_CATENARY_FRONT, ///< Catenary front
-	ROTSG_CATENARY_BACK,  ///< Catenary back
-	ROTSG_BRIDGE,         ///< Bridge surface images
-	ROTSG_reserved2,      ///< Placeholder, if we need specific level crossing sprites.
-	ROTSG_DEPOT,          ///< Depot images
-	ROTSG_reserved3,      ///< Placeholder, if we add road fences (for highways).
-	ROTSG_ROADSTOP,       ///< Drive-in stop surface
+	ROTSG_CURSORS,        ///< Optional: Cursor and toolbar icon images
+	ROTSG_OVERLAY,        ///< Optional: Images for overlaying track
+	ROTSG_GROUND,         ///< Required: Main group of ground images
+	ROTSG_reserved1,      ///<           Placeholder, if we need specific tunnel sprites.
+	ROTSG_CATENARY_FRONT, ///< Optional: Catenary front
+	ROTSG_CATENARY_BACK,  ///< Optional: Catenary back
+	ROTSG_BRIDGE,         ///< Required: Bridge surface images
+	ROTSG_reserved2,      ///<           Placeholder, if we need specific level crossing sprites.
+	ROTSG_DEPOT,          ///< Optional: Depot images
+	ROTSG_reserved3,      ///<           Placeholder, if we add road fences (for highways).
+	ROTSG_ROADSTOP,       ///< Required: Drive-in stop surface
 	ROTSG_END,
 };
 
@@ -67,8 +67,6 @@ public:
 		SpriteID build_y_road;        ///< button for building single rail in Y direction
 		SpriteID auto_road;           ///< button for the autoroad construction
 		SpriteID build_depot;         ///< button for building depots
-		SpriteID build_bus_station;   ///< button for building bus stations
-		SpriteID build_truck_station; ///< button for building truck stations
 		SpriteID build_tunnel;        ///< button for building a tunnel
 		SpriteID convert_road;        ///< button for converting road types
 	} gui_sprites;
@@ -78,42 +76,36 @@ public:
 		CursorID road_nwse;     ///< Cursor for building rail in Y direction
 		CursorID autoroad;      ///< Cursor for autorail tool
 		CursorID depot;         ///< Cursor for building a depot
-		CursorID bus_station;   ///< Cursor for building a bus station
-		CursorID truck_station; ///< Cursor for building a truck station
 		CursorID tunnel;        ///< Cursor for building a tunnel
 		SpriteID convert_road;  ///< Cursor for converting road types
 	} cursor;                       ///< Cursors associated with the road type.
 
 	struct {
-		StringID name;            ///< Name of this rail type. // TODO use
+		StringID name;            ///< Name of this rail type.
 		StringID toolbar_caption; ///< Caption in the construction toolbar GUI for this rail type.
 		StringID menu_text;       ///< Name of this rail type in the main toolbar dropdown.
-		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type. // TODO use
-		StringID replace_text;    ///< Text used in the autoreplace GUI. // TODO use
-		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI. // TODO use
+		StringID build_caption;   ///< Caption of the build vehicle GUI for this rail type.
+		StringID replace_text;    ///< Text used in the autoreplace GUI.
+		StringID new_engine;      ///< Name of an engine for this type of road in the engine preview GUI.
 
 		StringID err_build_road;        ///< Building a normal piece of road
 		StringID err_remove_road;       ///< Removing a normal piece of road
 		StringID err_depot;             ///< Building a depot
 		StringID err_build_station[2];  ///< Building a bus or truck station
 		StringID err_remove_station[2]; ///< Removing of a bus or truck station
+		StringID err_convert_road;      ///< Converting a road type
 
 		StringID picker_title[2];       ///< Title for the station picker for bus or truck stations
 		StringID picker_tooltip[2];     ///< Tooltip for the station picker for bus or truck stations
 	} strings;                        ///< Strings associated with the rail type.
 
 	/** bitmask to the OTHER roadtypes on which a vehicle of THIS roadtype generates power */
-	RoadSubTypes powered_roadtypes; // TODO use
-
-	/**
-	 * Multiplier for curve maximum speed advantage
-	 */
-	byte curve_speed; // TODO use
+	RoadSubTypes powered_roadtypes;
 
 	/**
 	 * Bit mask of road type flags
 	 */
-	RoadTypeFlags flags; // TODO more flags
+	RoadTypeFlags flags;
 
 	/**
 	 * Cost multiplier for building this road type
@@ -128,7 +120,7 @@ public:
 	/**
 	 * Maximum speed for vehicles travelling on this road type
 	 */
-	uint16 max_speed; // TODO use
+	uint16 max_speed;
 
 	/**
 	 * Unique 32 bit road type identifier
@@ -138,12 +130,12 @@ public:
 	/**
 	 * Road type labels this type provides in addition to the main label.
 	 */
-	RoadTypeLabelList alternate_labels; // TODO use
+	RoadTypeLabelList alternate_labels;
 
 	/**
 	 * Colour on mini-map
 	 */
-	byte map_colour; // TODO use
+	byte map_colour;
 
 	/**
 	 * Introduction date.
@@ -152,18 +144,18 @@ public:
 	 * The introduction at this date is furthermore limited by the
 	 * #introduction_required_types.
 	 */
-	Date introduction_date; // TODO use
+	Date introduction_date;
 
 	/**
 	 * Bitmask of roadtypes that are required for this roadtype to be introduced
 	 * at a given #introduction_date.
 	 */
-	RoadSubTypes introduction_required_roadtypes; // TODO use
+	RoadSubTypes introduction_required_roadtypes;
 
 	/**
 	 * Bitmask of which other roadtypes are introduced when this roadtype is introduced.
 	 */
-	RoadSubTypes introduces_roadtypes; // TODO use
+	RoadSubTypes introduces_roadtypes;
 
 	/**
 	 * The sorting order of this roadtype for the toolbar dropdown.
@@ -186,33 +178,6 @@ public:
 	}
 };
 
-struct RoadTypeIdentifier {
-	RoadType basetype;
-	RoadSubType subtype;
-
-	uint8 Pack() const;
-	bool UnpackIfValid(uint32 data);
-	static RoadTypeIdentifier Unpack(uint32 data);
-
-	bool IsValid() const
-	{
-		return (this->basetype == ROADTYPE_ROAD || this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	bool IsRoad() const
-	{
-		return (this->basetype == ROADTYPE_ROAD) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	bool IsTram() const
-	{
-		return (this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
-	}
-
-	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
-	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
-};
-
 /**
  * Returns a pointer to the Roadtype information for a given roadtype
  * @param roadtype the road type which the information is requested for
@@ -230,17 +195,14 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
  * RoadType. This would normally just be an equality check, but for electrified
  * roads (which also support non-electric vehicles).
  * @return Whether the engine got power on this tile.
- * @param  vehicletype The RoadType of the engine we are considering.
- * @param  tiletype   The RoadType of the tile we are considering.
+ * @param  engine_rtid The RoadType of the engine we are considering.
+ * @param  tile_rtid   The RoadType of the tile we are considering.
  */
-static inline bool HasPowerOnRoad(RoadTypeIdentifier rtid) // TODO
+static inline bool HasPowerOnRoad(RoadTypeIdentifier engine_rtid, RoadTypeIdentifier tile_rtid)
 {
-	uint8 a = GetRoadTypeInfo(rtid)->powered_roadtypes;
-	uint8 b = rtid.basetype;
+	return engine_rtid.basetype == tile_rtid.basetype && HasBit(GetRoadTypeInfo(engine_rtid)->powered_roadtypes, tile_rtid.subtype);
 
-	return HasBit(a, b);
 }
-
 
 /**
  * Returns the cost of building the specified roadtype.
@@ -251,6 +213,32 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
 {
 	assert(rtid.IsValid());
 	return (_price[PR_BUILD_ROAD] * GetRoadTypeInfo(rtid)->cost_multiplier) >> 3;
+}
+
+/**
+ * Calculates the cost of road conversion
+ * @param from The roadtype we are converting from
+ * @param to   The roadtype we are converting to
+ * @return Cost per RoadBit
+ */
+static inline Money RoadConvertCost(RoadTypeIdentifier from, RoadTypeIdentifier to)
+{
+	/* Get the costs for removing and building anew
+	 * A conversion can never be more costly */
+	Money rebuildcost = RoadBuildCost(to) - _price[PR_CLEAR_ROAD];
+
+	/* Conversion between somewhat compatible roadtypes:
+	 * Pay 1/8 of the target road cost (labour costs) and additionally any difference in the
+	 * build costs, if the target type is more expensive (material upgrade costs).
+	 * Upgrade can never be more expensive than re-building. */
+	if (HasPowerOnRoad(from, to) || HasPowerOnRoad(to, from)) {
+		Money upgradecost = RoadBuildCost(to) / 8 + max((Money)0, RoadBuildCost(to) - RoadBuildCost(from));
+		return min(upgradecost, rebuildcost);
+	}
+
+	/* make the price the same as remove + build new type for road types
+	 * which are not compatible in any way */
+	return rebuildcost;
 }
 
 /**

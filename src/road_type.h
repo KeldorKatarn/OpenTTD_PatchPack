@@ -13,11 +13,9 @@
 #define ROAD_TYPE_H
 
 #include "core/enum_type.hpp"
+#include "core/math_func.hpp"
 
 typedef uint32 RoadTypeLabel;
-
-static const RoadTypeLabel ROAD_TYPE_ROAD = 'ROAD';
-static const RoadTypeLabel ROAD_TYPE_TRAM = 'TRAM';
 
 /**
  * The different roadtypes we support
@@ -36,9 +34,11 @@ template <> struct EnumPropsT<RoadType> : MakeEnumPropsT<RoadType, byte, ROADTYP
 typedef TinyEnumT<RoadType> RoadTypeByte;
 
 enum RoadSubType {
-	ROADSUBTYPE_BEGIN = 0,     ///< Used for iterations
-	ROADSUBTYPE_END = 15,      ///< Used for iterations
-	INVALID_ROADSUBTYPE = 0xF, ///< flag for invalid roadsubtype
+	ROADSUBTYPE_BEGIN    = 0,   ///< Used for iterations
+	ROADSUBTYPE_NORMAL   = 0,   ///< Plain road/tram
+	ROADSUBTYPE_ELECTRIC = 1,   ///< Electrified road/tram
+	ROADSUBTYPE_END      = 15,  ///< Used for iterations
+	INVALID_ROADSUBTYPE  = 0xF, ///< flag for invalid roadsubtype
 };
 DECLARE_POSTFIX_INCREMENT(RoadSubType);
 
@@ -61,10 +61,51 @@ typedef SimpleTinyEnumT<RoadTypes, byte> RoadTypesByte;
  * The different roadsubtypes which exist, but then a bitmask of them.
  */
 enum RoadSubTypes {
-	ROADSUBTYPES_NONE    = 0,                        ///< No roadsubtypes
-	ROADSUBTYPES_DEFAULT = 1 << ROADSUBTYPE_BEGIN,   ///< Default road/tram
+	ROADSUBTYPES_NONE     = 0,                          ///< No roadsubtypes
+	ROADSUBTYPES_NORMAL   = 1 << ROADSUBTYPE_NORMAL,   ///< Plain road/tram
+	ROADSUBTYPES_ELECTRIC = 1 << ROADSUBTYPE_ELECTRIC, ///< Electrified road/tram
 };
 DECLARE_ENUM_AS_BIT_SET(RoadSubTypes)
+
+/**
+ * Identifier for road and tram types.
+ */
+struct RoadTypeIdentifier {
+	RoadType basetype;
+	RoadSubType subtype;
+
+	bool operator==(const RoadTypeIdentifier &other) const
+	{
+		return this->basetype == other.basetype && this->subtype == other.subtype;
+	}
+
+	bool operator!=(const RoadTypeIdentifier &other) const
+	{
+		return this->basetype != other.basetype || this->subtype != other.subtype;
+	}
+
+	uint8 Pack() const;
+	bool UnpackIfValid(uint32 data);
+	static RoadTypeIdentifier Unpack(uint32 data);
+
+	bool IsValid() const
+	{
+		return (this->basetype == ROADTYPE_ROAD || this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	bool IsRoad() const
+	{
+		return (this->basetype == ROADTYPE_ROAD) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	bool IsTram() const
+	{
+		return (this->basetype == ROADTYPE_TRAM) && IsInsideMM(this->subtype, ROADSUBTYPE_BEGIN, ROADSUBTYPE_END);
+	}
+
+	RoadTypeIdentifier(RoadType basetype, RoadSubType subtype) : basetype(basetype), subtype(subtype) {}
+	RoadTypeIdentifier() : basetype(INVALID_ROADTYPE), subtype(INVALID_ROADSUBTYPE) {}
+};
 
 /**
  * Enumeration for the road parts on a tile.

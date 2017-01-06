@@ -14,7 +14,6 @@
 
 #include "../../misc/countedptr.hpp"
 #include "../../road_type.h"
-#include "../../road.h"
 #include "../../rail_type.h"
 
 #include "script_types.hpp"

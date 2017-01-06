@@ -630,8 +630,7 @@ static uint32 VehicleGetVariable(Vehicle *v, const VehicleScopeResolver *object,
 				}
 
 				case VEH_ROAD: {
-					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(v->tile);
-					RoadTypeIdentifier rtid = rtids.GetType(RoadVehicle::From(v)->rtid.basetype);
+					RoadTypeIdentifier rtid = GetRoadType(v->tile, RoadVehicle::From(v)->rtid.basetype);
 					return 0x100 | GetReverseRoadTypeTranslation(rtid, object->ro.grffile);
 				}
 

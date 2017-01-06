@@ -1714,10 +1714,11 @@ UnitID GetFreeUnitNumber(VehicleType type)
  * vehicle type. This to disable building stations etc. when
  * you are not allowed/able to have the vehicle type yet.
  * @param type the vehicle type to check this for
+ * @param subtype for road vehicles, either ROADTYPE_ROAD, ROADTYPE_TRAM or INVALID_ROADTYPE
  * @return true if there is any reason why you may build
  *         the infrastructure for the given vehicle type
  */
-bool CanBuildVehicleInfrastructure(VehicleType type)
+bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype)
 {
 	assert(IsCompanyBuildableVehicleType(type));
 
@@ -1738,7 +1739,8 @@ bool CanBuildVehicleInfrastructure(VehicleType type)
 		/* Can we actually build the vehicle type? */
 		const Engine *e;
 		FOR_ALL_ENGINES_OF_TYPE(e, type) {
-			if (HasBit(e->company_avail, _local_company)) return true;
+			if ((type != VEH_ROAD || subtype == INVALID_ROADTYPE || subtype == e->GetRoadType().basetype) &&
+					HasBit(e->company_avail, _local_company)) return true;
 		}
 		return false;
 	}
@@ -1746,7 +1748,9 @@ bool CanBuildVehicleInfrastructure(VehicleType type)
 	/* We should be able to build infrastructure when we have the actual vehicle type */
 	const Vehicle *v;
 	FOR_ALL_VEHICLES(v) {
-		if (v->owner == _local_company && v->type == type) return true;
+		if (v->type == type &&
+				(type != VEH_ROAD || subtype == INVALID_ROADTYPE || subtype == RoadVehicle::From(v)->rtid.basetype) &&
+				v->owner == _local_company) return true;
 	}
 
 	return false;

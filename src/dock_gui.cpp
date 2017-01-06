@@ -117,7 +117,7 @@ struct BuildDocksToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		bool can_build = CanBuildVehicleInfrastructure(VEH_SHIP);
+		bool can_build = CanBuildVehicleInfrastructure(VEH_SHIP, 0);
 		this->SetWidgetsDisabledState(!can_build,
 			WID_DT_DEPOT,
 			WID_DT_STATION,
@@ -145,17 +145,17 @@ struct BuildDocksToolbarWindow : Window {
 				break;
 
 			case WID_DT_DEPOT: // Build depot button
-				if (!CanBuildVehicleInfrastructure(VEH_SHIP)) return;
+				if (!CanBuildVehicleInfrastructure(VEH_SHIP, 0)) return;
 				if (HandlePlacePushButton(this, WID_DT_DEPOT, SPR_CURSOR_SHIP_DEPOT, HT_RECT)) ShowBuildDocksDepotPicker(this);
 				break;
 
 			case WID_DT_STATION: // Build station button
-				if (!CanBuildVehicleInfrastructure(VEH_SHIP)) return;
+				if (!CanBuildVehicleInfrastructure(VEH_SHIP, 0)) return;
 				if (HandlePlacePushButton(this, WID_DT_STATION, SPR_CURSOR_DOCK, HT_SPECIAL)) ShowBuildDockStationPicker(this);
 				break;
 
 			case WID_DT_BUOY: // Build buoy button
-				if (!CanBuildVehicleInfrastructure(VEH_SHIP)) return;
+				if (!CanBuildVehicleInfrastructure(VEH_SHIP, 0)) return;
 				HandlePlacePushButton(this, WID_DT_BUOY, SPR_CURSOR_BUOY, HT_RECT);
 				break;
 

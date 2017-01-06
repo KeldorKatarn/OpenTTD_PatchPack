@@ -45,6 +45,8 @@
 
 #include "safeguards.h"
 
+/** Helper type for lists/vectors of road vehicles */
+typedef SmallVector<RoadVehicle *, 16> RoadVehicleList;
 
 RoadtypeInfo _roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
@@ -56,10 +58,10 @@ uint8 _sorted_roadtypes_size[ROADTYPE_END];
 void ResetRoadTypes()
 {
 	static const RoadtypeInfo empty_roadtype = {
-		{0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,{},{},{},{}},
-		ROADSUBTYPES_NONE, 0, ROTFB_NONE, 0, 0, 0, 0,
+		{0,0,0,0,0,0},
+		{0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,{},{},0,{},{}},
+		ROADSUBTYPES_NONE, ROTFB_NONE, 0, 0, 0, 0,
 		RoadTypeLabelList(), 0, 0, ROADSUBTYPES_NONE, ROADSUBTYPES_NONE, 0,
 		{}, {} };
 
@@ -84,18 +86,14 @@ void ResolveRoadTypeGUISprites(RoadtypeInfo *rti)
 		rti->gui_sprites.build_y_road = cursors_base + 1;
 		rti->gui_sprites.auto_road = cursors_base + 2;
 		rti->gui_sprites.build_depot = cursors_base + 3;
-		rti->gui_sprites.build_bus_station = cursors_base + 4;
-		rti->gui_sprites.build_truck_station = cursors_base + 5;
-		rti->gui_sprites.build_tunnel = cursors_base + 6;
-		rti->gui_sprites.convert_road = cursors_base + 7;
-		rti->cursor.road_swne = cursors_base + 8;
-		rti->cursor.road_nwse = cursors_base + 9;
-		rti->cursor.autoroad = cursors_base + 10;
-		rti->cursor.depot = cursors_base + 11;
-		rti->cursor.bus_station = cursors_base + 12;
-		rti->cursor.truck_station = cursors_base + 13;
-		rti->cursor.tunnel = cursors_base + 14;
-		rti->cursor.convert_road = cursors_base + 15;
+		rti->gui_sprites.build_tunnel = cursors_base + 4;
+		rti->gui_sprites.convert_road = cursors_base + 5;
+		rti->cursor.road_swne = cursors_base + 6;
+		rti->cursor.road_nwse = cursors_base + 7;
+		rti->cursor.autoroad = cursors_base + 8;
+		rti->cursor.depot = cursors_base + 9;
+		rti->cursor.tunnel = cursors_base + 10;
+		rti->cursor.convert_road = cursors_base + 11;
 	}
 }
 
@@ -112,7 +110,6 @@ static int CDECL CompareRoadTypes(const RoadTypeIdentifier *first, const RoadTyp
 
 /**
  * Resolve sprites of custom road types
- * TODO: Sprite structure
  */
 void InitRoadTypes()
 {
@@ -147,7 +144,7 @@ RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype)
 
 		if (rti->label == 0) {
 			/* Set up new road type */
-			*rti = (basetype == ROADTYPE_ROAD ? _original_roadtypes[ROADSUBTYPE_BEGIN] : _original_tramtypes[ROADSUBTYPE_BEGIN]);
+			*rti = (basetype == ROADTYPE_ROAD ? _original_roadtypes[ROADSUBTYPE_NORMAL] : _original_tramtypes[ROADSUBTYPE_NORMAL]);
 			rti->label = label;
 			rti->alternate_labels.Clear();
 
@@ -718,6 +715,10 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				}
 
 				case ROAD_TILE_CROSSING:
+					if (RoadNoLevelCrossing(rtid)) {
+						return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+					}
+
 					other_bits = GetCrossingRoadBits(tile);
 					if (pieces & ComplementRoadBits(other_bits)) goto do_clear;
 					pieces = other_bits; // we need to pay for both roadbits
@@ -871,6 +872,23 @@ do_clear:;
 		CommandCost ret = EnsureNoVehicleOnGround(tile);
 		if (ret.Failed()) return ret;
 
+		if (IsNormalRoadTile(tile)) {
+			/* If the road types don't match, try to convert only if vehicles of
+			 * the new road type are not powered on the present road type and vehicles of
+			 * the present road type are powered on the new road type. */
+			RoadTypeIdentifier existing_rtid = GetRoadType(tile, rtid.basetype);
+			if (existing_rtid.IsValid() && existing_rtid != rtid) {
+				if (HasPowerOnRoad(rtid, existing_rtid)) {
+					rtid = existing_rtid;
+				} else if (HasPowerOnRoad(existing_rtid, rtid)) {
+					CommandCost ret = DoCommand(tile, tile, rtid.Pack(), flags, CMD_CONVERT_ROAD);
+					if (ret.Failed()) return ret;
+					cost.AddCost(ret);
+				} else {
+					return CMD_ERROR;
+				}
+			}
+		}
 	}
 
 	uint num_pieces = (!need_to_clear && IsTileType(tile, MP_TUNNELBRIDGE)) ?
@@ -1386,6 +1404,25 @@ void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
 		if (height <= GetTileMaxZ(ti->tile) + 1) return;
 	}
 
+	if (CountBits(rb) > 2) {
+		/* On junctions we check whether neighbouring tiles also have catenary, and possibly
+		 * do not draw catenary towards those neighbours, which do not have catenary. */
+		RoadBits rb_new = ROAD_NONE;
+		for (DiagDirection dir = DIAGDIR_BEGIN; dir < DIAGDIR_END; dir++) {
+			if (rb & DiagDirToRoadBits(dir)) {
+				TileIndex neighbour = TileAddByDiagDir(ti->tile, dir);
+				if (MayHaveRoad(neighbour)) {
+					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(neighbour);
+					if ((rtids.HasRoad() && HasRoadCatenary(rtids.road_identifier)) ||
+							(rtids.HasTram() && HasRoadCatenary(rtids.tram_identifier))) {
+						rb_new |= DiagDirToRoadBits(dir);
+					}
+				}
+			}
+		}
+		if (CountBits(rb_new) >= 2) rb = rb_new;
+	}
+
 	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 	SpriteID front = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_FRONT);
 	SpriteID back = GetCustomRoadSprite(rti, ti->tile, ROTSG_CATENARY_BACK);
@@ -1481,7 +1518,7 @@ static void DrawRoadBits(TileInfo *ti)
 	if (road_rti != NULL) {
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-			DrawGroundSprite(ground + road_offset, PAL_NONE);
+			if (ground != 0) DrawGroundSprite(ground + road_offset, PAL_NONE);
 		}
 	}
 
@@ -1489,7 +1526,7 @@ static void DrawRoadBits(TileInfo *ti)
 	if (tram_rti != NULL) {
 		if (tram_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-			DrawGroundSprite(ground + tram_offset, PAL_NONE);
+			if (ground != 0) DrawGroundSprite(ground + tram_offset, PAL_NONE);
 		} else if (road_rti != NULL) {
 			DrawGroundSprite(SPR_TRAMWAY_OVERLAY + tram_offset, PAL_NONE);
 		}
@@ -1614,7 +1651,7 @@ static void DrawTile_Road(TileInfo *ti)
 			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + axis, PAL_NONE);
+					if (ground != 0) DrawGroundSprite(ground + axis, PAL_NONE);
 				}
 			}
 	
@@ -1622,7 +1659,7 @@ static void DrawTile_Road(TileInfo *ti)
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + axis, PAL_NONE);
+					if (ground != 0) DrawGroundSprite(ground + axis, PAL_NONE);
 				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + axis, PAL_NONE);
 				}
@@ -1665,16 +1702,29 @@ static void DrawTile_Road(TileInfo *ti)
 			const RoadtypeInfo* rti = GetRoadTypeInfo(rtids.HasRoad() ? rtids.road_identifier : rtids.tram_identifier);
 
 			int relocation = GetCustomRoadSprite(rti, ti->tile, ROTSG_DEPOT);
-			if (relocation == 0) {
-				if (HasTileRoadType(ti->tile, ROADTYPE_TRAM)) {
+			bool default_gfx = relocation == 0;
+			if (default_gfx) {
+				if (HasBit(rti->flags, ROTF_CATENARY)) {
 					relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
 				}
 			} else {
 				relocation -= SPR_ROAD_DEPOT;
 			}
 
-			const DrawTileSprites *dts = &_road_depot[GetRoadDepotDirection(ti->tile)];
+			DiagDirection dir = GetRoadDepotDirection(ti->tile);
+			const DrawTileSprites *dts = &_road_depot[dir];
 			DrawGroundSprite(dts->ground.sprite, PAL_NONE);
+
+			if (default_gfx) {
+				uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
+				if (rti->UsesOverlay()) {
+					SpriteID ground = GetCustomRoadSprite(rti, ti->tile, ROTSG_OVERLAY);
+					if (ground != 0) DrawGroundSprite(ground + offset, PAL_NONE);
+				} else if (rtids.HasTram()) {
+					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE);
+				}
+			}
+
 			DrawRailTileSeq(ti, dts, TO_BUILDINGS, relocation, 0, palette);
 			break;
 		}
@@ -1695,8 +1745,9 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 
 	const RoadtypeInfo* rti = GetRoadTypeInfo(rtid);
 	int relocation = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_DEPOT);
-	if (relocation == 0) {
-		if (rtid.IsTram()) {
+	bool default_gfx = relocation == 0;
+	if (default_gfx) {
+		if (HasBit(rti->flags, ROTF_CATENARY)) {
 			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
 		}
 	} else {
@@ -1705,6 +1756,17 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 
 	const DrawTileSprites *dts = &_road_depot[dir];
 	DrawSprite(dts->ground.sprite, PAL_NONE, x, y);
+
+	if (default_gfx) {
+		uint offset = GetRoadSpriteOffset(SLOPE_FLAT, DiagDirToRoadBits(dir));
+		if (rti->UsesOverlay()) {
+			SpriteID ground = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
+			if (ground != 0) DrawSprite(ground + offset, PAL_NONE, x, y);
+		} else if (rtid.IsTram()) {
+			DrawSprite(SPR_TRAMWAY_OVERLAY + offset, PAL_NONE, x, y);
+		}
+	}
+
 	DrawRailTileSeqInGUI(x, y, dts, relocation, 0, palette);
 }
 
@@ -1847,7 +1909,7 @@ static void TileLoop_Road(TileIndex tile)
 			const RoadBits new_rb = CleanUpRoadBits(tile, old_rb);
 
 			if (old_rb != new_rb) {
-				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_BEGIN), true);
+				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL), true);
 			}
 		}
 
@@ -2140,6 +2202,182 @@ static CommandCost TerraformTile_Road(TileIndex tile, DoCommandFlag flags, int z
 
 	return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 }
+
+/** Update power of train under which is the railtype being converted */
+static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
+{
+	if (v->type != VEH_ROAD) return NULL;
+
+	RoadVehicleList *affected_trains = static_cast<RoadVehicleList*>(data);
+	affected_trains->Include(RoadVehicle::From(v)->First());
+
+	return NULL;
+}
+
+/**
+ * Convert one road subtype to another.
+ * Not meant to convert from road to tram.
+ *
+ * @param tile end tile of road conversion drag
+ * @param flags operation to perform
+ * @param p1 start tile of drag
+ * @param p2 various bitstuffed elements:
+ * - p2 = (bit  0..4) new roadtype to convert to.
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2,  const char *text)
+{
+	RoadTypeIdentifier to_type;
+	if (!to_type.UnpackIfValid(GB(p2, 0, 5))) return CMD_ERROR;
+
+	TileIndex area_start = p1;
+	TileIndex area_end = tile;
+
+	if (!ValParamRoadType(to_type)) return CMD_ERROR;
+	if (area_start >= MapSize()) return CMD_ERROR;
+
+	RoadVehicleList affected_rvs;
+
+	CommandCost cost(EXPENSES_CONSTRUCTION);
+	CommandCost error = CommandCost(to_type.IsRoad() ? STR_ERROR_NO_SUITABLE_ROAD : STR_ERROR_NO_SUITABLE_TRAMWAY); // by default, there is no road to convert.
+
+	TileIterator *iter = new OrthogonalTileIterator(area_start, area_end);
+	for (; (tile = *iter) != INVALID_TILE; ++(*iter)) {
+		/* Is road present on tile? */
+		if (!MayHaveRoad(tile)) continue;
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+		if (!rtids.HasType(to_type.basetype)) continue;
+
+		/* Converting to the same subtype? */
+		RoadTypeIdentifier from_type = rtids.GetType(to_type.basetype);
+		if (from_type.subtype == to_type.subtype) continue;
+
+		/* Check if there is any infrastructure on tile */
+		TileType tt = GetTileType(tile);
+		switch (tt) {
+			case MP_STATION:
+				if (!IsRoadStop(tile)) continue;
+				break;
+			case MP_ROAD:
+				if (IsLevelCrossing(tile) && RoadNoLevelCrossing(to_type)) {
+					error.MakeError(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+					continue;
+				}
+				break;
+			case MP_TUNNELBRIDGE:
+				if (GetTunnelBridgeTransportType(tile) != TRANSPORT_ROAD) continue;
+				break;
+			default: continue;
+		}
+
+		/* Trying to convert other's road */ // TODO allow upgrade?
+		Owner owner = GetRoadOwner(tile, to_type.basetype);
+		if (owner != OWNER_NONE) {
+			CommandCost ret = CheckOwnership(owner, tile);
+			if (ret.Failed()) {
+				error = ret;
+				continue;
+			}
+		}
+
+		/* Vehicle on the tile when not converting normal <-> powered
+		 * Tunnels and bridges have special check later */
+		if (tt != MP_TUNNELBRIDGE) {
+			if (!HasPowerOnRoad(from_type, to_type)) {
+				CommandCost ret = EnsureNoVehicleOnGround(tile);
+				if (ret.Failed()) {
+					error = ret;
+					continue;
+				}
+			}
+
+			uint num_pieces = CountBits(GetAnyRoadBits(tile, from_type.basetype));;
+			cost.AddCost(num_pieces * RoadConvertCost(from_type, to_type));
+
+			if (flags & DC_EXEC) { // we can safely convert, too
+				/* Update the company infrastructure counters. */
+				if (!IsRoadStopTile(tile) && owner != OWNER_NONE) { // TODO transfer ownership?
+					Company *c = Company::Get(owner);
+					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
+					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
+					DirtyCompanyInfrastructureWindows(c->index);
+				}
+
+				/* Perform the conversion */
+				rtids.MergeRoadType(to_type);
+				SetRoadTypes(tile, rtids);
+				MarkTileDirtyByTile(tile);
+
+				/* update power of train on this tile */
+				FindVehicleOnPos(tile, &affected_rvs, &UpdateRoadVehPowerProc);
+
+				if (IsRoadDepotTile(tile)) {
+					/* Update build vehicle window related to this depot */
+					InvalidateWindowData(WC_VEHICLE_DEPOT, tile);
+					InvalidateWindowData(WC_BUILD_VEHICLE, tile);
+				}
+			}
+		} else {
+			TileIndex endtile = GetOtherTunnelBridgeEnd(tile);
+
+			/* If both ends of tunnel/bridge are in the range, do not try to convert twice -
+			 * it would cause assert because of different test and exec runs */
+			if (endtile < tile) {
+				if (OrthogonalTileArea(area_start, area_end).Contains(endtile)) continue;
+			}
+
+			/* When not converting rail <-> el. rail, any vehicle cannot be in tunnel/bridge */
+			if (!HasPowerOnRoad(from_type, to_type)) {
+				CommandCost ret = TunnelBridgeIsFree(tile, endtile);
+				if (ret.Failed()) {
+					error = ret;
+					continue;
+				}
+			}
+
+			/* There are 2 pieces on *every* tile of the bridge or tunnel */
+			uint num_pieces = (GetTunnelBridgeLength(tile, endtile) + 2) * 2;
+			cost.AddCost(num_pieces * RoadConvertCost(from_type, to_type));
+
+			if (flags & DC_EXEC) {
+				/* Update the company infrastructure counters. */
+				if (owner != OWNER_NONE) { // TODO transfer ownership?
+					Company *c = Company::Get(owner);
+					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
+					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
+					DirtyCompanyInfrastructureWindows(c->index);
+				}
+
+				/* Perform the conversion */
+				rtids.MergeRoadType(to_type);
+				SetRoadTypes(tile, rtids);
+				SetRoadTypes(endtile, rtids);
+
+				FindVehicleOnPos(tile, &affected_rvs, &UpdateRoadVehPowerProc);
+				FindVehicleOnPos(endtile, &affected_rvs, &UpdateRoadVehPowerProc);
+
+				if (IsBridge(tile)) {
+					MarkBridgeDirty(tile);
+				} else {
+					MarkTileDirtyByTile(tile);
+					MarkTileDirtyByTile(endtile);
+				}
+			}
+		}
+	}
+
+	if (flags & DC_EXEC) {
+		/* Roadtype changed, update roadvehicles as when entering different track */
+		for (RoadVehicle **v = affected_rvs.Begin(); v != affected_rvs.End(); v++) {
+			(*v)->CargoChanged();
+		}
+	}
+
+	delete iter;
+	return (cost.GetCost() == 0) ? error : cost;
+}
+
 
 /** Tile callback functions for road tiles */
 extern const TileTypeProcs _tile_type_road_procs = {

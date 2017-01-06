@@ -16,9 +16,9 @@
 #include "engine_base.h"
 #include "cargotype.h"
 #include "track_func.h"
-#include "road_type.h"
-#include "newgrf_engine.h"
 #include "road.h"
+#include "road_map.h"
+#include "newgrf_engine.h"
 
 struct RoadVehicle;
 
@@ -95,7 +95,8 @@ struct RoadVehicle FINAL : public GroundVehicle<RoadVehicle, VEH_ROAD> {
 	uint16 crashed_ctr;     ///< Animation counter when the vehicle has crashed. @see RoadVehIsCrashed
 	byte reverse_ctr;
 
-	RoadTypeIdentifier rtid;
+	RoadTypeIdentifier rtid;          //!< Road/tramtype of this vehicle.
+	RoadSubTypes compatible_subtypes; //!< Subtypes this consist is powered on.
 
 	/** We don't want GCC to zero our struct! It already is zeroed and has an index! */
 	RoadVehicle() : GroundVehicleBase() {}
@@ -252,7 +253,7 @@ protected: // These functions should not be called outside acceleration code.
 	 */
 	inline uint16 GetMaxTrackSpeed() const
 	{
-		return 0;
+		return GetRoadTypeInfo(GetRoadType(this->tile, this->rtid.basetype))->max_speed;
 	}
 
 	/**

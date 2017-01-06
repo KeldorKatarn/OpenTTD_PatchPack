@@ -960,8 +960,18 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (ret.Failed()) return ret;
 					}
 
-					/* Pay to complete the bits */
-					cost.AddCost(RoadBuildCost(rtids.road_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD))));
+					/* Pay to upgrade/complete the bits */
+					uint num_pieces = CountBits(GetRoadBits(cur_tile, ROADTYPE_ROAD));
+					if (rtid.IsRoad()) {
+						if (HasPowerOnRoad(rtids.road_identifier, rtid)) {
+							cost.AddCost(num_pieces * RoadConvertCost(rtids.road_identifier, rtid));
+						} else {
+							return_cmd_error(STR_ERROR_NO_SUITABLE_ROAD);
+						}
+						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
+					} else {
+						cost.AddCost(RoadBuildCost(rtids.road_identifier) * (2 - num_pieces));
+					}
 				}
 
 				/* There is a tram, check if we can build road+tram stop over it. */
@@ -976,8 +986,18 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (ret.Failed()) return ret;
 					}
 
-					/* Pay to complete the bits */
-					cost.AddCost(RoadBuildCost(rtids.tram_identifier) * (2 - CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM))));
+					/* Pay to upgrade/complete the bits */
+					uint num_pieces = CountBits(GetRoadBits(cur_tile, ROADTYPE_TRAM));
+					if (rtid.IsTram()) {
+						if (HasPowerOnRoad(rtids.tram_identifier, rtid)) {
+							cost.AddCost(num_pieces * RoadConvertCost(rtids.tram_identifier, rtid));
+						} else {
+							return_cmd_error(STR_ERROR_NO_SUITABLE_TRAMWAY);
+						}
+						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
+					} else {
+						cost.AddCost(RoadBuildCost(rtids.tram_identifier) * (2 - num_pieces));
+					}
 				}
 			} else {
 				ret = DoCommand(cur_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
@@ -1821,7 +1841,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 		TILE_AREA_LOOP(cur_tile, roadstop_area) {
 			RoadTypeIdentifiers rtids;
 
-			if (IsTileType(cur_tile, MP_ROAD) || IsTileType(cur_tile, MP_STATION)) {
+			if (MayHaveRoad(cur_tile)) {
 				rtids = RoadTypeIdentifiers::FromTile(cur_tile);
 			}
 
@@ -1850,16 +1870,26 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 			RoadStopType rs_type = type ? ROADSTOP_TRUCK : ROADSTOP_BUS;
 			if (is_drive_through) {
-				RoadTypes cur_rts = rtids.PresentRoadTypes();
+				RoadTypeIdentifier cur_rtid;
+
+				/* Update company infrastructure counts. If the current tile is a normal, remove the old
+				 * bits first. */
+				if (IsNormalRoadTile(cur_tile)) {
+					FOR_EACH_SET_ROADTYPEIDENTIFIER(cur_rtid, rtids) {
+						Company *c = Company::GetIfValid(cur_rtid.basetype == ROADTYPE_ROAD ? road_owner : tram_owner);
+						if (c != NULL) {
+							c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] -= CountBits(GetRoadBits(cur_tile, cur_rtid.basetype));
+							DirtyCompanyInfrastructureWindows(c->index);
+						}
+					}
+				}
+
 				rtids.MergeRoadType(rtid);
 
-				/* Update company infrastructure counts. If the current tile is a normal
-				 * road tile, count only the new road bits needed to get a full diagonal road. */
-				RoadTypeIdentifier cur_rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(cur_rtid, rtids) {
 					Company *c = Company::GetIfValid(cur_rtid.basetype == ROADTYPE_ROAD ? road_owner : tram_owner);
 					if (c != NULL) {
-						c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] += 2 - (IsNormalRoadTile(cur_tile) && HasBit(cur_rts, cur_rtid.basetype) ? CountBits(GetRoadBits(cur_tile, cur_rtid.basetype)) : 0);
+						c->infrastructure.road[cur_rtid.basetype][cur_rtid.subtype] += 2;
 						DirtyCompanyInfrastructureWindows(c->index);
 					}
 				}
@@ -1867,6 +1897,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 				MakeDriveThroughRoadStop(cur_tile, st->owner, road_owner, tram_owner, st->index, rs_type, rtids, axis);
 				road_stop->MakeDriveThrough();
 			} else {
+				rtids.MergeRoadType(rtid);
 				/* Non-drive-through stop never overbuild and always count as two road bits. */
 				Company::Get(st->owner)->infrastructure.road[rtid.basetype][rtid.subtype] += 2;
 				MakeRoadStop(cur_tile, st->owner, st->index, rs_type, rtids, ddir);
@@ -2918,7 +2949,7 @@ draw_default_foundation:
 
 		RoadBits catenary_bits;
 		if (IsDriveThroughStopTile(ti->tile)) {
-			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y; // TODO drive-in stops
+			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
 			catenary_bits = axis == AXIS_X ? ROAD_X : ROAD_Y;
 			uint sprite_offset = axis == AXIS_X ? 1 : 0;
 
@@ -2941,7 +2972,7 @@ draw_default_foundation:
 			if (road_rti != NULL) {
 				if (road_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				}
 			}
 	
@@ -2949,7 +2980,7 @@ draw_default_foundation:
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {
 					SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
-					DrawGroundSprite(ground + sprite_offset, PAL_NONE);
+					if (ground) DrawGroundSprite(ground + sprite_offset, PAL_NONE);
 				} else if (road_rti != NULL) {
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}
@@ -2959,7 +2990,7 @@ draw_default_foundation:
 			DiagDirection dir = GetRoadStopDir(ti->tile);
 			catenary_bits = DiagDirToRoadBits(dir);
 
-			// assert(road_rti != NULL && tram_rti == NULL);  TODO reenable when savegame conversion is completed
+			assert(road_rti != NULL && tram_rti == NULL);
 
 			if (road_rti->UsesOverlay()) {
 				SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_ROADSTOP);
@@ -3017,7 +3048,7 @@ void StationPickerDrawSprite(int x, int y, StationType st, RailType railtype, Ro
 				DrawSprite(ground + sprite_offset, PAL_NONE, x, y);
 
 				SpriteID overlay = GetCustomRoadSprite(rti, INVALID_TILE, ROTSG_OVERLAY);
-				DrawSprite(overlay + sprite_offset, PAL_NONE, x, y);
+				if (overlay) DrawSprite(overlay + sprite_offset, PAL_NONE, x, y);
 			} else if (rtid.IsTram()) {
 				DrawSprite(SPR_TRAMWAY_TRAM + sprite_offset, PAL_NONE, x, y);
 			}

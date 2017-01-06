@@ -941,9 +941,11 @@ public:
 		WID_RV_INFO_TAB                              = ::WID_RV_INFO_TAB,                              ///< Info tab.
 		WID_RV_STOP_REPLACE                          = ::WID_RV_STOP_REPLACE,                          ///< Stop Replacing button.
 
+		/* Train/road only widgets */
+		WID_RV_RAIL_ROAD_TYPE_DROPDOWN               = ::WID_RV_RAIL_ROAD_TYPE_DROPDOWN,               ///< Dropdown menu about the rail/roadtype.
+
 		/* Train only widgets. */
 		WID_RV_TRAIN_ENGINEWAGON_DROPDOWN            = ::WID_RV_TRAIN_ENGINEWAGON_DROPDOWN,            ///< Dropdown to select engines and/or wagons.
-		WID_RV_TRAIN_RAILTYPE_DROPDOWN               = ::WID_RV_TRAIN_RAILTYPE_DROPDOWN,               ///< Dropdown menu about the railtype.
 		WID_RV_TRAIN_WAGONREMOVE_TOGGLE              = ::WID_RV_TRAIN_WAGONREMOVE_TOGGLE,              ///< Button to toggle removing wagons.
 	};
 
@@ -2420,7 +2422,6 @@ public:
 		WID_TE_TREES                                 = ::WID_TE_TREES,                                 ///< Tree building toolbar.
 		WID_TE_SIGNS                                 = ::WID_TE_SIGNS,                                 ///< Sign building.
 		WID_TE_DATE_PANEL                            = ::WID_TE_DATE_PANEL,                            ///< Container for the date widgets.
-		/* The following three need to have the same actual widget number as the normal toolbar due to shared code. */
 		WID_TE_MUSIC_SOUND                           = ::WID_TE_MUSIC_SOUND,                           ///< Music/sound configuration menu.
 		WID_TE_HELP                                  = ::WID_TE_HELP,                                  ///< Help menu.
 		WID_TE_SWITCH_BAR                            = ::WID_TE_SWITCH_BAR,                            ///< Only available when toolbar has been split to switch between different subsets.

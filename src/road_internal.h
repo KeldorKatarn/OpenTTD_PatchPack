@@ -14,7 +14,6 @@
 
 #include "tile_cmd.h"
 #include "road_type.h"
-#include "road.h"
 
 RoadBits CleanUpRoadBits(const TileIndex tile, RoadBits org_rb);
 

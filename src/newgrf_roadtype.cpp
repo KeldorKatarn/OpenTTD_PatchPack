@@ -28,31 +28,30 @@
 {
 	if (this->tile == INVALID_TILE) {
 		switch (variable) {
-		case 0x40: return 0;
-		case 0x41: return 0;
-		case 0x42: return 0;
-		case 0x43: return _date;
-		case 0x44: return HZB_TOWN_EDGE;
+			case 0x40: return 0;
+			case 0x41: return 0;
+			case 0x42: return 0;
+			case 0x43: return _date;
+			case 0x44: return HZB_TOWN_EDGE;
 		}
 	}
 
 	switch (variable) {
-	case 0x40: return GetTerrainType(this->tile, this->context);
-	case 0x41: return 0;
-	case 0x42: return IsLevelCrossingTile(this->tile) && IsCrossingBarred(this->tile);
-	case 0x43:
-		if (IsRoadDepotTile(this->tile)) return Depot::GetByTile(this->tile)->build_date;
-		return _date;
-	case 0x44: {
-		const Town *t = NULL;
-		if (IsRoadDepotTile(this->tile)) {
-			t = Depot::GetByTile(this->tile)->town;
+		case 0x40: return GetTerrainType(this->tile, this->context);
+		case 0x41: return 0;
+		case 0x42: return IsLevelCrossingTile(this->tile) && IsCrossingBarred(this->tile);
+		case 0x43:
+			if (IsRoadDepotTile(this->tile)) return Depot::GetByTile(this->tile)->build_date;
+			return _date;
+		case 0x44: {
+			const Town *t = NULL;
+			if (IsRoadDepotTile(this->tile)) {
+				t = Depot::GetByTile(this->tile)->town;
+			} else if (IsTileType(this->tile, MP_ROAD)) {
+				t = ClosestTownFromTile(this->tile, UINT_MAX);
+			}
+			return t != NULL ? GetTownRadiusGroup(t, this->tile) : HZB_TOWN_EDGE;
 		}
-		else if (IsLevelCrossingTile(this->tile)) {
-			t = ClosestTownFromTile(this->tile, UINT_MAX);
-		}
-		return t != NULL ? GetTownRadiusGroup(t, this->tile) : HZB_TOWN_EDGE;
-	}
 	}
 
 	DEBUG(grf, 1, "Unhandled road type tile variable 0x%X", variable);

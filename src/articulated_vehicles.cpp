@@ -409,6 +409,7 @@ void AddArticulatedParts(Vehicle *first)
 				rv->state = RVSB_IN_DEPOT;
 
 				rv->rtid = front->rtid;
+				rv->compatible_subtypes = front->compatible_subtypes;
 
 				rv->spritenum = e_artic->u.road.image_index;
 				if (e_artic->CanCarryCargo()) {

@@ -19,6 +19,9 @@
  *
  * 1.7.0 is not yet released. The following changes are not set in stone yet.
  *
+ * API additions:
+ * \li GSRoad::ERR_ROADTYPE_DISALLOWS_CROSSING
+ *
  * \b 1.6.0
  *
  * No changes

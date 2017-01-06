@@ -15,7 +15,6 @@
 #include "../signs_func.h"
 #include "../vehicle_func.h"
 #include "../road_type.h"
-#include "../road.h"
 #include "../group.h"
 #include "../goal_type.h"
 #include "../story_type.h"

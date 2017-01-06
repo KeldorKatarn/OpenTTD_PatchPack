@@ -378,6 +378,48 @@ CommandCost CmdAutofillTimetable(TileIndex tile, DoCommandFlag flags, uint32 p1,
 }
 
 /**
+ * Confirm all estimated wait and travel times as timetabled.
+ * @param tile Not used.
+ * @param flags Operation to perform.
+ * @param p1 Vehicle index.
+ * @param p2 Unused
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	VehicleID veh = GB(p1, 0, 20);
+
+	Vehicle *v = Vehicle::GetIfValid(veh);
+	if (v == NULL || !v->IsPrimaryVehicle() || v->orders.list == NULL) return CMD_ERROR;
+
+	CommandCost ret = CheckOwnership(v->owner);
+	if (ret.Failed()) return ret;
+
+	if (flags & DC_EXEC) {
+		int num_orders = v->orders.list->GetNumOrders();
+
+		for (int i = 0; i < num_orders; ++i) {
+			Order* order = v->orders.list->GetOrderAt(i);
+
+			if (!order->IsType(OT_IMPLICIT)) {
+				if (order->GetWaitTime() != 0) {
+					v->GetOrder(i)->SetWaitTimetabled(true);
+				}
+
+				if (order->GetTravelTime() != 0) {
+					v->GetOrder(i)->SetTravelTimetabled(true);
+				}
+			}
+		}
+
+		SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
+	}
+
+	return CommandCost();
+}
+
+/**
 * Set new separation parameters
 * @param tile  Not used.
 * @param flags Operation to perform.

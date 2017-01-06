@@ -21,6 +21,7 @@ enum VehicleTimetableWidgets {
 	WID_VT_SCROLLBAR,                   ///< Scrollbar for the panel.
 	WID_VT_SUMMARY_PANEL,               ///< Summary panel.
 	WID_VT_START_DATE,                  ///< Start date button.
+	WID_VT_CONFIRM_ALL,				    ///< Confirm all button.
 	WID_VT_CHANGE_TIME,                 ///< Change time button.
 	WID_VT_CLEAR_TIME,                  ///< Clear time button.
 	WID_VT_RESET_LATENESS,              ///< Reset lateness button.

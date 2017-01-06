@@ -145,17 +145,6 @@ static void FillTimetableArrivalDepartureTable(const Vehicle *v, VehicleOrderID 
 }
 
 
-/**
- * Callback for when a time has been chosen to start the time table
- * @param window the window related to the setting of the date
- * @param date the actually chosen date
- */
-static void ChangeTimetableStartCallback(const Window *w, Date date)
-{
-	DoCommandP(0, w->window_number, date, CMD_SET_TIMETABLE_START | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-}
-
-
 struct TimetableWindow : Window {
 	int sel_index;
 	const Vehicle *vehicle;               ///< Vehicle monitored by the window.
@@ -332,11 +321,11 @@ struct TimetableWindow : Window {
 			this->SetWidgetDisabledState(WID_VT_CLEAR_SPEED, disable_speed);
 			this->SetWidgetDisabledState(WID_VT_SHARED_ORDER_LIST, !v->IsOrderListShared());
 
-			this->SetWidgetDisabledState(WID_VT_START_DATE, v->orders.list == NULL);
+			this->SetWidgetDisabledState(WID_VT_CONFIRM_ALL, v->orders.list == NULL);
 			this->SetWidgetDisabledState(WID_VT_RESET_LATENESS, v->orders.list == NULL);
 			this->SetWidgetDisabledState(WID_VT_AUTOFILL, v->orders.list == NULL);
 		} else {
-			this->DisableWidget(WID_VT_START_DATE);
+			this->DisableWidget(WID_VT_CONFIRM_ALL);
 			this->DisableWidget(WID_VT_CHANGE_TIME);
 			this->DisableWidget(WID_VT_CLEAR_TIME);
 			this->DisableWidget(WID_VT_CHANGE_SPEED);
@@ -648,9 +637,10 @@ struct TimetableWindow : Window {
 				break;
 			}
 
-			case WID_VT_START_DATE: // Change the date that the timetable starts.
-				ShowSetDateWindow(this, v->index | (v->orders.list->IsCompleteTimetable() && _ctrl_pressed ? 1U << 20 : 0), _date, _cur_year, _cur_year + 15, ChangeTimetableStartCallback);
+			case WID_VT_CONFIRM_ALL: { // Confirm all estimated times as timetabled.
+				DoCommandP(0, v->index, 0, CMD_CONFIRM_ALL | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 				break;
+			}
 
 			case WID_VT_CHANGE_TIME: { // "Wait For" button.
 				int selected = this->sel_index;
@@ -919,7 +909,7 @@ static const NWidgetPart _nested_timetable_widgets[] = {
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_CLEAR_SPEED), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_CLEAR_SPEED, STR_TIMETABLE_CLEAR_SPEED_TOOLTIP),
 			EndContainer(),
 			NWidget(NWID_VERTICAL, NC_EQUALSIZE),
-				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_START_DATE), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_STARTING_DATE, STR_TIMETABLE_STARTING_DATE_TOOLTIP),
+			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_CONFIRM_ALL), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_CONFIRM_ALL, STR_TIMETABLE_CONFIRM_ALL_TOOLTIP),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_RESET_LATENESS), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_RESET_LATENESS, STR_TIMETABLE_RESET_LATENESS_TOOLTIP),
 			EndContainer(),
 			NWidget(NWID_VERTICAL, NC_EQUALSIZE),

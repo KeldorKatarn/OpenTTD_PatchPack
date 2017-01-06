@@ -982,6 +982,15 @@ public:
 				assert(this->vehicles.Length() != 0);
 
 				switch (index) {
+					case ADI_SET_ALL_ON_TIME: { // Reset all late timers
+						int num_vehicles = this->vehicles.Length();
+
+						for (int v_index = 0; v_index < num_vehicles; ++v_index) {
+							DoCommandP(0, this->vehicles[v_index]->index, 0, CMD_SET_VEHICLE_ON_TIME | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+						}
+
+						break;
+					}
 					case ADI_TEMPLATE_REPLACE: // TemplateReplace Window
 						if ( vli.vtype == VEH_TRAIN )
 							ShowTemplateReplaceWindow(this->unitnumber_digits, this->resize.step_height);

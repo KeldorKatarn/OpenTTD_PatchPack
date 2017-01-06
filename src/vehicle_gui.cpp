@@ -178,6 +178,8 @@ DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autorepla
 {
 	DropDownList *list = new DropDownList();
 
+	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SET_ALL_ON_TIME, ADI_SET_ALL_ON_TIME, false);
+
 	if (show_autoreplace) *list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_REPLACE_VEHICLES, ADI_REPLACE, false);
 	if (show_autoreplace && show_template_replace) {
 		*list->Append() = new DropDownListStringItem(STR_TMPL_TEMPLATE_REPLACEMENT, ADI_TEMPLATE_REPLACE, false);
@@ -1725,6 +1727,16 @@ public:
 				assert(this->vehicles.Length() != 0);
 
 				switch (index) {
+					case ADI_SET_ALL_ON_TIME: { // Reset all late timers
+						int num_vehicles = this->vehicles.Length();
+
+						for (int v_index = 0; v_index < num_vehicles; ++v_index) {
+							DoCommandP(0, this->vehicles[v_index]->index, 0, CMD_SET_VEHICLE_ON_TIME | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+						}
+
+						break;
+					}
+
 					case ADI_REPLACE: // Replace window
 						ShowReplaceGroupVehicleWindow(ALL_GROUP, this->vli.vtype);
 						break;

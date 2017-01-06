@@ -1129,9 +1129,6 @@ static bool GrowTownWithBridge(const Town *t, const TileIndex tile, const DiagDi
  */
 static inline bool RoadTypesAllowHouseHere(TileIndex t)
 {
-	RoadTypeIdentifier rtid;
-	RoadTypeIdentifiers rtids;
-	
 	static const TileIndexDiffC tiles[] = { {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1} };
 	const TileIndexDiffC *ptr;
 	bool allow = false;
@@ -1142,7 +1139,8 @@ static inline bool RoadTypesAllowHouseHere(TileIndex t)
 		if (!(IsTileType(cur_tile, MP_ROAD) || IsTileType(cur_tile, MP_STATION))) continue;
 		allow = true;
 
-		rtids = RoadTypeIdentifiers::FromTile(cur_tile);
+		RoadTypeIdentifier rtid;
+		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(cur_tile);
 		FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids)
 		{
 			/* Found one road which allows the type, it is enough to allow building the house here */

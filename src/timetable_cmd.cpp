@@ -398,20 +398,25 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 
 	if (flags & DC_EXEC) {
 		int num_orders = v->orders.list->GetNumOrders();
+		int timetable_delta = 0;
 
 		for (int i = 0; i < num_orders; ++i) {
 			Order* order = v->orders.list->GetOrderAt(i);
 
 			if (!order->IsType(OT_IMPLICIT)) {
-				if (order->GetWaitTime() != 0) {
-					v->GetOrder(i)->SetWaitTimetabled(true);
+				if (order->GetWaitTime() != 0 && !order->IsWaitTimetabled()) {
+					timetable_delta += order->GetWaitTime() - order->GetTimetabledWait();
+					order->SetWaitTimetabled(true);
 				}
 
-				if (order->GetTravelTime() != 0) {
-					v->GetOrder(i)->SetTravelTimetabled(true);
+				if (order->GetTravelTime() != 0 && !order->IsTravelTimetabled()) {
+					timetable_delta += order->GetTravelTime() - order->GetTimetabledTravel();
+					order->SetTravelTimetabled(true);
 				}
 			}
 		}
+
+		v->orders.list->UpdateTimetableDuration(timetable_delta);
 
 		SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
 	}

@@ -5924,7 +5924,7 @@ static void GraphicsNew(ByteReader *buf)
 	uint16 offset = HasBit(type, 7) ? buf->ReadExtendedByte() : 0;
 	ClrBit(type, 7); // Clear the high bit as that only indicates whether there is an offset.
 
-	if ((type == 0x0D) && (num == 10) && _cur.grffile->is_ottdfile) {
+	if ((type == 0x0D) && (num == 10) && HasBit(_cur.grfconfig->flags, GCF_SYSTEM)) {
 		/* Special not-TTDP-compatible case used in openttd.grf
 		 * Missing shore sprites and initialisation of SPR_SHORE_BASE */
 		grfmsg(2, "GraphicsNew: Loading 10 missing shore sprites from extra grf.");
@@ -6510,7 +6510,7 @@ static void ScanInfo(ByteReader *buf)
 	}
 
 	/* GRF IDs starting with 0xFF are reserved for internal TTDPatch use */
-	if (GB(grfid, 24, 8) == 0xFF) SetBit(_cur.grfconfig->flags, GCF_SYSTEM);
+	if (GB(grfid, 0, 8) == 0xFF) SetBit(_cur.grfconfig->flags, GCF_SYSTEM);
 
 	AddGRFTextToList(&_cur.grfconfig->name->text, 0x7F, grfid, false, name);
 
@@ -9178,7 +9178,6 @@ void LoadNewGRFFile(GRFConfig *config, uint file_index, GrfLoadingStage stage, S
 		if (_cur.grffile == NULL) usererror("File '%s' lost in cache.\n", filename);
 		if (stage == GLS_RESERVE && config->status != GCS_INITIALISED) return;
 		if (stage == GLS_ACTIVATION && !HasBit(config->flags, GCF_RESERVED)) return;
-		_cur.grffile->is_ottdfile = config->IsOpenTTDBaseGRF();
 	}
 
 	if (file_index > LAST_GRF_SLOT) {

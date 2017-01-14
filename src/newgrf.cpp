@@ -5997,35 +5997,6 @@ static void SkipAct5(ByteReader *buf)
 }
 
 /**
- * Check whether we are (obviously) missing some of the extra
- * (Action 0x05) sprites that we like to use.
- * When missing sprites are found a warning will be shown.
- */
-void CheckForMissingSprites()
-{
-	/* Don't break out quickly, but allow to check the other
-	 * sprites as well, so we can give the best information. */
-	bool missing = false;
-	for (uint8 i = 0; i < lengthof(_action5_types); i++) {
-		const Action5Type *type = &_action5_types[i];
-		if (type->block_type == A5BLOCK_INVALID) continue;
-
-		for (uint j = 0; j < type->max_sprites; j++) {
-			if (!SpriteExists(type->sprite_base + j)) {
-				DEBUG(grf, 0, "%s sprites are missing", type->name);
-				missing = true;
-				/* No need to log more of the same. */
-				break;
-			}
-		}
-	}
-
-	if (missing) {
-		ShowErrorMessage(IsReleasedVersion() ? STR_NEWGRF_ERROR_MISSING_SPRITES : STR_NEWGRF_ERROR_MISSING_SPRITES_UNSTABLE, INVALID_STRING_ID, WL_CRITICAL);
-	}
-}
-
-/**
  * Reads a variable common to VarAction2 and Action7/9/D.
  *
  * Returns VarAction2 variable 'param' resp. Action7/9/D variable '0x80 + param'.
@@ -9180,8 +9151,8 @@ void LoadNewGRFFile(GRFConfig *config, uint file_index, GrfLoadingStage stage, S
 		if (stage == GLS_ACTIVATION && !HasBit(config->flags, GCF_RESERVED)) return;
 	}
 
-	if (file_index > LAST_GRF_SLOT) {
-		DEBUG(grf, 0, "'%s' is not loaded as the maximum number of GRFs has been reached", filename);
+	if (file_index >= MAX_FILE_SLOTS) {
+		DEBUG(grf, 0, "'%s' is not loaded as the maximum number of file slots has been reached", filename);
 		config->status = GCS_DISABLED;
 		config->error  = new GRFError(STR_NEWGRF_ERROR_MSG_FATAL, STR_NEWGRF_ERROR_TOO_MANY_NEWGRFS_LOADED);
 		return;
@@ -9538,8 +9509,9 @@ static void AfterLoadGRFs()
  * Load all the NewGRFs.
  * @param load_index The offset for the first sprite to add.
  * @param file_index The Fio index of the first NewGRF to load.
+ * @param num_baseset Number of NewGRFs at the front of the list to look up in the baseset dir instead of the newgrf dir.
  */
-void LoadNewGRF(uint load_index, uint file_index)
+void LoadNewGRF(uint load_index, uint file_index, uint num_baseset)
 {
 	/* In case of networking we need to "sync" the start values
 	 * so all NewGRFs are loaded equally. For this we use the
@@ -9598,13 +9570,14 @@ void LoadNewGRF(uint load_index, uint file_index)
 		}
 
 		uint slot = file_index;
+		uint num_non_static = 0;
 
 		_cur.stage = stage;
 		for (GRFConfig *c = _grfconfig; c != NULL; c = c->next) {
 			if (c->status == GCS_DISABLED || c->status == GCS_NOT_FOUND) continue;
 			if (stage > GLS_INIT && HasBit(c->flags, GCF_INIT_ONLY)) continue;
 
-			Subdirectory subdir = slot == file_index ? BASESET_DIR : NEWGRF_DIR;
+			Subdirectory subdir = slot < file_index + num_baseset ? BASESET_DIR : NEWGRF_DIR;
 			if (!FioCheckFileExists(c->filename, subdir)) {
 				DEBUG(grf, 0, "NewGRF file is missing '%s'; disabling", c->filename);
 				c->status = GCS_NOT_FOUND;
@@ -9612,6 +9585,16 @@ void LoadNewGRF(uint load_index, uint file_index)
 			}
 
 			if (stage == GLS_LABELSCAN) InitNewGRFFile(c);
+
+			if (!HasBit(c->flags, GCF_STATIC) && !HasBit(c->flags, GCF_SYSTEM)) {
+				if (num_non_static == NETWORK_MAX_GRF_COUNT) {
+					DEBUG(grf, 0, "'%s' is not loaded as the maximum number of non-static GRFs has been reached", c->filename);
+					c->status = GCS_DISABLED;
+					c->error  = new GRFError(STR_NEWGRF_ERROR_MSG_FATAL, STR_NEWGRF_ERROR_TOO_MANY_NEWGRFS_LOADED);
+					continue;
+				}
+				num_non_static++;
+			}
 			LoadNewGRFFile(c, slot++, stage, subdir);
 			if (stage == GLS_RESERVE) {
 				SetBit(c->flags, GCF_RESERVED);

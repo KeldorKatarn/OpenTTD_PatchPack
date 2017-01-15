@@ -805,7 +805,7 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	tmp->max_te = gcache->cached_max_te;
 
 	tmp->spritenum = virt->spritenum;
-	tmp->cur_image = virt->GetImage(DIR_W, EIT_IN_DEPOT);
+	virt->GetImage(DIR_W, EIT_IN_DEPOT, &tmp->sprite_seq);
 	tmp->image_width = virt->GetDisplayImageWidth(&tmp->image_offset);
 }
 

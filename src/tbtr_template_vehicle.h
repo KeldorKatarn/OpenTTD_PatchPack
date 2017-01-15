@@ -79,7 +79,7 @@ public:
 	uint32 max_te;
 
 	byte spritenum;
-	SpriteID cur_image;
+	VehicleSpriteSeq sprite_seq;        ///< Vehicle appearance.
 	uint32 image_width;
 	Point image_offset;
 
@@ -93,6 +93,7 @@ public:
 		this->reuse_depot_vehicles = true;
 		this->keep_remaining_vehicles = true;
 		this->refit_as_template = true;
+		this->sprite_seq.count = 1;
 	}
 	~TemplateVehicle();
 

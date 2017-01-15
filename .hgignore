@@ -19,9 +19,11 @@ Makefile.bundle
 media/openttd.desktop
 media/openttd.desktop.install
 objs/*
+projects/.vs/*
 projects/*.ncb
 projects/*.suo
 projects/*.sdf
+projects/*.db
 projects/*.opensdf
 projects/*.vcproj.*.user
 projects/*.vcxproj.user

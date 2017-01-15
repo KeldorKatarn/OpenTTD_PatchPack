@@ -5974,12 +5974,19 @@ static void GraphicsNew(ByteReader *buf)
 	/* Load <num> sprites starting from <replace>, then skip <skip_num> sprites. */
 	grfmsg(2, "GraphicsNew: Replacing sprites %d to %d of %s (type 0x%02X) at SpriteID 0x%04X", offset, offset + num - 1, action5_type->name, type, replace);
 
+	if (type == 0x0D) _loaded_newgrf_features.shore = SHORE_REPLACE_ACTION_5;
+
+	if (type == 0x0B) {
+		static const SpriteID depot_with_track_offset = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_TRAMWAY_BASE;
+		static const SpriteID depot_no_track_offset = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_TRAMWAY_BASE;
+		if (offset <= depot_with_track_offset && offset + num > depot_with_track_offset) _loaded_newgrf_features.tram = TRAMWAY_REPLACE_DEPOT_WITH_TRACK;
+		if (offset <= depot_no_track_offset && offset + num > depot_no_track_offset) _loaded_newgrf_features.tram = TRAMWAY_REPLACE_DEPOT_NO_TRACK;
+	}
+
 	for (; num > 0; num--) {
 		_cur.nfo_line++;
 		LoadNextSprite(replace == 0 ? _cur.spriteid++ : replace++, _cur.file_index, _cur.nfo_line, _cur.grf_container_ver);
 	}
-
-	if (type == 0x0D) _loaded_newgrf_features.shore = SHORE_REPLACE_ACTION_5;
 
 	_cur.skip_sprites = skip_num;
 }
@@ -8416,6 +8423,7 @@ void ResetNewGRFData()
 	_loaded_newgrf_features.has_newhouses     = false;
 	_loaded_newgrf_features.has_newindustries = false;
 	_loaded_newgrf_features.shore             = SHORE_REPLACE_NONE;
+	_loaded_newgrf_features.tram              = TRAMWAY_REPLACE_DEPOT_NONE;
 
 	/* Clear all GRF overrides */
 	_grf_id_overrides.clear();
@@ -9282,6 +9290,21 @@ static void ActivateOldShore()
 }
 
 /**
+ * Replocate the old tram depot sprites to the new position, if no new ones were loaded.
+ */
+static void ActivateOldTramDepot()
+{
+	if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK) {
+		DupSprite(SPR_ROAD_DEPOT               + 0, SPR_TRAMWAY_DEPOT_NO_TRACK + 0); // use road depot graphics for "no tracks"
+		DupSprite(SPR_TRAMWAY_DEPOT_WITH_TRACK + 1, SPR_TRAMWAY_DEPOT_NO_TRACK + 1);
+		DupSprite(SPR_ROAD_DEPOT               + 2, SPR_TRAMWAY_DEPOT_NO_TRACK + 2); // use road depot graphics for "no tracks"
+		DupSprite(SPR_TRAMWAY_DEPOT_WITH_TRACK + 3, SPR_TRAMWAY_DEPOT_NO_TRACK + 3);
+		DupSprite(SPR_TRAMWAY_DEPOT_WITH_TRACK + 4, SPR_TRAMWAY_DEPOT_NO_TRACK + 4);
+		DupSprite(SPR_TRAMWAY_DEPOT_WITH_TRACK + 5, SPR_TRAMWAY_DEPOT_NO_TRACK + 5);
+	}
+}
+
+/**
  * Decide whether price base multipliers of grfs shall apply globally or only to the grf specifying them
  */
 static void FinalisePriceBaseMultipliers()
@@ -9459,6 +9482,9 @@ static void AfterLoadGRFs()
 
 	/* Load old shore sprites in new position, if they were replaced by ActionA */
 	ActivateOldShore();
+
+	/* Load old tram depot sprites in new position, if no new ones are present */
+	ActivateOldTramDepot();
 
 	/* Set up custom rail types */
 	InitRailTypes();

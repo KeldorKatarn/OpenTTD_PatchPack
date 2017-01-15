@@ -1705,7 +1705,13 @@ static void DrawTile_Road(TileInfo *ti)
 			bool default_gfx = relocation == 0;
 			if (default_gfx) {
 				if (HasBit(rti->flags, ROTF_CATENARY)) {
-					relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+					if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtids.HasTram() && !rti->UsesOverlay()) {
+						/* Sprites with track only work for default tram */
+						relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+					} else {
+						/* Sprites without track are always better, if provided */
+						relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;
+					}
 				}
 			} else {
 				relocation -= SPR_ROAD_DEPOT;
@@ -1748,7 +1754,13 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 	bool default_gfx = relocation == 0;
 	if (default_gfx) {
 		if (HasBit(rti->flags, ROTF_CATENARY)) {
-			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+			if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtid.IsTram() && !rti->UsesOverlay()) {
+				/* Sprites with track only work for default tram */
+				relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+			} else {
+				/* Sprites without track are always better, if provided */
+				relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;
+			}
 		}
 	} else {
 		relocation -= SPR_ROAD_DEPOT;

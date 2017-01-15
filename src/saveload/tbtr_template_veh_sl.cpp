@@ -38,7 +38,10 @@ const SaveLoad* GTD() {
 		SLE_VAR(TemplateVehicle, max_te, SLE_UINT32),
 
 		SLE_VAR(TemplateVehicle, spritenum, SLE_UINT8),
-		SLE_VAR(TemplateVehicle, cur_image, SLE_UINT32),
+		SLE_CONDNULL(4, 0, SL_PATCH_PACK_1_15 - 1), // cur_image
+		SLE_CONDVAR(TemplateVehicle, sprite_seq.seq[0].sprite, SLE_UINT32, SL_PATCH_PACK_1_15, SL_MAX_VERSION),
+		SLE_CONDVAR(TemplateVehicle, sprite_seq.count, SLE_UINT32, SL_PATCH_PACK_1_15, SL_MAX_VERSION),
+		SLE_CONDARR(TemplateVehicle, sprite_seq.seq, SLE_UINT32, 8, SL_PATCH_PACK_1_15, SL_MAX_VERSION),
 		SLE_VAR(TemplateVehicle, image_width, SLE_UINT32),
 
 		SLE_END()
@@ -123,7 +126,7 @@ void AfterLoadTemplateVehiclesUpdateImage()
 					Train *v = t;
 					for (TemplateVehicle *u = tv; u != NULL; u = u->Next(), v = v->Next()) {
 						u->spritenum = v->spritenum;
-						u->cur_image = v->GetImage(DIR_W, EIT_IN_DEPOT);
+						v->GetImage(DIR_W, EIT_PURCHASE, &u->sprite_seq);
 						u->image_width = v->GetDisplayImageWidth(&u->image_offset);
 					}
 				}

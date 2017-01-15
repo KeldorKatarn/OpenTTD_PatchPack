@@ -34,9 +34,9 @@ projects/Release
 projects/*.ncb
 projects/*.suo
 projects/*.sdf
+projects/*.db
 projects/*.opensdf
 projects/*.opendb
-projects/*.db
 projects/*.vcproj.*.user
 projects/*.vcxproj.user
 src/rev.cpp

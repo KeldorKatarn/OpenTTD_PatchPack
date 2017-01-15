@@ -40,6 +40,7 @@ projects/*.ncb
 projects/*.suo
 projects/*.sdf
 projects/*.opensdf
+projects/*.db
 projects/*.vcproj.*.user
 projects/*.vcxproj.user
 projects/*.VC.db

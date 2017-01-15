@@ -30,6 +30,7 @@ media/openttd.desktop
 media/openttd.desktop.install
 objs/*
 projects/*
+projects/.vs/*
 !projects/*.vcproj
 !projects/*.vcxproj
 !projects/*.sln

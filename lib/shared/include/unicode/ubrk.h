@@ -1,6 +1,6 @@
 /*
 ******************************************************************************
-* Copyright (C) 1996-2013, International Business Machines Corporation and others.
+* Copyright (C) 1996-2014, International Business Machines Corporation and others.
 * All Rights Reserved.
 ******************************************************************************
 */
@@ -243,10 +243,12 @@ ubrk_openRules(const UChar     *rules,
 /**
  * Thread safe cloning operation
  * @param bi iterator to be cloned
- * @param stackBuffer user allocated space for the new clone. If NULL new memory will be allocated.
+ * @param stackBuffer <em>Deprecated functionality as of ICU 52, use NULL.</em><br>
+ *  user allocated space for the new clone. If NULL new memory will be allocated.
  *  If buffer is not large enough, new memory will be allocated.
- *  Clients can use the U_BRK_SAFECLONE_BUFFERSIZE. This will probably be enough to avoid memory allocations.
- * @param pBufferSize pointer to size of allocated space.
+ *  Clients can use the U_BRK_SAFECLONE_BUFFERSIZE.
+ * @param pBufferSize <em>Deprecated functionality as of ICU 52, use NULL or 1.</em><br>
+ *  pointer to size of allocated space.
  *  If *pBufferSize == 0, a sufficient size for use in cloning will
  *  be returned ('pre-flighting')
  *  If *pBufferSize is not enough for a stack-based safe clone,
@@ -263,11 +265,15 @@ ubrk_safeClone(
           int32_t *pBufferSize,
           UErrorCode *status);
 
+#ifndef U_HIDE_DEPRECATED_API
+
 /**
   * A recommended size (in bytes) for the memory buffer to be passed to ubrk_saveClone().
-  * @stable ICU 2.0
+  * @deprecated ICU 52. Do not rely on ubrk_safeClone() cloning into any provided buffer.
   */
-#define U_BRK_SAFECLONE_BUFFERSIZE 528
+#define U_BRK_SAFECLONE_BUFFERSIZE 1
+
+#endif /* U_HIDE_DEPRECATED_API */
 
 /**
 * Close a UBreakIterator.
@@ -372,10 +378,9 @@ U_STABLE int32_t U_EXPORT2
 ubrk_previous(UBreakIterator *bi);
 
 /**
- * Set the iterator position to the index of the first character in the text being scanned.
- * This is not always the same as index 0 of the text.
+ * Set the iterator position to zero, the start of the text being scanned.
  * @param bi The break iterator to use.
- * @return The character index of the first character in the text being scanned.
+ * @return The new iterator position (zero).
  * @see ubrk_last
  * @stable ICU 2.0
  */

@@ -1,6 +1,6 @@
 /*
 *******************************************************************************
-*   Copyright (C) 2010-2012, International Business Machines
+*   Copyright (C) 2010-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucharstriebuilder.h
@@ -70,6 +70,9 @@ public:
      * Builds a UCharsTrie for the add()ed data.
      * Once built, no further data can be add()ed until clear() is called.
      *
+     * A UCharsTrie cannot be empty. At least one (string, value) pair
+     * must have been add()ed.
+     *
      * This method passes ownership of the builder's internal result array to the new trie object.
      * Another call to any build() variant will re-serialize the trie.
      * After clear() has been called, a new array will be used as well.
@@ -86,6 +89,9 @@ public:
     /**
      * Builds a UCharsTrie for the add()ed data and UChar-serializes it.
      * Once built, no further data can be add()ed until clear() is called.
+     *
+     * A UCharsTrie cannot be empty. At least one (string, value) pair
+     * must have been add()ed.
      *
      * Multiple calls to buildUnicodeString() set the UnicodeStrings to the
      * builder's same UChar array, without rebuilding.
@@ -142,7 +148,6 @@ private:
     virtual int32_t getMinLinearMatch() const { return UCharsTrie::kMinLinearMatch; }
     virtual int32_t getMaxLinearMatchLength() const { return UCharsTrie::kMaxLinearMatchLength; }
 
-#ifndef U_HIDE_INTERNAL_API
     class UCTLinearMatchNode : public LinearMatchNode {
     public:
         UCTLinearMatchNode(const UChar *units, int32_t len, Node *nextNode);
@@ -151,7 +156,6 @@ private:
     private:
         const UChar *s;
     };
-#endif
 
     virtual Node *createLinearMatchNode(int32_t i, int32_t unitIndex, int32_t length,
                                         Node *nextNode) const;

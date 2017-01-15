@@ -1,6 +1,6 @@
 /*
 ***************************************************************************
-*   Copyright (C) 1999-2013 International Business Machines Corporation   *
+*   Copyright (C) 1999-2014 International Business Machines Corporation   *
 *   and others. All rights reserved.                                      *
 ***************************************************************************
 
@@ -62,7 +62,7 @@ struct RBBIStateTable;
  *    not part of the ICU API, and may not remain stable.</p>
  *
  */
-class U_COMMON_API RuleBasedBreakIterator : public BreakIterator {
+class U_COMMON_API RuleBasedBreakIterator /*U_FINAL*/ : public BreakIterator {
 
 protected:
     /**
@@ -423,8 +423,8 @@ public:
     virtual void  setText(UText *text, UErrorCode &status);
 
     /**
-     * Sets the current iteration position to the beginning of the text.
-     * @return The offset of the beginning of the text.
+     * Sets the current iteration position to the beginning of the text, position zero.
+     * @return The offset of the beginning of the text, zero.
      *  @stable ICU 2.0
      */
     virtual int32_t first(void);
@@ -583,7 +583,9 @@ public:
      */
     static UClassID U_EXPORT2 getStaticClassID(void);
 
-    /*
+    /**
+     * Deprecated functionality. Use clone() instead.
+     *
      * Create a clone (copy) of this break iterator in memory provided
      *  by the caller.  The idea is to increase performance by avoiding
      *  a storage allocation.  Use of this functoin is NOT RECOMMENDED.
@@ -605,7 +607,7 @@ public:
      * @return  Pointer to the clone object.  This may differ from the stackBuffer
      *          address if the byte alignment of the stack buffer was not suitable
      *          or if the stackBuffer was too small to hold the clone.
-     * @stable ICU 2.0
+     * @deprecated ICU 52. Use clone() instead.
      */
     virtual BreakIterator *  createBufferClone(void *stackBuffer,
                                                int32_t &BufferSize,
@@ -697,7 +699,6 @@ protected:
 #ifndef U_HIDE_INTERNAL_API
     /**
       * Common initialization function, used by constructors and bufferClone.
-      *   (Also used by DictionaryBasedBreakIterator::createBufferClone().)
       * @internal
       */
     void init();

@@ -1708,6 +1708,7 @@ static void DrawTile_Road(TileInfo *ti)
 					if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtids.HasTram() && !rti->UsesOverlay()) {
 						/* Sprites with track only work for default tram */
 						relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+						default_gfx = false;
 					} else {
 						/* Sprites without track are always better, if provided */
 						relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;
@@ -1757,6 +1758,7 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 			if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtid.IsTram() && !rti->UsesOverlay()) {
 				/* Sprites with track only work for default tram */
 				relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+				default_gfx = false;
 			} else {
 				/* Sprites without track are always better, if provided */
 				relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;

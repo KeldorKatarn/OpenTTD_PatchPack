@@ -497,6 +497,7 @@ bool IsSafeWaitingPosition(const Train *v, TileIndex tile, Trackdir trackdir, bo
 
 	if (ft.m_new_td_bits != TRACKDIR_BIT_NONE && KillFirstBit(ft.m_new_td_bits) == TRACKDIR_BIT_NONE) {
 		Trackdir td = FindFirstTrackdir(ft.m_new_td_bits);
+
 		/* PBS signal on next trackdir? Conditionally safe position. */
 		if (HasPbsSignalOnTrackdir(ft.m_new_tile, td)) {
 			if (IsRestrictedSignal(ft.m_new_tile)) {
@@ -511,11 +512,17 @@ bool IsSafeWaitingPosition(const Train *v, TileIndex tile, Trackdir trackdir, bo
 			}
 			return true;
 		}
+
 		/* One-way PBS signal against us? Safe if end-of-line is allowed. */
 		if (IsTileType(ft.m_new_tile, MP_RAILWAY) && HasSignalOnTrackdir(ft.m_new_tile, ReverseTrackdir(td)) &&
 				GetSignalType(ft.m_new_tile, TrackdirToTrack(td)) == SIGTYPE_PBS_ONEWAY) {
 			return include_line_end;
 		}
+ 
+		if (IsTileType(ft.m_new_tile, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(ft.m_new_tile) == TRANSPORT_RAIL &&
+ 				IsTunnelBridgeExit(ft.m_new_tile) && IsTunnelBridgePBS(ft.m_new_tile)) {
+ 			return include_line_end;
+ 		}
 	}
 
 	return false;

@@ -1,7 +1,7 @@
 /*
 ******************************************************************************
 *
-*   Copyright (C) 1996-2013, International Business Machines
+*   Copyright (C) 1996-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
@@ -42,6 +42,9 @@
  */
 
 U_NAMESPACE_BEGIN
+
+// Forward Declarations
+void U_CALLCONV locale_available_init(); /**< @internal */
 
 /**
  * A <code>Locale</code> object represents a specific geographical, political,
@@ -418,7 +421,7 @@ public:
     inline const char * getName() const;
 
     /**
-     * Returns the programmatic name of the entire locale as getName would return,
+     * Returns the programmatic name of the entire locale as getName() would return,
      * but without keywords.
      * @return      A pointer to "name".
      * @see getName
@@ -451,7 +454,10 @@ public:
     int32_t getKeywordValue(const char* keywordName, char *buffer, int32_t bufferCapacity, UErrorCode &status) const;
 
     /**
-     * Sets the value for a keyword.
+     * Sets or removes the value for a keyword.
+     *
+     * For removing all keywords, use getBaseName(),
+     * and construct a new Locale if it differs from getName().
      *
      * @param keywordName name of the keyword to be set. Case insensitive.
      * @param keywordValue value of the keyword to be set. If 0-length or
@@ -486,6 +492,23 @@ public:
      * @stable ICU 2.0
      */
     uint32_t        getLCID(void) const;
+
+#ifndef U_HIDE_DRAFT_API
+    /**
+     * Returns whether this locale's script is written right-to-left.
+     * If there is no script subtag, then the likely script is used, see uloc_addLikelySubtags().
+     * If no likely script is known, then FALSE is returned.
+     *
+     * A script is right-to-left according to the CLDR script metadata
+     * which corresponds to whether the script's letters have Bidi_Class=R or AL.
+     *
+     * Returns TRUE for "ar" and "en-Hebr", FALSE for "zh" and "fa-Cyrl".
+     *
+     * @return TRUE if the locale's script is written right-to-left
+     * @draft ICU 54
+     */
+    UBool isRightToLeft() const;
+#endif  /* U_HIDE_DRAFT_API */
 
     /**
      * Fills in "dispLang" with the name of this locale's language in a format suitable for
@@ -727,7 +750,7 @@ private:
     char fullNameBuffer[ULOC_FULLNAME_CAPACITY];
     // name without keywords
     char* baseName;
-    char baseNameBuffer[ULOC_FULLNAME_CAPACITY];
+    void initBaseName(UErrorCode& status);
 
     UBool fIsBogus;
 
@@ -738,6 +761,11 @@ private:
      * @internal
      */
     friend Locale *locale_set_default_internal(const char *, UErrorCode& status);
+
+    /**
+     * @internal
+     */
+    friend void U_CALLCONV locale_available_init();
 };
 
 inline UBool
@@ -767,7 +795,6 @@ Locale::getScript() const
 inline const char *
 Locale::getVariant() const
 {
-    getBaseName(); // lazy init
     return &baseName[variantBegin];
 }
 

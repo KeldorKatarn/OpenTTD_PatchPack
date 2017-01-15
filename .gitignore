@@ -36,6 +36,7 @@ projects/*.ncb
 projects/*.suo
 projects/*.sdf
 projects/*.opensdf
+projects/*.opendb
 projects/*.vcproj.*.user
 projects/*.vcxproj.user
 projects/*.VC.db

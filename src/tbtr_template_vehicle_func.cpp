@@ -129,7 +129,7 @@ void DrawTemplate(const TemplateVehicle *tv, int left, int right, int y)
 
 		if (rtl ? px + width > 0 : px - width < max_width) {
 			PaletteID pal = GetEnginePalette(tv->engine_type, _current_company);
-			DrawSprite(tv->cur_image, pal, px + (rtl ? -tv->image_offset.x : tv->image_offset.x), height / 2 + tv->image_offset.y);
+			tv->sprite_seq.Draw(px + (rtl ? -tv->image_offset.x : tv->image_offset.x), height / 2 + tv->image_offset.y, pal, false);
 		}
 
 		px += rtl ? -width : width;
@@ -169,7 +169,7 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	tmp->max_te = gcache->cached_max_te;
 
 	tmp->spritenum = virt->spritenum;
-	tmp->cur_image = virt->GetImage(DIR_W, EIT_IN_DEPOT);
+	virt->GetImage(DIR_W, EIT_IN_DEPOT, &tmp->sprite_seq);
 	tmp->image_width = virt->GetDisplayImageWidth(&tmp->image_offset);
 }
 

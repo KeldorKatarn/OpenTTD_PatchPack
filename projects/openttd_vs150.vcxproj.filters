@@ -3090,5 +3090,8 @@
     <ClInclude Include="..\src\scope.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\container_func.hpp">
+      <Filter>Core Source Code</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

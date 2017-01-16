@@ -315,6 +315,7 @@
     <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
+    <ClInclude Include="..\src\core\container_func.hpp" />
     <ClInclude Include="..\src\scope.h" />
     <ClInclude Include="..\src\tbtr_template_gui_main.h" />
     <ClInclude Include="..\src\tbtr_template_gui_create.h" />

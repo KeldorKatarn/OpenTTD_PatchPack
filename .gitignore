@@ -33,6 +33,7 @@ projects/*
 projects/.vs/*
 !projects/*.vcproj
 !projects/*.vcxproj
+!projects/*.vcxproj.filters
 !projects/*.sln
 src/rev.cpp
 src/os/windows/ottdres.rc

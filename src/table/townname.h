@@ -10,6 +10,10 @@
 /** @file table/townname.h Namepart tables for the town name generator */
 
 #include "../core/enum_type.hpp"
+  
+#if defined(__GNUC__)
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 
 static const char * const _name_original_english_1[] = {
 	"Great ",

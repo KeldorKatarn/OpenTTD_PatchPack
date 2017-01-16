@@ -39,6 +39,7 @@
 #include "logic_signals.h"
 #include "tbtr_template_vehicle_func.h"
 #include "autoreplace_func.h"
+#include "bridge_signal_map.h"
 
 #include "table/strings.h"
 #include "table/train_cmd.h"
@@ -2363,33 +2364,50 @@ static bool CheckTrainStayInDepot(Train *v)
 
 	return false;
 }
+  
+static int GetAndClearLastBridgeEntranceSetSignalIndex(TileIndex bridge_entrance)
+{
+	uint16 m = _m[bridge_entrance].m2;
+	if (m & 0x8000) {
+		auto it = _long_bridge_signal_sim_map.find(bridge_entrance);
+		if (it != _long_bridge_signal_sim_map.end()) {
+			LongBridgeSignalStorage &lbss = it->second;
+			size_t slot = lbss.signal_red_bits.size();
+			while (slot > 0) {
+				slot--;
+				uint64 &slot_bits = lbss.signal_red_bits[slot];
+				if (slot_bits) {
+					uint8 i = FindLastBit(slot_bits);
+					ClrBit(slot_bits, i);
+					return 1 + 15 + (64 * slot) + i;
+				}
+			}
+		}
+	}
+	if (m & 0x7FFF) {
+		uint8 i = FindLastBit(m & 0x7FFF);
+		ClrBit(_m[bridge_entrance].m2, i);
+		return 1 + i;
+	}
+
+	return 0;
+}
 
 static void HandleLastTunnelBridgeSignals(TileIndex tile, TileIndex end, DiagDirection dir, bool free)
 {
-	if (IsBridge(end) && _m[end].m2 > 0){
+	if (IsBridge(end) && _m[end].m2 != 0) {
 		/* Clearing last bridge signal. */
-		uint16 m = _m[end].m2;
-		byte i = 15;
-		while((m & 0x8000) == 0 && --i > 0) m <<= 1;
-		ClrBit(_m[end].m2, i);
-
-		uint x = TileX(end)* TILE_SIZE;
-		uint y = TileY(end)* TILE_SIZE;
-		uint distance = (TILE_SIZE * _settings_game.construction.simulated_wormhole_signals) * ++i;
-		switch (dir) {
-			default: NOT_REACHED();
-			case DIAGDIR_NE: MarkTileDirtyByTile(TileVirtXY(x - distance, y)); break;
-			case DIAGDIR_SE: MarkTileDirtyByTile(TileVirtXY(x, y + distance)); break;
-			case DIAGDIR_SW: MarkTileDirtyByTile(TileVirtXY(x + distance, y)); break;
-			case DIAGDIR_NW: MarkTileDirtyByTile(TileVirtXY(x, y - distance)); break;
+		int signal_offset = GetAndClearLastBridgeEntranceSetSignalIndex(end);
+		if (signal_offset) {
+			TileIndex last_signal_tile = end + (TileOffsByDiagDir(dir) * _settings_game.construction.simulated_wormhole_signals * signal_offset);
+			MarkTileDirtyByTile(last_signal_tile);
 		}
 		MarkTileDirtyByTile(tile);
 	}
 	if (free) {
 	/* Open up the wormhole and clear m2. */
 		if (IsBridge(end)) {
-			_m[tile].m2 = 0;
-			_m[end].m2 = 0;
+			SetAllBridgeEntranceSimulatedSignalsGreen(end);
 		}
 
 		if (IsTunnelBridgeSignalSimulationEntrance(end) && GetTunnelBridgeSignalState(end) == SIGNAL_STATE_RED) {
@@ -3546,7 +3564,7 @@ static bool CheckTrainStayInWormHole(Train *t, TileIndex tile)
 	return false; 
 }
 
-static void HandleSignalBehindTrain(Train *v, uint signal_number)
+static void HandleSignalBehindTrain(Train *v, int signal_number)
 {
 	TileIndex tile;
 	switch (v->direction) {
@@ -3563,8 +3581,8 @@ static void HandleSignalBehindTrain(Train *v, uint signal_number)
 			SetTunnelBridgeSignalState(tile, SIGNAL_STATE_GREEN);
 			MarkTileDirtyByTile(tile);
 		}
-	} else if (IsBridge(v->tile) && signal_number <= 16) {
-		ClrBit(_m[v->tile].m2, signal_number);
+	} else if (IsBridge(v->tile) && signal_number >= 0) {
+		SetBridgeEntranceSimulatedSignalState(v->tile, signal_number, SIGNAL_STATE_GREEN);
 		MarkTileDirtyByTile(tile);
 	}
 }
@@ -3908,14 +3926,14 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 							return false;
 						}
 						/* flip signal in front to red on bridges*/
-						if (distance == 0 && v->load_unload_ticks <= 15 && IsBridge(v->tile)){
-							SetBit(_m[v->tile].m2, v->load_unload_ticks);
+						if (distance == 0 && IsBridge(v->tile)) {
+ 							SetBridgeEntranceSimulatedSignalState(v->tile, v->load_unload_ticks, SIGNAL_STATE_RED);
 							MarkTileDirtyByTile(gp.new_tile);
 						}
 					}
 				}
 				if (v->Next() == NULL) {
-					if (v->load_unload_ticks > 0 && v->load_unload_ticks <= 16 && distance == (TILE_SIZE * _settings_game.construction.simulated_wormhole_signals) - TILE_SIZE) HandleSignalBehindTrain(v, v->load_unload_ticks - 2);
+					if (v->load_unload_ticks > 0 && distance == (TILE_SIZE * _settings_game.construction.simulated_wormhole_signals) - TILE_SIZE) HandleSignalBehindTrain(v, v->load_unload_ticks - 2);
 					if (old_tile == v->tile) {
 						/* We left ramp into wormhole. */
 						v->x_pos = gp.x;

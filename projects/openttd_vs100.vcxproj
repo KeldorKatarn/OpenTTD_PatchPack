@@ -309,12 +309,14 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_create_virtualtrain.cpp" />
     <ClCompile Include="..\src\tbtr_template_gui_replaceall.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
     <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
+    <ClInclude Include="..\src\bridge_signal_map.h" />
     <ClInclude Include="..\src\core\container_func.hpp" />
     <ClInclude Include="..\src\scope.h" />
     <ClInclude Include="..\src\tbtr_template_gui_main.h" />

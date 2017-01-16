@@ -221,9 +221,13 @@ private:
 				TileIndex tile = v->tile;
 				Trackdir  trackdir = v->GetVehicleTrackdir();
 
-				CFollowTrackRail ft(v);
-
 				TileIndex candidate_tile = INVALID_TILE;
+  
+ 				if (IsRailDepotTile(v->tile)) {
+ 					candidate_tile = v->tile;
+ 				}
+ 
+ 				CFollowTrackRail ft(v);
 
 				for (;;) {
 					if (IsTileType(tile, MP_RAILWAY) && HasSignalOnTrackdir(tile, trackdir)) {
@@ -261,11 +265,19 @@ private:
 	}
 
 	// returns true if dead end bit has been set
-	inline bool ExecuteTraceRestrict(Node& n, TileIndex tile, Trackdir trackdir, int& cost, TraceRestrictProgramResult &out)
+	inline bool ExecuteTraceRestrict(Node& n, TileIndex tile, Trackdir trackdir, int& cost, TraceRestrictProgramResult &out, bool *is_res_through)
 	{
 		const TraceRestrictProgram *prog = GetExistingTraceRestrictProgram(tile, TrackdirToTrack(trackdir));
-		if (prog && prog->actions_used_flags & TRPAUF_PF) {
+		TraceRestrictProgramActionsUsedFlags flags_to_check = TRPAUF_PF;
+		if (is_res_through != NULL) {
+			*is_res_through = false;
+			flags_to_check |= TRPAUF_RESERVE_THROUGH;
+		}
+		if (prog && prog->actions_used_flags & flags_to_check) {
 			prog->Execute(Yapf().GetVehicle(), TraceRestrictProgramInput(tile, trackdir, &TraceRestrictPreviousSignalCallback, &n), out);
+			if (out.flags & TRPRF_RESERVE_THROUGH && is_res_through != NULL) {
+				*is_res_through = true;
+			}
 			if (out.flags & TRPRF_DENY) {
 				n.m_segment->m_end_segment_reason |= ESRB_DEAD_END;
 				return true;
@@ -338,9 +350,11 @@ public:
 
 					if (ShouldCheckTraceRestrict(n, tile)) {
 						TraceRestrictProgramResult out;
-						if (ExecuteTraceRestrict(n, tile, trackdir, cost, out)) {
+						bool is_reserve_through = false;
+						if (ExecuteTraceRestrict(n, tile, trackdir, cost, out, &is_reserve_through)) {
 							return -1;
 						}
+						if (is_reserve_through) n.m_num_signals_res_through_passed++;
 					}
 
 					n.m_num_signals_passed++;
@@ -353,7 +367,7 @@ public:
 
 					if (ShouldCheckTraceRestrict(n, tile)) {
 						TraceRestrictProgramResult out;
-						if (ExecuteTraceRestrict(n, tile, trackdir, cost, out)) {
+						if (ExecuteTraceRestrict(n, tile, trackdir, cost, out, NULL)) {
 							return -1;
 						}
 					}

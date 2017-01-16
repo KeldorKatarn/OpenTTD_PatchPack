@@ -148,7 +148,8 @@ bool TryReserveRailTrack(TileIndex tile, Track t, bool trigger_stations)
 		case MP_TUNNELBRIDGE:
 			if (GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL && !GetTunnelBridgeReservationTrackBits(tile)) {
 				SetTunnelBridgeReservation(tile, true);
-				if (IsTunnelBridgeExit(tile) && IsTunnelBridgePBS(tile)) SetTunnelBridgeExitGreen(tile, true);
+				if (IsTunnelBridgeSignalSimulationExit(tile) && IsTunnelBridgePBS(tile)) SetTunnelBridgeSignalState(tile, SIGNAL_STATE_GREEN);
+				MarkTileDirtyByTile(tile);
 				return true;
 			}
 			break;
@@ -221,7 +222,8 @@ void UnreserveRailTrack(TileIndex tile, Track t)
 		case MP_TUNNELBRIDGE:
 			if (GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL) {
 				SetTunnelBridgeReservation(tile, false);
-				if (IsTunnelBridgeExit(tile) && IsTunnelBridgePBS(tile)) SetTunnelBridgeExitGreen(tile, false);
+				if (IsTunnelBridgeSignalSimulationExit(tile) && IsTunnelBridgePBS(tile)) SetTunnelBridgeSignalState(tile, SIGNAL_STATE_RED);
+				MarkTileDirtyByTile(tile);
 			}
 			break;
 
@@ -291,7 +293,7 @@ static PBSTileInfo FollowReservation(Owner o, RailTypes rts, TileIndex tile, Tra
 		if (IsRailDepotTile(tile)) break;
 		/* Non-pbs signal? Reservation can't continue. */
 		if (IsTileType(tile, MP_RAILWAY) && HasSignalOnTrackdir(tile, trackdir) && !IsPbsSignal(GetSignalType(tile, TrackdirToTrack(trackdir)))) break;
-		if (IsTileType(tile, MP_TUNNELBRIDGE) && HasWormholeSignals(tile)) break;
+		if (IsTileType(tile, MP_TUNNELBRIDGE) && IsTunnelBridgeWithSignalSimulation(tile)) break;
 	}
 
 	return PBSTileInfo(tile, trackdir, false);
@@ -316,6 +318,14 @@ static Vehicle *FindTrainOnTrackEnum(Vehicle *v, void *data)
 	if (v->type != VEH_TRAIN || (v->vehstatus & VS_CRASHED)) return NULL;
 
 	Train *t = Train::From(v);
+	if (t->track == TRACK_BIT_WORMHOLE) {
+		/* Do not find trains inside signalled bridge/tunnels.
+		* Trains on the ramp/entrance itself are found though.
+		*/
+		if (IsTileType(info->res.tile, MP_TUNNELBRIDGE) && IsTunnelBridgeWithSignalSimulation(info->res.tile) && info->res.tile != TileVirtXY(t->x_pos, t->y_pos)) {
+			return NULL;
+		}
+	}
 	if (t->track == TRACK_BIT_WORMHOLE || HasBit((TrackBits)t->track, TrackdirToTrack(info->res.trackdir))) {
 		t = t->First();
 
@@ -360,7 +370,7 @@ PBSTileInfo FollowTrainReservation(const Train *v, Vehicle **train_on_res)
 				if (ftoti.best != NULL) *train_on_res = ftoti.best->First();
 			}
 		}
-		if (*train_on_res == NULL && IsTileType(ftoti.res.tile, MP_TUNNELBRIDGE) && !HasWormholeSignals(ftoti.res.tile)) {
+		if (*train_on_res == NULL && IsTileType(ftoti.res.tile, MP_TUNNELBRIDGE) && !IsTunnelBridgeWithSignalSimulation(ftoti.res.tile)) {
 			/* The target tile is a bridge/tunnel, also check the other end tile. */
 			FindVehicleOnPos(GetOtherTunnelBridgeEnd(ftoti.res.tile), &ftoti, FindTrainOnTrackEnum);
 			if (ftoti.best != NULL) *train_on_res = ftoti.best->First();
@@ -480,7 +490,7 @@ bool IsSafeWaitingPosition(const Train *v, TileIndex tile, Trackdir trackdir, bo
 	}
 
 	if (IsTileType(tile, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL) {
-		if (IsTunnelBridgeEntrance(tile)) {
+		if (IsTunnelBridgeSignalSimulationEntrance(tile)) {
 			return true;
 		}
 	}
@@ -524,7 +534,7 @@ bool IsSafeWaitingPosition(const Train *v, TileIndex tile, Trackdir trackdir, bo
 		}
  
 		if (IsTileType(ft.m_new_tile, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(ft.m_new_tile) == TRANSPORT_RAIL &&
- 				IsTunnelBridgeExit(ft.m_new_tile) && IsTunnelBridgePBS(ft.m_new_tile)) {
+ 				IsTunnelBridgeSignalSimulationExit(ft.m_new_tile) && IsTunnelBridgePBS(ft.m_new_tile)) {
  			return include_line_end;
  		}
 	}
@@ -552,7 +562,7 @@ bool IsWaitingPositionFree(const Train *v, TileIndex tile, Trackdir trackdir, bo
 	/* Not reserved and depot or not a pbs signal -> free. */
 	if (IsRailDepotTile(tile)) return true;
 	if (IsTileType(tile, MP_RAILWAY) && HasSignalOnTrackdir(tile, trackdir) && !IsPbsSignal(GetSignalType(tile, track))) return true;
-	if (IsTileType(tile, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL && IsTunnelBridgeEntrance(tile)) return true;
+	if (IsTileType(tile, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL && IsTunnelBridgeSignalSimulationEntrance(tile)) return true;
 
 	/* Check the next tile, if it's a PBS signal, it has to be free as well. */
 	CFollowTrackRail ft(v, GetRailTypeInfo(v->railtype)->compatible_railtypes);

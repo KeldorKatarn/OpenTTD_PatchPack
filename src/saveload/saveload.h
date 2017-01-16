@@ -113,6 +113,7 @@ enum SLRefType {
 #define SL_PATCH_PACK_1_12 270
 #define SL_PATCH_PACK_1_14 271
 #define SL_PATCH_PACK_1_15 272
+#define SL_PATCH_PACK_1_16 273
 
 /** Flags of a chunk. */
 enum ChunkType {

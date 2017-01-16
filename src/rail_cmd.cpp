@@ -21,6 +21,7 @@
 #include "autoslope.h"
 #include "water.h"
 #include "tunnelbridge_map.h"
+#include "bridge_signal_map.h"
 #include "vehicle_func.h"
 #include "sound_func.h"
 #include "tunnelbridge.h"
@@ -35,6 +36,7 @@
 #include "object_map.h"
 #include "tracerestrict.h"
 #include "logic_signals.h"
+#include "core/container_func.hpp"
 
 #include "table/strings.h"
 #include "table/railtypes.h"
@@ -1030,6 +1032,20 @@ CommandCost CmdBuildTrainDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 	return cost;
 }
 
+static void ClearBridgeTunnelSignalSimulation(TileIndex entrance, TileIndex exit)
+{
+	if (IsBridge(entrance)) ClearBridgeEntranceSimulatedSignals(entrance);
+	ClrTunnelBridgeSignalSimulationEntrance(entrance);
+	ClrTunnelBridgeSignalSimulationExit(exit);
+}
+
+static void SetupBridgeTunnelSignalSimulation(TileIndex entrance, TileIndex exit)
+{
+	SetTunnelBridgeSignalSimulationEntrance(entrance);
+	SetTunnelBridgeSignalState(entrance, SIGNAL_STATE_GREEN);
+	SetTunnelBridgeSignalSimulationExit(exit);
+}
+
 /**
  * Build signals, alternate between double/single, signal/semaphore,
  * pre/exit/combo-signals, and what-else not. If the rail piece does not
@@ -1086,7 +1102,7 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 		cost = CommandCost();
 		bool flip_variant = false;
 		bool is_pbs = (sigtype == SIGTYPE_PBS) || (sigtype == SIGTYPE_PBS_ONEWAY);
-		if (!HasWormholeSignals(tile)) { // toggle signal zero costs.
+		if (!IsTunnelBridgeWithSignalSimulation(tile)) { // toggle signal zero costs.
 			if (convert_signal) return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
 			if (p2 != 12) cost = CommandCost(EXPENSES_CONSTRUCTION, _price[PR_BUILD_SIGNALS] * ((GetTunnelBridgeLength(tile, tile_exit) + 4) >> 2)); // minimal 1
 		} else {
@@ -1099,7 +1115,7 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 			}
 		}
 		if (flags & DC_EXEC) {
-			if (p2 == 0 && HasWormholeSignals(tile)){ // Toggle signal if already signals present.
+			if (p2 == 0 && IsTunnelBridgeWithSignalSimulation(tile)) { // Toggle signal if already signals present.
 				if (convert_signal) {
 					if (flip_variant) {
 						SetTunnelBridgeSemaphore(tile, !IsTunnelBridgeSemaphore(tile));
@@ -1113,37 +1129,28 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 					SetTunnelBridgePBS(tile, !IsTunnelBridgePBS(tile));
 					SetTunnelBridgePBS(tile_exit, IsTunnelBridgePBS(tile));
 				} else {
-					if (IsTunnelBridgeEntrance(tile)) {
-						ClrBitTunnelBridgeSignal(tile);
-						ClrBitTunnelBridgeExit(tile_exit);
-						SetBitTunnelBridgeExit(tile);
-						SetBitTunnelBridgeSignal(tile_exit);
+					if (IsTunnelBridgeSignalSimulationEntrance(tile)) {
+						ClearBridgeTunnelSignalSimulation(tile, tile_exit);
+						SetupBridgeTunnelSignalSimulation(tile_exit, tile);
 					} else {
-						ClrBitTunnelBridgeSignal(tile_exit);
-						ClrBitTunnelBridgeExit(tile);
-						SetBitTunnelBridgeExit(tile_exit);
-						SetBitTunnelBridgeSignal(tile);
+						ClearBridgeTunnelSignalSimulation(tile_exit, tile);
+						SetupBridgeTunnelSignalSimulation(tile, tile_exit);
 					}
 				}			
 			} else {
 				/* Create one direction tunnel/bridge if required. */
 				if (p2 == 0) {
-					SetBitTunnelBridgeSignal(tile);
-					SetBitTunnelBridgeExit(tile_exit);
+					SetupBridgeTunnelSignalSimulation(tile, tile_exit);
 				} else if (p2 == 4 || p2 == 8) {
 					DiagDirection tbdir = GetTunnelBridgeDirection(tile);
 					/* If signal only on one side build accordingly one-way tunnel/bridge. */
 					if ((p2 == 8 && (tbdir == DIAGDIR_NE || tbdir == DIAGDIR_SE)) ||
 						(p2 == 4 && (tbdir == DIAGDIR_SW || tbdir == DIAGDIR_NW))) {
-						ClrBitTunnelBridgeExit(tile);
-						ClrBitTunnelBridgeSignal(tile_exit);
-						SetBitTunnelBridgeSignal(tile);
-						SetBitTunnelBridgeExit(tile_exit);
+						ClearBridgeTunnelSignalSimulation(tile_exit, tile);
+						SetupBridgeTunnelSignalSimulation(tile, tile_exit);
 					} else {
-						ClrBitTunnelBridgeSignal(tile);
-						ClrBitTunnelBridgeExit(tile_exit);
-						SetBitTunnelBridgeSignal(tile_exit);
-						SetBitTunnelBridgeExit(tile);
+						ClearBridgeTunnelSignalSimulation(tile, tile_exit);
+						SetupBridgeTunnelSignalSimulation(tile_exit, tile);
 					}
 				}
 
@@ -1155,8 +1162,8 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 				}
 			}
 			
-			if (IsTunnelBridgeExit(tile) && IsTunnelBridgePBS(tile) && !HasTunnelBridgeReservation(tile)) SetTunnelBridgeExitGreen(tile, false);
-			if (IsTunnelBridgeExit(tile_exit) && IsTunnelBridgePBS(tile_exit) && !HasTunnelBridgeReservation(tile_exit)) SetTunnelBridgeExitGreen(tile_exit, false);
+			if (IsTunnelBridgeSignalSimulationExit(tile) && IsTunnelBridgePBS(tile) && !HasTunnelBridgeReservation(tile)) SetTunnelBridgeSignalState(tile, SIGNAL_STATE_RED);
+ 			if (IsTunnelBridgeSignalSimulationExit(tile_exit) && IsTunnelBridgePBS(tile_exit) && !HasTunnelBridgeReservation(tile_exit)) SetTunnelBridgeSignalState(tile_exit, SIGNAL_STATE_RED);
 			
 			MarkBridgeOrTunnelDirty(tile);
 			AddSideToSignalBuffer(tile, INVALID_DIAGDIR, GetTileOwner(tile));
@@ -1350,7 +1357,7 @@ static bool CheckSignalAutoFill(TileIndex &tile, Trackdir &trackdir, int &signal
 			return true;
 
 		case MP_TUNNELBRIDGE: {
-			if (!remove && HasWormholeSignals(tile)) return false;
+			if (!remove && IsTunnelBridgeWithSignalSimulation(tile)) return false;
 			TileIndex orig_tile = tile; // backup old value
 
 			if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return false;
@@ -1460,10 +1467,22 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 	Trackdir last_suitable_trackdir = INVALID_TRACKDIR;
 	CommandCost last_error = CMD_ERROR;
 	bool had_success = false;
+	std::vector<TileIndex> tunnel_bridge_blacklist;
 	for (;;) {
-		/* only build/remove signals with the specified density */
+		bool tile_ok = true;
+		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+			if (container_unordered_remove(tunnel_bridge_blacklist, tile) > 0) {
+				/* This tile is blacklisted, skip tile and remove from blacklist.
+				 * Mark last used counter as current tile.
+				 */
+				tile_ok = false;
+				last_used_ctr = signal_ctr;
+				last_suitable_tile = INVALID_TILE;
+			}
+		}
 
-		if (remove || minimise_gaps || signal_ctr % signal_density == 0 || IsTileType(tile, MP_TUNNELBRIDGE)) {
+		/* only build/remove signals with the specified density */
+		if (tile_ok && (remove || minimise_gaps || signal_ctr % signal_density == 0 || IsTileType(tile, MP_TUNNELBRIDGE))) {
 			uint32 p1 = GB(TrackdirToTrack(trackdir), 0, 3);
 			SB(p1, 3, 1, mode);
 			SB(p1, 4, 1, semaphores);
@@ -1478,6 +1497,11 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 			/* Test tiles in between for suitability as well if minimising gaps. */
 			bool test_only = !remove && minimise_gaps && signal_ctr < (last_used_ctr + signal_density);
 			CommandCost ret = DoCommand(tile, p1, signals, test_only ? flags & ~DC_EXEC : flags, remove ? CMD_REMOVE_SIGNALS : CMD_BUILD_SIGNALS);
+
+			if (!test_only && ret.Succeeded() && IsTileType(tile, MP_TUNNELBRIDGE) && GetTunnelBridgeDirection(tile) == TrackdirToExitdir(trackdir)) {
+				/* Blacklist far end of tunnel if we just actioned the near end */
+				tunnel_bridge_blacklist.push_back(GetOtherTunnelBridgeEnd(tile));
+			}
 
 			if (ret.Succeeded()) {
 				/* Remember last track piece where we can place a signal. */
@@ -1495,6 +1519,11 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 				if (HasBit(signal_dir, 1)) signals |= SignalAgainstTrackdir(last_suitable_trackdir);
 
 				ret = DoCommand(last_suitable_tile, p1, signals, flags, remove ? CMD_REMOVE_SIGNALS : CMD_BUILD_SIGNALS);
+
+				if (ret.Succeeded() && IsTileType(last_suitable_tile, MP_TUNNELBRIDGE) && GetTunnelBridgeDirection(last_suitable_tile) == TrackdirToExitdir(last_suitable_trackdir)) {
+ 					/* Blacklist far end of tunnel if we just actioned the near end */
+ 					tunnel_bridge_blacklist.push_back(GetOtherTunnelBridgeEnd(last_suitable_tile));
+ 				}
 			}
 
 			/* Collect cost. */
@@ -1502,14 +1531,7 @@ static CommandCost CmdSignalTrackHelper(TileIndex tile, DoCommandFlag flags, uin
 			/* Be user-friendly and try placing signals as much as possible */
 			if (ret.Succeeded()) {
 				had_success = true;
-				if (IsTileType(tile, MP_TUNNELBRIDGE)) {
-					if ((!autofill && GetTunnelBridgeDirection(tile) == TrackdirToExitdir(trackdir)) ||
-							(autofill && GetTunnelBridgeDirection(tile) != TrackdirToExitdir(trackdir))) {
-						total_cost.AddCost(ret);
-					}
-				} else {
-					total_cost.AddCost(ret);
-				}
+				total_cost.AddCost(ret);
 				last_used_ctr = last_suitable_ctr;
 				last_suitable_tile = INVALID_TILE;
 			} else {
@@ -1588,7 +1610,7 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
 		TileIndex end = GetOtherTunnelBridgeEnd(tile);
 		if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
-		if (!HasWormholeSignals(tile)) return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
+		if (!IsTunnelBridgeWithSignalSimulation(tile)) return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
 
 		cost *= ((GetTunnelBridgeLength(tile, end) + 4) >> 2);
 
@@ -1612,14 +1634,10 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 	/* Do it? */
 	if (flags & DC_EXEC) {
 
-		if (HasWormholeSignals(tile)) { // handle tunnel/bridge signals.
+		if (IsTunnelBridgeWithSignalSimulation(tile)) { // handle tunnel/bridge signals.
 			TileIndex end = GetOtherTunnelBridgeEnd(tile);
-			ClrBitTunnelBridgeExit(tile);
-			ClrBitTunnelBridgeExit(end);
-			ClrBitTunnelBridgeSignal(tile);
-			ClrBitTunnelBridgeSignal(end);
-			_m[tile].m2 = 0;
-			_m[end].m2 = 0;
+			ClearBridgeTunnelSignalSimulation(end, tile);
+			ClearBridgeTunnelSignalSimulation(tile, end);
 			MarkBridgeOrTunnelDirty(tile);
 			AddSideToSignalBuffer(tile, INVALID_DIAGDIR, GetTileOwner(tile));
 			AddSideToSignalBuffer(end, INVALID_DIAGDIR, GetTileOwner(tile));

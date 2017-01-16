@@ -1257,6 +1257,12 @@
     <ClInclude Include="..\src\core\bitmath_func.hpp">
       <Filter>Core Source Code</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\container_func.hpp">
+      <Filter>Core Source Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bridge_signal_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\core\endian_func.hpp">
       <Filter>Core Source Code</Filter>
     </ClInclude>
@@ -3106,6 +3112,9 @@
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\plans_cmd.cpp">

@@ -2989,6 +2989,22 @@ bool AfterLoadGame()
 #endif
 	}
 
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_16)) {
+		/* red/green signal state bit for tunnel entrances moved
+		 * to no longer re-use signalled tunnel exit bit
+		 */
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (IsTileType(t, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(t) == TRANSPORT_RAIL && IsTunnelBridgeWithSignalSimulation(t)) {
+				if (HasBit(_m[t].m5, 5)) {
+					/* signalled tunnel entrance */
+					SignalState state = HasBit(_m[t].m5, 6) ? SIGNAL_STATE_RED : SIGNAL_STATE_GREEN;
+					ClrBit(_m[t].m5, 6);
+					SetTunnelBridgeSignalState(t, state);
+				}
+			}
+		}
+	}
+
 
 	/* Station acceptance is some kind of cache */
 	if (IsSavegameVersionBefore(127)) {

@@ -5,6 +5,7 @@ bin/ai/*
 !bin/ai/regression
 !bin/data
 bin/baseset/*
+!bin/baseset
 !bin/baseset/openttd.grf
 !bin/baseset/innerhighlight.grf
 !bin/baseset/oldtracks.grf
@@ -29,16 +30,13 @@ docs/source/*
 media/openttd.desktop
 media/openttd.desktop.install
 objs/*
-projects/Debug
-projects/Release
-projects/*.ncb
-projects/*.suo
-projects/*.sdf
-projects/*.db
-projects/*.opensdf
-projects/*.opendb
-projects/*.vcproj.*.user
-projects/*.vcxproj.user
+projects/*
+projects/.vs/*
+!projects/*.vcproj
+!projects/*.vcxproj
+!projects/*.vcxproj.filters
+!projects/*.sln
+!projects/*.vbs
 src/rev.cpp
 src/os/windows/ottdres.rc
 

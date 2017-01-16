@@ -102,12 +102,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\airport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -261,12 +255,6 @@
     <ClCompile Include="..\src\linkgraph\refresh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\logic_signal_program.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\logic_signals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -409,9 +397,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tracerestrict.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClInclude Include="..\src\aircraft.h">
@@ -738,9 +723,6 @@
     <ClInclude Include="..\src\livery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\logic_signals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\map_func.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -748,9 +730,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\mixer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\triphistory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\network\network.h">
@@ -1011,9 +990,6 @@
     <ClInclude Include="..\src\slope_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\smallmap_colours.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\smallmap_gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1233,9 +1209,6 @@
     <ClInclude Include="..\src\zoom_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\zoning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\src\core\alloc_func.cpp">
       <Filter>Core Source Code</Filter>
     </ClCompile>
@@ -1389,9 +1362,6 @@
     <ClCompile Include="..\src\linkgraph\linkgraph_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\logic_signals_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\main_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1476,9 +1446,6 @@
     <ClCompile Include="..\src\town_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tracerestrict_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\train_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1488,9 +1455,6 @@
     <ClCompile Include="..\src\tree_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\triphistory_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\vehicle_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1498,9 +1462,6 @@
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClCompile Include="..\src\waypoint_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\zoning_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClInclude Include="..\src\widgets\airport_widget.h">
@@ -1695,9 +1656,6 @@
     <ClCompile Include="..\src\industry_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\logic_signals_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\misc_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
@@ -1737,9 +1695,6 @@
     <ClCompile Include="..\src\train_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\triphistory_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\tree_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
@@ -1756,9 +1711,6 @@
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\waypoint_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\zoning_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\afterload.cpp">
@@ -1816,9 +1768,6 @@
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\linkgraph_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\logic_signals_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\map_sl.cpp">
@@ -1885,12 +1834,6 @@
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\waypoint_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClInclude Include="..\src\table\airport_defaults.h">
@@ -3099,20 +3042,8 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\saveload\plans_sl.cpp">
+    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp">
       <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\plans_cmd.cpp">
-      <Filter>Command handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\plans_gui.cpp">
-      <Filter>GUI Source Code</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\plans.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
       <Filter>GUI Source Code</Filter>
@@ -3120,7 +3051,67 @@
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\logic_signals_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\triphistory_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\zoning_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signal_program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tracerestrict.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\logic_signals_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\plans_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signals_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tracerestrict_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\triphistory_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\zoning_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\overlay_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
   </ItemGroup>
@@ -3129,6 +3120,51 @@
     <None Include="..\readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\scope.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\container_func.hpp">
+      <Filter>Core Source Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bridge_signal_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\table\darklight_colours.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\logic_signals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay_cmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\smallmap_colours.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\triphistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tracerestrict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\zoning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\plans_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -3139,30 +3175,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\widgets\plans_widget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tracerestrict.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\table\darklight_colours.h">
-      <Filter>Tables</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\overlay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\overlay_cmd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

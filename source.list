@@ -333,6 +333,7 @@ road_type.h
 roadstop_base.h
 roadveh.h
 safeguards.h
+scope.h
 screenshot.h
 sdl.h
 sound/sdl_s.h
@@ -447,6 +448,7 @@ core/alloc_type.hpp
 core/backup_type.hpp
 core/bitmath_func.cpp
 core/bitmath_func.hpp
+core/container_func.hpp
 core/endian_func.hpp
 core/endian_type.hpp
 core/enum_type.hpp
@@ -667,6 +669,7 @@ saveload/subsidy_sl.cpp
 saveload/town_sl.cpp
 saveload/vehicle_sl.cpp
 saveload/waypoint_sl.cpp
+saveload/bridge_signal_sl.cpp
 saveload/tbtr_template_replacement_sl.cpp
 saveload/tbtr_template_veh_sl.cpp
 
@@ -1013,6 +1016,7 @@ newgrf_townname.cpp
 # Map Accessors
 bridge_map.cpp
 bridge_map.h
+bridge_signal_map.h
 clear_map.h
 industry_map.h
 object_map.h

@@ -3042,31 +3042,77 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\overlay_cmd.cpp" />
-    <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
-    <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
-    <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
-    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
-    <ClCompile Include="..\src\logic_signal_program.cpp" />
-    <ClCompile Include="..\src\logic_signals.cpp" />
-    <ClCompile Include="..\src\plans.cpp" />
-    <ClCompile Include="..\src\plans_cmd.cpp" />
-    <ClCompile Include="..\src\plans_gui.cpp" />
-    <ClCompile Include="..\src\saveload\plans_sl.cpp" />
-    <ClCompile Include="..\src\triphistory_cmd.cpp" />
-    <ClCompile Include="..\src\triphistory_gui.cpp" />
-    <ClCompile Include="..\src\logic_signals_gui.cpp" />
-    <ClCompile Include="..\src\zoning_gui.cpp" />
-    <ClCompile Include="..\src\logic_signals_cmd.cpp" />
-    <ClCompile Include="..\src\zoning_cmd.cpp" />
-    <ClCompile Include="..\src\saveload\logic_signals_sl.cpp" />
-    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp" />
-    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp" />
-    <ClCompile Include="..\src\tracerestrict.cpp" />
-    <ClCompile Include="..\src\tracerestrict_gui.cpp" />
-    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp" />
     <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp">
       <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signals_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\triphistory_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\zoning_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signal_program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tracerestrict.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\logic_signals_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\plans_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\logic_signals_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tracerestrict_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\triphistory_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\zoning_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\overlay_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plans_cmd.cpp">
+      <Filter>Command handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3074,22 +3120,6 @@
     <None Include="..\readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\overlay.h" />
-    <ClInclude Include="..\src\overlay_cmd.h" />
-    <ClInclude Include="..\src\table\darklight_colours.h" />
-    <ClInclude Include="..\src\tbtr_template_gui_main.h" />
-    <ClInclude Include="..\src\tbtr_template_gui_create.h" />
-    <ClInclude Include="..\src\tbtr_template_vehicle.h" />
-    <ClInclude Include="..\src\tbtr_template_vehicle_func.h" />
-    <ClInclude Include="..\src\plans_func.h" />
-    <ClInclude Include="..\src\plans_type.h" />
-    <ClInclude Include="..\src\plans_base.h" />
-    <ClInclude Include="..\src\logic_signals.h" />
-    <ClInclude Include="..\src\triphistory.h" />
-    <ClInclude Include="..\src\smallmap_colours.h" />
-    <ClInclude Include="..\src\widgets\plans_widget.h" />
-    <ClInclude Include="..\src\zoning.h" />
-    <ClInclude Include="..\src\tracerestrict.h" />
     <ClInclude Include="..\src\scope.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -3097,6 +3127,54 @@
       <Filter>Core Source Code</Filter>
     </ClInclude>
     <ClInclude Include="..\src\bridge_signal_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\table\darklight_colours.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\logic_signals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay_cmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\smallmap_colours.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\triphistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tracerestrict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\zoning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\plans_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\plans_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\plans_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\widgets\plans_widget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

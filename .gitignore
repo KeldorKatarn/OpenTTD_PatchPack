@@ -5,6 +5,7 @@ bin/ai/*
 !bin/ai/regression
 !bin/data
 bin/baseset/*
+!bin/baseset
 !bin/baseset/openttd.grf
 !bin/baseset/innerhighlight.grf
 !bin/baseset/oldtracks.grf
@@ -35,6 +36,7 @@ projects/.vs/*
 !projects/*.vcxproj
 !projects/*.vcxproj.filters
 !projects/*.sln
+!projects/*.vbs
 src/rev.cpp
 src/os/windows/ottdres.rc
 

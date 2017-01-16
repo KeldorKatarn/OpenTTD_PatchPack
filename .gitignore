@@ -38,6 +38,7 @@ projects/.vs
 projects/.vs/*
 !projects/*.vcproj
 !projects/*.vcxproj
+!projects/*.vcxproj.filters
 !projects/*.sln
 projects/*.VC.db
 projects/*.VC.opendb

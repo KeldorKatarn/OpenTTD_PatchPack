@@ -267,7 +267,10 @@ public:
 
 	virtual void OnPlaceObjectAbort()
 	{
+		this->sel = INVALID_VEHICLE;
+		this->vehicle_over = INVALID_VEHICLE;
 		this->RaiseButtons();
+		this->SetDirty();
 	}
 
 	virtual void DrawWidget(const Rect &r, int widget) const

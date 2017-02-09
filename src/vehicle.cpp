@@ -39,6 +39,7 @@
 #include "economy_base.h"
 #include "articulated_vehicles.h"
 #include "roadstop_base.h"
+#include "depot_base.h"
 #include "core/random_func.hpp"
 #include "core/backup_type.hpp"
 #include "order_backup.h"
@@ -943,6 +944,23 @@ void VehicleEnteredDepotThisTick(Vehicle *v)
 	 * the path out of the depot before we might autoreplace it to a different
 	 * engine. The new engine would not own the reserved path we store that we
 	 * stopped the vehicle, so autoreplace can start it again */
+
+
+	if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
+		v->current_order.GetDepotOrderType() == ODTF_MANUAL) {
+		for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
+			Order* order = v->orders.list->GetOrderAt(i);
+
+			if (order->GetType() == OT_GOTO_DEPOT && order->GetDestination() == v->current_order.GetDestination()) {
+				v->cur_implicit_order_index = i;
+				v->cur_real_order_index = i;
+				break;
+			}
+		}
+	}
+
+	ClrBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
+	ClrBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
 
 	v->vehstatus |= VS_STOPPED;
 }
@@ -2453,8 +2471,10 @@ void Vehicle::HandleLoading(bool mode)
 		case OT_LOADING: {
 			uint wait_time = max(this->current_order.GetTimetabledWait() - this->lateness_counter, 0);
 
-			/* Not the first call for this tick, or still loading */
-			if (mode || !HasBit(this->vehicle_flags, VF_LOADING_FINISHED) || this->current_order_time < wait_time) return;
+			if (!HasBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT) && !HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+				/* Not the first call for this tick, or still loading */
+				if (mode || !HasBit(this->vehicle_flags, VF_LOADING_FINISHED) || this->current_order_time < wait_time) return;
+			}
 
 			this->PlayLeaveStationSound();
 
@@ -2547,7 +2567,32 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 	if (this->vehstatus & VS_CRASHED) return CMD_ERROR;
 	if (this->IsStoppedInDepot()) return CMD_ERROR;
 
-	if (this->current_order.IsType(OT_GOTO_DEPOT)) {
+	if (HasBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+		bool service_only = (command & DEPOT_SERVICE) != 0;
+		if (service_only != HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+			/* We called with a different DEPOT_SERVICE setting.
+			* Now we change the setting to apply the new one and let the vehicle head for the same depot.
+			* Note: the if is (true for requesting service == true for ordered to stop in depot)          */
+			if (flags & DC_EXEC) {
+				ClrBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
+				ClrBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
+				SetBit(this->vehicle_flags, service_only ? VF_SHOULD_SERVICE_AT_DEPOT : VF_SHOULD_GOTO_DEPOT);
+				SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
+			}
+			return CommandCost();
+		}
+
+		if (command & DEPOT_DONT_CANCEL) return CMD_ERROR; // Requested no cancellation of depot orders
+
+		if(flags & DC_EXEC) {
+			// Cancel the forced depot order.
+			ClrBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
+			ClrBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
+			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
+		}
+		return CommandCost();
+
+	} else if (this->current_order.IsType(OT_GOTO_DEPOT)) {
 		bool halt_in_depot = (this->current_order.GetDepotActionType() & ODATFB_HALT) != 0;
 		if (!!(command & DEPOT_SERVICE) == halt_in_depot) {
 			/* We called with a different DEPOT_SERVICE setting.
@@ -2561,10 +2606,10 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 			return CommandCost();
 		}
 
-		if (command & DEPOT_DONT_CANCEL) return CMD_ERROR; // Requested no cancelation of depot orders
+		if (command & DEPOT_DONT_CANCEL) return CMD_ERROR; // Requested no cancellation of depot orders
 		if (flags & DC_EXEC) {
 			/* If the orders to 'goto depot' are in the orders list (forced servicing),
-			 * then skip to the next order; effectively cancelling this forced service */
+				* then skip to the next order; effectively canceling this forced service */
 			if (this->current_order.GetDepotOrderType() & ODTFB_PART_OF_ORDERS) this->IncrementRealOrderIndex();
 
 			if (this->IsGroundVehicle()) {
@@ -2581,8 +2626,27 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 	TileIndex location;
 	DestinationID destination;
 	bool reverse;
+	bool foundDepotInOrders = false;
 	static const StringID no_depot[] = {STR_ERROR_UNABLE_TO_FIND_ROUTE_TO, STR_ERROR_UNABLE_TO_FIND_LOCAL_DEPOT, STR_ERROR_UNABLE_TO_FIND_LOCAL_DEPOT, STR_ERROR_CAN_T_SEND_AIRCRAFT_TO_HANGAR};
-	if (!this->FindClosestDepot(&location, &destination, &reverse)) return_cmd_error(no_depot[this->type]);
+
+	int foundDepotOrderIndex = -1;
+
+	// Check first if the vehicle has any depots in its order list. Prefer that depot over the closest one.
+	for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+		Order* order = this->orders.list->GetOrderAt(i);
+
+		if (order->GetType() == OT_GOTO_DEPOT && order->GetDepotOrderType() == ODTFB_PART_OF_ORDERS)
+		{
+			destination = order->GetDestination();
+			location = Depot::Get(destination)->xy;
+			reverse = false;
+			foundDepotInOrders = true;
+			foundDepotOrderIndex = i;
+			break;
+		}
+	}
+
+	if (!foundDepotInOrders && !this->FindClosestDepot(&location, &destination, &reverse)) return_cmd_error(no_depot[this->type]);
 
 	if (flags & DC_EXEC) {
 		if (this->current_order.IsType(OT_LOADING)) this->LeaveStation();
@@ -2592,20 +2656,27 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 			SetBit(gv_flags, GVF_SUPPRESS_IMPLICIT_ORDERS);
 		}
 
-		this->dest_tile = location;
-		this->current_order.MakeGoToDepot(destination, ODTF_MANUAL);
-		if (!(command & DEPOT_SERVICE)) this->current_order.SetDepotActionType(ODATFB_HALT);
-		SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
+		if (foundDepotInOrders && this->type == VEH_TRAIN) {
+			bool service_only = (command & DEPOT_SERVICE) != 0;
+			SetBit(this->vehicle_flags, service_only ? VF_SHOULD_SERVICE_AT_DEPOT : VF_SHOULD_GOTO_DEPOT);
+			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
+		} else {
+			this->dest_tile = location;
+			this->current_order.MakeGoToDepot(destination, ODTF_MANUAL);
 
-		/* If there is no depot in front, reverse automatically (trains only) */
-		if (this->type == VEH_TRAIN && reverse) DoCommand(this->tile, this->index, 0, DC_EXEC, CMD_REVERSE_TRAIN_DIRECTION);
+			if (!(command & DEPOT_SERVICE)) this->current_order.SetDepotActionType(ODATFB_HALT);
+			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
 
-		if (this->type == VEH_AIRCRAFT) {
-			Aircraft *a = Aircraft::From(this);
-			if (a->state == FLYING && a->targetairport != destination) {
-				/* The aircraft is now heading for a different hangar than the next in the orders */
-				extern void AircraftNextAirportPos_and_Order(Aircraft *a);
-				AircraftNextAirportPos_and_Order(a);
+			/* If there is no depot in front, reverse automatically (trains only) */
+			if (this->type == VEH_TRAIN && reverse) DoCommand(this->tile, this->index, 0, DC_EXEC, CMD_REVERSE_TRAIN_DIRECTION);
+
+			if (this->type == VEH_AIRCRAFT) {
+				Aircraft *a = Aircraft::From(this);
+				if (a->state == FLYING && a->targetairport != destination) {
+					/* The aircraft is now heading for a different hangar than the next in the orders */
+					extern void AircraftNextAirportPos_and_Order(Aircraft *a);
+					AircraftNextAirportPos_and_Order(a);
+				}
 			}
 		}
 	}

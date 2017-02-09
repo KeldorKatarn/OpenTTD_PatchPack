@@ -2490,11 +2490,15 @@ void Vehicle::ResetRefitCaps()
  */
 void Vehicle::HandleLoading(bool mode)
 {
-	switch (this->current_order.GetType()) {
-		case OT_LOADING: {
-			uint wait_time = max(this->current_order.GetTimetabledWait() - this->lateness_counter, 0);
+	OrderType current_order_type = this->current_order.GetType();
 
-			if (!HasBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT) && !HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+	switch (current_order_type) {
+		case OT_LOADING: {
+			uint wait_time = max(this->current_order.GetTimetabledWait() - this->lateness_counter, 0);			
+
+			bool has_manual_depot_order = (HasBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
+
+			if (!has_manual_depot_order) {
 				/* Not the first call for this tick, or still loading */
 				if (mode || !HasBit(this->vehicle_flags, VF_LOADING_FINISHED) || this->current_order_time < wait_time) return;
 			}
@@ -2615,15 +2619,16 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 		}
 		return CommandCost();
 
-	} else if (this->current_order.IsType(OT_GOTO_DEPOT)) {
-		bool halt_in_depot = (this->current_order.GetDepotActionType() & ODATFB_HALT) != 0;
-		if (!!(command & DEPOT_SERVICE) == halt_in_depot) {
+	} else if (this->current_order.IsType(OT_GOTO_DEPOT) && this->current_order.GetDepotOrderType() == ODTF_MANUAL) {
+		bool current_service_only = !((this->current_order.GetDepotActionType() & ODATFB_HALT) != 0);
+		bool service_only = (command & DEPOT_SERVICE) != 0;
+		if (current_service_only != service_only) {
 			/* We called with a different DEPOT_SERVICE setting.
 			 * Now we change the setting to apply the new one and let the vehicle head for the same depot.
 			 * Note: the if is (true for requesting service == true for ordered to stop in depot)          */
 			if (flags & DC_EXEC) {
 				this->current_order.SetDepotOrderType(ODTF_MANUAL);
-				this->current_order.SetDepotActionType(halt_in_depot ? ODATF_SERVICE_ONLY : ODATFB_HALT);
+				this->current_order.SetDepotActionType(service_only ? ODATF_SERVICE_ONLY : ODATFB_HALT);
 				SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
 			}
 			return CommandCost();
@@ -2652,19 +2657,19 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 	bool foundDepotInOrders = false;
 	static const StringID no_depot[] = {STR_ERROR_UNABLE_TO_FIND_ROUTE_TO, STR_ERROR_UNABLE_TO_FIND_LOCAL_DEPOT, STR_ERROR_UNABLE_TO_FIND_LOCAL_DEPOT, STR_ERROR_CAN_T_SEND_AIRCRAFT_TO_HANGAR};
 
-	int foundDepotOrderIndex = -1;
+	// Check first if the vehicle has any depot in its order list. Prefer that over the closest one.
 
-	// Check first if the vehicle has any depots in its order list. Prefer that depot over the closest one.
 	for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
 		Order* order = this->orders.list->GetOrderAt(i);
 
-		if (order->GetType() == OT_GOTO_DEPOT && order->GetDepotOrderType() == ODTFB_PART_OF_ORDERS)
-		{
+		bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+		bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+
+		if (isRegularOrder && isDepotOrder) {
 			destination = order->GetDestination();
 			location = Depot::Get(destination)->xy;
 			reverse = false;
 			foundDepotInOrders = true;
-			foundDepotOrderIndex = i;
 			break;
 		}
 	}
@@ -2672,7 +2677,10 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 	if (!foundDepotInOrders && !this->FindClosestDepot(&location, &destination, &reverse)) return_cmd_error(no_depot[this->type]);
 
 	if (flags & DC_EXEC) {
-		if (this->current_order.IsType(OT_LOADING)) this->LeaveStation();
+		if (!(foundDepotInOrders && this->type == VEH_TRAIN)) {
+			// The OT_LOADING status of trains with depots in their order list will be handled separately in the HandleLoading() method.
+			if (this->current_order.IsType(OT_LOADING)) this->LeaveStation();
+		}
 
 		if (this->IsGroundVehicle() && this->GetNumManualOrders() > 0) {
 			uint16 &gv_flags = this->GetGroundVehicleFlags();

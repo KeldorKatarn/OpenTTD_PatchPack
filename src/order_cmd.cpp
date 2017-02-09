@@ -2292,13 +2292,14 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 	bool skip_order = false;
 	OrderConditionComparator occ = order->GetConditionComparator();
 	uint16 value = order->GetConditionValue();
+	bool has_manual_depot_order = (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
 
 	switch (order->GetConditionVariable()) {
-		case OCV_LOAD_PERCENTAGE:    skip_order = OrderConditionCompare(occ, CalcPercentVehicleFilled(v, NULL), value); break;
-		case OCV_RELIABILITY:        skip_order = OrderConditionCompare(occ, ToPercent16(v->reliability),       value); break;
-		case OCV_MAX_SPEED:          skip_order = OrderConditionCompare(occ, v->GetDisplayMaxSpeed() * 10 / 16, value); break;
-		case OCV_AGE:                skip_order = OrderConditionCompare(occ, v->age / DAYS_IN_LEAP_YEAR,        value); break;
-		case OCV_REQUIRES_SERVICE:   skip_order = OrderConditionCompare(occ, v->NeedsServicing(),               value); break;
+		case OCV_LOAD_PERCENTAGE:    skip_order = OrderConditionCompare(occ, CalcPercentVehicleFilled(v, NULL),             value); break;
+		case OCV_RELIABILITY:        skip_order = OrderConditionCompare(occ, ToPercent16(v->reliability),                   value); break;
+		case OCV_MAX_SPEED:          skip_order = OrderConditionCompare(occ, v->GetDisplayMaxSpeed() * 10 / 16,             value); break;
+		case OCV_AGE:                skip_order = OrderConditionCompare(occ, v->age / DAYS_IN_LEAP_YEAR,                    value); break;
+		case OCV_REQUIRES_SERVICE:   skip_order = OrderConditionCompare(occ, has_manual_depot_order || v->NeedsServicing(), value); break;
 		case OCV_UNCONDITIONALLY:    skip_order = true; break;
 		case OCV_CARGO_WAITING: {
 			StationID next_station = GetNextRealStation(v, order);
@@ -2343,13 +2344,15 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
 		return false;
 	}
 
+	bool has_manual_depot_order = (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
+
 	switch (order->GetType()) {
 		case OT_GOTO_STATION:
 			v->dest_tile = v->GetOrderStationLocation(order->GetDestination());
 			return true;
 
 		case OT_GOTO_DEPOT:
-			if ((order->GetDepotOrderType() & ODTFB_SERVICE) && !v->NeedsServicing()) {
+			if ((order->GetDepotOrderType() & ODTFB_SERVICE) && !(v->NeedsServicing() || has_manual_depot_order)) {
 				assert(!pbs_look_ahead);
 				UpdateVehicleTimetable(v, true);
 				v->IncrementRealOrderIndex();

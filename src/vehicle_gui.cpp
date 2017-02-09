@@ -2738,7 +2738,10 @@ public:
 				for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
 					Order* order = v->orders.list->GetOrderAt(i);
 
-					if (order->GetType() == OT_GOTO_DEPOT) {
+					bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+					bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+
+					if (isRegularOrder && isDepotOrder) {
 						if (i >= v->cur_implicit_order_index) {
 							next_depot_index = i;
 							break;

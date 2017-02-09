@@ -2730,6 +2730,7 @@ public:
 		if (skip_first) ++this->index;
 
 		int depth = 0;
+		bool has_manual_depot_order = (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
 
 		do {
 			/* Wrap around. */
@@ -2741,7 +2742,7 @@ public:
 			switch (order->GetType()) {
 				case OT_GOTO_DEPOT:
 					/* Skip service in depot orders when the train doesn't need service. */
-					if ((order->GetDepotOrderType() & ODTFB_SERVICE) && !this->v->NeedsServicing()) break;
+					if ((order->GetDepotOrderType() & ODTFB_SERVICE) && !(this->v->NeedsServicing() || has_manual_depot_order)) break;
 				case OT_GOTO_STATION:
 				case OT_GOTO_WAYPOINT:
 					this->v->current_order = *order;

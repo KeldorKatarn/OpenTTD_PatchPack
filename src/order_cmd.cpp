@@ -2460,8 +2460,16 @@ bool ProcessOrders(Vehicle *v)
 {
 	switch (v->current_order.GetType()) {
 		case OT_GOTO_DEPOT:
-			/* Let a depot order in the orderlist interrupt. */
+			// Check whether the vehicle was manually ordered to go to the depot on its order list.
+			// If so mark the current depot order as manual, now that we are processing it.
+			if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+				v->current_order.SetDepotOrderType(ODTF_MANUAL);
+				v->current_order.SetDepotActionType(HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ? ODATF_SERVICE_ONLY : ODATFB_HALT);
+			}
+
+			/* Let a depot order in the order list interrupt. */
 			if (!(v->current_order.GetDepotOrderType() & ODTFB_PART_OF_ORDERS)) return false;
+
 			break;
 
 		case OT_LOADING:

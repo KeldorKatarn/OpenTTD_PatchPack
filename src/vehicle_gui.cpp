@@ -2732,7 +2732,34 @@ public:
 		} else if (v->type == VEH_AIRCRAFT && HasBit(Aircraft::From(v)->flags, VAF_DEST_TOO_FAR) && !v->current_order.IsType(OT_LOADING)) {
 			str = STR_VEHICLE_STATUS_AIRCRAFT_TOO_FAR;
 		} else { // vehicle is in a "normal" state, show current order
-			switch (v->current_order.GetType()) {
+			if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+				int next_depot_index = -1;
+				
+				for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
+					Order* order = v->orders.list->GetOrderAt(i);
+
+					if (order->GetType() == OT_GOTO_DEPOT) {
+						if (i >= v->cur_implicit_order_index) {
+							next_depot_index = i;
+							break;
+						}
+						else if (next_depot_index < 0) {
+							next_depot_index = i;
+						}
+					}
+				}
+
+				SetDParam(0, v->type);
+				SetDParam(1, v->orders.list->GetOrderAt(next_depot_index)->GetDestination());
+				SetDParam(2, v->GetDisplaySpeed());
+				if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT)) {
+					str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_VEL;
+				} else {
+					str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_SERVICE_VEL;
+				}
+			}
+			else {
+				switch (v->current_order.GetType()) {
 				case OT_GOTO_STATION: {
 					SetDParam(0, v->current_order.GetDestination());
 					SetDParam(1, v->GetDisplaySpeed());
@@ -2752,9 +2779,11 @@ public:
 						 * depot with index 0, which would be used as fallback for
 						 * evaluating the string in the status bar. */
 						str = STR_EMPTY;
-					} else if (v->current_order.GetDepotActionType() & ODATFB_HALT) {
+					}
+					else if (v->current_order.GetDepotActionType() & ODATFB_HALT) {
 						str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_VEL;
-					} else {
+					}
+					else {
 						str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_SERVICE_VEL;
 					}
 					break;
@@ -2782,10 +2811,12 @@ public:
 					if (v->GetNumManualOrders() == 0) {
 						str = STR_VEHICLE_STATUS_NO_ORDERS_VEL;
 						SetDParam(0, v->GetDisplaySpeed());
-					} else {
+					}
+					else {
 						str = STR_EMPTY;
 					}
 					break;
+				}
 			}
 		}
 

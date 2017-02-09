@@ -4917,7 +4917,6 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 		*remainder_chain = 0,
 		*tmp_chain = 0;
 	TemplateVehicle *tv = GetTemplateVehicleByGroupID(incoming->group_id);
-	EngineID eid = tv->engine_type;
 
 	CommandCost buy(EXPENSES_NEW_VEHICLES);
 	CommandCost move_cost(EXPENSES_NEW_VEHICLES);
@@ -4925,11 +4924,15 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 
 
 	/* first some tests on necessity and sanity */
-	if (!tv)
+	if (tv == nullptr)
 		return buy;
+
+	EngineID eid = tv->engine_type;
+
 	bool need_replacement = !TrainMatchesTemplate(incoming, tv);
 	bool need_refit = !TrainMatchesTemplateRefit(incoming, tv);
 	bool use_refit = tv->refit_as_template;
+
 	CargoID store_refit_ct = CT_INVALID;
 	short store_refit_csubt = 0;
 	// if a train shall keep its old refit, store the refit setting of its first vehicle

@@ -249,7 +249,7 @@ struct TerraformToolbarWindow : Window {
 				break;
 
 			case WID_TT_BUY_LAND: // Buy land button
-				DoCommandP(tile, OBJECT_OWNED_LAND, 0, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_PURCHASE_THIS_LAND), CcPlaySound_SPLAT_RAIL);
+				VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_PLACE_OBJECT);
 				break;
 
 			case WID_TT_MEASUREMENT_TOOL:
@@ -289,6 +289,17 @@ struct TerraformToolbarWindow : Window {
 					break;
 				case DDSP_MEASURE:
 					//nothing to do, just draw a tooltip
+					break;
+				case DDSP_PLACE_OBJECT:
+					{
+						uint32 p2;
+
+						SB(p2, 2, 30, start_tile);
+
+						if (pt.x != -1 && select_proc == DDSP_PLACE_OBJECT) {
+							DoCommandP(end_tile, OBJECT_OWNED_LAND, p2, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_BUILD_OBJECT), CcTerraform);
+						}
+					}
 					break;
 			}
 		}

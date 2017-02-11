@@ -133,6 +133,8 @@ public:
 				this->line_height = FONT_HEIGHT_NORMAL + WD_MATRIX_TOP + WD_MATRIX_BOTTOM;
 				resize->height = this->line_height;
 				size->height = 5 * this->line_height;
+
+				size->width = min(size->width, ScaleGUITrad(400));
 				break;
 			}
 

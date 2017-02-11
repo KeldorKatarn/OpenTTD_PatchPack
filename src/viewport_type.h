@@ -119,6 +119,7 @@ enum ViewportDragDropSelectionProcess {
 	DDSP_CREATE_WATER,         ///< Create a canal
 	DDSP_CREATE_RIVER,         ///< Create rivers
 	DDSP_PLANT_TREES,          ///< Plant trees
+	DDSP_PLACE_OBJECT,         ///< Place object
 	DDSP_BUILD_BRIDGE,         ///< Bridge placement
 	DDSP_DRAW_PLANLINE,        ///< Draw a line for a plan
 	DDSP_MEASURE,              ///< Measurement tool

@@ -87,6 +87,7 @@ void BuildObject(ObjectType type, TileIndex tile, CompanyID owner, Town *town, u
 	const ObjectSpec *spec = ObjectSpec::Get(type);
 
 	TileArea ta(tile, GB(spec->size, HasBit(view, 0) ? 4 : 0, 4), GB(spec->size, HasBit(view, 0) ? 0 : 4, 4));
+		
 	Object *o = new Object();
 	o->type          = type;
 	o->location      = ta;
@@ -210,6 +211,10 @@ CommandCost CmdBuildObject(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	ObjectType type = (ObjectType)GB(p1, 0, 16);
 	if (type >= NUM_OBJECTS) return CMD_ERROR;
 	uint8 view = GB(p2, 0, 2);
+	TileIndex start_tile = GB(p2, 2, 30);
+	
+	if (start_tile >= MapSize()) return CMD_ERROR;
+
 	const ObjectSpec *spec = ObjectSpec::Get(type);
 	if (_game_mode == GM_NORMAL && !spec->IsAvailable() && !_generating_world) return CMD_ERROR;
 	if ((_game_mode == GM_EDITOR || _generating_world) && !spec->WasEverAvailable()) return CMD_ERROR;
@@ -223,87 +228,102 @@ CommandCost CmdBuildObject(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 	int size_x = GB(spec->size, HasBit(view, 0) ? 4 : 0, 4);
 	int size_y = GB(spec->size, HasBit(view, 0) ? 0 : 4, 4);
-	TileArea ta(tile, size_x, size_y);
+	bool is_draggable = (type == OBJECT_OWNED_LAND || (size_x == 1 && size_y == 1 && type >= NEW_OBJECT_OFFSET));
+	TileArea drag_ta;
+	
+	if (is_draggable) {
+		drag_ta = TileArea(tile, start_tile);
+	}
+	else {
+		drag_ta = TileArea(tile, 1, 1);
+	}
 
-	if (type == OBJECT_OWNED_LAND) {
-		/* Owned land is special as it can be placed on any slope. */
-		cost.AddCost(DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR));
-	} else {
-		/* Check the surface to build on. At this time we can't actually execute the
-		 * the CLEAR_TILE commands since the newgrf callback later on can check
-		 * some information about the tiles. */
-		bool allow_water = (spec->flags & (OBJECT_FLAG_BUILT_ON_WATER | OBJECT_FLAG_NOT_ON_LAND)) != 0;
-		bool allow_ground = (spec->flags & OBJECT_FLAG_NOT_ON_LAND) == 0;
-		TILE_AREA_LOOP(t, ta) {
-			if (HasTileWaterGround(t)) {
-				if (!allow_water) return_cmd_error(STR_ERROR_CAN_T_BUILD_ON_WATER);
-				if (!IsWaterTile(t)) {
-					/* Normal water tiles don't have to be cleared. For all other tile types clear
-					 * the tile but leave the water. */
-					cost.AddCost(DoCommand(t, 0, 0, flags & ~DC_NO_WATER & ~DC_EXEC, CMD_LANDSCAPE_CLEAR));
-				} else {
-					/* Can't build on water owned by another company. */
-					Owner o = GetTileOwner(t);
-					if (o != OWNER_NONE && o != OWNER_WATER) cost.AddCost(CheckOwnership(o, t));
-
-					/* However, the tile has to be clear of vehicles. */
-					cost.AddCost(EnsureNoVehicleOnGround(t));
-				}
-			} else {
-				if (!allow_ground) return_cmd_error(STR_ERROR_MUST_BE_BUILT_ON_WATER);
-				/* For non-water tiles, we'll have to clear it before building. */
-				cost.AddCost(DoCommand(t, 0, 0, flags & ~DC_EXEC, CMD_LANDSCAPE_CLEAR));
-			}
+	TILE_AREA_LOOP(tile, drag_ta) {
+		TileArea ta(tile, size_x, size_y);
+		if (type == OBJECT_OWNED_LAND) {
+			/* Owned land is special as it can be placed on any slope. */
+			cost.AddCost(DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR));
 		}
-
-		/* So, now the surface is checked... check the slope of said surface. */
-		int allowed_z;
-		if (GetTileSlope(tile, &allowed_z) != SLOPE_FLAT) allowed_z++;
-
-		TILE_AREA_LOOP(t, ta) {
-			uint16 callback = CALLBACK_FAILED;
-			if (HasBit(spec->callback_mask, CBM_OBJ_SLOPE_CHECK)) {
-				TileIndex diff = t - tile;
-				callback = GetObjectCallback(CBID_OBJECT_LAND_SLOPE_CHECK, GetTileSlope(t), TileY(diff) << 4 | TileX(diff), spec, NULL, t, view);
-			}
-
-			if (callback == CALLBACK_FAILED) {
-				cost.AddCost(CheckBuildableTile(t, 0, allowed_z, false, false));
-			} else {
-				/* The meaning of bit 10 is inverted for a grf version < 8. */
-				if (spec->grf_prop.grffile->grf_version < 8) ToggleBit(callback, 10);
-				CommandCost ret = GetErrorMessageFromLocationCallbackResult(callback, spec->grf_prop.grffile, STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
-				if (ret.Failed()) return ret;
-			}
-		}
-
-		if (flags & DC_EXEC) {
-			/* This is basically a copy of the loop above with the exception that we now
-			 * execute the commands and don't check for errors, since that's already done. */
+		else {
+			/* Check the surface to build on. At this time we can't actually execute the
+			 * the CLEAR_TILE commands since the newgrf callback later on can check
+			 * some information about the tiles. */
+			bool allow_water = (spec->flags & (OBJECT_FLAG_BUILT_ON_WATER | OBJECT_FLAG_NOT_ON_LAND)) != 0;
+			bool allow_ground = (spec->flags & OBJECT_FLAG_NOT_ON_LAND) == 0;
 			TILE_AREA_LOOP(t, ta) {
 				if (HasTileWaterGround(t)) {
+					if (!allow_water) return_cmd_error(STR_ERROR_CAN_T_BUILD_ON_WATER);
 					if (!IsWaterTile(t)) {
-						DoCommand(t, 0, 0, (flags & ~DC_NO_WATER) | DC_NO_MODIFY_TOWN_RATING, CMD_LANDSCAPE_CLEAR);
+						/* Normal water tiles don't have to be cleared. For all other tile types clear
+						 * the tile but leave the water. */
+						cost.AddCost(DoCommand(t, 0, 0, flags & ~DC_NO_WATER & ~DC_EXEC, CMD_LANDSCAPE_CLEAR));
 					}
-				} else {
-					DoCommand(t, 0, 0, flags | DC_NO_MODIFY_TOWN_RATING, CMD_LANDSCAPE_CLEAR);
+					else {
+						/* Can't build on water owned by another company. */
+						Owner o = GetTileOwner(t);
+						if (o != OWNER_NONE && o != OWNER_WATER) cost.AddCost(CheckOwnership(o, t));
+
+						/* However, the tile has to be clear of vehicles. */
+						cost.AddCost(EnsureNoVehicleOnGround(t));
+					}
+				}
+				else {
+					if (!allow_ground) return_cmd_error(STR_ERROR_MUST_BE_BUILT_ON_WATER);
+					/* For non-water tiles, we'll have to clear it before building. */
+					cost.AddCost(DoCommand(t, 0, 0, flags & ~DC_EXEC, CMD_LANDSCAPE_CLEAR));
+				}
+			}
+
+			/* So, now the surface is checked... check the slope of said surface. */
+			int allowed_z;
+			if (GetTileSlope(tile, &allowed_z) != SLOPE_FLAT) allowed_z++;
+
+			TILE_AREA_LOOP(t, ta) {
+				uint16 callback = CALLBACK_FAILED;
+				if (HasBit(spec->callback_mask, CBM_OBJ_SLOPE_CHECK)) {
+					TileIndex diff = t - tile;
+					callback = GetObjectCallback(CBID_OBJECT_LAND_SLOPE_CHECK, GetTileSlope(t), TileY(diff) << 4 | TileX(diff), spec, NULL, t, view);
+				}
+
+				if (callback == CALLBACK_FAILED) {
+					cost.AddCost(CheckBuildableTile(t, 0, allowed_z, false, false));
+				}
+				else {
+					/* The meaning of bit 10 is inverted for a grf version < 8. */
+					if (spec->grf_prop.grffile->grf_version < 8) ToggleBit(callback, 10);
+					CommandCost ret = GetErrorMessageFromLocationCallbackResult(callback, spec->grf_prop.grffile, STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
+					if (ret.Failed()) return ret;
+				}
+			}
+
+			if (flags & DC_EXEC) {
+				/* This is basically a copy of the loop above with the exception that we now
+				 * execute the commands and don't check for errors, since that's already done. */
+				TILE_AREA_LOOP(t, ta) {
+					if (HasTileWaterGround(t)) {
+						if (!IsWaterTile(t)) {
+							DoCommand(t, 0, 0, (flags & ~DC_NO_WATER) | DC_NO_MODIFY_TOWN_RATING, CMD_LANDSCAPE_CLEAR);
+						}
+					}
+					else {
+						DoCommand(t, 0, 0, flags | DC_NO_MODIFY_TOWN_RATING, CMD_LANDSCAPE_CLEAR);
+					}
 				}
 			}
 		}
-	}
-	if (cost.Failed()) return cost;
+		if (cost.Failed()) return cost;
 
-	/* Finally do a check for bridges. */
-	TILE_AREA_LOOP(t, ta) {
-		if (IsBridgeAbove(t) && (
+		/* Finally do a check for bridges. */
+		TILE_AREA_LOOP(t, ta) {
+			if (IsBridgeAbove(t) && (
 				!(spec->flags & OBJECT_FLAG_ALLOW_UNDER_BRIDGE) ||
 				(GetTileMaxZ(t) + spec->height >= GetBridgeHeight(GetSouthernBridgeEnd(t))))) {
-			return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+				return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+			}
 		}
-	}
 
-	int hq_score = 0;
-	switch (type) {
+		int hq_score = 0;
+		switch (type) {
 		case OBJECT_TRANSMITTER:
 		case OBJECT_LIGHTHOUSE:
 			if (!IsTileFlat(tile)) return_cmd_error(STR_ERROR_FLAT_LAND_REQUIRED);
@@ -311,8 +331,8 @@ CommandCost CmdBuildObject(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		case OBJECT_OWNED_LAND:
 			if (IsTileType(tile, MP_OBJECT) &&
-					IsTileOwner(tile, _current_company) &&
-					IsObjectType(tile, OBJECT_OWNED_LAND)) {
+				IsTileOwner(tile, _current_company) &&
+				IsObjectType(tile, OBJECT_OWNED_LAND)) {
 				return_cmd_error(STR_ERROR_YOU_ALREADY_OWN_IT);
 			}
 			break;
@@ -340,16 +360,20 @@ CommandCost CmdBuildObject(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		default: // i.e. NewGRF provided.
 			break;
+		}
+
+		if (flags & DC_EXEC) {
+			if (!Object::CanAllocateItem()) return_cmd_error(STR_ERROR_TOO_MANY_OBJECTS);
+
+			BuildObject(type, tile, _current_company, NULL, view);
+
+			/* Make sure the HQ starts at the right size. */
+			if (type == OBJECT_HQ) UpdateCompanyHQ(tile, hq_score);
+		}
+
+		cost.AddCost(ObjectSpec::Get(type)->GetBuildCost() * size_x * size_y);
+
 	}
-
-	if (flags & DC_EXEC) {
-		BuildObject(type, tile, _current_company, NULL, view);
-
-		/* Make sure the HQ starts at the right size. */
-		if (type == OBJECT_HQ) UpdateCompanyHQ(tile, hq_score);
-	}
-
-	cost.AddCost(ObjectSpec::Get(type)->GetBuildCost() * size_x * size_y);
 	return cost;
 }
 

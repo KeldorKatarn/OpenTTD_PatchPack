@@ -1642,6 +1642,30 @@ void VehicleEnterDepot(Vehicle *v)
 	if (v->current_order.IsType(OT_GOTO_DEPOT)) {
 		SetWindowDirty(WC_VEHICLE_VIEW, v->index);
 
+		if (v->type == VEH_ROAD && v->current_order.GetDepotOrderType() == ODTF_MANUAL) {
+			// Check first if the vehicle has any depot in its order list. If yes then we're heading for a specific depot.
+			// Don't stop if this one isn't it.
+			bool has_depot_in_orders = false;
+
+			for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
+				Order* order = v->orders.list->GetOrderAt(i);
+
+				bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+				bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+
+				if (isRegularOrder && isDepotOrder) {
+					has_depot_in_orders = true;
+					break;
+				}
+			}
+
+			if (has_depot_in_orders && v->dest_tile != v->tile)
+			{
+				/* We are heading for another depot, keep driving. */
+				return;
+			}
+		}
+
 		const Order *real_order = v->GetOrder(v->cur_real_order_index);
 
 		/* Test whether we are heading for this depot. If not, do nothing.

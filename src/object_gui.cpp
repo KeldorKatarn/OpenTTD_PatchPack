@@ -417,8 +417,47 @@ public:
 
 	virtual void OnPlaceObject(Point pt, TileIndex tile)
 	{
-		DoCommandP(tile, ObjectClass::Get(_selected_object_class)->GetSpec(_selected_object_index)->Index(),
-				_selected_object_view, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_BUILD_OBJECT), CcTerraform);
+		const ObjectSpec* spec = ObjectClass::Get(_selected_object_class)->GetSpec(_selected_object_index);
+
+		if (spec == nullptr) {
+			DoCommandP(tile, INVALID_OBJECT_TYPE, _selected_object_view, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_BUILD_OBJECT), CcTerraform);
+			return;
+		}
+
+		int size_x = GB(spec->size, HasBit(_selected_object_view, 0) ? 4 : 0, 4);
+		int size_y = GB(spec->size, HasBit(_selected_object_view, 0) ? 0 : 4, 4);
+		ObjectType type = (ObjectType)GB(spec->Index(), 0, 16);
+
+		bool is_draggable = (size_x == 1 && size_y == 1 && type >= NEW_OBJECT_OFFSET);
+
+		if (is_draggable) {
+			VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_PLACE_OBJECT);
+		} else {
+			uint32 p2;
+
+			SB(p2, 0, 2, _selected_object_view);
+			SB(p2, 2, 30, tile);
+
+			DoCommandP(tile, spec->Index(), p2, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_BUILD_OBJECT), CcTerraform);
+		}
+	}
+
+	virtual void OnPlaceDrag(ViewportPlaceMethod select_method, ViewportDragDropSelectionProcess select_proc, Point pt)
+	{
+		VpSelectTilesWithMethod(pt.x, pt.y, select_method);
+	}
+
+	virtual void OnPlaceMouseUp(ViewportPlaceMethod select_method, ViewportDragDropSelectionProcess select_proc, Point pt, TileIndex start_tile, TileIndex end_tile)
+	{
+		uint32 p2;
+
+		SB(p2, 0, 2, _selected_object_view);
+		SB(p2, 2, 30, start_tile);
+
+		if (pt.x != -1 && select_proc == DDSP_PLACE_OBJECT) {
+			DoCommandP(end_tile, ObjectClass::Get(_selected_object_class)->GetSpec(_selected_object_index)->Index(),
+				p2, CMD_BUILD_OBJECT | CMD_MSG(STR_ERROR_CAN_T_BUILD_OBJECT), CcTerraform);
+		}
 	}
 
 	virtual void OnPlaceObjectAbort()

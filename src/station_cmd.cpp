@@ -2985,7 +2985,6 @@ draw_default_foundation:
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}
 			}
-
 		} else {
 			DiagDirection dir = GetRoadStopDir(ti->tile);
 			catenary_bits = DiagDirToRoadBits(dir);

@@ -3626,11 +3626,11 @@ static ChangeInfoResult IndustriesChangeInfo(uint indid, int numinfo, int prop, 
 			case 0x1C: // Input cargo multipliers for the three input cargo types
 			case 0x1D:
 			case 0x1E: {
-					uint32 multiples = buf->ReadDWord();
-					indsp->input_cargo_multiplier[prop - 0x1C][0] = GB(multiples, 0, 16);
-					indsp->input_cargo_multiplier[prop - 0x1C][1] = GB(multiples, 16, 16);
-					break;
-				}
+				uint32 multiples = buf->ReadDWord();
+				indsp->input_cargo_multiplier[prop - 0x1C][0] = GB(multiples, 0, 16);
+				indsp->input_cargo_multiplier[prop - 0x1C][1] = GB(multiples, 16, 16);
+				break;
+			}
 
 			case 0x1F: // Industry name
 				AddStringForMapping(buf->ReadWord(), &indsp->name);
@@ -4262,13 +4262,13 @@ static ChangeInfoResult RailTypeReserveInfo(uint id, int numinfo, int prop, Byte
 }
 
 /**
-* Define properties for roadtypes
-* @param id ID of the roadtype.
-* @param numinfo Number of subsequent IDs to change the property for.
-* @param prop The property to change.
-* @param buf The property value.
-* @return ChangeInfoResult.
-*/
+ * Define properties for roadtypes
+ * @param id ID of the roadtype.
+ * @param numinfo Number of subsequent IDs to change the property for.
+ * @param prop The property to change.
+ * @param buf The property value.
+ * @return ChangeInfoResult.
+ */
 static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteReader *buf, RoadType basetype)
 {
 	ChangeInfoResult ret = CIR_SUCCESS;
@@ -4292,95 +4292,94 @@ static ChangeInfoResult RoadTypeChangeInfo(uint id, int numinfo, int prop, ByteR
 		RoadtypeInfo *rti = &_roadtypes[basetype][rtid.subtype];
 
 		switch (prop) {
-		case 0x08: // Label of road type
-				   /* Skipped here as this is loaded during reservation stage. */
-			buf->ReadDWord();
-			break;
+			case 0x08: // Label of road type
+				/* Skipped here as this is loaded during reservation stage. */
+				buf->ReadDWord();
+				break;
 
-		case 0x09: { // Toolbar caption of roadtype (sets name as well for backwards compatibility for grf ver < 8)
-			uint16 str = buf->ReadWord();
-			AddStringForMapping(str, &rti->strings.toolbar_caption);
-			break;
-		}
+			case 0x09: { // Toolbar caption of roadtype (sets name as well for backwards compatibility for grf ver < 8)
+				uint16 str = buf->ReadWord();
+				AddStringForMapping(str, &rti->strings.toolbar_caption);
+				break;
+			}
 
-		case 0x0A: // Menu text of roadtype
-			AddStringForMapping(buf->ReadWord(), &rti->strings.menu_text);
-			break;
+			case 0x0A: // Menu text of roadtype
+				AddStringForMapping(buf->ReadWord(), &rti->strings.menu_text);
+				break;
 
-		case 0x0B: // Build window caption
-			AddStringForMapping(buf->ReadWord(), &rti->strings.build_caption);
-			break;
+			case 0x0B: // Build window caption
+				AddStringForMapping(buf->ReadWord(), &rti->strings.build_caption);
+				break;
 
-		case 0x0C: // Autoreplace text
-			AddStringForMapping(buf->ReadWord(), &rti->strings.replace_text);
-			break;
+			case 0x0C: // Autoreplace text
+				AddStringForMapping(buf->ReadWord(), &rti->strings.replace_text);
+				break;
 
-		case 0x0D: // New engine text
-			AddStringForMapping(buf->ReadWord(), &rti->strings.new_engine);
-			break;
+			case 0x0D: // New engine text
+				AddStringForMapping(buf->ReadWord(), &rti->strings.new_engine);
+				break;
 
-		case 0x0F: // Powered roadtype list
-		case 0x18: // Roadtype list required for date introduction
-		case 0x19: // Introduced roadtype list
-		{
-			/* Road type compatibility bits are added to the existing bits
-			* to allow multiple GRFs to modify compatibility with the
-			* default road types. */
-			int n = buf->ReadByte();
-			for (int j = 0; j != n; j++) {
-				RoadTypeLabel label = buf->ReadDWord();
-				RoadTypeIdentifier c_rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
-				if (c_rtid.IsValid()) {
-					switch (prop) {
-					case 0x0F: SetBit(rti->powered_roadtypes, c_rtid.subtype);               break;
-					case 0x18: SetBit(rti->introduction_required_roadtypes, c_rtid.subtype); break;
-					case 0x19: SetBit(rti->introduces_roadtypes, c_rtid.subtype);            break;
+			case 0x0F: // Powered roadtype list
+			case 0x18: // Roadtype list required for date introduction
+			case 0x19: { // Introduced roadtype list
+				/* Road type compatibility bits are added to the existing bits
+				 * to allow multiple GRFs to modify compatibility with the
+				 * default road types. */
+				int n = buf->ReadByte();
+				for (int j = 0; j != n; j++) {
+					RoadTypeLabel label = buf->ReadDWord();
+					RoadTypeIdentifier c_rtid = GetRoadTypeByLabel(BSWAP32(label), basetype, false);
+					if (c_rtid.IsValid()) {
+						switch (prop) {
+							case 0x0F: SetBit(rti->powered_roadtypes, c_rtid.subtype);               break;
+							case 0x18: SetBit(rti->introduction_required_roadtypes, c_rtid.subtype); break;
+							case 0x19: SetBit(rti->introduces_roadtypes, c_rtid.subtype);            break;
+						}
 					}
 				}
+				break;
 			}
-			break;
-		}
 
-		case 0x10: // Road Type flags
-			rti->flags = (RoadTypeFlags)buf->ReadByte();
-			break;
+			case 0x10: // Road Type flags
+				rti->flags = (RoadTypeFlags)buf->ReadByte();
+				break;
 
-		case 0x13: // Construction cost factor
-			rti->cost_multiplier = buf->ReadWord();
-			break;
+			case 0x13: // Construction cost factor
+				rti->cost_multiplier = buf->ReadWord();
+				break;
 
-		case 0x14: // Speed limit
-			rti->max_speed = buf->ReadWord();
-			break;
+			case 0x14: // Speed limit
+				rti->max_speed = buf->ReadWord();
+				break;
 
-		case 0x16: // Map colour
-			rti->map_colour = buf->ReadByte();
-			break;
+			case 0x16: // Map colour
+				rti->map_colour = buf->ReadByte();
+				break;
 
-		case 0x17: // Introduction date
-			rti->introduction_date = buf->ReadDWord();
-			break;
+			case 0x17: // Introduction date
+				rti->introduction_date = buf->ReadDWord();
+				break;
 
-		case 0x1A: // Sort order
-			rti->sorting_order = buf->ReadByte();
-			break;
+			case 0x1A: // Sort order
+				rti->sorting_order = buf->ReadByte();
+				break;
 
-		case 0x1B: // Name of roadtype
-			AddStringForMapping(buf->ReadWord(), &rti->strings.name);
-			break;
+			case 0x1B: // Name of roadtype
+				AddStringForMapping(buf->ReadWord(), &rti->strings.name);
+				break;
 
-		case 0x1C: // Maintenance cost factor
-			rti->maintenance_multiplier = buf->ReadWord();
-			break;
+			case 0x1C: // Maintenance cost factor
+				rti->maintenance_multiplier = buf->ReadWord();
+				break;
 
-		case 0x1D: // Alternate road type label list
-				   /* Skipped here as this is loaded during reservation stage. */
-			for (int j = buf->ReadByte(); j != 0; j--) buf->ReadDWord();
-			break;
+			case 0x1D: // Alternate road type label list
+				/* Skipped here as this is loaded during reservation stage. */
+				for (int j = buf->ReadByte(); j != 0; j--) buf->ReadDWord();
+				break;
 
-		default:
-			ret = CIR_UNKNOWN;
-			break;
+			default:
+				ret = CIR_UNKNOWN;
+				break;
 		}
 	}
 
@@ -4416,8 +4415,7 @@ static ChangeInfoResult RoadTypeReserveInfo(uint id, int numinfo, int prop, Byte
 
 	for (int i = 0; i < numinfo; i++) {
 		switch (prop) {
-			case 0x08: // Label of rail type
-			{
+			case 0x08: { // Label of road type
 				RoadTypeLabel rtl = buf->ReadDWord();
 				rtl = BSWAP32(rtl);
 

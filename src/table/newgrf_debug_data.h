@@ -550,7 +550,7 @@ class NIHRoadType : public NIHelper {
 	/* virtual */ uint Resolve(uint index, uint var, uint param, bool *avail) const
 	{
 		/* There is no unique GRFFile for the tile. Multiple GRFs can define different parts of the railtype.
-		* However, currently the NewGRF Debug GUI does not display variables depending on the GRF (like 0x7F) anyway. */
+		 * However, currently the NewGRF Debug GUI does not display variables depending on the GRF (like 0x7F) anyway. */
 		RoadTypeResolverObject ro(NULL, index, TCX_NORMAL, ROTSG_END);
 		return ro.GetScope(VSG_SCOPE_SELF)->GetVariable(var, param, avail);
 	}

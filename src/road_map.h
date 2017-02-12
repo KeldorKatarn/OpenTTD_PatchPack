@@ -692,11 +692,11 @@ struct RoadTypeIdentifiers {
 	{
 		RoadTypes rot = ROADTYPES_NONE;
 
-		if (road_identifier.IsValid()) {
+		if (this->road_identifier.IsValid()) {
 			rot |= ROADTYPES_ROAD;
 		}
 
-		if (tram_identifier.IsValid()) {
+		if (this->tram_identifier.IsValid()) {
 			rot |= ROADTYPES_TRAM;
 		}
 
@@ -723,12 +723,12 @@ struct RoadTypeIdentifiers {
 
 	bool HasRoad() const
 	{
-		return road_identifier.IsValid();
+		return this->road_identifier.IsValid();
 	}
 
 	bool HasTram() const
 	{
-		return tram_identifier.IsValid();
+		return this->tram_identifier.IsValid();
 	}
 
 	/**
@@ -740,8 +740,8 @@ struct RoadTypeIdentifiers {
 	{
 		switch (rtid.basetype) {
 			default: NOT_REACHED();
-			case ROADTYPE_ROAD: road_identifier = rtid; break;
-			case ROADTYPE_TRAM: tram_identifier = rtid; break;
+			case ROADTYPE_ROAD: this->road_identifier = rtid; break;
+			case ROADTYPE_TRAM: this->tram_identifier = rtid; break;
 		}
 	};
 
@@ -752,15 +752,15 @@ struct RoadTypeIdentifiers {
 	{
 		switch (rt) {
 			default: NOT_REACHED();
-			case ROADTYPE_ROAD: road_identifier = RoadTypeIdentifier(); break;
-			case ROADTYPE_TRAM: tram_identifier = RoadTypeIdentifier(); break;
+			case ROADTYPE_ROAD: this->road_identifier = RoadTypeIdentifier(); break;
+			case ROADTYPE_TRAM: this->tram_identifier = RoadTypeIdentifier(); break;
 		}
 	}
 };
 
 #define FOR_EACH_SET_ROADTYPEIDENTIFIER(var, rtids) \
-  for (RoadType ___FESRTID = ROADTYPE_BEGIN; ___FESRTID < ROADTYPE_END; ___FESRTID++) \
-    if ((var = rtids.GetType(___FESRTID)).IsValid())
+	for (RoadType ___FESRTID = ROADTYPE_BEGIN; ___FESRTID < ROADTYPE_END; ___FESRTID++) \
+		if ((var = rtids.GetType(___FESRTID)).IsValid())
 
 /**
  * Set the present road types of a tile.

@@ -324,9 +324,9 @@ struct BuildRoadToolbarWindow : Window {
 	}
 
 	/**
-	* Configures the road toolbar for roadtype given
-	* @param roadtype the roadtype to display
-	*/
+	 * Configures the road toolbar for roadtype given
+	 * @param roadtype the roadtype to display
+	 */
 	void SetupRoadToolbar()
 	{
 		this->GetWidget<NWidgetCore>(WID_ROT_ROAD_X)->widget_data = rti->gui_sprites.build_x_road;
@@ -340,9 +340,9 @@ struct BuildRoadToolbarWindow : Window {
 	}
 
 	/**
-	* Switch to another road type.
-	* @param roadtype New road type.
-	*/
+	 * Switch to another road type.
+	 * @param roadtype New road type.
+	 */
 	void ModifyRoadType(RoadTypeIdentifier roadtype_identifier)
 	{
 		this->Initialize(roadtype_identifier);
@@ -679,7 +679,6 @@ struct BuildRoadToolbarWindow : Window {
 				case DDSP_CONVERT_ROAD:
 					DoCommandP(end_tile, start_tile, _cur_roadtype_identifier.Pack(), CMD_CONVERT_ROAD | CMD_MSG(rti->strings.err_convert_road), CcPlaySound_SPLAT_OTHER);
 					break;
-
 			}
 		}
 	}
@@ -807,7 +806,7 @@ static const NWidgetPart _nested_build_road_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_REMOVE),
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_REMOVE, STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_ROAD),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_CONVERT_ROAD),
-						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_RAIL, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_ROAD), // TODO: sprites
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_RAIL, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_ROAD),
 	EndContainer(),
 };
 
@@ -849,7 +848,7 @@ static const NWidgetPart _nested_build_tramway_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_REMOVE),
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_REMOVE, STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_TRAMWAYS),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_CONVERT_ROAD),
-						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_RAIL, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_TRAM), // TODO: sprites
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_RAIL, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_TRAM),
 	EndContainer(),
 };
 

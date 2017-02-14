@@ -334,8 +334,8 @@ struct BuildRoadToolbarWindow : Window {
 		this->GetWidget<NWidgetCore>(WID_ROT_AUTOROAD)->widget_data = rti->gui_sprites.auto_road;
 		if (_game_mode != GM_EDITOR) {
 			this->GetWidget<NWidgetCore>(WID_ROT_DEPOT)->widget_data = rti->gui_sprites.build_depot;
-			this->GetWidget<NWidgetCore>(WID_ROT_CONVERT_ROAD)->widget_data = rti->gui_sprites.convert_road;
 		}
+		this->GetWidget<NWidgetCore>(WID_ROT_CONVERT_ROAD)->widget_data = rti->gui_sprites.convert_road;
 		this->GetWidget<NWidgetCore>(WID_ROT_BUILD_TUNNEL)->widget_data = rti->gui_sprites.build_tunnel;
 	}
 
@@ -902,6 +902,8 @@ static const NWidgetPart _nested_build_road_scen_widgets[] = {
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_ROAD_TUNNEL, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_ROAD_TUNNEL),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_REMOVE),
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_REMOVE, STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_ROAD),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_CONVERT_ROAD),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_ROAD, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_ROAD),
 	EndContainer(),
 };
 
@@ -913,6 +915,42 @@ static WindowDesc _build_road_scen_desc(
 	&BuildRoadToolbarWindow::road_hotkeys
 );
 
+static const NWidgetPart _nested_build_tramway_scen_widgets[] = {
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
+		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN, WID_ROT_CAPTION), SetDataTip(STR_WHITE_STRING, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_STICKYBOX, COLOUR_DARK_GREEN),
+	EndContainer(),
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_ROAD_X),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_TRAMWAY_X_DIR, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_SECTION),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_ROAD_Y),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_TRAMWAY_Y_DIR, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_SECTION),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_AUTOROAD),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_AUTOTRAM, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_AUTOTRAM),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_DEMOLISH),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_DYNAMITE, STR_TOOLTIP_DEMOLISH_BUILDINGS_ETC),
+		NWidget(WWT_PANEL, COLOUR_DARK_GREEN, -1), SetMinimalSize(0, 22), SetFill(1, 1), EndContainer(),
+		NWidget(WWT_EMPTY, COLOUR_DARK_GREEN, WID_ROT_ONE_WAY), SetMinimalSize(0, 0),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_BRIDGE),
+						SetFill(0, 1), SetMinimalSize(43, 22), SetDataTip(SPR_IMG_BRIDGE, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_BRIDGE),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_TUNNEL),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_ROAD_TUNNEL, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_TUNNEL),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_REMOVE),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_REMOVE, STR_ROAD_TOOLBAR_TOOLTIP_TOGGLE_BUILD_REMOVE_FOR_TRAMWAYS),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_CONVERT_ROAD),
+						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_CONVERT_RAIL, STR_ROAD_TOOLBAR_TOOLTIP_CONVERT_TRAM),
+	EndContainer(),
+};
+
+static WindowDesc _build_tramway_scen_desc(
+	WDP_AUTO, "toolbar_tram_scen", 0, 0,
+	WC_SCEN_BUILD_TOOLBAR, WC_NONE,
+	WDF_CONSTRUCTION,
+	_nested_build_tramway_scen_widgets, lengthof(_nested_build_tramway_scen_widgets),
+	&BuildRoadToolbarWindow::tram_hotkeys
+);
+
 /**
  * Show the road building toolbar in the scenario editor.
  * @return The just opened toolbar, or \c NULL if the toolbar was already open.
@@ -921,7 +959,7 @@ Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id)
 {
 	_cur_roadtype_identifier = roadtype_id;
 
-	return AllocateWindowDescFront<BuildRoadToolbarWindow>(&_build_road_scen_desc, TRANSPORT_ROAD);
+	return AllocateWindowDescFront<BuildRoadToolbarWindow>(_cur_roadtype_identifier.IsRoad() ? &_build_road_scen_desc : &_build_tramway_scen_desc, TRANSPORT_ROAD);
 }
 
 struct BuildRoadDepotWindow : public PickerWindowBase {

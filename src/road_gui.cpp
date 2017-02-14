@@ -957,6 +957,7 @@ static WindowDesc _build_tramway_scen_desc(
  */
 Window *ShowBuildRoadScenToolbar(RoadTypeIdentifier roadtype_id)
 {
+	DeleteWindowById(WC_SCEN_BUILD_TOOLBAR, TRANSPORT_ROAD);
 	_cur_roadtype_identifier = roadtype_id;
 
 	return AllocateWindowDescFront<BuildRoadToolbarWindow>(_cur_roadtype_identifier.IsRoad() ? &_build_road_scen_desc : &_build_tramway_scen_desc, TRANSPORT_ROAD);

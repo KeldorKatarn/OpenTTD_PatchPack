@@ -357,6 +357,7 @@ STR_SCENEDIT_TOOLBAR_LANDSCAPE_GENERATION                       :{BLACK}Landscap
 STR_SCENEDIT_TOOLBAR_TOWN_GENERATION                            :{BLACK}Town generation
 STR_SCENEDIT_TOOLBAR_INDUSTRY_GENERATION                        :{BLACK}Industry generation
 STR_SCENEDIT_TOOLBAR_ROAD_CONSTRUCTION                          :{BLACK}Road construction
+STR_SCENEDIT_TOOLBAR_TRAM_CONSTRUCTION                          :{BLACK}Tramway construction
 STR_SCENEDIT_TOOLBAR_PLANT_TREES                                :{BLACK}Plant trees. Shift toggles building/showing cost estimate
 STR_SCENEDIT_TOOLBAR_PLACE_SIGN                                 :{BLACK}Place sign
 STR_SCENEDIT_TOOLBAR_PLACE_OBJECT                               :{BLACK}Place object. Shift toggles building/showing cost estimate

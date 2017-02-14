@@ -1174,7 +1174,7 @@ static CallBackFunction ToolbarSwitchClick(Window *w)
 	}
 
 	w->ReInit();
-	w->SetWidgetLoweredState(WID_TN_SWITCH_BAR, _toolbar_mode == TB_LOWER);
+	w->SetWidgetLoweredState(_game_mode == GM_EDITOR ? WID_TE_SWITCH_BAR : WID_TN_SWITCH_BAR, _toolbar_mode == TB_LOWER);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	return CBF_NONE;
 }
@@ -1261,6 +1261,26 @@ static CallBackFunction ToolbarScenBuildRoad(int index)
 {
 	_last_built_roadtype_identifier = RoadTypeIdentifier::Unpack(index);
 	ShowBuildRoadScenToolbar(_last_built_roadtype_identifier);
+	return CBF_NONE;
+}
+
+static CallBackFunction ToolbarScenBuildTramClick(Window *w)
+{
+	ShowDropDownList(w, GetScenRoadTypeDropDownList(ROADTYPES_TRAM), _last_built_tramtype_identifier.Pack(), WID_TE_TRAMS, 140, true, true);
+	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
+	return CBF_NONE;
+}
+
+/**
+ * Handle click on the entry in the Build Tram menu.
+ *
+ * @param index packed RoadTypeIdentifier to show the build toolbar for.
+ * @return #CBF_NONE
+ */
+static CallBackFunction ToolbarScenBuildTram(int index)
+{
+	_last_built_tramtype_identifier = RoadTypeIdentifier::Unpack(index);
+	ShowBuildRoadScenToolbar(_last_built_tramtype_identifier);
 	return CBF_NONE;
 }
 
@@ -1841,6 +1861,7 @@ class NWidgetScenarioToolbarContainer : public NWidgetToolbarContainer {
 			WID_TE_TOWN_GENERATE,
 			WID_TE_INDUSTRY,
 			WID_TE_ROADS,
+			WID_TE_TRAMS,
 			WID_TE_WATER,
 			WID_TE_TREES,
 			WID_TE_SIGNS,
@@ -1860,6 +1881,7 @@ class NWidgetScenarioToolbarContainer : public NWidgetToolbarContainer {
 			WID_TE_TOWN_GENERATE,
 			WID_TE_INDUSTRY,
 			WID_TE_ROADS,
+			WID_TE_TRAMS,
 			WID_TE_WATER,
 			WID_TE_TREES,
 			WID_TE_SIGNS,
@@ -1873,6 +1895,7 @@ class NWidgetScenarioToolbarContainer : public NWidgetToolbarContainer {
 			WID_TE_TOWN_GENERATE,
 			WID_TE_INDUSTRY,
 			WID_TE_ROADS,
+			WID_TE_TRAMS,
 			WID_TE_WATER,
 			WID_TE_TREES,
 			WID_TE_SIGNS,
@@ -1883,10 +1906,12 @@ class NWidgetScenarioToolbarContainer : public NWidgetToolbarContainer {
 			WID_TE_SETTINGS,
 			WID_TE_SAVE,
 			WID_TE_DATE_PANEL,
+			WID_TE_SMALL_MAP,
 			WID_TE_ZOOM_IN,
 			WID_TE_ZOOM_OUT,
 			WID_TE_MUSIC_SOUND,
-			WID_TE_HELP, WID_TE_SWITCH_BAR,
+			WID_TE_HELP,
+			WID_TE_SWITCH_BAR,
 		};
 
 		/* If we can place all buttons *and* the panels, show them. */
@@ -2292,13 +2317,14 @@ static MenuClickedProc * const _scen_toolbar_dropdown_procs[] = {
 	NULL,                 // 12
 	NULL,                 // 13
 	ToolbarScenBuildRoad, // 14
-	NULL,                 // 15
+	ToolbarScenBuildTram, // 15
 	NULL,                 // 16
 	NULL,                 // 17
 	NULL,                 // 18
-	MenuClickMusicWindow, // 19
-	MenuClickHelp,        // 20
-	NULL,                 // 21
+	NULL,                 // 19
+	MenuClickMusicWindow, // 20
+	MenuClickHelp,        // 21
+	NULL,                 // 22
 };
 
 static ToolbarButtonProc * const _scen_toolbar_button_procs[] = {
@@ -2317,6 +2343,7 @@ static ToolbarButtonProc * const _scen_toolbar_button_procs[] = {
 	ToolbarScenGenTown,
 	ToolbarScenGenIndustry,
 	ToolbarScenBuildRoadClick,
+	ToolbarScenBuildTramClick,
 	ToolbarScenBuildDocks,
 	ToolbarScenPlantTrees,
 	ToolbarScenPlaceSign,
@@ -2335,6 +2362,7 @@ enum MainToolbarEditorHotkeys {
 	MTEHK_GENTOWN,
 	MTEHK_GENINDUSTRY,
 	MTEHK_BUILD_ROAD,
+	MTEHK_BUILD_TRAM,
 	MTEHK_BUILD_DOCKS,
 	MTEHK_BUILD_TREES,
 	MTEHK_SIGN,
@@ -2437,6 +2465,7 @@ struct ScenarioEditorToolbarWindow : Window {
 			case MTEHK_GENTOWN:                ToolbarScenGenTown(this); break;
 			case MTEHK_GENINDUSTRY:            ToolbarScenGenIndustry(this); break;
 			case MTEHK_BUILD_ROAD:             ToolbarScenBuildRoadClick(this); break;
+			case MTEHK_BUILD_TRAM:             ToolbarScenBuildTramClick(this); break;
 			case MTEHK_BUILD_DOCKS:            ToolbarScenBuildDocks(this); break;
 			case MTEHK_BUILD_TREES:            ToolbarScenPlantTrees(this); break;
 			case MTEHK_SIGN:                   cbf = ToolbarScenPlaceSign(this); break;
@@ -2537,6 +2566,7 @@ static Hotkey scenedit_maintoolbar_hotkeys[] = {
 	Hotkey(WKC_F5, "gen_town", MTEHK_GENTOWN),
 	Hotkey(WKC_F6, "gen_industry", MTEHK_GENINDUSTRY),
 	Hotkey(WKC_F7, "build_road", MTEHK_BUILD_ROAD),
+	Hotkey((uint16)0, "build_tram", MTEHK_BUILD_TRAM),
 	Hotkey(WKC_F8, "build_docks", MTEHK_BUILD_DOCKS),
 	Hotkey(WKC_F9, "build_trees", MTEHK_BUILD_TREES),
 	Hotkey(WKC_F10, "build_sign", MTEHK_SIGN),
@@ -2580,6 +2610,7 @@ static const NWidgetPart _nested_toolb_scen_inner_widgets[] = {
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_TOWN_GENERATE), SetDataTip(SPR_IMG_TOWN, STR_SCENEDIT_TOOLBAR_TOWN_GENERATION),
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_INDUSTRY), SetDataTip(SPR_IMG_INDUSTRY, STR_SCENEDIT_TOOLBAR_INDUSTRY_GENERATION),
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_ROADS), SetDataTip(SPR_IMG_BUILDROAD, STR_SCENEDIT_TOOLBAR_ROAD_CONSTRUCTION),
+	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_TRAMS), SetDataTip(SPR_IMG_BUILDTRAMS, STR_SCENEDIT_TOOLBAR_TRAM_CONSTRUCTION),
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_WATER), SetDataTip(SPR_IMG_BUILDWATER, STR_TOOLBAR_TOOLTIP_BUILD_SHIP_DOCKS),
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_TREES), SetDataTip(SPR_IMG_PLANTTREES, STR_SCENEDIT_TOOLBAR_PLANT_TREES),
 	NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_TE_SIGNS), SetDataTip(SPR_IMG_SIGN, STR_SCENEDIT_TOOLBAR_PLACE_SIGN),

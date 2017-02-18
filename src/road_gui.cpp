@@ -1283,22 +1283,7 @@ DropDownList *GetRoadTypeDropDownList(RoadTypes roadtypes, bool for_replacement,
 
 		RoadSubTypes used_roadtypes = ROADSUBTYPES_NONE;
 
-		/* Road is always visible and available. */
-		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_NORMAL; // TODO
-
-		/* Find used roadtypes */
-		Engine *e;
-		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-			if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
-
-			RoadTypeIdentifier rtid = e->GetRoadType();
-			if (rtid.basetype != rt) continue;
-
-			used_roadtypes |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
-		}
-
-		/* Get the date introduced roadtypes as well. */
-		used_roadtypes = AddDateIntroducedRoadTypes(rt, used_roadtypes, MAX_DAY);
+		used_roadtypes = ExistingRoadSubTypesForRoadType(rt, c->index, false);
 
 		/* If it's not used ever, don't show it to the user. */
 		RoadTypeIdentifier rtid;
@@ -1331,22 +1316,7 @@ DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
 		if (!HasBit(roadtypes, rt)) continue;
 
-		/* Road is always visible and available. */
-		if (rt == ROADTYPE_ROAD) used_roadtypes |= ROADSUBTYPES_NORMAL; // TODO
-
-		/* Find used roadtypes */
-		Engine *e;
-		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-			if (!HasBit(e->info.climates, _settings_game.game_creation.landscape)) continue;
-
-			RoadTypeIdentifier rtid = e->GetRoadType();
-			if (rtid.basetype != rt) continue;
-
-			used_roadtypes |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
-		}
-
-		/* Get the date introduced roadtypes as well. */
-		used_roadtypes = AddDateIntroducedRoadTypes(rt, used_roadtypes, MAX_DAY);
+		used_roadtypes = ExistingRoadSubTypesForRoadType(rt, INVALID_COMPANY, true);
 
 		/* If it's not used ever, don't show it to the user. */
 		RoadTypeIdentifier rtid;

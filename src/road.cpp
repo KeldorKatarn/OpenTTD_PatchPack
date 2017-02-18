@@ -247,3 +247,44 @@ bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
 	assert(ret);
 	return result;
 }
+
+/**
+ * Returns the available RoadSubTypes for the provided RoadType
+ * @param rt the RoadType to filter
+ * @param c the company ID to check the roadtype against
+ * @param any_date whether to return only currently introduced roadtypes or also future ones
+ * @returns the existing RoadSubTypes
+ */
+RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c, bool any_date)
+{
+	if (c != INVALID_COMPANY) {
+		const Company *company = Company::GetIfValid(c);
+
+		return company->avail_roadtypes[rt];
+	}
+
+	RoadSubTypes known_roadsubtypes = ROADSUBTYPES_NONE;
+
+	/* Road is always visible and available. */
+	if (rt == ROADTYPE_ROAD) known_roadsubtypes |= ROADSUBTYPES_NORMAL; // TODO
+
+	/* Find used roadtypes */
+	Engine *e;
+	FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+		/* Check if the subtype can be used in the current climate */
+		if (!HasBit(e->info.climates,  _settings_game.game_creation.landscape)) continue;
+
+		/* Check whether available for all potential companies */
+		if (any_date && e->company_avail != (CompanyMask)-1) continue;
+
+		RoadTypeIdentifier rtid = e->GetRoadType();
+		if (rtid.basetype != rt) continue;
+
+		known_roadsubtypes |= GetRoadTypeInfo(rtid)->introduces_roadtypes;
+	}
+
+	/* Get the date introduced roadtypes as well. */
+	known_roadsubtypes = AddDateIntroducedRoadTypes(rt, known_roadsubtypes, any_date ? MAX_DAY : _date);
+
+	return known_roadsubtypes;
+}

@@ -257,10 +257,11 @@ bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
  */
 RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c, bool any_date)
 {
-	if (c != INVALID_COMPANY) {
+	/* Check only players which can actually own vehicles, editor and gamescripts are considered deities */
+	if (c < OWNER_END) {
 		const Company *company = Company::GetIfValid(c);
 
-		return company->avail_roadtypes[rt];
+		if (company != NULL) return company->avail_roadtypes[rt];
 	}
 
 	RoadSubTypes known_roadsubtypes = ROADSUBTYPES_NONE;

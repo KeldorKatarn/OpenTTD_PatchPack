@@ -300,7 +300,7 @@ struct BuildRoadToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		bool can_build = CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype);
+		bool can_build = CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company, false);
 
 		this->SetWidgetsDisabledState(!can_build,
 				WID_ROT_DEPOT,
@@ -440,7 +440,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company, false)) return;
 				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(roadtype_identifier)->cursor.depot, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
@@ -448,7 +448,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUS_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company, false)) return;
 				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, SPR_CURSOR_BUS_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
@@ -456,7 +456,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_TRUCK_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD, this->roadtype_identifier.basetype)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company, false)) return;
 				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, SPR_CURSOR_TRUCK_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
@@ -707,7 +707,7 @@ struct BuildRoadToolbarWindow : Window {
  */
 static EventState RoadTramToolbarGlobalHotkeys(int hotkey, RoadTypeIdentifier last_build)
 {
-	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_ROAD, last_build.basetype))) return ES_NOT_HANDLED;
+	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(last_build, _local_company, false))) return ES_NOT_HANDLED;
 
 	Window *w = NULL;
 	switch (_game_mode) {
@@ -1316,7 +1316,7 @@ DropDownList *GetScenRoadTypeDropDownList(RoadTypes roadtypes)
 	for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
 		if (!HasBit(roadtypes, rt)) continue;
 
-		used_roadtypes = ExistingRoadSubTypesForRoadType(rt, INVALID_COMPANY, true);
+		used_roadtypes = ExistingRoadSubTypesForRoadType(rt, OWNER_DEITY, true);
 
 		/* If it's not used ever, don't show it to the user. */
 		RoadTypeIdentifier rtid;

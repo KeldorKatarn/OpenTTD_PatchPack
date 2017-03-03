@@ -2033,13 +2033,13 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 	if (rtids.HasRoad()) {
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
 		td->roadtype = rti->strings.name;
-		td->road_speed = rti->max_speed;
+		td->road_speed = rti->max_speed / 2;
 		road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
 	}
 	if (rtids.HasTram()) {
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
 		td->tramtype = rti->strings.name;
-		td->tram_speed = rti->max_speed;
+		td->tram_speed = rti->max_speed / 2;
 		tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
 	}
 

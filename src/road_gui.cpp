@@ -275,10 +275,11 @@ struct BuildRoadToolbarWindow : Window {
 		this->Initialize(_cur_roadtype_identifier);
 		this->InitNested(window_number);
 		this->SetupRoadToolbar();
-		this->SetWidgetsDisabledState(true,
-				WID_ROT_REMOVE,
-				WID_ROT_ONE_WAY,
-				WIDGET_LIST_END);
+		this->SetWidgetDisabledState(WID_ROT_REMOVE, true);
+
+		if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) {
+			this->SetWidgetDisabledState(WID_ROT_ONE_WAY, true);
+		}
 
 		this->OnInvalidateData();
 		this->last_started_action = WIDGET_LIST_END;
@@ -375,8 +376,11 @@ struct BuildRoadToolbarWindow : Window {
 		 * Both are only valid if they are able to apply as options. */
 		switch (clicked_widget) {
 			case WID_ROT_REMOVE:
-				this->RaiseWidget(WID_ROT_ONE_WAY);
-				this->SetWidgetDirty(WID_ROT_ONE_WAY);
+				if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) {
+					this->RaiseWidget(WID_ROT_ONE_WAY);
+					this->SetWidgetDirty(WID_ROT_ONE_WAY);
+				}
+
 				break;
 
 			case WID_ROT_ONE_WAY:
@@ -386,30 +390,30 @@ struct BuildRoadToolbarWindow : Window {
 
 			case WID_ROT_BUS_STATION:
 			case WID_ROT_TRUCK_STATION:
-				this->DisableWidget(WID_ROT_ONE_WAY);
+				if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) this->DisableWidget(WID_ROT_ONE_WAY);
 				this->SetWidgetDisabledState(WID_ROT_REMOVE, !this->IsWidgetLowered(clicked_widget));
 				break;
 
 			case WID_ROT_ROAD_X:
 			case WID_ROT_ROAD_Y:
 			case WID_ROT_AUTOROAD:
-				this->SetWidgetsDisabledState(!this->IsWidgetLowered(clicked_widget),
-						WID_ROT_REMOVE,
-						WID_ROT_ONE_WAY,
-						WIDGET_LIST_END);
+				this->SetWidgetDisabledState(WID_ROT_REMOVE, !this->IsWidgetLowered(clicked_widget));
+				if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) {
+					this->SetWidgetDisabledState(WID_ROT_ONE_WAY, !this->IsWidgetLowered(clicked_widget));
+				}
 				break;
 
 			default:
 				/* When any other buttons than road/station, raise and
 				 * disable the removal button */
-				this->SetWidgetsDisabledState(true,
-						WID_ROT_REMOVE,
-						WID_ROT_ONE_WAY,
-						WIDGET_LIST_END);
-				this->SetWidgetsLoweredState(false,
-						WID_ROT_REMOVE,
-						WID_ROT_ONE_WAY,
-						WIDGET_LIST_END);
+				this->SetWidgetDisabledState(WID_ROT_REMOVE, true);
+				this->SetWidgetLoweredState(WID_ROT_REMOVE, false);
+
+				if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) {
+					this->SetWidgetDisabledState(WID_ROT_ONE_WAY, true);
+					this->SetWidgetLoweredState(WID_ROT_ONE_WAY, false);
+				}
+
 				break;
 		}
 	}
@@ -508,7 +512,7 @@ struct BuildRoadToolbarWindow : Window {
 	virtual void OnPlaceObject(Point pt, TileIndex tile)
 	{
 		_remove_button_clicked = this->IsWidgetLowered(WID_ROT_REMOVE);
-		_one_way_button_clicked = this->IsWidgetLowered(WID_ROT_ONE_WAY);
+		_one_way_button_clicked = (this->roadtype_identifier.basetype == ROADTYPE_ROAD) ? this->IsWidgetLowered(WID_ROT_ONE_WAY) : false;
 		switch (this->last_started_action) {
 			case WID_ROT_ROAD_X:
 				_place_road_flag = RF_DIR_X;
@@ -566,12 +570,13 @@ struct BuildRoadToolbarWindow : Window {
 	virtual void OnPlaceObjectAbort()
 	{
 		this->RaiseButtons();
-		this->SetWidgetsDisabledState(true,
-				WID_ROT_REMOVE,
-				WID_ROT_ONE_WAY,
-				WIDGET_LIST_END);
+		this->SetWidgetDisabledState(WID_ROT_REMOVE, true);
 		this->SetWidgetDirty(WID_ROT_REMOVE);
-		this->SetWidgetDirty(WID_ROT_ONE_WAY);
+
+		if (this->roadtype_identifier.basetype == ROADTYPE_ROAD) {
+			this->SetWidgetDisabledState(WID_ROT_ONE_WAY, true);
+			this->SetWidgetDirty(WID_ROT_ONE_WAY);
+		}
 
 		DeleteWindowById(WC_BUS_STATION, TRANSPORT_ROAD);
 		DeleteWindowById(WC_TRUCK_STATION, TRANSPORT_ROAD);
@@ -765,7 +770,6 @@ static Hotkey tramtoolbar_hotkeys[] = {
 	Hotkey('5', "depot", WID_ROT_DEPOT),
 	Hotkey('6', "bus_station", WID_ROT_BUS_STATION),
 	Hotkey('7', "truck_station", WID_ROT_TRUCK_STATION),
-	Hotkey('8', "oneway", WID_ROT_ONE_WAY),
 	Hotkey('B', "bridge", WID_ROT_BUILD_BRIDGE),
 	Hotkey('T', "tunnel", WID_ROT_BUILD_TUNNEL),
 	Hotkey('R', "remove", WID_ROT_REMOVE),
@@ -840,7 +844,6 @@ static const NWidgetPart _nested_build_tramway_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_TRUCK_STATION),
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_TRUCK_BAY, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_CARGO_TRAM_STATION),
 		NWidget(WWT_PANEL, COLOUR_DARK_GREEN, -1), SetMinimalSize(0, 22), SetFill(1, 1), EndContainer(),
-		NWidget(WWT_EMPTY, COLOUR_DARK_GREEN, WID_ROT_ONE_WAY), SetMinimalSize(0, 0),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_BRIDGE),
 						SetFill(0, 1), SetMinimalSize(43, 22), SetDataTip(SPR_IMG_BRIDGE, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_BRIDGE),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_TUNNEL),
@@ -931,7 +934,6 @@ static const NWidgetPart _nested_build_tramway_scen_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_DEMOLISH),
 						SetFill(0, 1), SetMinimalSize(22, 22), SetDataTip(SPR_IMG_DYNAMITE, STR_TOOLTIP_DEMOLISH_BUILDINGS_ETC),
 		NWidget(WWT_PANEL, COLOUR_DARK_GREEN, -1), SetMinimalSize(0, 22), SetFill(1, 1), EndContainer(),
-		NWidget(WWT_EMPTY, COLOUR_DARK_GREEN, WID_ROT_ONE_WAY), SetMinimalSize(0, 0),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_BRIDGE),
 						SetFill(0, 1), SetMinimalSize(43, 22), SetDataTip(SPR_IMG_BRIDGE, STR_ROAD_TOOLBAR_TOOLTIP_BUILD_TRAMWAY_BRIDGE),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_ROT_BUILD_TUNNEL),

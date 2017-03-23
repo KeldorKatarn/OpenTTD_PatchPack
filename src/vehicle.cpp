@@ -1642,7 +1642,7 @@ void VehicleEnterDepot(Vehicle *v)
 	if (v->current_order.IsType(OT_GOTO_DEPOT)) {
 		SetWindowDirty(WC_VEHICLE_VIEW, v->index);
 
-		if (v->type == VEH_ROAD && v->current_order.GetDepotOrderType() == ODTF_MANUAL) {
+		if (v->type != VEH_TRAIN && v->current_order.GetDepotOrderType() == ODTF_MANUAL) {
 			// Check first if the vehicle has any depot in its order list. If yes then we're heading for a specific depot.
 			// Don't stop if this one isn't it.
 			bool has_depot_in_orders = false;
@@ -1659,10 +1659,13 @@ void VehicleEnterDepot(Vehicle *v)
 				}
 			}
 
-			if (has_depot_in_orders && v->dest_tile != v->tile)
+			if (has_depot_in_orders)
 			{
-				/* We are heading for another depot, keep driving. */
-				return;
+				if ((v->type == VEH_AIRCRAFT && Station::GetByTile(v->dest_tile)->index != Station::GetByTile(v->tile)->index) ||
+					(v->type != VEH_AIRCRAFT && v->dest_tile != v->tile)) {
+					/* We are heading for another depot, keep driving. */					
+					return;
+				}
 			}
 		}
 
@@ -2668,10 +2671,20 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 
 		if (isRegularOrder && isDepotOrder) {
 			destination = order->GetDestination();
-			location = Depot::Get(destination)->xy;
-			reverse = false;
-			foundDepotInOrders = true;
-			break;
+			if (this->type == VEH_AIRCRAFT) {
+				Station* st = Station::Get(destination);
+				if (st != NULL && st->airport.HasHangar() && CanVehicleUseStation(this, st)) {
+					location = st->xy;					
+					foundDepotInOrders = true;
+					break;
+				}
+			}
+			else {
+				location = Depot::Get(destination)->xy;
+				reverse = false;
+				foundDepotInOrders = true;
+				break;
+			}
 		}
 	}
 

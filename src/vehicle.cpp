@@ -1773,7 +1773,7 @@ bool CanBuildVehicleInfrastructure(RoadTypeIdentifier rtid, CompanyID company, b
 		/* Can we actually build the vehicle type? */
 		const Engine *e;
 		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-			if (e->GetRoadType() == rtid) return true;
+			if (HasPowerOnRoad(e->GetRoadType(), rtid)) return true;
 		}
 		return false;
 	}
@@ -1782,7 +1782,7 @@ bool CanBuildVehicleInfrastructure(RoadTypeIdentifier rtid, CompanyID company, b
 	const Vehicle *v;
 	FOR_ALL_VEHICLES(v) {
 		if (v->type == VEH_ROAD && (company == OWNER_DEITY || v->owner == company) &&
-			HasBit(roadsubtypes, RoadVehicle::From(v)->rtid.subtype) && RoadVehicle::From(v)->rtid == rtid) return true;
+			HasBit(roadsubtypes, RoadVehicle::From(v)->rtid.subtype) && HasPowerOnRoad(RoadVehicle::From(v)->rtid, rtid)) return true;
 	}
 
 	return false;

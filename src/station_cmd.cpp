@@ -2638,6 +2638,7 @@ CommandCost CmdBuildSeaplaneAirport(TileIndex tile, DoCommandFlag flags, uint32 
 			MakeAirport(iter, st->owner, st->index, iter.GetStationGfx(), GetWaterClass(iter));
 			SetStationTileRandomBits(iter, GB(Random(), 0, 4));
 			st->airport.Add(iter);
+			st->catchment.BeforeAddTile(iter, as->catchment);
 
 			if (AirportTileSpec::Get(GetTranslatedAirportTileID(iter.GetStationGfx()))->animation.status != ANIM_STATUS_NO_ANIMATION) AddAnimatedTile(iter);
 		}

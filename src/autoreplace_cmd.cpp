@@ -54,7 +54,7 @@ bool CheckAutoreplaceValidity(EngineID from, EngineID to, CompanyID company)
 	assert(Engine::IsValidID(from) && Engine::IsValidID(to));
 
 	/* we can't replace an engine into itself (that would be autorenew) */
-	if (from == to) return false;
+	//if (from == to) return false;
 
 	const Engine *e_from = Engine::Get(from);
 	const Engine *e_to = Engine::Get(to);

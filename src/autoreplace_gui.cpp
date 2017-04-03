@@ -74,6 +74,11 @@ static const StringID _start_replace_dropdown[] = {
 	INVALID_STRING_ID
 };
 
+static const StringID _start_replace_only_when_old_dropdown[] = {
+	STR_REPLACE_VEHICLES_WHEN_OLD,
+	INVALID_STRING_ID
+};
+
 /**
  * Window for the autoreplacing of vehicles.
  */
@@ -406,6 +411,8 @@ public:
 		this->SetWidgetDisabledState(WID_RV_START_REPLACE,
 				this->sel_engine[0] == INVALID_ENGINE || this->sel_engine[1] == INVALID_ENGINE || EngineReplacementForCompany(c, this->sel_engine[1], this->sel_group) != INVALID_ENGINE);
 
+		this->GetWidget<NWidgetCore>(WID_RV_START_REPLACE)->SetDataTip(_start_replace_dropdown[this->sel_engine[0] == this->sel_engine[1] ? 1 : 0], STR_NULL);
+
 		/* Disable the "Stop Replacing" button if:
 		 *   The left engines list (existing vehicle) is empty
 		 *   or The selected vehicle has no replacement set up */
@@ -478,10 +485,16 @@ public:
 			case WID_RV_START_REPLACE: { // Start replacing
 				if (this->GetWidget<NWidgetLeaf>(widget)->ButtonHit(pt)) {
 					this->HandleButtonClick(WID_RV_START_REPLACE);
-					ReplaceClick_StartReplace(false);
+					ReplaceClick_StartReplace((this->sel_engine[0] == this->sel_engine[1]));
 				} else {
 					bool replacment_when_old = EngineHasReplacementWhenOldForCompany(Company::Get(_local_company), this->sel_engine[0], this->sel_group);
-					ShowDropDownMenu(this, _start_replace_dropdown, replacment_when_old ? 1 : 0, WID_RV_START_REPLACE, !this->replace_engines ? 1 << 1 : 0, 0);
+					ShowDropDownMenu(
+						this,						             
+						(this->sel_engine[0] == this->sel_engine[1]) ? _start_replace_only_when_old_dropdown : _start_replace_dropdown,
+						(this->sel_engine[0] == this->sel_engine[1]) ? 0 : (replacment_when_old ? 1 : 0),
+						WID_RV_START_REPLACE,
+						!this->replace_engines ? 1 << 1 : 0,
+						0);
 				}
 				break;
 			}
@@ -552,7 +565,7 @@ public:
 			}
 
 			case WID_RV_START_REPLACE:
-				this->ReplaceClick_StartReplace(index != 0);
+				this->ReplaceClick_StartReplace((this->sel_engine[0] == this->sel_engine[1]) ? (index == 0) : (index != 0));
 				break;
 		}
 	}

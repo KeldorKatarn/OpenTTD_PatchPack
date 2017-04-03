@@ -222,11 +222,7 @@ public:
 			type_count[e->u.rail.railtype] += GetGroupNumEngines(_local_company, ALL_GROUP, e->index);
 		}
 
-		this->sel_railtype = RAILTYPE_BEGIN;
-
-		for (RailType rt = RAILTYPE_BEGIN; rt < RAILTYPE_END; rt++) {
-			if (type_count[this->sel_railtype] < type_count[rt]) this->sel_railtype = rt;
-		}
+		this->sel_railtype = INVALID_RAILTYPE;
 
 		this->details_height   = 10 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 
@@ -343,7 +339,8 @@ public:
 		this->GetWidget<NWidgetCore>(TRW_WIDGET_TRAIN_FLUFF_RIGHT)->colour = _company_colours[_local_company];
 
 		/* Show the selected railtype in the pulldown menu */
-		this->GetWidget<NWidgetCore>(TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN)->widget_data = GetRailTypeInfo(sel_railtype)->strings.replace_text;
+		this->GetWidget<NWidgetCore>(TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN)->widget_data = 
+			(sel_railtype == INVALID_RAILTYPE) ? STR_REPLACE_ALL_RAILTYPE : GetRailTypeInfo(sel_railtype)->strings.replace_text;
 
 		
 		if ((this->selected_template_index < 0) || (this->selected_template_index >= (short)this->templates.Length())) {
@@ -452,7 +449,7 @@ public:
 			//	break;
 			//}
 			case TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN: // Railtype selection dropdown menu
-				ShowDropDownList(this, GetRailTypeDropDownList(true), sel_railtype, TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN);
+				ShowDropDownList(this, GetRailTypeDropDownList(true, true), sel_railtype, TRW_WIDGET_TRAIN_RAILTYPE_DROPDOWN);
 				break;
 
 			case TRW_WIDGET_TOP_MATRIX: {

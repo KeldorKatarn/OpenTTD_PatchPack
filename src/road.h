@@ -201,7 +201,6 @@ static inline const RoadtypeInfo *GetRoadTypeInfo(RoadTypeIdentifier rtid)
 static inline bool HasPowerOnRoad(RoadTypeIdentifier engine_rtid, RoadTypeIdentifier tile_rtid)
 {
 	return engine_rtid.basetype == tile_rtid.basetype && HasBit(GetRoadTypeInfo(engine_rtid)->powered_roadtypes, tile_rtid.subtype);
-
 }
 
 /**

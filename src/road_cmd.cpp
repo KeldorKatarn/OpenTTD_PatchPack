@@ -357,7 +357,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 			TileIndex other_end = GetOtherTunnelBridgeEnd(tile);
 			/* Pay for *every* tile of the bridge or tunnel */
 			uint len = GetTunnelBridgeLength(other_end, tile) + 2;
-			cost.AddCost(len * _price[PR_CLEAR_ROAD]);
+			cost.AddCost(len * 2 * _price[PR_CLEAR_ROAD]);
 			if (flags & DC_EXEC) {
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != NULL) {
@@ -1705,7 +1705,14 @@ static void DrawTile_Road(TileInfo *ti)
 			bool default_gfx = relocation == 0;
 			if (default_gfx) {
 				if (HasBit(rti->flags, ROTF_CATENARY)) {
-					relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+					if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtids.HasTram() && !rti->UsesOverlay()) {
+						/* Sprites with track only work for default tram */
+						relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+						default_gfx = false;
+					} else {
+						/* Sprites without track are always better, if provided */
+						relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;
+					}
 				}
 			} else {
 				relocation -= SPR_ROAD_DEPOT;
@@ -1748,7 +1755,14 @@ void DrawRoadDepotSprite(int x, int y, DiagDirection dir, RoadTypeIdentifier rti
 	bool default_gfx = relocation == 0;
 	if (default_gfx) {
 		if (HasBit(rti->flags, ROTF_CATENARY)) {
-			relocation = SPR_TRAMWAY_DEPOT - SPR_ROAD_DEPOT;
+			if (_loaded_newgrf_features.tram == TRAMWAY_REPLACE_DEPOT_WITH_TRACK && rtid.IsTram() && !rti->UsesOverlay()) {
+				/* Sprites with track only work for default tram */
+				relocation = SPR_TRAMWAY_DEPOT_WITH_TRACK - SPR_ROAD_DEPOT;
+				default_gfx = false;
+			} else {
+				/* Sprites without track are always better, if provided */
+				relocation = SPR_TRAMWAY_DEPOT_NO_TRACK - SPR_ROAD_DEPOT;
+			}
 		}
 	} else {
 		relocation -= SPR_ROAD_DEPOT;
@@ -2019,13 +2033,13 @@ static void GetTileDesc_Road(TileIndex tile, TileDesc *td)
 	if (rtids.HasRoad()) {
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
 		td->roadtype = rti->strings.name;
-		td->road_speed = rti->max_speed;
+		td->road_speed = rti->max_speed / 2;
 		road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
 	}
 	if (rtids.HasTram()) {
 		const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
 		td->tramtype = rti->strings.name;
-		td->tram_speed = rti->max_speed;
+		td->tram_speed = rti->max_speed / 2;
 		tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
 	}
 

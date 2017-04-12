@@ -1168,6 +1168,30 @@ CommandCost FindJoiningWaypoint(StationID existing_waypoint, StationID waypoint_
 }
 
 /**
+ * Clear platform reservation during station building/removing.
+ * @param v vehicle which holds reservation
+ */
+static void FreeTrainReservation(Train *v)
+{
+	FreeTrainTrackReservation(v);
+	if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), false);
+	v = v->Last();
+	if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(ReverseTrackdir(v->GetVehicleTrackdir())), false);
+}
+
+/**
+ * Restore platform reservation during station building/removing.
+ * @param v vehicle which held reservation
+ */
+static void RestoreTrainReservation(Train *v)
+{
+	if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), true);
+	TryPathReserve(v, true, true);
+	v = v->Last();
+	if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(ReverseTrackdir(v->GetVehicleTrackdir())), true);
+}
+
+/**
  * Build rail station
  * @param tile_org northern most position of station dragging/placement
  * @param flags operation to perform
@@ -1306,11 +1330,8 @@ CommandCost CmdBuildRailStation(TileIndex tile_org, DoCommandFlag flags, uint32 
 					/* Check for trains having a reservation for this tile. */
 					Train *v = GetTrainForReservation(tile, AxisToTrack(GetRailStationAxis(tile)));
 					if (v != NULL) {
-						FreeTrainTrackReservation(v);
 						*affected_vehicles.Append() = v;
-						if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), false);
-						for (; v->Next() != NULL; v = v->Next()) { }
-						if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(ReverseTrackdir(v->GetVehicleTrackdir())), false);
+						FreeTrainReservation(v);
 					}
 				}
 
@@ -1361,11 +1382,7 @@ CommandCost CmdBuildRailStation(TileIndex tile_org, DoCommandFlag flags, uint32 
 
 		for (uint i = 0; i < affected_vehicles.Length(); ++i) {
 			/* Restore reservations of trains. */
-			Train *v = affected_vehicles[i];
-			if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), true);
-			TryPathReserve(v, true, true);
-			for (; v->Next() != NULL; v = v->Next()) { }
-			if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(ReverseTrackdir(v->GetVehicleTrackdir())), true);
+			RestoreTrainReservation(affected_vehicles[i]);
 		}
 
 		/* Check whether we need to expand the reservation of trains already on the station. */
@@ -1529,14 +1546,7 @@ CommandCost RemoveFromRailBaseStation(TileArea ta, SmallVector<T *, 4> &affected
 
 			if (HasStationReservation(tile)) {
 				v = GetTrainForReservation(tile, track);
-				if (v != NULL) {
-					/* Free train reservation. */
-					FreeTrainTrackReservation(v);
-					if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), false);
-					Vehicle *temp = v;
-					for (; temp->Next() != NULL; temp = temp->Next()) { }
-					if (IsRailStationTile(temp->tile)) SetRailStationPlatformReservation(temp->tile, TrackdirToExitdir(ReverseTrackdir(temp->GetVehicleTrackdir())), false);
-				}
+				if (v != NULL) FreeTrainReservation(v);
 			}
 
 			bool build_rail = keep_rail && !IsStationTileBlocked(tile);
@@ -1556,13 +1566,7 @@ CommandCost RemoveFromRailBaseStation(TileArea ta, SmallVector<T *, 4> &affected
 
 			affected_stations.Include(st);
 
-			if (v != NULL) {
-				/* Restore station reservation. */
-				if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(v->GetVehicleTrackdir()), true);
-				TryPathReserve(v, true, true);
-				for (; v->Next() != NULL; v = v->Next()) { }
-				if (IsRailStationTile(v->tile)) SetRailStationPlatformReservation(v->tile, TrackdirToExitdir(ReverseTrackdir(v->GetVehicleTrackdir())), true);
-			}
+			if (v != NULL) RestoreTrainReservation(v);
 		}
 	}
 
@@ -2985,7 +2989,6 @@ draw_default_foundation:
 					DrawGroundSprite(SPR_TRAMWAY_OVERLAY + sprite_offset, PAL_NONE);
 				}
 			}
-
 		} else {
 			DiagDirection dir = GetRoadStopDir(ti->tile);
 			catenary_bits = DiagDirToRoadBits(dir);
@@ -3086,14 +3089,14 @@ static void GetTileDesc_Station(TileIndex tile, TileDesc *td)
 		if (rtids.HasRoad()) {
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.road_identifier);
 			td->roadtype = rti->strings.name;
-			td->road_speed = rti->max_speed;
+			td->road_speed = rti->max_speed / 2;
 			road_owner = GetRoadOwner(tile, ROADTYPE_ROAD);
 		}
 
 		if (rtids.HasTram()) {
 			const RoadtypeInfo *rti = GetRoadTypeInfo(rtids.tram_identifier);
 			td->tramtype = rti->strings.name;
-			td->tram_speed = rti->max_speed;
+			td->tram_speed = rti->max_speed / 2;
 			tram_owner = GetRoadOwner(tile, ROADTYPE_TRAM);
 		}
 

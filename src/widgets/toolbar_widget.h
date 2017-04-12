@@ -67,6 +67,7 @@ enum ToolbarEditorWidgets {
 	WID_TE_TOWN_GENERATE, ///< Town building window.
 	WID_TE_INDUSTRY,      ///< Industry building window.
 	WID_TE_ROADS,         ///< Road building menu.
+	WID_TE_TRAMS,         ///< Tram building menu.
 	WID_TE_WATER,         ///< Water building toolbar.
 	WID_TE_TREES,         ///< Tree building toolbar.
 	WID_TE_SIGNS,         ///< Sign building.

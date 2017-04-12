@@ -106,7 +106,6 @@ struct GRFLabel {
 /** Dynamic data of a loaded NewGRF */
 struct GRFFile : ZeroedMemoryAllocator {
 	char *filename;
-	bool is_ottdfile;
 	uint32 grfid;
 	byte grf_version;
 
@@ -165,12 +164,19 @@ enum ShoreReplacement {
 	SHORE_REPLACE_ONLY_NEW,   ///< Only corner-shores were loaded by Action5 (openttd(w/d).grf only).
 };
 
+enum TramReplacement {
+	TRAMWAY_REPLACE_DEPOT_NONE,       ///< No tram depot graphics were loaded.
+	TRAMWAY_REPLACE_DEPOT_WITH_TRACK, ///< Electrified depot graphics with tram track were loaded.
+	TRAMWAY_REPLACE_DEPOT_NO_TRACK,   ///< Electrified depot graphics without tram track were loaded.
+};
+
 struct GRFLoadedFeatures {
 	bool has_2CC;             ///< Set if any vehicle is loaded which uses 2cc (two company colours).
 	uint64 used_liveries;     ///< Bitmask of #LiveryScheme used by the defined engines.
 	bool has_newhouses;       ///< Set if there are any newhouses loaded.
 	bool has_newindustries;   ///< Set if there are any newindustries loaded.
-	ShoreReplacement shore;   ///< It which way shore sprites were replaced.
+	ShoreReplacement shore;   ///< In which way shore sprites were replaced.
+	TramReplacement tram;     ///< In which way tram depots were replaced.
 };
 
 /**
@@ -190,7 +196,7 @@ extern GRFLoadedFeatures _loaded_newgrf_features;
 byte GetGRFContainerVersion();
 
 void LoadNewGRFFile(struct GRFConfig *config, uint file_index, GrfLoadingStage stage, Subdirectory subdir);
-void LoadNewGRF(uint load_index, uint file_index);
+void LoadNewGRF(uint load_index, uint file_index, uint num_baseset);
 void ReloadNewGRFData(); // in saveload/afterload.cpp
 void ResetNewGRFData();
 void ResetPersistentNewGRFData();

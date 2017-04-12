@@ -255,7 +255,7 @@ STR_SHOW_HIDDEN_ENGINES_VEHICLE_SHIP                            :{BLACK}Toon ver
 STR_SHOW_HIDDEN_ENGINES_VEHICLE_AIRCRAFT                        :{BLACK}Toon verborgen
 
 STR_SHOW_HIDDEN_ENGINES_VEHICLE_TRAIN_TOOLTIP                   :{BLACK}Door het inschakelen van deze knop, worden de verborgen treinen ook weergegeven
-STR_SHOW_HIDDEN_ENGINES_VEHICLE_ROAD_VEHICLE_TOOLTIP            :Door het inschakelen van deze knop, worden de verborgen wegvoertuigen ook weergegeven
+STR_SHOW_HIDDEN_ENGINES_VEHICLE_ROAD_VEHICLE_TOOLTIP            :{BLACK}Door het inschakelen van deze knop, worden de verborgen wegvoertuigen ook weergegeven
 STR_SHOW_HIDDEN_ENGINES_VEHICLE_SHIP_TOOLTIP                    :{BLACK}Door het inschakelen van deze knop, worden de verborgen schepen ook weergegeven
 STR_SHOW_HIDDEN_ENGINES_VEHICLE_AIRCRAFT_TOOLTIP                :{BLACK}Door het inschakelen van deze knop, worden de verborgen vliegtuig ook weergegeven
 
@@ -2689,7 +2689,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Terrein in bedr
 STR_ABOUT_OPENTTD                                               :{WHITE}Over OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Originele copyright {COPYRIGHT} 1995 Chris Sawyer, alle rechten voorbehouden
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD versie {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2016 Het OpenTTD team
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2017 Het OpenTTD team
 
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Spel Opslaan
@@ -3360,6 +3360,7 @@ STR_GROUP_REMOVE_ALL_VEHICLES                                   :Verwijder alle 
 
 STR_GROUP_RENAME_CAPTION                                        :{BLACK}Hernoem een groep
 
+
 # Build vehicle window
 STR_BUY_VEHICLE_TRAIN_RAIL_CAPTION                              :Nieuwe railvoertuigen
 STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :Nieuwe elektrische railvoertuigen
@@ -3524,10 +3525,7 @@ STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :zweeflocomotief
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Prijs: {CURRENCY_LONG} Gewicht: {WEIGHT_SHORT}{}Snelheid: {VELOCITY}  Kracht: {POWER}{}Brandstofprijs: {CURRENCY_LONG}/jr{}Capaciteit: {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Prijs: {CURRENCY_LONG} Gewicht: {WEIGHT_SHORT}{}Snelheid: {VELOCITY}  Kracht: {POWER}  Max. T.E.: {6:FORCE}{}Bedrijfskosten: {4:CURRENCY_LONG}/yr{}Capaciteit: {5:CARGO_LONG}
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_CAPACITY_RUNCOST     :{BLACK}Kosten: {CURRENCY_LONG} Max. Snelheid: {VELOCITY}{}Capaciteit: {CARGO_LONG}, {CARGO_LONG}{}Gebruikskosten: {CURRENCY_LONG}/yr
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_RUNCOST              :{BLACK}Kosten: {CURRENCY_LONG} Max. Snelheid: {VELOCITY}{}Capaciteit: {CARGO_LONG}{}Gebruikskosten: {CURRENCY_LONG}/jaar
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_CAPACITY_RUNCOST:{BLACK}Kosten: {CURRENCY_LONG} Max. Snelheid: {VELOCITY} Bereik: {COMMA} tegels{}Capaciteit: {CARGO_LONG}, {CARGO_LONG}{}Bedrijfskosten: {CURRENCY_LONG}/jr
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_RUNCOST        :{BLACK}Kosten: {CURRENCY_LONG} Max. Snelheid: {VELOCITY} Bereik: {COMMA} tegels{}Capaciteit: {CARGO_LONG}{}Bedrijfskosten: {CURRENCY_LONG}/jr
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Kosten: {CURRENCY_LONG} Max. Snelheid: {VELOCITY}{}Capaciteit: {CARGO_LONG}{}Gebruikskosten: {CURRENCY_LONG}/jaar
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Vervang {STRING} - {STRING}
@@ -3650,7 +3648,6 @@ STR_VEHICLE_INFO_AGE                                            :{COMMA} ja{P ar
 STR_VEHICLE_INFO_AGE_RED                                        :{RED}{COMMA} ja{P ar ren} ({COMMA})
 
 STR_VEHICLE_INFO_MAX_SPEED                                      :{BLACK}Max. snelheid: {LTBLUE}{VELOCITY}
-STR_VEHICLE_INFO_MAX_SPEED_RANGE                                :{BLACK}Max. snelheid: {LTBLUE}{VELOCITY} {BLACK}Bereik: {LTBLUE}{COMMA} tegels
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED                         :{BLACK}Gewicht: {LTBLUE}{WEIGHT_SHORT} {BLACK}Kracht: {LTBLUE}{POWER}{BLACK} Max. snelheid: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE                  :{BLACK}Gewicht: {LTBLUE}{WEIGHT_SHORT} {BLACK}Kracht: {LTBLUE}{POWER}{BLACK} Max. snelheid: {LTBLUE}{VELOCITY} {BLACK}Max. T.K.: {LTBLUE}{FORCE}
 

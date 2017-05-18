@@ -572,7 +572,17 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 
 	/* Create the name */
 
-	static char str[130] = { "" };  // 63 + 3 + 63 + 1
+	static char str[135] = { "" };  // 5 + 63 + 3 + 63 + 1
+
+	StringID cargo_abbreviation = INVALID_STRING_ID;
+	auto temp_v = v;
+
+	do {
+		if (temp_v->cargo_cap == 0) continue;
+
+		cargo_abbreviation = CargoSpec::Get(temp_v->cargo_type)->abbrev;
+		break;
+	} while ((temp_v = temp_v->Next()) != NULL);
 
 	if(_settings_client.gui.specific_group_name == 1) { // Use station names
 
@@ -589,9 +599,10 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		//	Order *temp = first;
 		//	first = last;
 		//	last = temp;
-		//}
-		SetDParam(0, unique_orders.front()->GetDestination());
-		SetDParam(1, unique_orders.back()->GetDestination());
+		//}		
+		SetDParam(0, cargo_abbreviation);
+		SetDParam(1, unique_orders.front()->GetDestination());
+		SetDParam(2, unique_orders.back()->GetDestination());
 		GetString(str, STR_GROUP_SPECIFIC_NAME_STATION, lastof(str));
 
 	}
@@ -606,7 +617,8 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		Town *town_last = station_last->town;
 
 		if(town_first->index == town_last->index) { // First and last station belong to the same town
-			SetDParam(0, town_first->index); 
+			SetDParam(0, cargo_abbreviation);
+			SetDParam(1, town_first->index); 
 			GetString(str, STR_GROUP_SPECIFIC_NAME_TOWN_LOCAL, lastof(str));
 		}
 		else {
@@ -625,11 +637,17 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 			//	town_last = town_temp;
 			//}
 
-			SetDParam(0, town_first->index); 
-			SetDParam(1, town_last->index );
+			SetDParam(0, cargo_abbreviation);
+			SetDParam(1, town_first->index); 
+			SetDParam(2, town_last->index );
 			GetString(str, STR_GROUP_SPECIFIC_NAME_TOWN, lastof(str));
 		}
 	}
+
+	// Get rid of 'tiny font' formatting
+	std::string s(str);
+	s = s.erase(1, 3);
+	strcpy_s(&str[0], sizeof(str), s.c_str());
 	
 	if (!IsUniqueGroupNameForVehicleType(str, v->type)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
 

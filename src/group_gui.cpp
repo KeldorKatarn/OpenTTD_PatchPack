@@ -66,6 +66,8 @@ static const NWidgetPart _nested_group_widgets[] = {
 						SetDataTip(STR_GROUP_COLLAPSE_ALL, STR_GROUP_COLLAPSE_ALL),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_GL_EXPAND_ALL_GROUPS), SetFill(0, 1),
 						SetDataTip(STR_GROUP_EXPAND_ALL, STR_GROUP_EXPAND_ALL),
+				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_GL_AUTO_GROUP), SetFill(0, 1),
+						SetDataTip(STR_AUTO_GROUP, STR_AUTO_GROUP_TIP),
 				NWidget(WWT_PANEL, COLOUR_GREY), SetFill(1, 1), EndContainer(),
 				NWidget(WWT_PUSHIMGBTN, COLOUR_GREY, WID_GL_REPLACE_PROTECTION), SetFill(0, 1),
 						SetDataTip(SPR_GROUP_REPLACE_OFF_TRAIN, STR_GROUP_REPLACE_PROTECTION_TOOLTIP),
@@ -836,6 +838,22 @@ public:
 				this->SetDirty();
 				break;
 			}
+			case WID_GL_AUTO_GROUP: {
+				const Vehicle* v;
+				FOR_ALL_VEHICLES(v) {
+					if (!HasBit(v->subtype, GVSF_VIRTUAL) && v->type == vli.vtype && v->IsPrimaryVehicle() &&
+						v->owner == vli.company && v->group_id == DEFAULT_GROUP) {
+						const VehicleID vindex = v->index;
+
+						DoCommandP(0, vindex | (1 << 31), 0, CMD_CREATE_GROUP_SPECIFIC_NAME | CMD_MSG(STR_ERROR_GROUP_CAN_T_CREATE_SPECIFIC_NAME), NULL);
+					}
+				}
+
+				this->vehicle_sel = INVALID_VEHICLE;
+				this->group_over = INVALID_GROUP;
+				this->SetDirty();
+				break;
+			}
 
 			case WID_GL_AVAILABLE_VEHICLES:
 				ShowBuildVehicleWindow(INVALID_TILE, this->vli.vtype);
@@ -885,8 +903,11 @@ public:
 
 				if (this->group_sel != new_g && g->parent != new_g) {
 					DoCommandP(0, this->group_sel | (1 << 16), new_g, CMD_ALTER_GROUP | CMD_MSG(STR_ERROR_GROUP_CAN_T_SET_PARENT));
-					GroupID *group = this->collapsed_groups.Find(new_g);
-					if (group != this->collapsed_groups.End()) this->collapsed_groups.Erase(group);
+					
+					if (!_ctrl_pressed) {
+						GroupID *group = this->collapsed_groups.Find(new_g);
+						if (group != this->collapsed_groups.End()) this->collapsed_groups.Erase(group);
+					}
 				}
 
 				this->group_sel = INVALID_GROUP;

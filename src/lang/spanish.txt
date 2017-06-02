@@ -1373,6 +1373,8 @@ STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_OFF                      :Desactivado
 
 STR_CONFIG_SETTING_LEFT_MOUSE_BTN_SCROLLING                     :Desplazamiento con botón izquierdo: {STRING}
 STR_CONFIG_SETTING_LEFT_MOUSE_BTN_SCROLLING_HELPTEXT            :Activa el deslizamiento del mapa al arrastrarlo con el botón izquierdo. Esto es especialmente útil al usar pantallas táctiles
+STR_CONFIG_SETTING_RIGHT_MOUSE_WND_CLOSE                        :Cerrar ventana con click derecho: {STRING}
+STR_CONFIG_SETTING_RIGHT_MOUSE_WND_CLOSE_HELPTEXT               :Cierra una ventana al hacer click derecho dentro. ¡Quita la información al hacer click derecho!
 
 STR_CONFIG_SETTING_AUTOSAVE                                     :Autoguardado: {STRING}
 STR_CONFIG_SETTING_AUTOSAVE_HELPTEXT                            :Selecciona el intervalo entre guardados automáticos del juego
@@ -1762,6 +1764,7 @@ STR_INTRO_TOOLTIP_ONLINE_CONTENT                                :{BLACK}Comproba
 STR_INTRO_TOOLTIP_SCRIPT_SETTINGS                               :{BLACK}Mostrar configuración de scripts de juego e IAs
 STR_INTRO_TOOLTIP_QUIT                                          :{BLACK}Salir de 'OpenTTD'
 
+STR_INTRO_BASESET                                               :{BLACK}El conjunto de gráficos base actualmente seleccionado no encuentra {NUM} sprite{P "" s}. Comprueba si hay actualizaciones para el conjunto base, o usa otro totalmente actualizado.
 STR_INTRO_TRANSLATION                                           :{BLACK}A esta traducción le faltan {NUM} cadena{P "" s} de texto. Considera ayudar a mejorar OpenTTD convirtiéndote en traductor. Consulta el readme.txt para más detalles.
 
 # Quit window
@@ -2625,7 +2628,7 @@ STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS         :Vía de ferroca
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS            :Vía de ferrocarril con señales combo y de ruta
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS        :Vía de ferrocarril con señales combo y de ruta de un solo sentido
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS          :Vía de ferrocarril con señales de dirección y de un solo sentido
-STR_LAI_RAIL_DESCRIPTION_TRAIN_DEPOT                            :Ferrocarril depósito de tren
+STR_LAI_RAIL_DESCRIPTION_TRAIN_DEPOT                            :Depósito de trenes del ferrocarril
 
 STR_LAI_ROAD_DESCRIPTION_ROAD                                   :Carretera
 STR_LAI_ROAD_DESCRIPTION_ROAD_WITH_STREETLIGHTS                 :Carretera con farolas
@@ -3295,6 +3298,8 @@ STR_INDUSTRY_VIEW_REQUIRES_CARGO_CARGO_CARGO                    :{BLACK}Requiere
 STR_INDUSTRY_VIEW_REQUIRES                                      :{BLACK}Necesita
 STR_INDUSTRY_VIEW_ACCEPT_CARGO                                  :{YELLOW}{STRING}
 STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT                           :{YELLOW}{CARGO_LONG} {BLACK}esperando
+STR_INDUSTRY_VIEW_ACCEPT_CARGO_TEXT                             :{YELLOW}{STRING}{STRING}
+STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT_TEXT                      :{YELLOW}{CARGO_LONG}{STRING}
 
 ############ range for produces starts
 STR_INDUSTRY_VIEW_PRODUCES_CARGO                                :{BLACK}Produce: {YELLOW}{STRING}{STRING}
@@ -3534,7 +3539,10 @@ STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :{G=f}locomotora
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Coste: {CURRENCY_LONG} Peso: {WEIGHT_SHORT}{}Velocidad: {VELOCITY}  Potencia: {POWER}{}Coste Mantenimiento: {CURRENCY_LONG}/año{}Capacidad: {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Coste: {CURRENCY_LONG} Peso: {WEIGHT_SHORT}{}Velocidad: {VELOCITY}  Potencia: {POWER}  F.T. Máxima: {6:FORCE}{}Coste Mantenimiento: {4:CURRENCY_LONG}/año{}Capacidad: {5:CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Coste: {CURRENCY_LONG} Velocidad Máx.: {VELOCITY}{}Capacidad: {CARGO_LONG}{}Coste Mantenimiento: {CURRENCY_LONG}/año
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_TYPE_CAP_CAP_RUNCOST          :{BLACK}Coste: {CURRENCY_LONG} Velocidad Máx.: {VELOCITY}{}Tipo de aeronave: {STRING}{}Capacidad: {CARGO_LONG}, {CARGO_LONG}{}Coste Mantenimiento: {CURRENCY_LONG}/año
 STR_ENGINE_PREVIEW_COST_MAX_SPEED_TYPE_CAP_RUNCOST              :{BLACK}Coste: {CURRENCY_LONG} Velocidad Máx.: {VELOCITY}{}Tipo de aeronave: {STRING}{}Capacidad: {CARGO_LONG}{}Coste Mantenimiento: {CURRENCY_LONG}/año
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_TYPE_RANGE_CAP_CAP_RUNCOST    :{BLACK}Coste: {CURRENCY_LONG} Velocidad Máx.: {VELOCITY}{}Tipo de aeronave: {STRING} Alcance: {COMMA} casillas{}Capacidad: {CARGO_LONG}, {CARGO_LONG}{}Coste Mantenimiento: {CURRENCY_LONG}/año
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_TYPE_RANGE_CAP_RUNCOST        :{BLACK}Coste: {CURRENCY_LONG} Velocidad Máx.: {VELOCITY}{}Tipo de aeronave: {STRING} Alcance: {COMMA} casillas{}Capacidad: {CARGO_LONG}{}Coste Mantenimiento: {CURRENCY_LONG}/año
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Reemplazar {STRING} - {STRING}
@@ -3658,6 +3666,7 @@ STR_VEHICLE_INFO_AGE_RED                                        :{RED}{COMMA} a�
 
 STR_VEHICLE_INFO_MAX_SPEED                                      :{BLACK}Velocidad Máx.: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_MAX_SPEED_TYPE                                 :{BLACK}Velocidad Máx.: {LTBLUE}{VELOCITY} {BLACK}Tipo de aeronave: {LTBLUE}{STRING}
+STR_VEHICLE_INFO_MAX_SPEED_TYPE_RANGE                           :{BLACK}Velocidad Máx.: {LTBLUE}{VELOCITY} {BLACK}Tipo de aeronave: {LTBLUE}{STRING} {BLACK}Alcance: {LTBLUE}{COMMA} casillas
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED                         :{BLACK}Peso: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potencia: {LTBLUE}{POWER}{BLACK} Velocidad Máx.: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE                  :{BLACK}Peso: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potencia: {LTBLUE}{POWER}{BLACK} Velocidad Máx.: {LTBLUE}{VELOCITY} {BLACK}F.T. Máx.: {LTBLUE}{FORCE}
 

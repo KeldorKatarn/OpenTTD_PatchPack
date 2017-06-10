@@ -1760,12 +1760,12 @@ bool CanBuildVehicleInfrastructure(VehicleType type)
  * @param any_date to check only existing vehicles or if it is possible to build them in the future
  * @return true if there is any reason why you may build the infrastructure for the given roadtype
  */
-bool CanBuildVehicleInfrastructure(RoadTypeIdentifier rtid, CompanyID company, bool any_date)
+bool CanBuildVehicleInfrastructure(RoadTypeIdentifier rtid, CompanyID company)
 {
 	if (_game_mode != GM_EDITOR && !Company::IsValidID(company)) return false;
 	if (!_settings_client.gui.disable_unsuitable_building) return true;
 
-	RoadSubTypes roadsubtypes = ExistingRoadSubTypesForRoadType(rtid.basetype, company, any_date);
+	RoadSubTypes roadsubtypes = ExistingRoadSubTypesForRoadType(rtid.basetype, company);
 
 	/* Check if the filtered subtypes does have the subtype we are checking for
 	 * and if we can build new ones */

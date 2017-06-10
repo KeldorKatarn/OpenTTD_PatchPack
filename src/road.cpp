@@ -250,12 +250,14 @@ bool RoadTypeIdentifier::UnpackIfValid(uint32 data)
 
 /**
  * Returns the available RoadSubTypes for the provided RoadType
+ * If the given company is valid then will be returned a list of the available sub types at the current date, while passing
+ * a deity company will make all the sub types available
  * @param rt the RoadType to filter
  * @param c the company ID to check the roadtype against
  * @param any_date whether to return only currently introduced roadtypes or also future ones
  * @returns the existing RoadSubTypes
  */
-RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c, bool any_date)
+RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c)
 {
 	/* Check only players which can actually own vehicles, editor and gamescripts are considered deities */
 	if (c < OWNER_END) {
@@ -276,7 +278,7 @@ RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c, bool any_
 		if (!HasBit(e->info.climates,  _settings_game.game_creation.landscape)) continue;
 
 		/* Check whether available for all potential companies */
-		if (any_date && e->company_avail != (CompanyMask)-1) continue;
+		if (e->company_avail != (CompanyMask)-1) continue;
 
 		RoadTypeIdentifier rtid = e->GetRoadType();
 		if (rtid.basetype != rt) continue;
@@ -285,7 +287,7 @@ RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c, bool any_
 	}
 
 	/* Get the date introduced roadtypes as well. */
-	known_roadsubtypes = AddDateIntroducedRoadTypes(rt, known_roadsubtypes, any_date ? MAX_DAY : _date);
+	known_roadsubtypes = AddDateIntroducedRoadTypes(rt, known_roadsubtypes, MAX_DAY);
 
 	return known_roadsubtypes;
 }

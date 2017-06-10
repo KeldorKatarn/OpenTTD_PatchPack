@@ -91,7 +91,7 @@ enum FileSlots {
 	/** First slot usable for (New)GRFs used during the game. */
 	FIRST_GRF_SLOT =  2,
 	/** Maximum number of slots. */
-	MAX_FILE_SLOTS = 128,
+	MAX_FILE_SLOTS = 256,
 };
 
 /** Deals with finding savegames */

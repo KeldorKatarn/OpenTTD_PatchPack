@@ -301,7 +301,7 @@ struct BuildRoadToolbarWindow : Window {
 	{
 		if (!gui_scope) return;
 
-		bool can_build = CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company);
+		bool can_build = CanBuildRoadTypeInfrastructure(this->roadtype_identifier, _local_company);
 
 		this->SetWidgetsDisabledState(!can_build,
 				WID_ROT_DEPOT,
@@ -444,7 +444,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildRoadTypeInfrastructure(this->roadtype_identifier, _local_company)) return;
 				if (HandlePlacePushButton(this, WID_ROT_DEPOT, GetRoadTypeInfo(roadtype_identifier)->cursor.depot, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
@@ -452,7 +452,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUS_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildRoadTypeInfrastructure(this->roadtype_identifier, _local_company)) return;
 				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, SPR_CURSOR_BUS_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
@@ -460,7 +460,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_TRUCK_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(this->roadtype_identifier, _local_company)) return;
+				if (_game_mode == GM_EDITOR || !CanBuildRoadTypeInfrastructure(this->roadtype_identifier, _local_company)) return;
 				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, SPR_CURSOR_TRUCK_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
@@ -712,7 +712,7 @@ struct BuildRoadToolbarWindow : Window {
  */
 static EventState RoadTramToolbarGlobalHotkeys(int hotkey, RoadTypeIdentifier last_build)
 {
-	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(last_build, _local_company))) return ES_NOT_HANDLED;
+	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildRoadTypeInfrastructure(last_build, _local_company))) return ES_NOT_HANDLED;
 
 	Window *w = NULL;
 	switch (_game_mode) {

@@ -21,6 +21,7 @@
 #include "landscape.h"
 #include "road.h"
 #include "road_func.h"
+#include "roadveh.h"
 
 #include "safeguards.h"
 
@@ -290,4 +291,40 @@ RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c)
 	known_roadsubtypes = AddDateIntroducedRoadTypes(rt, known_roadsubtypes, MAX_DAY);
 
 	return known_roadsubtypes;
+}
+
+/**
+ * Check whether we can build infrastructure for the given RoadType. This to disable building stations etc. when
+ * you are not allowed/able to have the RoadType yet.
+ * @param rtid the roadtype to check this for
+ * @param company the company id to check this for
+ * @param any_date to check only existing vehicles or if it is possible to build them in the future
+ * @return true if there is any reason why you may build the infrastructure for the given roadtype
+ */
+bool CanBuildRoadTypeInfrastructure(RoadTypeIdentifier rtid, CompanyID company)
+{
+	if (_game_mode != GM_EDITOR && !Company::IsValidID(company)) return false;
+	if (!_settings_client.gui.disable_unsuitable_building) return true;
+
+	RoadSubTypes roadsubtypes = ExistingRoadSubTypesForRoadType(rtid.basetype, company);
+
+	/* Check if the filtered subtypes does have the subtype we are checking for
+	 * and if we can build new ones */
+	if (_settings_game.vehicle.max_roadveh > 0 && HasBit(roadsubtypes, rtid.subtype)) {
+		/* Can we actually build the vehicle type? */
+		const Engine *e;
+		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
+			if (HasPowerOnRoad(e->GetRoadType(), rtid)) return true;
+		}
+		return false;
+	}
+
+	/* We should be able to build infrastructure when we have the actual vehicle type */
+	const Vehicle *v;
+	FOR_ALL_VEHICLES(v) {
+		if (v->type == VEH_ROAD && (company == OWNER_DEITY || v->owner == company) &&
+			HasBit(roadsubtypes, RoadVehicle::From(v)->rtid.subtype) && HasPowerOnRoad(RoadVehicle::From(v)->rtid, rtid)) return true;
+	}
+
+	return false;
 }

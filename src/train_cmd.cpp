@@ -2945,7 +2945,7 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 	/* A path was found, but could not be reserved. */
 	if (res_dest.tile != INVALID_TILE && !res_dest.okay) {
 		if (mark_stuck) MarkTrainAsStuck(v);
-		FreeTrainTrackReservation(v, origin.tile, origin.trackdir);
+		FreeTrainTrackReservation(v);
 		return best_track;
 	}
 
@@ -2961,7 +2961,7 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 			if (p_got_reservation != NULL) *p_got_reservation = true;
 			if (changed_signal) MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 		} else {
-			FreeTrainTrackReservation(v, origin.tile, origin.trackdir);
+			FreeTrainTrackReservation(v);
 			if (mark_stuck) MarkTrainAsStuck(v);
 		}
 		return best_track;
@@ -2988,7 +2988,7 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 				res_dest = cur_dest;
 				if (res_dest.okay) continue;
 				/* Path found, but could not be reserved. */
-				FreeTrainTrackReservation(v, origin.tile, origin.trackdir);
+				FreeTrainTrackReservation(v);
 				if (mark_stuck) MarkTrainAsStuck(v);
 				got_reservation = false;
 				changed_signal = false;
@@ -2997,7 +2997,7 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 		}
 		/* No order or no safe position found, try any position. */
 		if (!TryReserveSafeTrack(v, res_dest.tile, res_dest.trackdir, true)) {
-			FreeTrainTrackReservation(v, origin.tile, origin.trackdir);
+			FreeTrainTrackReservation(v);
 			if (mark_stuck) MarkTrainAsStuck(v);
 			got_reservation = false;
 			changed_signal = false;

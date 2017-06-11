@@ -215,10 +215,10 @@ static U EvalAdjustT(const DeterministicSpriteGroupAdjust *adjust, ScopeResolver
 		case DSGA_OP_SMAX: return max((S)last_value, (S)value);
 		case DSGA_OP_UMIN: return min((U)last_value, (U)value);
 		case DSGA_OP_UMAX: return max((U)last_value, (U)value);
-		case DSGA_OP_SDIV: return value == 0 ? (S)last_value : (S)last_value / (S)value;
-		case DSGA_OP_SMOD: return value == 0 ? (S)last_value : (S)last_value % (S)value;
-		case DSGA_OP_UDIV: return value == 0 ? (U)last_value : (U)last_value / (U)value;
-		case DSGA_OP_UMOD: return value == 0 ? (U)last_value : (U)last_value % (U)value;
+		case DSGA_OP_SDIV: return (value == 0) ? (S)last_value : ((S)last_value / (S)value);
+		case DSGA_OP_SMOD: return (value == 0) ? (S)last_value : ((S)last_value % (S)value);
+		case DSGA_OP_UDIV: return (value == 0) ? (U)last_value : ((U)last_value / (U)value);
+		case DSGA_OP_UMOD: return (value == 0) ? (U)last_value : ((U)last_value % (U)value);
 		case DSGA_OP_MUL:  return last_value * value;
 		case DSGA_OP_AND:  return last_value & value;
 		case DSGA_OP_OR:   return last_value | value;
@@ -265,9 +265,12 @@ const SpriteGroup *DeterministicSpriteGroup::Resolve(ResolverObject &object) con
 			value = GetVariable(object, scope, adjust->variable, adjust->parameter, &available);
 		}
 
-		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV || adjust->operation == DSGA_OP_UMOD));
+		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV || adjust->operation == DSGA_OP_UMOD ||
+			                                        adjust->operation == DSGA_OP_SDIV || adjust->operation == DSGA_OP_SMOD));
 
-		if (!available || possible_div_by_zero) {
+		if (possible_div_by_zero) continue;
+
+		if (!available) {
 			/* Unsupported variable: skip further processing and return either
 			 * the group from the first range or the default group. */
 			return SpriteGroup::Resolve(this->num_ranges > 0 ? this->ranges[0].group : this->default_group, object, false);

@@ -584,6 +584,8 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		break;
 	} while ((temp_v = temp_v->Next()) != NULL);
 
+	if(cargo_abbreviation == INVALID_STRING_ID) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+
 	if(_settings_client.gui.specific_group_name == 1) { // Use station names
 
 		static char stationname_first[64] = { "" };

@@ -2732,7 +2732,7 @@ public:
 		} else if (v->type == VEH_AIRCRAFT && HasBit(Aircraft::From(v)->flags, VAF_DEST_TOO_FAR) && !v->current_order.IsType(OT_LOADING)) {
 			str = STR_VEHICLE_STATUS_AIRCRAFT_TOO_FAR;
 		} else { // vehicle is in a "normal" state, show current order
-			if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+			if (v->GetNumOrders() > 0 && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT))) {
 				int next_depot_index = -1;
 				
 				for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {

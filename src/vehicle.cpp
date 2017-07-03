@@ -969,8 +969,8 @@ void VehicleEnteredDepotThisTick(Vehicle *v)
 	 * stopped the vehicle, so autoreplace can start it again */
 
 
-	if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
-		v->current_order.GetDepotOrderType() == ODTF_MANUAL) {
+	if (v->orders.list != NULL && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
+		v->current_order.GetDepotOrderType() == ODTF_MANUAL)) {
 		for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
 			Order* order = v->orders.list->GetOrderAt(i);
 
@@ -2686,27 +2686,29 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 
 	// Check first if the vehicle has any depot in its order list. Prefer that over the closest one.
 
-	for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
-		Order* order = this->orders.list->GetOrderAt(i);
+	if (this->orders.list != NULL) {
+		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+			Order* order = this->orders.list->GetOrderAt(i);
 
-		bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
-		bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+			bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+			bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
 
-		if (isRegularOrder && isDepotOrder) {
-			destination = order->GetDestination();
-			if (this->type == VEH_AIRCRAFT) {
-				Station* st = Station::Get(destination);
-				if (st != NULL && st->airport.HasHangar() && CanVehicleUseStation(this, st)) {
-					location = st->xy;					
+			if (isRegularOrder && isDepotOrder) {
+				destination = order->GetDestination();
+				if (this->type == VEH_AIRCRAFT) {
+					Station* st = Station::Get(destination);
+					if (st != NULL && st->airport.HasHangar() && CanVehicleUseStation(this, st)) {
+						location = st->xy;
+						foundDepotInOrders = true;
+						break;
+					}
+				}
+				else {
+					location = Depot::Get(destination)->xy;
+					reverse = false;
 					foundDepotInOrders = true;
 					break;
 				}
-			}
-			else {
-				location = Depot::Get(destination)->xy;
-				reverse = false;
-				foundDepotInOrders = true;
-				break;
 			}
 		}
 	}

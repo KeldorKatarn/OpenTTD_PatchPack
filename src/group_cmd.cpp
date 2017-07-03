@@ -647,7 +647,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 	// Get rid of 'tiny font' formatting
 	std::string s(str);
 	s = s.erase(1, 3);
-	strcpy_s(&str[0], sizeof(str), s.c_str());
+	strecpy(&str[0], s.c_str(), lastof(str));
 	
 	if (!IsUniqueGroupNameForVehicleType(str, v->type)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
 

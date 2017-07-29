@@ -253,7 +253,11 @@ protected: // These functions should not be called outside acceleration code.
 	inline uint16 GetPower() const
 	{
 		/* Power is not added for articulated parts */
-		if (!this->IsArticulatedPart() && HasPowerOnRail(this->railtype, GetRailType(this->tile))) {
+		bool is_articulated_part = this->IsArticulatedPart();
+		bool has_power_on_rail = HasPowerOnRail(this->railtype, GetRailType(this->tile));
+		bool is_virtual = this->IsVirtual();
+
+		if (!is_articulated_part && (has_power_on_rail || is_virtual)) {
 			uint16 power = GetVehicleProperty(this, PROP_TRAIN_POWER, RailVehInfo(this->engine_type)->power);
 			/* Halve power for multiheaded parts */
 			if (this->IsMultiheaded()) power /= 2;
@@ -270,7 +274,11 @@ protected: // These functions should not be called outside acceleration code.
 	inline uint16 GetPoweredPartPower(const Train *head) const
 	{
 		/* For powered wagons the engine defines the type of engine (i.e. railtype) */
-		if (HasBit(this->flags, VRF_POWEREDWAGON) && HasPowerOnRail(head->railtype, GetRailType(this->tile))) {
+		bool is_powered_wagon = HasBit(this->flags, VRF_POWEREDWAGON);
+		bool has_power_on_rail = HasPowerOnRail(head->railtype, GetRailType(this->tile));
+		bool is_virtual = this->IsVirtual();
+
+		if (is_powered_wagon && (has_power_on_rail || is_virtual)) {
 			return RailVehInfo(this->gcache.first_engine)->pow_wag_power;
 		}
 

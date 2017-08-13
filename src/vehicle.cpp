@@ -1646,8 +1646,8 @@ void VehicleEnterDepot(Vehicle *v)
 			// Check first if the vehicle has any depot in its order list. If yes then we're heading for a specific depot.
 			// Don't stop if this one isn't it.
 			bool has_depot_in_orders = false;
-
-			for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
+			
+			for (int i = 0; i < v->GetNumOrders(); ++i) {
 				Order* order = v->orders.list->GetOrderAt(i);
 
 				bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;

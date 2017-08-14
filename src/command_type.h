@@ -331,6 +331,7 @@ enum Commands {
 	CMD_AUTOREPLACE_VEHICLE,          ///< replace/renew a vehicle while it is in a depot
 	CMD_TEMPLATE_REPLACE_VEHICLE,     ///< template replace a vehicle while it is in a depot
 	CMD_DEPOT_SELL_ALL_VEHICLES,      ///< sell all vehicles which are in a given depot
+	CMD_GROUP_SELL_ALL_VEHICLES,      ///< sell all vehicles which are in a given group
 	CMD_DEPOT_MASS_AUTOREPLACE,       ///< force the autoreplace to take action in a given depot
 
 	CMD_CREATE_GROUP,                 ///< create a new group

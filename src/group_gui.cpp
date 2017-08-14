@@ -34,6 +34,8 @@ static const int LEVEL_WIDTH = 10; ///< Indenting width of a sub-group in pixels
 
 typedef GUIList<const Group*> GUIGroupList;
 
+static void SellAllConfirmationCallback(Window *win, bool confirmed);
+
 static const NWidgetPart _nested_group_widgets[] = {
 	NWidget(NWID_HORIZONTAL), // Window header
 		NWidget(WWT_CLOSEBOX, COLOUR_GREY),
@@ -822,7 +824,7 @@ public:
 				break;
 
 			case WID_GL_MANAGE_VEHICLES_DROPDOWN: {
-				DropDownList *list = this->BuildActionDropdownList(true, Group::IsValidID(this->vli.index), this->vli.vtype == VEH_TRAIN);
+				DropDownList *list = this->BuildActionDropdownList(true, Group::IsValidID(this->vli.index), this->vli.vtype == VEH_TRAIN, true);
 				ShowDropDownList(this, list, 0, WID_GL_MANAGE_VEHICLES_DROPDOWN);
 				break;
 			}
@@ -997,6 +999,22 @@ public:
 
 						DoCommandP(0, this->vli.index, 0, CMD_REMOVE_ALL_VEHICLES_GROUP | CMD_MSG(STR_ERROR_GROUP_CAN_T_REMOVE_ALL_VEHICLES));
 						break;
+					case ADI_SELL_ALL: // Sell all stopped Vehicles from the selected group
+						{
+							/* Only open the confirmation window if there are anything to sell */
+							bool is_all_group = (this->vli.index == ALL_GROUP);
+							bool is_default_group = (this->vli.index == DEFAULT_GROUP);
+							if (is_all_group || is_default_group || Group::Get(this->vli.index)->statistics.num_vehicle != 0) {
+								SetDParam(0, this->vli.index);
+								ShowQuery(
+									STR_GROUP_NAME,
+									STR_GROUP_SELL_CONFIRMATION_TEXT,
+									this,
+									SellAllConfirmationCallback
+								);
+							}
+						}
+						break;
 					default: NOT_REACHED();
 				}
 				break;
@@ -1078,6 +1096,14 @@ public:
 	void UnselectVehicle(VehicleID vehicle)
 	{
 		if (this->vehicle_sel == vehicle) ResetObjectToPlace();
+	}
+};
+
+static void SellAllConfirmationCallback(Window *win, bool confirmed)
+{
+	if (confirmed) {
+		VehicleGroupWindow *w = (VehicleGroupWindow*)win;
+		DoCommandP(0, w->vli.vtype, w->vli.index, CMD_GROUP_SELL_ALL_VEHICLES);
 	}
 };
 

@@ -3618,6 +3618,7 @@ STR_GROUP_DELETE_QUERY_TEXT                                     :{WHITE}Are you 
 
 STR_GROUP_ADD_SHARED_VEHICLE                                    :Add shared vehicles
 STR_GROUP_REMOVE_ALL_VEHICLES                                   :Remove all vehicles
+STR_GROUP_SELL_ALL_VEHICLES                                     :Sell all vehicles
 
 STR_GROUP_RENAME_CAPTION                                        :{BLACK}Rename a group
 STR_GROUP_SPECIFIC_NAME_STATION                                 :[{STRING}] {STATION} - {STATION}
@@ -3795,6 +3796,7 @@ STR_DEPOT_MASS_START_DEPOT_SHIP_TOOLTIP                         :{BLACK}Click to
 STR_DEPOT_MASS_START_HANGAR_TOOLTIP                             :{BLACK}Click to start all the aircraft inside the hangar
 
 STR_DEPOT_SELL_CONFIRMATION_TEXT                                :{YELLOW}You are about to sell all the vehicles in the depot. Are you sure?
+STR_GROUP_SELL_CONFIRMATION_TEXT                                :{YELLOW}You are about to sell all the vehicles in the group. Are you sure?
 
 # Engine preview window
 STR_ENGINE_PREVIEW_CAPTION                                      :{WHITE}Message from vehicle manufacturer

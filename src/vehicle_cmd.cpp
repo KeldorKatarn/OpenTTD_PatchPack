@@ -643,6 +643,51 @@ CommandCost CmdMassStartStopVehicle(TileIndex tile, DoCommandFlag flags, uint32 
 }
 
 /**
+* Sells all vehicles in a group
+* @param unused
+* @param flags type of operation
+* @param p1 Vehicle type
+* @param p2 GroupID
+* @param text unused
+* @return the cost of this operation or an error
+*/
+CommandCost CmdGroupSellAllVehicles(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	//assert(Group::IsValidID(p2));
+
+	CommandCost cost(EXPENSES_NEW_VEHICLES);
+	VehicleType vehicle_type = Extract<VehicleType, 0, 3>(p1);
+	GroupID group_id = p2;
+
+	bool is_all_group = (p2 == ALL_GROUP);
+	bool is_default_group = (p2 == DEFAULT_GROUP);
+
+	if (!IsCompanyBuildableVehicleType(vehicle_type)) return CMD_ERROR;
+
+	uint sell_command = GetCmdSellVeh(vehicle_type);
+	CommandCost last_error = CMD_ERROR;
+	bool had_success = false;
+	const Vehicle* vehicle;
+
+	FOR_ALL_VEHICLES(vehicle) {
+		if (vehicle->type != vehicle_type) continue;
+		if (!is_all_group && vehicle->group_id != group_id) continue;
+
+		CommandCost ret = DoCommand(vehicle->tile, vehicle->index | (1 << 20), 0, flags, sell_command);
+
+		if (ret.Succeeded()) {
+			cost.AddCost(ret);
+			had_success = true;
+		}
+		else {
+			last_error = ret;
+		}
+	}
+
+	return had_success ? cost : last_error;
+}
+
+/**
  * Sells all vehicles in a depot
  * @param tile Tile of the depot where the depot is
  * @param flags type of operation

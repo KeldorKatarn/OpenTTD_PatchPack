@@ -200,6 +200,7 @@ CommandProc CmdMassStartStopVehicle;
 CommandProc CmdAutoreplaceVehicle;
 CommandProc CmdTemplateReplaceVehicle;
 CommandProc CmdDepotSellAllVehicles;
+CommandProc CmdGroupSellAllVehicles;
 CommandProc CmdDepotMassAutoReplace;
 
 CommandProc CmdCreateGroup;
@@ -392,6 +393,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdAutoreplaceVehicle,                             0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_AUTOREPLACE_VEHICLE
 	DEF_CMD(CmdTemplateReplaceVehicle,                         0, CMDT_VEHICLE_MANAGEMENT    ), // CMD_TEMPLATE_REPLACE_VEHICLE
 	DEF_CMD(CmdDepotSellAllVehicles,                           0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_DEPOT_SELL_ALL_VEHICLES
+	DEF_CMD(CmdGroupSellAllVehicles,                           0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_GROUP_SELL_ALL_VEHICLES
 	DEF_CMD(CmdDepotMassAutoReplace,                           0, CMDT_VEHICLE_CONSTRUCTION  ), // CMD_DEPOT_MASS_AUTOREPLACE
 	DEF_CMD(CmdCreateGroup,                                    0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CREATE_GROUP
 	DEF_CMD(CmdCreateGroupSpecificName,                        0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CREATE_GROUP_SPECIFIC_NAME

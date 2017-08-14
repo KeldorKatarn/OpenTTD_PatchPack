@@ -667,13 +667,18 @@ CommandCost CmdGroupSellAllVehicles(TileIndex tile, DoCommandFlag flags, uint32 
 	uint sell_command = GetCmdSellVeh(vehicle_type);
 	CommandCost last_error = CMD_ERROR;
 	bool had_success = false;
-	const Vehicle* vehicle;
+	
+	std::vector<const Vehicle*> vehicles;
+	const Vehicle* v;
+	FOR_ALL_VEHICLES(v) {
+		if (!HasBit(v->subtype, GVSF_VIRTUAL) && v->type == vehicle_type && v->IsPrimaryVehicle() &&
+			v->owner == _current_company && (GroupIsInGroup(v->group_id, group_id) || is_all_group)) {
+			vehicles.push_back(v);
+		}
+	}
 
-	FOR_ALL_VEHICLES(vehicle) {
-		if (vehicle->type != vehicle_type) continue;
-		if (!is_all_group && vehicle->group_id != group_id) continue;
-
-		CommandCost ret = DoCommand(vehicle->tile, vehicle->index | (1 << 20), 0, flags, sell_command);
+	for (auto vehicle = vehicles.begin(); vehicle != vehicles.end(); vehicle++) {
+		CommandCost ret = DoCommand((*vehicle)->tile, (*vehicle)->index | (1 << 20), 0, flags, sell_command);
 
 		if (ret.Succeeded()) {
 			cost.AddCost(ret);

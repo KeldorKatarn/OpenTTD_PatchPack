@@ -172,9 +172,10 @@ Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bo
  * @param show_autoreplace If true include the autoreplace item.
  * @param show_group If true include group-related stuff.
  * @param show_template_replace If true include template replace item.
+ * @param show_sell If true include sell all item.
  * @return Itemlist for dropdown
  */
-DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace)
+DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace, bool show_sell)
 {
 	DropDownList *list = new DropDownList();
 
@@ -191,6 +192,10 @@ DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autorepla
 	if (show_group) {
 		*list->Append() = new DropDownListStringItem(STR_GROUP_ADD_SHARED_VEHICLE, ADI_ADD_SHARED, false);
 		*list->Append() = new DropDownListStringItem(STR_GROUP_REMOVE_ALL_VEHICLES, ADI_REMOVE_ALL, false);
+	}
+
+	if (show_sell) {
+		*list->Append() = new DropDownListStringItem(STR_GROUP_SELL_ALL_VEHICLES, ADI_SELL_ALL, false);
 	}
 
 	return list;

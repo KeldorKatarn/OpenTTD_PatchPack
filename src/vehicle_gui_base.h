@@ -34,6 +34,7 @@ struct BaseVehicleListWindow : public Window {
 		ADI_DEPOT,
 		ADI_ADD_SHARED,
 		ADI_REMOVE_ALL,
+		ADI_SELL_ALL,
 	};
 
 	static const StringID vehicle_depot_name[];
@@ -49,7 +50,7 @@ struct BaseVehicleListWindow : public Window {
 	void SortVehicleList();
 	void BuildVehicleList();
 	Dimension GetActionDropdownSize(bool show_autoreplace, bool show_group, bool show_template_replace);
-	DropDownList *BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace);
+	DropDownList *BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace, bool show_sell = false);
 };
 
 uint GetVehicleListHeight(VehicleType type, uint divisor = 1);

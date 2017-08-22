@@ -406,7 +406,7 @@ int Train::GetCurrentMaxSpeed() const
 			this->gcache.cached_max_track_speed :
 			this->tcache.cached_max_curve_speed;
  
-	if (_settings_game.vehicle.train_speed_adaption) {
+	if (!(this->vehstatus & VS_CRASHED) && _settings_game.vehicle.train_speed_adaption) {
 		int atc_speed = max_speed;
 
 		CFollowTrackRail ft(this);

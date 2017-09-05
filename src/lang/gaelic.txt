@@ -1566,14 +1566,16 @@ STR_CONFIG_SETTING_OSK_ACTIVATION_DOUBLE_CLICK                  :Briogadh dùbai
 STR_CONFIG_SETTING_OSK_ACTIVATION_SINGLE_CLICK_FOCUS            :Aon bhriogadh (le fòcas)
 STR_CONFIG_SETTING_OSK_ACTIVATION_SINGLE_CLICK                  :Aon bhriogadh (sa bhad)
 
-STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU                          :Emulation a' bhriogaidh dheis: {STRING}
-STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_HELPTEXT                 :Tagh an dòigh sa thèid emulation a dhèanamh airson briogadh le putan deas na luchaige
+STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU                          :Riochdachadh a' bhriogaidh dheis: {STRING}
+STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_HELPTEXT                 :Tagh an dòigh sa thèid briogadh le putan deas na luchaige a riochdachadh
 STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_COMMAND                  :Command+Briogadh
 STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_CONTROL                  :Ctrl+Briogadh
 STR_CONFIG_SETTING_RIGHT_MOUSE_BTN_EMU_OFF                      :Dheth
 
 STR_CONFIG_SETTING_LEFT_MOUSE_BTN_SCROLLING                     :Sgroladh le briogadh clì: {STRING}
 STR_CONFIG_SETTING_LEFT_MOUSE_BTN_SCROLLING_HELPTEXT            :Cuir an comas gun tèid am mapa a sgroladh le slaodadh le putan clì na luchaige. Tha seo feumail gu h-àraidh nuair a chleachdas tu sgrìn-shuathaidh airson sgroladh
+STR_CONFIG_SETTING_RIGHT_MOUSE_WND_CLOSE                        :Dùin an uinneag le briogadh deas: {STRING}
+STR_CONFIG_SETTING_RIGHT_MOUSE_WND_CLOSE_HELPTEXT               :Dùinidh seo uinneag le briogadh deas ’na broinn. Cuiridh e à comas an gliocas-sgrìn le briogadh deas!
 
 STR_CONFIG_SETTING_AUTOSAVE                                     :Fèin-sàbhaladh: {STRING}
 STR_CONFIG_SETTING_AUTOSAVE_HELPTEXT                            :Tagh dè cho tric ’s a thèid geamannan a shàbhaladh gu fèin-obrachail
@@ -3355,8 +3357,8 @@ STR_STATION_VIEW_ACCEPTS_BUTTON                                 :{BLACK}Na ghabh
 STR_STATION_VIEW_ACCEPTS_TOOLTIP                                :{BLACK}Seall liosta a' charago a thèid a ghabhail ris
 STR_STATION_VIEW_ACCEPTS_CARGO                                  :{BLACK}Gabhar ri: {WHITE}{CARGO_LIST}
 
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Tha còirichean giùlain às-dùnach aig an stèisean seo sa bhaile seo.
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :{BLACK}Cheannaich {YELLOW}{COMPANY}{BLACK} còirichean giùlain às-dùnach sa bhaile seo.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Tha còirichean giùlain às-dùnach aig an stèisean seo sa bhaile seo.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :{BLACK}Cheannaich {YELLOW}{COMPANY}{BLACK} còirichean giùlain às-dùnach sa bhaile seo.
 
 STR_STATION_VIEW_RATINGS_BUTTON                                 :{BLACK}Rangachaidhean
 STR_STATION_VIEW_RATINGS_TOOLTIP                                :{BLACK}Seall rangachaidhean nan stèiseanan

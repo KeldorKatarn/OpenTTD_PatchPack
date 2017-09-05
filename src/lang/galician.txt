@@ -762,7 +762,7 @@ STR_SMALLMAP_TOOLTIP_ENABLE_ALL_INDUSTRIES                      :{BLACK}Mostrar 
 STR_SMALLMAP_TOOLTIP_SHOW_HEIGHT                                :{BLACK}Amosar/ocultar mapa de cotas do terreo
 STR_SMALLMAP_TOOLTIP_DISABLE_ALL_COMPANIES                      :{BLACK}Non amosar as propiedades de ningunha compañía no mapa
 STR_SMALLMAP_TOOLTIP_ENABLE_ALL_COMPANIES                       :{BLACK}Amosar as propiedades de tódalas compañías no mapa
-STR_SMALLMAP_TOOLTIP_DISABLE_ALL_CARGOS                         :BLACK}Non amosa ningunha carga no mapa
+STR_SMALLMAP_TOOLTIP_DISABLE_ALL_CARGOS                         :{BLACK}Non amosa ningunha carga no mapa
 STR_SMALLMAP_TOOLTIP_ENABLE_ALL_CARGOS                          :{BLACK}Amosa tódolas cargas no mapa
 
 # Status bar messages
@@ -2646,7 +2646,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Terreo propieda
 STR_ABOUT_OPENTTD                                               :{WHITE}Acerca de OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Copyright orixinal {COPYRIGHT} 1995 Chris Sawyer, Tódolos dereitos reservados
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD versión {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT}2002-2016 O equipo de OpenTTD
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT}2002-2017 O equipo de OpenTTD
 
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Gravar partida
@@ -3305,6 +3305,7 @@ STR_GROUP_REMOVE_ALL_VEHICLES                                   :Borrar tódolos
 
 STR_GROUP_RENAME_CAPTION                                        :{BLACK}Renomear un grupo
 
+
 # Build vehicle window
 STR_BUY_VEHICLE_TRAIN_RAIL_CAPTION                              :Novos vehículos ferroviarios
 STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :Novos vehículos ferroviarios eléctricos
@@ -3469,10 +3470,7 @@ STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :locomotora de m
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Custo: {CURRENCY_LONG} Peso: {WEIGHT_SHORT}{}Velocidade: {VELOCITY}  Potencia: {POWER}{}Custo operativo: {CURRENCY_LONG}/ano{}Capacidade: {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Custo: {CURRENCY_LONG} Peso: {WEIGHT_SHORT}{}Velocidade: {VELOCITY}  Potencia: {POWER}  Esforzo tractor máximo: {6:FORCE}{}Custo operativo: {4:CURRENCY_LONG}/ano{}Capacidade: {5:CARGO_LONG}
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_CAPACITY_RUNCOST     :{BLACK}Custo: {CURRENCY_LONG} Velocidade máxima: {VELOCITY}{}Capacidade: {CARGO_LONG}, {CARGO_LONG}{}Custo operativo: {CURRENCY_LONG}/ano
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_RUNCOST              :{BLACK}Custo: {CURRENCY_LONG} Velocidade máxima: {VELOCITY}{}Capacidade: {CARGO_LONG}{}Custo operativo: {CURRENCY_LONG}/ano
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_CAPACITY_RUNCOST:{BLACK}Custo: {CURRENCY_LONG} Velocidade máxima: {VELOCITY} Autonomía: {COMMA} cadros{}Capacidade: {CARGO_LONG}, {CARGO_LONG}{}Custo operativo: {CURRENCY_LONG}/ano
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_RUNCOST        :{BLACK}Custo: {CURRENCY_LONG} Velocidade máxima: {VELOCITY} Autonomía: {COMMA} cadros{}Capacidade: {CARGO_LONG}{}Custo operativo: {CURRENCY_LONG}/ano
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Custo: {CURRENCY_LONG} Velocidade máxima: {VELOCITY}{}Capacidade: {CARGO_LONG}{}Custo operativo: {CURRENCY_LONG}/ano
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Substituír {STRING} - {STRING}
@@ -3594,7 +3592,6 @@ STR_VEHICLE_INFO_AGE                                            :{COMMA} ano{P "
 STR_VEHICLE_INFO_AGE_RED                                        :{RED}{COMMA} ano{P "" s} ({COMMA})
 
 STR_VEHICLE_INFO_MAX_SPEED                                      :{BLACK}Velocidade máxima: {LTBLUE}{VELOCITY}
-STR_VEHICLE_INFO_MAX_SPEED_RANGE                                :{BLACK}Velocidade máxima: {LTBLUE}{VELOCITY} {BLACK}Autonomía: {LTBLUE}{COMMA} cadros
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED                         :{BLACK}Peso: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potencia: {LTBLUE}{POWER}{BLACK} Velocidade máxima: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE                  :{BLACK}Peso: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potencia: {LTBLUE}{POWER}{BLACK} Velocidade máxima: {LTBLUE}{VELOCITY} {BLACK}T.E. máx.: {LTBLUE}{FORCE}
 
@@ -3909,7 +3906,7 @@ STR_AI_DEBUG_CONTINUE                                           :{BLACK}Continua
 STR_AI_DEBUG_CONTINUE_TOOLTIP                                   :{BLACK}Quita-la pausa e continua-la IA
 STR_AI_DEBUG_SELECT_AI_TOOLTIP                                  :{BLACK}Ve-la saída da depuración desta IA
 STR_AI_GAME_SCRIPT                                              :{BLACK}Script do xogo
-STR_AI_GAME_SCRIPT_TOOLTIP                                      :BLACK}Comproba o log do script do xogo
+STR_AI_GAME_SCRIPT_TOOLTIP                                      :{BLACK}Comproba o log do script do xogo
 
 STR_ERROR_AI_NO_AI_FOUND                                        :Non se atopou ningunha IA adecuada para cargar.{} Esta IA é parva e non vai facer nada.{}Podes descargar varias IAs no sistema de contidos online.
 STR_ERROR_AI_PLEASE_REPORT_CRASH                                :{WHITE}Fallou unha das IA en execución. Por favor, informa ao autor desta IA cunha captura da Fiestra de Depuración de IA.

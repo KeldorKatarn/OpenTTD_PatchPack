@@ -2592,7 +2592,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Konpainia jabe 
 STR_ABOUT_OPENTTD                                               :{WHITE}OpenTTD-ri buruz
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Original copyright {COPYRIGHT} 1995 Chris Sawyer, All rights reserved
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD bertsioa {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2016 The OpenTTD team
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2017 The OpenTTD team
 
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Gordetako jokoa
@@ -3243,6 +3243,7 @@ STR_GROUP_REMOVE_ALL_VEHICLES                                   :Ibilgailu guzti
 
 STR_GROUP_RENAME_CAPTION                                        :{BLACK}Taldea berrizendatu
 
+
 # Build vehicle window
 STR_BUY_VEHICLE_TRAIN_RAIL_CAPTION                              :Tren berriak
 STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :Tren elektriko berriak
@@ -3403,10 +3404,7 @@ STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :Lokomotora magn
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Kostea: {CURRENCY_LONG} Pisua: {WEIGHT_SHORT}{}Pisua: {VELOCITY}  Potentzia: {POWER}{}Mantenimendua: {CURRENCY_LONG}/urtero{}Edukiera: {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Kostua: {CURRENCY_LONG} Pisua: {WEIGHT_SHORT}{}Abiadura: {VELOCITY}  Potentzia: {POWER}  Gehienezko trakzioa: {6:FORCE}{}Mantinemendua: {4:CURRENCY_LONG}/urtero{}Edukiera: {5:CARGO_LONG}
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_CAPACITY_RUNCOST     :{BLACK}Kostea: {CURRENCY_LONG} Gehienezko abiadura: {VELOCITY}{}Edukiera: {CARGO_LONG}, {CARGO_LONG}{}Mantenimendua: {CURRENCY_LONG}/urtero
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_RUNCOST              :{BLACK}Kostea: {CURRENCY_LONG} Gehienezko abiadura: {VELOCITY}{}Edukiera: {CARGO_LONG}{}Mantenimendua: {CURRENCY_LONG}/urtero
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_CAPACITY_RUNCOST:{BLACK}Kostea: {CURRENCY_LONG} Gehienezko abiadura: {VELOCITY} Irismena: {COMMA} tiles{}Edukiera: {CARGO_LONG}, {CARGO_LONG}{}Mantenimendua: {CURRENCY_LONG}/urtero
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_RUNCOST        :{BLACK}Kostea: {CURRENCY_LONG} Gehienezko abiadura: {VELOCITY} Irismena: {COMMA} tiles{}Edukiera: {CARGO_LONG}{}Mantenimendua: {CURRENCY_LONG}/urtero
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Kostea: {CURRENCY_LONG} Gehienezko abiadura: {VELOCITY}{}Edukiera: {CARGO_LONG}{}Mantenimendua: {CURRENCY_LONG}/urtero
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Ordezkatu {STRING} - {STRING}
@@ -3526,7 +3524,6 @@ STR_VEHICLE_INFO_AGE                                            :{COMMA} urte ({
 STR_VEHICLE_INFO_AGE_RED                                        :{RED}{COMMA} urte ({COMMA})
 
 STR_VEHICLE_INFO_MAX_SPEED                                      :{BLACK}Gehienezko abiadura: {LTBLUE}{VELOCITY}
-STR_VEHICLE_INFO_MAX_SPEED_RANGE                                :{BLACK}Gehienezko abiadura: {LTBLUE}{VELOCITY} {BLACK}Irismena: {LTBLUE}{COMMA} lauki
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED                         :{BLACK}Pisua: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potentzia: {LTBLUE}{POWER}{BLACK} Gehienezko abiadura: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE                  :{BLACK}Pisua: {LTBLUE}{WEIGHT_SHORT} {BLACK}Potentzia: {LTBLUE}{POWER}{BLACK} Gehienezko abiadura: {LTBLUE}{VELOCITY} {BLACK}Gehienezko trakzio indarra: {LTBLUE}{FORCE}
 

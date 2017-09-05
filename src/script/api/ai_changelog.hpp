@@ -15,26 +15,22 @@
  * functions may still be available if you return an older API version
  * in GetAPIVersion() in info.nut.
  *
- * \b 1.7.0
+ * \b 1.8.0
  *
- * 1.7.0 is not yet released. The following changes are not set in stone yet.
+ * 1.8.0 is not yet released. The following changes are not set in stone yet.
  *
  * API additions:
  * \li AIRoad::ERR_ROADTYPE_DISALLOWS_CROSSING
  *
- * \b 1.6.0
+ * \b 1.7.0
  *
  * No changes
  *
- * \b 1.5.3
+ * \b 1.6.1 - 1.6.0
  *
  * No changes
  *
- * \b 1.5.2
- *
- * No changes
- *
- * \b 1.5.1
+ * \b 1.5.3 - 1.5.1
  *
  * No changes
  *
@@ -56,20 +52,7 @@
  * \li AIStationList_CargoWaitingFromByVia
  * \li AIStationList_CargoWaitingViaByFrom
  *
- * \b 1.4.4
- *
- * No changes
- *
- * \b 1.4.3
- *
- * No changes
- *
- * \b 1.4.2
- *
- * No changes
- *
- * \b 1.4.1
- *
+ * \b 1.4.4 - 1.4.1
  * No changes
  *
  * \b 1.4.0
@@ -90,11 +73,7 @@
  * \li AIStation::GetCargoRating does return -1 for cargo-station combinations that
  *     do not have a rating yet instead of returning 69.
  *
- * \b 1.3.3
- *
- * No changes
- *
- * \b 1.3.2
+ * \b 1.3.3 - 1.3.2
  *
  * No changes
  *
@@ -113,15 +92,7 @@
  * \li AIStation::OpenCloseAirport
  * \li AIController::Break
  *
- * \b 1.2.3
- *
- * No changes
- *
- * \b 1.2.2
- *
- * No changes
- *
- * \b 1.2.1
+ * \b 1.2.3 - 1.2.1
  *
  * No changes
  *
@@ -188,15 +159,7 @@
  * API additions:
  * \li AIVehicle::ERR_VEHICLE_TOO_LONG in case vehicle length limit is reached.
  *
- * \b 1.1.3
- *
- * No changes
- *
- * \b 1.1.2
- *
- * No changes
- *
- * \b 1.1.1
+ * \b 1.1.3 - 1.1.1
  *
  * No changes
  *
@@ -227,11 +190,7 @@
  * \li AIRoad::BuildDriveThroughRoadStation now allows overbuilding.
  * \li AIRoad::BuildRoadStation now allows overbuilding.
  *
- * \b 1.0.5
- *
- * No changes
- *
- * \b 1.0.4
+ * \b 1.0.5 - 1.0.4
  *
  * No changes
  *
@@ -345,11 +304,7 @@
  *     station orders for buoys one has to use waypoint orders.
  * \li Autoreplaces can now also be set for the default group via AIGroup.
  *
- * \b 0.7.5
- *
- * No changes
- *
- * \b 0.7.4
+ * \b 0.7.5 - 0.7.4
  *
  * No changes
  *

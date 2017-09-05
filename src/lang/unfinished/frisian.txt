@@ -2475,7 +2475,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Lân fan bedriu
 STR_ABOUT_OPENTTD                                               :{WHITE}Oer OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Orizjineel copyright {COPYRIGHT} 1995 Chris Sawyer, All rights reserved
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD-ferzje {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT}2002-2016 It OpenTTD team
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT}2002-2017 It OpenTTD team
 
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Spul Opslaan
@@ -3095,6 +3095,7 @@ STR_QUERY_GROUP_DELETE_CAPTION                                  :{WHITE}Ferwider
 STR_GROUP_REMOVE_ALL_VEHICLES                                   :Alle fiertugen weihelje
 
 
+
 # Build vehicle window
 STR_BUY_VEHICLE_TRAIN_RAIL_CAPTION                              :Nije spoar weinen
 STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :Nije elektryske treinen
@@ -3218,8 +3219,7 @@ STR_ENGINE_PREVIEW_MONORAIL_LOCOMOTIVE                          :monorail lokomo
 STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :maglevlokomotyf
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Kosten: {CURRENCY_LONG} Gewicht: {WEIGHT_SHORT}{}Snelheid: {VELOCITY}  Kracht: {POWER}{}Underhâldskosten: {CURRENCY_LONG}/jr{}Kapasiteit: {CARGO_LONG}
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_RUNCOST              :{BLACK}Kosten: {CURRENCY_LONG} Maks. Faasje: {VELOCITY}{}Kapasiteit: {CARGO_LONG}{}Underhâldskosten: {CURRENCY_LONG}/jr
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_RUNCOST        :{BLACK}Kosten: {CURRENCY_LONG} Maks. Faasje: {VELOCITY} Bereik: {COMMA} tegels{}Kapasiteit: {CARGO_LONG}{}Underhâldskosten: {CURRENCY_LONG}/jr
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Kosten: {CURRENCY_LONG} Maks. Faasje: {VELOCITY}{}Kapasiteit: {CARGO_LONG}{}Underhâldskosten: {CURRENCY_LONG}/jr
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Ferfang {STRING} - {STRING}

@@ -34,9 +34,8 @@ projects/*.sdf
 projects/*.opensdf
 projects/*.vcproj.*.user
 projects/*.vcxproj.user
-projects/.vs
-projects/*.db
-projects/*.opendb
+projects/*.VC.db
+projects/*.VC.opendb
 src/rev.cpp
 src/os/windows/ottdres.rc
 

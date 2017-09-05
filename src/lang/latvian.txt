@@ -2628,7 +2628,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Uzņēmumam pie
 STR_ABOUT_OPENTTD                                               :{WHITE}Par OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Oriģināla autortiesības {COPYRIGHT} 1995 Kriss Sojers. Visas tiesības paturētas
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD versija {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2016 OpenTTD darba grupa
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2017 OpenTTD darba grupa
 
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Saglabāt spēli
@@ -3291,6 +3291,7 @@ STR_GROUP_REMOVE_ALL_VEHICLES                                   :Novākt visus t
 
 STR_GROUP_RENAME_CAPTION                                        :{BLACK}Pārdēvēt grupu
 
+
 # Build vehicle window
 STR_BUY_VEHICLE_TRAIN_RAIL_CAPTION                              :Jauni dzelzceļa transportlīdzekļi
 STR_BUY_VEHICLE_TRAIN_ELRAIL_CAPTION                            :Jauni elektrificētā dzelzceļa transportlīdzekļi
@@ -3455,10 +3456,7 @@ STR_ENGINE_PREVIEW_MAGLEV_LOCOMOTIVE                            :magleva lokomot
 
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER                      :{BLACK}Cena: {CURRENCY_LONG} Svars: {WEIGHT_SHORT}{}Ātrums: {VELOCITY} Jauda: {POWER}{}Kārtējās izmaksas: {CURRENCY_LONG} gadā{}Ietilpība:  {CARGO_LONG}
 STR_ENGINE_PREVIEW_COST_WEIGHT_SPEED_POWER_MAX_TE               :{BLACK}Cena: {CURRENCY_LONG} Svars: {WEIGHT_SHORT}{}Ātrums: {VELOCITY}  Jauda: {POWER}  Maks. spēks: {6:FORCE}{}Kārtējās izmaksas: {4:CURRENCY_LONG} gadā{}Ietilpība: {5:CARGO_LONG}
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_CAPACITY_RUNCOST     :{BLACK}Cena: {CURRENCY_LONG} Maks. ātrums: {VELOCITY}{}Ietilpība: {CARGO_LONG}, {CARGO_LONG}{}Kārtējās izmaksas: {CURRENCY_LONG} gadā
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAPACITY_RUNCOST              :{BLACK}Cena: {CURRENCY_LONG} Maks. ātrums: {VELOCITY}{}Ietilpība: {CARGO_LONG}{}Kārtējās izmaksas: {CURRENCY_LONG} gadā
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_CAPACITY_RUNCOST:{BLACK}Cena: {CURRENCY_LONG} Maks. ātrums: {VELOCITY} Apgabals: {COMMA} lauciņi{}Ietilpība: {CARGO_LONG}, {CARGO_LONG}{}Kārtējās izmaksas: {CURRENCY_LONG} gadā
-STR_ENGINE_PREVIEW_COST_MAX_SPEED_RANGE_CAPACITY_RUNCOST        :{BLACK}Cena: {CURRENCY_LONG} Maks. ātrums: {VELOCITY} Apgabals: {COMMA} lauciņi{}Ietilpība: {CARGO_LONG}{} Kārtējās izmaksas : {CURRENCY_LONG} gadā
+STR_ENGINE_PREVIEW_COST_MAX_SPEED_CAP_RUNCOST                   :{BLACK}Cena: {CURRENCY_LONG} Maks. ātrums: {VELOCITY}{}Ietilpība: {CARGO_LONG}{}Kārtējās izmaksas: {CURRENCY_LONG} gadā
 
 # Autoreplace window
 STR_REPLACE_VEHICLES_WHITE                                      :{WHITE}Nomainīt {STRING} - {STRING}
@@ -3578,7 +3576,6 @@ STR_VEHICLE_INFO_AGE                                            :{COMMA} gad{P s
 STR_VEHICLE_INFO_AGE_RED                                        :{RED}{COMMA} gad{P s i u} ({COMMA})
 
 STR_VEHICLE_INFO_MAX_SPEED                                      :{BLACK}Maks. ātrums: {LTBLUE}{VELOCITY}
-STR_VEHICLE_INFO_MAX_SPEED_RANGE                                :{BLACK}Maks. ātrums: {LTBLUE}{VELOCITY} {BLACK}Apgabals: {LTBLUE}{COMMA} flīzes
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED                         :{BLACK}Svars: {LTBLUE}{WEIGHT_SHORT} {BLACK}Jauda: {LTBLUE}{POWER}{BLACK} Maks. ātrums: {LTBLUE}{VELOCITY}
 STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED_MAX_TE                  :{BLACK}Svars: {LTBLUE}{WEIGHT_SHORT} {BLACK}Jauda: {LTBLUE}{POWER}{BLACK} Maks. ātrums: {LTBLUE}{VELOCITY} {BLACK}Maks. spēks: {LTBLUE}{FORCE}
 

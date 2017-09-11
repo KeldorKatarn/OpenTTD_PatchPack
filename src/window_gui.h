@@ -21,6 +21,7 @@
 #include "core/smallvec_type.hpp"
 #include "core/smallmap_type.hpp"
 #include "string_type.h"
+#include "station_type.h"
 
 /**
  * Flags to describe the look of the frame
@@ -265,6 +266,18 @@ struct ViewportData : ViewPort {
 };
 
 struct QueryString;
+ 
+/* misc_gui.cpp */
+enum TooltipCloseCondition {
+	TCC_RIGHT_CLICK,
+	TCC_LEFT_CLICK,
+	TCC_HOVER,
+};
+void GuiShowTooltips(Window *parent, StringID str, TooltipCloseCondition close_tooltip = TCC_HOVER);
+void GuiShowTooltips(Window *parent, const char *str, TooltipCloseCondition close_tooltip = TCC_HOVER);
+void GuiShowTooltipsForTile(Window *parent, TileIndex tile, TooltipCloseCondition close_tooltip = TCC_HOVER);
+void GetTileTooltipsForStation(StationID sid, char *buff, const char *last);
+
 
 /**
  * Data structure for an opened window
@@ -631,11 +644,11 @@ public:
 	virtual bool OnRightClick(Point pt, int widget) { return false; }
 
 	/**
-	 * The mouse is hovering over a widget in the window, perform an action for it, like opening a custom tooltip.
-	 * @param pt     The point where the mouse is hovering.
-	 * @param widget The widget where the mouse is hovering.
-	 */
-	virtual void OnHover(Point pt, int widget) {}
+	* The mouse is hovering over a widget in the window, perform an action for it, like opening a custom tooltip.
+	* @param pt     The point where the mouse is hovering.
+	* @param widget The widget where the mouse is hovering.
+	*/
+	//virtual void OnHover(Point pt, int widget) {}
 
 	/**
 	 * An 'object' is being dragged at the provided position, highlight the target if possible.
@@ -707,6 +720,22 @@ public:
 	virtual void OnDropdownSelect(int widget, int index) {}
 
 	virtual void OnDropdownClose(Point pt, int widget, int index, bool instant_close);
+ 
+ 	/**
+	 * A tooltip is about to be shown (e.g. the mouse is hovering). Perform
+	 * an action for it, default is to show the tip of the widget.
+	 *
+	 * @param pt         The point where the mouse is hovering.
+	 * @param widget     The widget where the mouse is hovering.
+	 * @param close_cond How to close tooltips, depands on the way the event was initiated.
+	 *
+	 * @see GuiShowTooltips
+	 */
+	virtual void OnToolTip(Point pt, int widget, TooltipCloseCondition close_cond)
+	{
+		NWidgetCore *wid = this->GetWidget<NWidgetCore>(widget);
+		if (wid != NULL) GuiShowTooltips(this, wid->tool_tip, close_cond);
+	}
 
 	/**
 	 * The text in an editbox has been edited.
@@ -867,14 +896,6 @@ Wcls *AllocateWindowDescFront(WindowDesc *desc, int window_number, bool return_e
 
 void RelocateAllWindows(int neww, int newh);
 
-/* misc_gui.cpp */
-enum TooltipCloseCondition {
-	TCC_RIGHT_CLICK,
-	TCC_LEFT_CLICK,
-	TCC_HOVER,
-};
-
-void GuiShowTooltips(Window *parent, StringID str, uint paramcount = 0, const uint64 params[] = NULL, TooltipCloseCondition close_tooltip = TCC_HOVER);
 void GuiShowStationRatingTooltip(Window *parent, const Station *st, const CargoSpec *cs);
 
 /* widget.cpp */

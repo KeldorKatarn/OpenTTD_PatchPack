@@ -494,16 +494,6 @@ struct MainWindow : Window
 		InvalidateWindowData(WC_MAIN_TOOLBAR, 0, data, true);
 	}
 
-	virtual void OnMouseOver(Point pt, int widget)
-	{
-		if (pt.x != -1 && _game_mode != GM_MENU) {
-			/* Show tooltip with last month production or town name */
-			const Point p = GetTileBelowCursor();
-			const TileIndex tile = TileVirtXY(p.x, p.y);
-			if (tile < MapSize()) ShowTooltipForTile(this, tile);
-		}
-	}
-
 	static HotkeyList hotkeys;
 };
 

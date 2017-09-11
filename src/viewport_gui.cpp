@@ -150,16 +150,6 @@ public:
 			ZoomInOrOutToCursorWindow(wheel < 0, this);
 		}
 	}
-	
-	virtual void OnMouseOver(Point pt, int widget)
-	{
-		if (pt.x != -1) {
-			/* Show tooltip with last month production or town name */
-			const Point p = GetTileBelowCursor();
-			const TileIndex tile = TileVirtXY(p.x, p.y);
-			if (tile < MapSize()) ShowTooltipForTile(this, tile);
-		}
-	}
 
 	/**
 	 * Some data on this window has become invalid.
@@ -206,39 +196,4 @@ void ShowExtraViewPortWindowForTileUnderCursor()
 	 * Do this before creating the window, it might appear just below the mouse. */
 	Point pt = GetTileBelowCursor();
 	ShowExtraViewPortWindow(pt.x != -1 ? TileVirtXY(pt.x, pt.y) : INVALID_TILE);
-}
-
-void ShowTooltipForTile(Window *w, const TileIndex tile)
-{
-	switch (GetTileType(tile)) {
-	case MP_ROAD:
-		if (IsRoadDepot(tile)) return;
-		/* FALL THROUGH */
-	case MP_HOUSE: {
-		if (HasBit(_display_opt, DO_SHOW_TOWN_NAMES)) return; // No need for a town name tooltip when it is already displayed
-		SetDParam(0, GetTownIndex(tile));
-		GuiShowTooltips(w, STR_TOWN_NAME_TOOLTIP, 0, NULL, TCC_HOVER);
-		break;
-	}
-	case MP_INDUSTRY: {
-		const Industry *ind = Industry::GetByTile(tile);
-		const IndustrySpec *indsp = GetIndustrySpec(ind->type);
-
-		StringID str = STR_INDUSTRY_VIEW_TRANSPORTED_TOOLTIP;
-		uint prm_count = 0;
-		SetDParam(prm_count++, indsp->name);
-		for (byte i = 0; i < lengthof(ind->produced_cargo); i++) {
-			if (ind->produced_cargo[i] != CT_INVALID) {
-				SetDParam(prm_count++, ind->produced_cargo[i]);
-				SetDParam(prm_count++, ind->last_month_production[i]);
-				SetDParam(prm_count++, ToPercent8(ind->last_month_pct_transported[i]));
-				str++;
-			}
-		}
-		GuiShowTooltips(w, str, 0, NULL, TCC_HOVER);
-		break;
-	}
-	default:
-		return;
-	}
 }

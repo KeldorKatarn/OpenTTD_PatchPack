@@ -5320,6 +5320,14 @@ STR_VIEWPORT_STATION_TINY                                       :{TINY_FONT}{STA
 
 STR_VIEWPORT_WAYPOINT                                           :{WAYPOINT}
 STR_VIEWPORT_WAYPOINT_TINY                                      :{TINY_FONT}{WAYPOINT}
+ 
+# Tile tooltips
+STR_TILE_TOOLTIP_INDUSTRY_NAME                                  :{BLACK}{INDUSTRY}
+STR_TILE_TOOLTIP_STATION_NAME_FEATURES                          :{BLACK}{STATION} {STATION_FEATURES}
+STR_TILE_TOOLTIP_CARGO_ITEM                                     :{CARGO_LONG} ({NUM}%)
+STR_TILE_TOOLTIP_WAYPOINT_NAME                                  :{BLACK}{WAYPOINT}
+STR_TILE_TOOLTIP_TOWN_NAME_POP                                  :{BLACK}{TOWN}{}({COMMA})
+STR_TILE_TOOLTIP_COMPANY_NAME                                   :{BLACK}{COMPANY}
 
 # Simple strings to get specific types of data
 STR_COMPANY_NAME                                                :{COMPANY}

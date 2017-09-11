@@ -3114,6 +3114,9 @@
     <ClCompile Include="..\src\plans_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
@@ -3175,6 +3178,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\widgets\plans_widget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dock_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

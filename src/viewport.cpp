@@ -98,6 +98,7 @@
 #include "linkgraph/linkgraph_gui.h"
 #include "viewport_sprite_sorter.h"
 #include "bridge_map.h"
+#include "progress.h"
 
 #include <map>
 #include <vector>
@@ -1349,6 +1350,20 @@ static void ViewportAddTownNames(DrawPixelInfo *dpi)
 				t->index, t->cache.population);
 	}
 }
+ 
+ 
+/**
+ * Check whether to show a sign above a given station/waypoint.
+ * @param st Pointer to the station/waypoint.
+ * @return Whether the sign should be shown.
+ */
+static bool IsStationSignVisible(const BaseStation *st)
+{
+	/* Don't draw if the display options are disabled */
+	return HasBit(_display_opt, Station::IsExpected(st) ? DO_SHOW_STATION_NAMES : DO_SHOW_WAYPOINT_NAMES) &&
+			/* Don't draw if station is owned by another company and competitor station names are hidden. Stations owned by none are never ignored. */
+			(HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) || _local_company == st->owner || st->owner == OWNER_NONE);
+}
 
 
 static void ViewportAddStationNames(DrawPixelInfo *dpi)
@@ -1357,19 +1372,11 @@ static void ViewportAddStationNames(DrawPixelInfo *dpi)
 
 	const BaseStation *st;
 	FOR_ALL_BASE_STATIONS(st) {
-		/* Check whether the base station is a station or a waypoint */
-		bool is_station = Station::IsExpected(st);
+		if (!IsStationSignVisible(st)) continue;
 
-		/* Don't draw if the display options are disabled */
-		if (!HasBit(_display_opt, is_station ? DO_SHOW_STATION_NAMES : DO_SHOW_WAYPOINT_NAMES)) continue;
-
-		/* Don't draw if station is owned by another company and competitor station names are hidden. Stations owned by none are never ignored. */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
-
-		ViewportAddString(dpi, ZOOM_LVL_OUT_16X, &st->sign,
-				is_station ? STR_VIEWPORT_STATION : STR_VIEWPORT_WAYPOINT,
-				(is_station ? STR_VIEWPORT_STATION : STR_VIEWPORT_WAYPOINT) + 1, STR_NULL,
-				st->index, st->facilities, (st->owner == OWNER_NONE || !st->IsInUse()) ? COLOUR_GREY : _company_colours[st->owner]);
+		StringID str = Station::IsExpected(st) ? STR_VIEWPORT_STATION : STR_VIEWPORT_WAYPOINT;
+		ViewportAddString(dpi, ZOOM_LVL_OUT_16X, &st->sign, str, str + 1, STR_NULL, st->index, st->facilities,
+				(st->owner == OWNER_NONE || !st->IsInUse()) ? COLOUR_GREY : _company_colours[st->owner]);
 	}
 }
 
@@ -3231,17 +3238,10 @@ static bool CheckClickOnStation(const ViewPort *vp, int x, int y)
 
 	const BaseStation *st;
 	FOR_ALL_BASE_STATIONS(st) {
-		/* Check whether the base station is a station or a waypoint */
-		bool is_station = Station::IsExpected(st);
-
-		/* Don't check if the display options are disabled */
-		if (!HasBit(_display_opt, is_station ? DO_SHOW_STATION_NAMES : DO_SHOW_WAYPOINT_NAMES)) continue;
-
-		/* Don't check if competitor signs are not shown and the sign isn't owned by the local company */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
+		if (!IsStationSignVisible(st)) continue;
 
 		if (CheckClickOnViewportSign(vp, x, y, &st->sign)) {
-			if (is_station) {
+			if (Station::IsExpected(st)) {
 				ShowStationViewWindow(st->index);
 			} else {
 				ShowWaypointWindow(Waypoint::From(st));
@@ -3371,6 +3371,32 @@ bool HandleViewportClicked(const ViewPort *vp, int x, int y, bool double_click)
 		return true;
 	}
 	return result;
+}
+ 
+void HandleViewportToolTip(Window *w, int x, int y)
+{
+	const ViewportData *vp = w->viewport;
+	if (vp == NULL || _game_mode == GM_MENU || HasModalProgress()) return;
+
+	TooltipCloseCondition close_cond = (_settings_client.gui.hover_delay_ms == 0) ? TCC_RIGHT_CLICK : TCC_HOVER;
+
+	const BaseStation *st;
+	FOR_ALL_BASE_STATIONS(st) {
+		if (IsStationSignVisible(st) && CheckClickOnViewportSign(vp, x, y, &st->sign)) {
+			char tip[DRAW_STRING_BUFFER] = "";
+			GetTileTooltipsForStation(st->index, tip, lastof(tip));
+			GuiShowTooltips(w, tip, close_cond);
+			return;
+		}
+	}
+
+	Point tile = TranslateXYToTileCoord(vp, x, y, false);
+	if (IsInsideMM(tile.x, 0, MapMaxX() * TILE_SIZE) && IsInsideMM(tile.y, 0, MapMaxY() * TILE_SIZE)) {
+		GuiShowTooltipsForTile(w, TileVirtXY(tile.x, tile.y), close_cond);
+		return;
+	}
+
+	DeleteWindowById(WC_TOOLTIPS, 0); // close old tooltips window as now hovering this viewport
 }
 
 void RebuildViewportOverlay(Window *w)
@@ -3697,14 +3723,12 @@ void UpdateTileSelection()
 /**
  * Displays the measurement tooltips when selecting multiple tiles
  * @param str String to be displayed
- * @param paramcount number of params to deal with
- * @param params (optional) up to 5 pieces of additional information that may be added to a tooltip
  * @param close_cond Condition for closing this tooltip.
  */
-static inline void ShowMeasurementTooltips(StringID str, uint paramcount, const uint64 params[], TooltipCloseCondition close_cond = TCC_LEFT_CLICK)
+static inline void ShowMeasurementTooltips(StringID str, TooltipCloseCondition close_cond = TCC_LEFT_CLICK)
 {
 	if (!_settings_client.gui.measure_tooltip) return;
-	GuiShowTooltips(_thd.GetCallbackWnd(), str, paramcount, params, close_cond);
+	GuiShowTooltips(_thd.GetCallbackWnd(), str, close_cond);
 }
 
 /** highlighting tiles while only going over them with the mouse */
@@ -3767,7 +3791,10 @@ void VpSetPresizeRange(TileIndex from, TileIndex to)
 	_thd.next_drawstyle = HT_RECT;
 
 	/* show measurement only if there is any length to speak of */
-	if (distance > 1) ShowMeasurementTooltips(STR_MEASURE_LENGTH, 1, &distance, TCC_HOVER);
+	if (distance > 1) {
+		SetDParam(0, distance);
+		ShowMeasurementTooltips(STR_MEASURE_LENGTH, TCC_HOVER);
+	}
 }
 
 static void VpStartPreSizing()
@@ -3937,7 +3964,6 @@ static void ShowLengthMeasurement(HighLightStyle style, TileIndex start_tile, Ti
 	if (_settings_client.gui.measure_tooltip) {
 		uint distance = DistanceManhattan(start_tile, end_tile) + 1;
 		byte index = 0;
-		uint64 params[2];
 
 		if (show_single_tile_length || distance != 1) {
 			int heightdiff = CalcHeightdiff(style, distance, start_tile, end_tile);
@@ -3948,11 +3974,11 @@ static void ShowLengthMeasurement(HighLightStyle style, TileIndex start_tile, Ti
 				distance = CeilDiv(distance, 2);
 			}
 
-			params[index++] = distance;
-			if (heightdiff != 0) params[index++] = heightdiff;
+			SetDParam(index++, distance);
+			if (heightdiff != 0) SetDParam(index++, heightdiff);
 		}
 
-		ShowMeasurementTooltips(measure_strings_length[index], index, params, close_cond);
+		ShowMeasurementTooltips(measure_strings_length[index]);
 	}
 }
 
@@ -4503,8 +4529,6 @@ calc_heightdiff_single_direction:;
 			uint dx = Delta(TileX(t0), TileX(t1)) + 1;
 			uint dy = Delta(TileY(t0), TileY(t1)) + 1;
 			byte index = 0;
-			uint64 params[5];
-			memset( params, 0, sizeof( params ) );
 
 			/* If dragging an area (eg dynamite tool) and it is actually a single
 			 * row/column, change the type to 'line' to get proper calculation for height */
@@ -4521,18 +4545,18 @@ calc_heightdiff_single_direction:;
 
 			if (dx != 1 || dy != 1) {
 				heightdiff = CalcHeightdiff(style, 0, t0, t1);
-				params[index++] = DistanceManhattan(t0, t1);
-				params[index++] = sqrtl(dx * dx + dy * dy); //DistanceSquare does not like big numbers
+				SetDParam(index++, DistanceManhattan(t0, t1));
+				SetDParam(index++, sqrtl(dx * dx + dy * dy)); //DistanceSquare does not like big numbers
 				
 			} else {
 				index += 2;
 			}
 			
-			params[index++] = DistanceFromEdge(t1);
-			params[index++] = GetTileMaxZ(t1) / TILE_HEIGHT * TILE_HEIGHT_STEP;
-			params[index++] = heightdiff;
+			SetDParam(index++, DistanceFromEdge(t1));
+			SetDParam(index++, GetTileMaxZ(t1) / TILE_HEIGHT * TILE_HEIGHT_STEP);
+			SetDParam(index++, heightdiff);
 			//Show always the measurement tooltip
-			GuiShowTooltips(_thd.GetCallbackWnd(),STR_MEASURE_DIST_HEIGHTDIFF, index, params, TCC_LEFT_CLICK);
+			GuiShowTooltips(_thd.GetCallbackWnd(),STR_MEASURE_DIST_HEIGHTDIFF);
 			break;
 		}
 		
@@ -4553,7 +4577,6 @@ calc_heightdiff_single_direction:;
 				uint dx = Delta(TileX(t0), TileX(t1)) + 1;
 				uint dy = Delta(TileY(t0), TileY(t1)) + 1;
 				byte index = 0;
-				uint64 params[3];
 
 				/* If dragging an area (eg dynamite tool) and it is actually a single
 				 * row/column, change the type to 'line' to get proper calculation for height */
@@ -4598,12 +4621,12 @@ calc_heightdiff_single_direction:;
 				if (dx != 1 || dy != 1) {
 					int heightdiff = CalcHeightdiff(style, 0, t0, t1);
 
-					params[index++] = dx - (style & HT_POINT ? 1 : 0);
-					params[index++] = dy - (style & HT_POINT ? 1 : 0);
-					if (heightdiff != 0) params[index++] = heightdiff;
+					SetDParam(index++, dx - (style & HT_POINT ? 1 : 0));
+					SetDParam(index++, dy - (style & HT_POINT ? 1 : 0));
+					if (heightdiff != 0) SetDParam(index++, heightdiff);
 				}
 
-				ShowMeasurementTooltips(measure_strings_area[index], index, params);
+				ShowMeasurementTooltips(measure_strings_area[index]);
 			}
 			break;
 

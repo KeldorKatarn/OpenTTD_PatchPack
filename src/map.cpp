@@ -288,11 +288,12 @@ bool CircularTileSearch(TileIndex *tile, uint size, TestTileOnSearchProc proc, v
 
 		/* If tile test is not successful, get one tile up,
 		 * ready for a test in first circle around center tile */
-		*tile = TILE_ADD(*tile, TileOffsByDir(DIR_N));
-		return CircularTileSearch(tile, size / 2, 1, 1, proc, user_data);
+		*tile = CircularTileSearch(TileX(*tile) - 1, TileY(*tile) - 1, size / 2, 1, 1, proc, user_data);
 	} else {
-		return CircularTileSearch(tile, size / 2, 0, 0, proc, user_data);
+		*tile = CircularTileSearch(TileX(*tile), TileY(*tile), size / 2, 0, 0, proc, user_data);
 	}
+
+	return *tile != INVALID_TILE;
 }
 
 /**
@@ -302,25 +303,24 @@ bool CircularTileSearch(TileIndex *tile, uint size, TestTileOnSearchProc proc, v
  * without a hole, set either h or w to zero.
  * Every tile will be tested by means of the callback function proc,
  * which will determine if yes or no the given tile meets criteria of search.
- * @param tile to start the search from. Upon completion, it will return the tile matching the search.
- *  This tile should be directly north of the hole (if any).
+ * @param x X coordinate of the tile directly north of the hole.
+ * @param y Y coordinate of the tile directly north of the hole.
  * @param radius How many tiles to search outwards. Note: This is a radius and thus different
  *                from the size parameter of the other CircularTileSearch function, which is a diameter.
  * @param w the width of the inner rectangle
  * @param h the height of the inner rectangle
  * @param proc callback testing function pointer.
  * @param user_data to be passed to the callback function. Depends on the implementation
- * @return result of the search
+ * @return The tile matching the search or INVALID_TILE.
  * @pre proc != NULL
  * @pre radius > 0
  */
-bool CircularTileSearch(TileIndex *tile, uint radius, uint w, uint h, TestTileOnSearchProc proc, void *user_data)
+TileIndex CircularTileSearch(int x, int y, uint radius, uint w, uint h, TestTileOnSearchProc proc, void *user_data)
 {
 	assert(proc != NULL);
 	assert(radius > 0);
 
-	uint x = TileX(*tile) + w + 1;
-	uint y = TileY(*tile);
+	x += w + 1;
 
 	const uint extent[DIAGDIR_END] = { w, h, w, h };
 
@@ -328,13 +328,12 @@ bool CircularTileSearch(TileIndex *tile, uint radius, uint w, uint h, TestTileOn
 		for (DiagDirection dir = DIAGDIR_BEGIN; dir < DIAGDIR_END; dir++) {
 			/* Is the tile within the map? */
 			for (uint j = extent[dir] + n * 2 + 1; j != 0; j--) {
-				if (x < MapSizeX() && y < MapSizeY()) {
+				if (IsInsideBS(x, 0, MapSizeX()) && IsInsideBS(y, 0, MapSizeY())) {
 					TileIndex t = TileXY(x, y);
 					/* Is the callback successful? */
 					if (proc(t, user_data)) {
 						/* Stop the search */
-						*tile = t;
-						return true;
+						return t;
 					}
 				}
 
@@ -348,8 +347,7 @@ bool CircularTileSearch(TileIndex *tile, uint radius, uint w, uint h, TestTileOn
 		y += _tileoffs_by_dir[DIR_W].y;
 	}
 
-	*tile = INVALID_TILE;
-	return false;
+	return INVALID_TILE;
 }
 
 /**

@@ -27,6 +27,9 @@
 #include "newgrf_debug.h"
 #include "newgrf_cargo.h"
 #include "zoom_func.h"
+#include "industry.h"
+#include "station_base.h"
+#include "waypoint_base.h"
 
 #include "widgets/misc_widget.h"
 
@@ -655,26 +658,24 @@ static WindowDesc _tool_tips_desc(
 /** Window for displaying a tooltip. */
 struct TooltipsWindow : public Window
 {
-	StringID string_id;               ///< String to display as tooltip.
-	byte paramcount;                  ///< Number of string parameters in #string_id.
-	uint64 params[5];                 ///< The string parameters.
+	const char *tip;                  ///< The text being displayed in the window.
 	TooltipCloseCondition close_cond; ///< Condition for closing the window.
 	char buffer[DRAW_STRING_BUFFER];  ///< Text to draw
 
-	TooltipsWindow(Window *parent, StringID str, uint paramcount, const uint64 params[], TooltipCloseCondition close_tooltip) : Window(&_tool_tips_desc)
+	TooltipsWindow(Window *parent, const char *tip, TooltipCloseCondition close_tooltip) : Window(&_tool_tips_desc)
 	{
 		this->parent = parent;
-		this->string_id = str;
-		assert_compile(sizeof(this->params[0]) == sizeof(params[0]));
-		assert(paramcount <= lengthof(this->params));
-		memcpy(this->params, params, sizeof(this->params[0]) * paramcount);
-		this->paramcount = paramcount;
+		this->tip = stredup(tip);
 		this->close_cond = close_tooltip;
-		if (this->paramcount == 0) GetString(this->buffer, str, lastof(this->buffer)); // Get the text while params are available
 
 		this->InitNested();
 
 		CLRBITS(this->flags, WF_WHITE_BORDER);
+	}
+ 
+	virtual ~TooltipsWindow()
+	{
+		free(this->tip);
 	}
 
 	virtual Point OnInitialPosition(int16 sm_width, int16 sm_height, int window_number)
@@ -700,10 +701,8 @@ struct TooltipsWindow : public Window
 	virtual void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize)
 	{
 		/* There is only one widget. */
-		for (uint i = 0; i != this->paramcount; i++) SetDParam(i, this->params[i]);
-
-		size->width  = min(GetStringBoundingBox(this->string_id).width, ScaleGUITrad(194));
-		size->height = GetStringHeight(this->string_id, size->width);
+		size->width = min(GetStringBoundingBox(this->tip).width, ScaleGUITrad(194));
+		size->height = GetStringHeight(this->tip, size->width);
 
 		/* Increase slightly to have some space around the box. */
 		size->width  += 2 + WD_FRAMERECT_LEFT + WD_FRAMERECT_RIGHT;
@@ -716,15 +715,7 @@ struct TooltipsWindow : public Window
 		GfxFillRect(r.left, r.top, r.right, r.bottom, PC_BLACK);
 		GfxFillRect(r.left + 1, r.top + 1, r.right - 1, r.bottom - 1, PC_LIGHT_YELLOW);
 
-		if (this->paramcount == 0) {
-			DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->buffer, TC_FROMSTRING, SA_CENTER);
-		}
-		else {
-			for (uint arg = 0; arg < this->paramcount; arg++) {
-				SetDParam(arg, this->params[arg]);
-			}
-			DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->string_id, TC_FROMSTRING, SA_CENTER);
-		}
+		DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->tip, TC_FROMSTRING, SA_CENTER);
 	}
 
 	virtual void OnMouseLoop()
@@ -743,23 +734,172 @@ struct TooltipsWindow : public Window
 			case TCC_HOVER: if (!_mouse_hovering) delete this; break;
 		}
 	}
+
+	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
+	{
+		if (!gui_scope) return;
+
+		/* This hover has ended (_mouse_hovering might be true for a new hover). */
+		if (this->close_cond == TCC_HOVER) delete this;
+	}
 };
 
 /**
  * Shows a tooltip
  * @param parent The window this tooltip is related to.
  * @param str String to be displayed
- * @param paramcount number of params to deal with
- * @param params (optional) up to 5 pieces of additional information that may be added to a tooltip
- * @param use_left_mouse_button close the tooltip when the left (true) or right (false) mouse button is released
+ * @param close_tooltip Close condition.
  */
-void GuiShowTooltips(Window *parent, StringID str, uint paramcount, const uint64 params[], TooltipCloseCondition close_tooltip)
+void GuiShowTooltips(Window *parent, StringID str, TooltipCloseCondition close_tooltip)
+{
+	char buff[DRAW_STRING_BUFFER] = "";
+	if (str != STR_NULL) GetString(buff, str, lastof(buff));
+
+	GuiShowTooltips(parent, buff, close_tooltip);
+}
+
+/**
+ * Shows a tooltip
+ * @param parent The window this tooltip is related to.
+ * @param str String to be displayed.
+ * @param close_tooltip Close condition.
+ */
+void GuiShowTooltips(Window *parent, const char *str, TooltipCloseCondition close_tooltip)
 {
 	DeleteWindowById(WC_TOOLTIPS, 0);
 
-	if (str == STR_NULL) return;
+	if (StrEmpty(str)) return;
 
-	new TooltipsWindow(parent, str, paramcount, params, close_tooltip);
+	
+	new TooltipsWindow(parent, str, close_tooltip);
+}
+
+/**
+ * Get tooltip string for an industry tile.
+ * @param iid ID of the industry.
+ * @param buff Buffer to store the string in.
+ * @param last Last character of the buffer.
+ */
+static void GetTileTooltipsForIndustry(IndustryID iid, char *buff, const char *last)
+{
+	if (!Industry::IsValidID(iid)) return;
+
+	SetDParam(0, iid);
+	buff = GetString(buff, STR_TILE_TOOLTIP_INDUSTRY_NAME, last);
+
+	const Industry *industry = Industry::Get(iid);
+	for (size_t i = 0; i < lengthof(industry->produced_cargo); i++) {
+		if (industry->produced_cargo[i] != CT_INVALID) {
+			buff = strecpy(buff, "\n", last);
+			SetDParam(0, industry->produced_cargo[i]);
+			SetDParam(1, industry->last_month_production[i]);
+			SetDParam(2, ToPercent8(industry->last_month_pct_transported[i]));
+			buff = GetString(buff, STR_TILE_TOOLTIP_CARGO_ITEM, last);
+		}
+	}
+}
+
+/**
+ * Get tooltip string for a station tile.
+ * @param iid ID of the station.
+ * @param buff Buffer to store the string in.
+ * @param last Last character of the buffer.
+ */
+void GetTileTooltipsForStation(StationID sid, char *buff, const char *last)
+{
+	SetDParam(0, sid);
+	if (Waypoint::IsValidID(sid)) {
+		GetString(buff, STR_TILE_TOOLTIP_WAYPOINT_NAME, last);
+	} else if (Station::IsValidID(sid)) {
+		Station *station = Station::Get(sid);
+		SetDParam(1, station->facilities);
+		buff = GetString(buff, STR_TILE_TOOLTIP_STATION_NAME_FEATURES, last);
+		for (CargoID i = 0; i < lengthof(station->goods); i++) {
+			if (station->goods[i].HasRating()) {
+				buff = strecpy(buff, "\n", last);
+				SetDParam(0, i);
+				SetDParam(1, station->goods[i].cargo.TotalCount());
+				SetDParam(2, ToPercent8(station->goods[i].rating));
+				buff = GetString(buff, STR_TILE_TOOLTIP_CARGO_ITEM, last);
+			}
+		}
+	}
+}
+
+/**
+ * Get tooltip string for a town tile.
+ * @param iid ID of the town.
+ * @return The string.
+ */
+static StringID GetTileTooltipsForTown(TownID tid)
+{
+	if (!Town::IsValidID(tid)) return STR_NULL;
+
+	SetDParam(0, tid);
+	SetDParam(1, Town::Get(tid)->cache.population);
+	return STR_TILE_TOOLTIP_TOWN_NAME_POP;
+}
+
+/**
+ * Get tooltip string for a company owned tile.
+ * @param iid ID of the company.
+ * @return The string.
+ */
+static StringID GetTileTooltipsForCompany(CompanyID cid)
+{
+	if (!Company::IsValidID(cid) || IsInteractiveCompany(cid)) return STR_NULL;
+
+	SetDParam(0, cid);
+	return STR_TILE_TOOLTIP_COMPANY_NAME;
+}
+
+/**
+ * Show tooltip for a given tile.
+ * @param parent Parent window of the tooltip.
+ * @param tile The tile to show the tip for.
+ * @param close_tooltip Close condition for the tooltip.
+ */
+void GuiShowTooltipsForTile(Window *parent, TileIndex tile, TooltipCloseCondition close_tooltip)
+{
+	StringID tip = STR_NULL;
+
+	if (tile < MapSize()) {
+		TileType tt = GetTileType(tile);
+		switch (tt) {
+			case MP_STATION:
+			case MP_INDUSTRY: {
+				char buff[DRAW_STRING_BUFFER] = "";
+				if (tt == MP_STATION) {
+					GetTileTooltipsForStation(GetStationIndex(tile), buff, lastof(buff));
+				} else {
+					GetTileTooltipsForIndustry(GetIndustryIndex(tile), buff, lastof(buff));
+				}
+				GuiShowTooltips(parent, buff, close_tooltip);
+				return;
+			}
+
+			case MP_RAILWAY:
+			case MP_ROAD:
+			case MP_WATER:
+			case MP_TUNNELBRIDGE:
+			case MP_OBJECT:
+				Owner o;
+				o = GetTileOwner(tile);
+				if (o != OWNER_TOWN) {
+					tip = GetTileTooltipsForCompany(o);
+					break;
+				}
+				/* FALLTHROUGH */
+			case MP_HOUSE:
+				tip = GetTileTooltipsForTown(tt != MP_TUNNELBRIDGE ? GetTownIndex(tile) : CalcClosestTownFromTile(tile)->index);
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	GuiShowTooltips(parent, tip, close_tooltip);
 }
 
 void QueryString::HandleEditBox(Window *w, int wid)

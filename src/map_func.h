@@ -406,7 +406,7 @@ static inline DiagDirection DiagdirBetweenTiles(TileIndex tile_from, TileIndex t
 typedef bool TestTileOnSearchProc(TileIndex tile, void *user_data);
 
 bool CircularTileSearch(TileIndex *tile, uint size, TestTileOnSearchProc proc, void *user_data);
-bool CircularTileSearch(TileIndex *tile, uint radius, uint w, uint h, TestTileOnSearchProc proc, void *user_data);
+TileIndex CircularTileSearch(int hole_x, int hole_y, uint hole_w, uint hole_h, uint radius, TestTileOnSearchProc proc, void *user_data);
 
 /**
  * Get a random tile out of a given seed.

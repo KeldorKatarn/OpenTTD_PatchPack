@@ -1397,11 +1397,12 @@ struct StationViewWindow : public Window {
 		}
 	}
  
-	virtual void OnHover(Point pt, int widget)
-	{		
-		if (widget != WID_SV_ACCEPT_RATING_LIST ||
-			this->GetWidget<NWidgetCore>(WID_SV_ACCEPTS_RATINGS)->widget_data == STR_STATION_VIEW_RATINGS_BUTTON)
-			Window::OnHover(pt, widget);
+	virtual void OnToolTip(Point pt, int widget, TooltipCloseCondition close_cond)
+	{
+		if (widget != WID_SV_ACCEPT_RATING_LIST || this->GetWidget<NWidgetCore>(WID_SV_ACCEPTS_RATINGS)->widget_data == STR_STATION_VIEW_RATINGS_BUTTON) {
+			Window::OnToolTip(pt, widget, close_cond);
+			return;
+		}
 
 		int ofs_y = pt.y - this->ratings_list_y;
 		if (ofs_y < 0) return;
@@ -2260,8 +2261,7 @@ static const T *FindStationsNearby(TileArea ta, bool distant_join)
 	if (distant_join && min(ta.w, ta.h) >= _settings_game.station.station_spread) return NULL;
 	uint max_dist = distant_join ? _settings_game.station.station_spread - min(ta.w, ta.h) : 1;
 
-	TileIndex tile = TILE_ADD(ctx.tile, TileOffsByDir(DIR_N));
-	CircularTileSearch(&tile, max_dist, ta.w, ta.h, AddNearbyStation<T>, &ctx);
+	CircularTileSearch(TileX(ctx.tile) - 1, TileY(ctx.tile) - 1, max_dist, ta.w, ta.h, AddNearbyStation<T>, &ctx);
 
 	return NULL;
 }

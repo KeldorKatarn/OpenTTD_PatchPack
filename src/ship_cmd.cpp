@@ -323,9 +323,7 @@ TileIndex Ship::GetOrderStationLocation(StationID station)
 		} else {
 			const Dock* dock = GetBestDock(this, st);
 
-			DiagDirection direction = GetInclinedSlopeDirection(GetTileSlope(dock->sloped));
-			direction = ReverseDiagDir(direction);
-
+			DiagDirection direction = DiagdirBetweenTiles(dock->sloped, dock->flat);
 			return dock->flat + TileOffsByDiagDir(direction);
 		}
 	} else {

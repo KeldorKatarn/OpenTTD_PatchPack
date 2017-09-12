@@ -229,6 +229,20 @@ public:
 		if (ouf == OUFB_CARGO_TYPE_UNLOAD) ouf = this->GetCargoUnloadTypeRaw(cargo_id);
 		return ouf;
 	}
+  
+	template <typename F> uint32 FilterLoadUnloadTypeCargoMask(F filter_func, uint32 cargo_mask = ~0)
+	{
+		if ((this->GetLoadType() == OLFB_CARGO_TYPE_LOAD) || (this->GetUnloadType() == OUFB_CARGO_TYPE_UNLOAD)) {
+			CargoID cargo;
+			uint32 output_mask = cargo_mask;
+			FOR_EACH_SET_BIT(cargo, cargo_mask) {
+				if (!filter_func(this, cargo)) ClrBit(output_mask, cargo);
+			}
+			return output_mask;
+		} else {
+			return filter_func(this, FindFirstBit(cargo_mask)) ? cargo_mask : 0;
+		}
+	}
 
 	/** At which stations must we stop? */
 	inline OrderNonStopFlags GetNonStopType() const { return (OrderNonStopFlags)GB(this->type, 6, 2); }
@@ -431,6 +445,16 @@ struct TTSepSettings {
 	uint num_veh, sep_ticks;
 	TTSepSettings() : mode(TTS_MODE_AUTO), num_veh(0), sep_ticks(0) { }
 };
+  
+template <typename F> uint32 FilterCargoMask(F filter_func, uint32 cargo_mask = ~0)
+{
+	CargoID cargo;
+	uint32 output_mask = cargo_mask;
+	FOR_EACH_SET_BIT(cargo, cargo_mask) {
+		if (!filter_func(cargo)) ClrBit(output_mask, cargo);
+	}
+	return output_mask;
+}
   
 template <typename T, typename F> T CargoMaskValueFilter(uint32 &cargo_mask, F filter_func)
 {

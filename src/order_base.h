@@ -430,6 +430,19 @@ struct TTSepSettings {
 	uint num_veh, sep_ticks;
 	TTSepSettings() : mode(TTS_MODE_AUTO), num_veh(0), sep_ticks(0) { }
 };
+  
+template <typename T, typename F> T CargoMaskValueFilter(uint32 &cargo_mask, F filter_func)
+{
+	CargoID first_cargo_id = FindFirstBit(cargo_mask);
+	T value = filter_func(first_cargo_id);
+	uint32 other_cargo_mask = cargo_mask;
+	ClrBit(other_cargo_mask, first_cargo_id);
+	CargoID cargo;
+	FOR_EACH_SET_BIT(cargo, other_cargo_mask) {
+		if (value != filter_func(cargo)) ClrBit(cargo_mask, cargo);
+	}
+	return value;
+}
 
 /** Shared order list linking together the linked list of orders and the list
  *  of vehicles sharing this order list.

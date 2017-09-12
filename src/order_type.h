@@ -61,6 +61,7 @@ enum OrderUnloadFlags {
 	OUFB_UNLOAD            = 1 << 0, ///< Force unloading all cargo onto the platform, possibly not getting paid.
 	OUFB_TRANSFER          = 1 << 1, ///< Transfer all cargo onto the platform.
 	OUFB_NO_UNLOAD         = 1 << 2, ///< Totally no unloading will be done.
+	OUFB_CARGO_TYPE_UNLOAD = 1 << 3, ///< Unload actions are defined per cargo type.
 };
 
 /**
@@ -71,6 +72,7 @@ enum OrderLoadFlags {
 	OLFB_FULL_LOAD       = 1 << 1, ///< Full load all cargoes of the consist.
 	OLF_FULL_LOAD_ANY    = 3,      ///< Full load a single cargo of the consist.
 	OLFB_NO_LOAD         = 4,      ///< Do not load anything.
+	OLFB_CARGO_TYPE_LOAD = 1 << 3  ///< Load actions are defined per cargo type.
 };
 
 /**
@@ -161,16 +163,18 @@ enum OrderConditionComparator {
  * Enumeration for the data to set in #CmdModifyOrder.
  */
 enum ModifyOrderFlags {
-	MOF_NON_STOP,        ///< Passes an OrderNonStopFlags.
-	MOF_STOP_LOCATION,   ///< Passes an OrderStopLocation.
-	MOF_UNLOAD,          ///< Passes an OrderUnloadType.
-	MOF_LOAD,            ///< Passes an OrderLoadType
-	MOF_DEPOT_ACTION,    ///< Selects the OrderDepotAction
-	MOF_COND_VARIABLE,   ///< A conditional variable changes.
-	MOF_COND_COMPARATOR, ///< A comparator changes.
-	MOF_COND_VALUE,      ///< The value to set the condition to.
-	MOF_COND_DESTINATION,///< Change the destination of a conditional order.
-	MOF_WAYPOINT_FLAGS,  ///< Change the waypoint flags
+	MOF_NON_STOP,          ///< Passes an OrderNonStopFlags.
+	MOF_STOP_LOCATION,     ///< Passes an OrderStopLocation.
+	MOF_UNLOAD,            ///< Passes an OrderUnloadType.
+	MOF_LOAD,              ///< Passes an OrderLoadType
+	MOF_DEPOT_ACTION,      ///< Selects the OrderDepotAction
+	MOF_COND_VARIABLE,     ///< A conditional variable changes.
+	MOF_COND_COMPARATOR,   ///< A comparator changes.
+	MOF_COND_VALUE,        ///< The value to set the condition to.
+	MOF_COND_DESTINATION,  ///< Change the destination of a conditional order.
+	MOF_WAYPOINT_FLAGS,    ///< Change the waypoint flags
+	MOF_CARGO_TYPE_UNLOAD, ///< Passes an OrderUnloadType and a CargoID.
+	MOF_CARGO_TYPE_LOAD,   ///< Passes an OrderLoadType and a CargoID.
 	MOF_END
 };
 template <> struct EnumPropsT<ModifyOrderFlags> : MakeEnumPropsT<ModifyOrderFlags, byte, MOF_NON_STOP, MOF_END, MOF_END, 4> {};

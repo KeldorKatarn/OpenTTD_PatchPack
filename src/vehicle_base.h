@@ -57,6 +57,8 @@ enum VehicleFlags {
 	VF_SERVINT_IS_PERCENT,      ///< Service interval is percent.
 	VF_SHOULD_GOTO_DEPOT,       ///< Vehicle was manually ordered to go to a depot on its orders list.
 	VF_SHOULD_SERVICE_AT_DEPOT, ///< Vehicle was manually ordered to service at a depot on its orders list.
+
+	VF_LAST_LOAD_ST_SEP = 13,   ///< Each vehicle of this chain has its last_loading_station field set separately
 };
 
 /** Bit numbers used to indicate which of the #NewGRFCache values are valid. */
@@ -313,7 +315,7 @@ public:
 	byte waiting_triggers;              ///< Triggers to be yet matched before rerandomizing the random bits.
 
 	StationID last_station_visited;     ///< The last station we stopped at.
-	StationID last_loading_station;     ///< Last station the vehicle has stopped at and could possibly leave from with any cargo loaded.
+	StationID last_loading_station;     ///< Last station the vehicle has stopped at and could possibly leave from with any cargo loaded. (See VF_LAST_LOAD_ST_SEP).
 
 	CargoID cargo_type;                 ///< type of cargo this vehicle is carrying
 	byte cargo_subtype;                 ///< Used for livery refits (NewGRF variations)

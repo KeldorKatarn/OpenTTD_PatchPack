@@ -1678,6 +1678,8 @@ STR_CONFIG_SETTING_LARGER_TOWNS_VALUE                           :1 in {COMMA}
 STR_CONFIG_SETTING_LARGER_TOWNS_DISABLED                        :None
 STR_CONFIG_SETTING_CITY_SIZE_MULTIPLIER                         :Initial city size multiplier: {STRING2}
 STR_CONFIG_SETTING_CITY_SIZE_MULTIPLIER_HELPTEXT                :Average size of cities relative to normal towns at start of the game
+STR_CONFIG_SETTING_TOWN_MIN_DISTANCE                            :Minimum distance between towns: {STRING2}
+STR_CONFIG_SETTING_TOWN_MIN_DISTANCE_HELPTEXT                   :Set the minimum distance in tiles between towns for map generation and random founding
 
 STR_CONFIG_SETTING_LINKGRAPH_INTERVAL                           :Update distribution graph every {STRING2}{NBSP}day{P 0:2 "" s}
 STR_CONFIG_SETTING_LINKGRAPH_INTERVAL_HELPTEXT                  :Time between subsequent recalculations of the link graph. Each recalculation calculates the plans for one component of the graph. That means that a value X for this setting does not mean the whole graph will be updated every X days. Only some component will. The shorter you set it the more CPU time will be necessary to calculate it. The longer you set it the longer it will take until the cargo distribution starts on new routes.
@@ -4058,6 +4060,7 @@ STR_ORDER_DROP_LOAD_IF_POSSIBLE                                 :Load if availab
 STR_ORDER_DROP_FULL_LOAD_ALL                                    :Full load all cargo
 STR_ORDER_DROP_FULL_LOAD_ANY                                    :Full load any cargo
 STR_ORDER_DROP_NO_LOADING                                       :No loading
+STR_ORDER_DROP_CARGO_TYPE_LOAD                                  :Load by cargo type
 STR_ORDER_TOOLTIP_FULL_LOAD                                     :{BLACK}Change the loading behaviour of the highlighted order
 
 STR_ORDER_TOGGLE_UNLOAD                                         :{BLACK}Unload all
@@ -4065,6 +4068,7 @@ STR_ORDER_DROP_UNLOAD_IF_ACCEPTED                               :Unload if accep
 STR_ORDER_DROP_UNLOAD                                           :Unload all
 STR_ORDER_DROP_TRANSFER                                         :Transfer
 STR_ORDER_DROP_NO_UNLOADING                                     :No unloading
+STR_ORDER_DROP_CARGO_TYPE_UNLOAD                                :Unload by cargo type
 STR_ORDER_TOOLTIP_UNLOAD                                        :{BLACK}Change the unloading behaviour of the highlighted order
 
 STR_ORDER_REFIT                                                 :{BLACK}Refit
@@ -4175,31 +4179,48 @@ STR_ORDER_IMPLICIT                                              :(Implicit)
 STR_ORDER_FULL_LOAD                                             :(Full load)
 STR_ORDER_FULL_LOAD_ANY                                         :(Full load any cargo)
 STR_ORDER_NO_LOAD                                               :(No loading)
+STR_ORDER_CARGO_TYPE_LOAD                                       :(Load by cargo type)
 STR_ORDER_UNLOAD                                                :(Unload and take cargo)
 STR_ORDER_UNLOAD_FULL_LOAD                                      :(Unload and wait for full load)
 STR_ORDER_UNLOAD_FULL_LOAD_ANY                                  :(Unload and wait for any full load)
 STR_ORDER_UNLOAD_NO_LOAD                                        :(Unload and leave empty)
+STR_ORDER_UNLOAD_CARGO_TYPE_LOAD                                :(Unload and load by cargo type)
 STR_ORDER_TRANSFER                                              :(Transfer and take cargo)
 STR_ORDER_TRANSFER_FULL_LOAD                                    :(Transfer and wait for full load)
 STR_ORDER_TRANSFER_FULL_LOAD_ANY                                :(Transfer and wait for any full load)
 STR_ORDER_TRANSFER_NO_LOAD                                      :(Transfer and leave empty)
+STR_ORDER_TRANSFER_CARGO_TYPE_LOAD                              :(Transfer and load by cargo type)
 STR_ORDER_NO_UNLOAD                                             :(No unloading and take cargo)
 STR_ORDER_NO_UNLOAD_FULL_LOAD                                   :(No unloading and wait for full load)
 STR_ORDER_NO_UNLOAD_FULL_LOAD_ANY                               :(No unloading and wait for any full load)
 STR_ORDER_NO_UNLOAD_NO_LOAD                                     :(No unloading and no loading)
+STR_ORDER_NO_UNLOAD_CARGO_TYPE_LOAD                             :(No unloading and load by cargo type)
+STR_ORDER_CARGO_TYPE_UNLOAD                                     :(Unload by cargo type)
+STR_ORDER_CARGO_TYPE_UNLOAD_FULL_LOAD                           :(Unload by cargo type and wait for full load)
+STR_ORDER_CARGO_TYPE_UNLOAD_FULL_LOAD_ANY                       :(Unload by cargo type and wait for any full load)
+STR_ORDER_CARGO_TYPE_UNLOAD_NO_LOAD                             :(Unload by cargo type and leave empty)
+STR_ORDER_CARGO_TYPE_UNLOAD_CARGO_TYPE_LOAD                     :(Unload by cargo type and load by cargo type)
 
 STR_ORDER_AUTO_REFIT                                            :(Refit to {STRING})
 STR_ORDER_FULL_LOAD_REFIT                                       :(Full load with refit to {STRING})
 STR_ORDER_FULL_LOAD_ANY_REFIT                                   :(Full load any cargo with refit to {STRING})
+STR_ORDER_CARGO_TYPE_LOAD_REFIT                                 :(Load by cargo type with refit to {STRING})
 STR_ORDER_UNLOAD_REFIT                                          :(Unload and take cargo with refit to {STRING})
 STR_ORDER_UNLOAD_FULL_LOAD_REFIT                                :(Unload and wait for full load with refit to {STRING})
 STR_ORDER_UNLOAD_FULL_LOAD_ANY_REFIT                            :(Unload and wait for any full load with refit to {STRING})
+STR_ORDER_UNLOAD_CARGO_TYPE_LOAD_REFIT                          :(Unload and load by cargo type with refit to {STRING})
 STR_ORDER_TRANSFER_REFIT                                        :(Transfer and take cargo with refit to {STRING})
 STR_ORDER_TRANSFER_FULL_LOAD_REFIT                              :(Transfer and wait for full load with refit to {STRING})
 STR_ORDER_TRANSFER_FULL_LOAD_ANY_REFIT                          :(Transfer and wait for any full load with refit to {STRING})
+STR_ORDER_TRANSFER_CARGO_TYPE_LOAD_REFIT                        :(Transfer and load by cargo type with refit to {STRING})
 STR_ORDER_NO_UNLOAD_REFIT                                       :(No unloading and take cargo with refit to {STRING})
 STR_ORDER_NO_UNLOAD_FULL_LOAD_REFIT                             :(No unloading and wait for full load with refit to {STRING})
 STR_ORDER_NO_UNLOAD_FULL_LOAD_ANY_REFIT                         :(No unloading and wait for any full load with refit to {STRING})
+STR_ORDER_NO_UNLOAD_CARGO_TYPE_LOAD_REFIT                       :(No unloading and load by cargo type with refit to {STRING})
+STR_ORDER_CARGO_TYPE_UNLOAD_REFIT                               :(Unload by cargo type and take cargo with refit to {STRING})
+STR_ORDER_CARGO_TYPE_UNLOAD_FULL_LOAD_REFIT                     :(Unload by cargo type and wait for full load with refit to {STRING})
+STR_ORDER_CARGO_TYPE_UNLOAD_FULL_LOAD_ANY_REFIT                 :(Unload by cargo type and wait for any full load with refit to {STRING})
+STR_ORDER_CARGO_TYPE_UNLOAD_CARGO_TYPE_LOAD_REFIT               :(Unload by cargo type and load by cargo type with refit to {STRING})
 
 STR_ORDER_AUTO_REFIT_ANY                                        :available cargo
 
@@ -4289,6 +4310,20 @@ STR_DATE_SET_DATE_TOOLTIP                                       :{BLACK}Use the 
 STR_DATE_DAY_TOOLTIP                                            :{BLACK}Select day
 STR_DATE_MONTH_TOOLTIP                                          :{BLACK}Select month
 STR_DATE_YEAR_TOOLTIP                                           :{BLACK}Select year
+  
+# Cargo type orders Window
+STR_CARGO_TYPE_ORDERS_LOAD_CAPTION                              :{WHITE}{VEHICLE} ({NUM}: Load at {STATION})
+STR_CARGO_TYPE_ORDERS_UNLOAD_CAPTION                            :{WHITE}{VEHICLE} ({NUM}: Unload at {STATION})
+STR_CARGO_TYPE_ORDERS_LOAD_TITLE                                :{GOLD}Select load order per cargo type:
+STR_CARGO_TYPE_ORDERS_UNLOAD_TITLE                              :{GOLD}Select unload order per cargo type:
+STR_CARGO_TYPE_ORDERS_CLOSE_BUTTON                              :{BLACK}Close
+
+STR_CARGO_TYPE_ORDERS_DROP_FULL_LOAD                            :Full load
+STR_CARGO_TYPE_LOAD_ORDERS_DROP_TOOLTIP                         :{BLACK}Change the loading behaviour for this cargo type
+STR_CARGO_TYPE_UNLOAD_ORDERS_DROP_TOOLTIP                       :{BLACK}Change the unloading behaviour for this cargo type
+
+STR_CARGO_TYPE_ORDERS_SET_TO_ALL_LABEL                          :{BLACK}Set all to:
+STR_CARGO_TYPE_ORDERS_SET_TO_ALL_TOOLTIP                        :{BLACK}Set all cargo type orders to the one selected by the dropdown
 
 
 # AI debug window
@@ -4616,6 +4651,7 @@ STR_ERROR_TOO_MANY_BUS_STOPS                                    :{WHITE}Too many
 STR_ERROR_TOO_MANY_TRUCK_STOPS                                  :{WHITE}Too many lorry stations
 STR_ERROR_TOO_CLOSE_TO_ANOTHER_STATION                          :{WHITE}Too close to another station/loading area
 STR_ERROR_TOO_CLOSE_TO_ANOTHER_DOCK                             :{WHITE}Too close to another dock
+STR_ERROR_TOO_MANY_DOCKS										:{WHITE}Too many docks
 STR_ERROR_TOO_CLOSE_TO_ANOTHER_AIRPORT                          :{WHITE}Too close to another airport
 STR_ERROR_CAN_T_RENAME_STATION                                  :{WHITE}Can't rename station...
 STR_ERROR_DRIVE_THROUGH_ON_TOWN_ROAD                            :{WHITE}... this is a town owned road
@@ -5317,6 +5353,14 @@ STR_VIEWPORT_STATION_TINY                                       :{TINY_FONT}{STA
 
 STR_VIEWPORT_WAYPOINT                                           :{WAYPOINT}
 STR_VIEWPORT_WAYPOINT_TINY                                      :{TINY_FONT}{WAYPOINT}
+ 
+# Tile tooltips
+STR_TILE_TOOLTIP_INDUSTRY_NAME                                  :{BLACK}{INDUSTRY}
+STR_TILE_TOOLTIP_STATION_NAME_FEATURES                          :{BLACK}{STATION} {STATION_FEATURES}
+STR_TILE_TOOLTIP_CARGO_ITEM                                     :{CARGO_LONG} ({NUM}%)
+STR_TILE_TOOLTIP_WAYPOINT_NAME                                  :{BLACK}{WAYPOINT}
+STR_TILE_TOOLTIP_TOWN_NAME_POP                                  :{BLACK}{TOWN}{}({COMMA})
+STR_TILE_TOOLTIP_COMPANY_NAME                                   :{BLACK}{COMPANY}
 
 # Simple strings to get specific types of data
 STR_COMPANY_NAME                                                :{COMPANY}

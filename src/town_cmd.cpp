@@ -1155,14 +1155,14 @@ static bool GrowTownWithBridge(const Town *t, const TileIndex tile, const DiagDi
 	const int delta = TileOffsByDiagDir(bridge_dir);
 
 	if (slope == SLOPE_FLAT) {
-		/* Bridges starting on flat tiles are only allowed when crossing rivers. */
+		/* Bridges starting on flat tiles are only allowed when crossing rivers or rails. */
 		do {
-			if (bridge_length++ >= 4) {
-				/* Allow to cross rivers, not big lakes. */
+			if (bridge_length++ >= 5) {
+				/* Allow to cross rivers, not big lakes, nor large amounts of rails. */
 				return false;
 			}
 			bridge_tile += delta;
-		} while (IsValidTile(bridge_tile) && IsWaterTile(bridge_tile) && !IsSea(bridge_tile));
+		} while (IsValidTile(bridge_tile) && ((IsWaterTile(bridge_tile) && !IsSea(bridge_tile)) || IsPlainRailTile(bridge_tile)));
 	} else {
 		do {
 			if (bridge_length++ >= 11) {
@@ -1170,7 +1170,7 @@ static bool GrowTownWithBridge(const Town *t, const TileIndex tile, const DiagDi
 				return false;
 			}
 			bridge_tile += delta;
-		} while (IsValidTile(bridge_tile) && IsWaterTile(bridge_tile));
+		} while (IsValidTile(bridge_tile) && (IsWaterTile(bridge_tile) || IsPlainRailTile(bridge_tile)));
 	}
 
 	/* no water tiles in between? */
@@ -1716,7 +1716,7 @@ static CommandCost TownCanBePlacedHere(TileIndex tile)
 	}
 
 	/* Check distance to all other towns. */
-	if (IsCloseToTown(tile, 20)) {
+	if (IsCloseToTown(tile, _settings_game.economy.town_min_distance)) {
 		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_ANOTHER_TOWN);
 	}
 

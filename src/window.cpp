@@ -47,6 +47,10 @@ enum ViewportAutoscrolling {
 	VA_EVERY_VIEWPORT,            //!< Scroll all viewports at their edges.
 };
 
+static const int MAX_OFFSET_DOUBLE_CLICK = 5;      ///< How much the mouse is allowed to move to call it a double click
+static const uint TIME_BETWEEN_DOUBLE_CLICK = 500; ///< Time between 2 left clicks before it becoming a double click, in ms
+static const int MAX_OFFSET_HOVER = 5;             ///< Maximum mouse movement before stopping a hover event.
+
 static Point _drag_delta; ///< delta between mouse cursor and upper left corner of dragged window
 static Window *_mouseover_last_w = NULL; ///< Window of the last #MOUSEOVER event.
 static Window *_last_scroll_window = NULL; ///< Window of the last scroll event.
@@ -73,6 +77,7 @@ int _scrollbar_size;
 byte _scroller_click_timeout = 0;
 
 Window *_scrolling_viewport; ///< A viewport is being scrolled with the mouse.
+static Point _viewport_scroll_start_pos = { -1, -1 }; ///< Viewport position when scrolling with the mouse started.
 bool _mouse_hovering;      ///< The mouse is hovering over the same point.
 
 SpecialMouseMode _special_mouse_mode; ///< Mode of the mouse.
@@ -769,41 +774,31 @@ static void DispatchRightClickEvent(Window *w, int x, int y)
 	/* No widget to handle, or the window is not interested in it. */
 	if (wid->index >= 0) {
 		Point pt = { x, y };
-		if (w->OnRightClick(pt, wid->index)) return;
+		w->OnRightClick(pt, wid->index);
 	}
 
 	/* Right-click close is enabled and there is a closebox */
 	if (_settings_client.gui.right_mouse_wnd_close && w->nested_root->GetWidgetOfType(WWT_CLOSEBOX)) {
 		delete w;
-	} else if (_settings_client.gui.hover_delay_ms == 0 && wid->tool_tip != 0) {
-		GuiShowTooltips(w, wid->tool_tip, 0, NULL, TCC_RIGHT_CLICK);
 	}
 }
 
 /**
- * Dispatch hover of the mouse over a window.
+ * Dispatch tool tip event in a window (e.g. hover of the mouse).
  * @param w Window to dispatch event in.
- * @param x X coordinate of the click.
- * @param y Y coordinate of the click.
+ * @param x X coordinate of the mouse.
+ * @param y Y coordinate of the mouse.
+ * @param close_cond How to close tooltips, depands on the way the event was initiated.
  */
-static void DispatchHoverEvent(Window *w, int x, int y)
+static void DispatchToolTipEvent(Window *w, int x, int y, TooltipCloseCondition close_cond)
 {
 	NWidgetCore *wid = w->nested_root->GetWidgetFromPos(x, y);
 
-	/* No widget to handle */
-	if (wid == NULL) return;
-
-	/* Show the tooltip if there is any */
-	if (wid->tool_tip != 0) {
-		GuiShowTooltips(w, wid->tool_tip);
-		return;
+	/* No widget to handle, or the window is not interested in it. */
+	if (wid != NULL && wid->index >= 0) {
+		Point pt = { x, y };
+		w->OnToolTip(pt, wid == NULL ? -1 : wid->index, close_cond);
 	}
-
-	/* Widget has no index, so the window is not interested in it. */
-	if (wid->index < 0) return;
-
-	Point pt = { x, y };
-	w->OnHover(pt, wid->index);
 }
 
 /**
@@ -2436,7 +2431,17 @@ static EventState HandleViewportScroll()
 	}
 
 	/* Create a scroll-event and send it to the window */
-	if (delta.x != 0 || delta.y != 0) _last_scroll_window->OnScroll(delta);
+	if (delta.x != 0 || delta.y != 0) {
+		_last_scroll_window->OnScroll(delta);
+
+		/* Hide right-click tooltips if scrolling far enough. */
+		const ViewPort *vp = _last_scroll_window->viewport;
+		if (vp == NULL || scrollwheel_scrolling ||
+				MAX_OFFSET_HOVER <= UnScaleByZoom(Delta(_viewport_scroll_start_pos.x, vp->virtual_left), vp->zoom) ||
+				MAX_OFFSET_HOVER <= UnScaleByZoom(Delta(_viewport_scroll_start_pos.y, vp->virtual_top), vp->zoom)) {
+			DeleteWindowById(WC_TOOLTIPS, 0);
+		}
+	}
 
 	_cursor.delta.x = 0;
 	_cursor.delta.y = 0;
@@ -2746,10 +2751,6 @@ enum MouseClick {
 	MC_RIGHT,
 	MC_DOUBLE_LEFT,
 	MC_HOVER,
-
-	MAX_OFFSET_DOUBLE_CLICK = 5,     ///< How much the mouse is allowed to move to call it a double click
-	TIME_BETWEEN_DOUBLE_CLICK = 500, ///< Time between 2 left clicks before it becoming a double click, in ms
-	MAX_OFFSET_HOVER = 5,            ///< Maximum mouse movement before stopping a hover event.
 };
 extern EventState VpHandlePlaceSizingDrag();
 
@@ -2855,6 +2856,8 @@ static void MouseLoop(MouseClick click, int mousewheel)
 						_settings_client.gui.left_mouse_btn_scrolling) {
 					_scrolling_viewport = w;
 					_cursor.fix_at = false;
+					_viewport_scroll_start_pos.x = vp->virtual_left;
+					_viewport_scroll_start_pos.y = vp->virtual_top;
 				}
 				break;
 
@@ -2862,12 +2865,21 @@ static void MouseLoop(MouseClick click, int mousewheel)
 				if (!(w->flags & WF_DISABLE_VP_SCROLL)) {
 					_scrolling_viewport = w;
 					_cursor.fix_at = true;
+					_viewport_scroll_start_pos.x = vp->virtual_left;
+					_viewport_scroll_start_pos.y = vp->virtual_top;
 
 					/* clear 2D scrolling caches before we start a 2D scroll */
 					_cursor.h_wheel = 0;
 					_cursor.v_wheel = 0;
-					return;
 				}
+				if (scrollwheel_scrolling || _settings_client.gui.hover_delay_ms != 0) break;
+				HandleViewportToolTip(w, x, y);
+				break;
+
+			case MC_HOVER:
+				/* Re-show tooltips only if mouse is moving. */
+				if (_cursor.delta.x == 0 && _cursor.delta.y == 0 && FindWindowById(WC_TOOLTIPS, 0) != NULL) break;
+				HandleViewportToolTip(w, x, y);
 				break;
 
 			default:
@@ -2887,10 +2899,17 @@ static void MouseLoop(MouseClick click, int mousewheel)
 				/* We try to use the scrollwheel to scroll since we didn't touch any of the buttons.
 				 * Simulate a right button click so we can get started. */
 				/* FALL THROUGH */
+			case MC_RIGHT:
+				DispatchRightClickEvent(w, x - w->left, y - w->top);
+				if (click != MC_RIGHT || _settings_client.gui.hover_delay_ms != 0) break;
+				DispatchToolTipEvent(w, x - w->left, y - w->top, TCC_RIGHT_CLICK);
+				break;
 
-			case MC_RIGHT: DispatchRightClickEvent(w, x - w->left, y - w->top); break;
-
-			case MC_HOVER: DispatchHoverEvent(w, x - w->left, y - w->top); break;
+			case MC_HOVER:
+				/* Re-show tooltips only if mouse is moving. */
+				if (_cursor.delta.x == 0 && _cursor.delta.y == 0 && FindWindowById(WC_TOOLTIPS, 0) != NULL) break;
+				DispatchToolTipEvent(w, x - w->left, y - w->top, TCC_HOVER);
+				break;
 		}
 	}
 }
@@ -2942,12 +2961,31 @@ void HandleMouseEvents()
 				hover_pos.y == 0 || abs(_cursor.pos.y - hover_pos.y) >= MAX_OFFSET_HOVER) {
 			hover_pos = _cursor.pos;
 			hover_time = _realtime_tick;
+			if (_mouse_hovering) {
+				/* After stopping a hover make sure that next one will not
+				 * happen too quickly. It's to prevent tooltips being
+				 * re-opened too quickly which causes blinking. */
+				static const int re_hover_min_delay_ms = 250;
+				hover_time += max(0, re_hover_min_delay_ms - (int)_settings_client.gui.hover_delay_ms);
+			}
 			_mouse_hovering = false;
 		} else {
 			if (hover_time != 0 && _realtime_tick > hover_time + _settings_client.gui.hover_delay_ms) {
 				click = MC_HOVER;
 				_input_events_this_tick++;
 				_mouse_hovering = true;
+				/* Refresh tooltips from time to time. */
+				static const int hover_max_duration_ms = 1500;
+				if ((_realtime_tick > hover_time + hover_max_duration_ms) || (
+						/* "Drag" the hover start point behind the cursor. The hover will last if
+						 * mouse is moving slowly enough. This is to prevent tooltips blinking
+						 * while "hover_delay_ms" is set to some small value. */
+						(hover_pos.x != _cursor.pos.x || hover_pos.y != _cursor.pos.y) &&
+						_realtime_tick > hover_time + _settings_client.gui.hover_delay_ms * 3 / 2)) {
+					hover_pos = _cursor.pos;
+					hover_time = _realtime_tick - _settings_client.gui.hover_delay_ms;
+					DeleteWindowById(WC_TOOLTIPS, 0);
+				}
 			}
 		}
 	}

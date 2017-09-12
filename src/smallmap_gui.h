@@ -84,6 +84,11 @@ protected:
 		ZLC_ZOOM_OUT,   ///< Zoom out.
 		ZLC_ZOOM_IN,    ///< Zoom in.
 	};
+ 
+	struct MouseOverTileSearchData {
+		SmallMapType map_type;
+		TileType found_type;
+	};
 
 	static SmallMapType map_type; ///< Currently displayed legends.
 	static bool show_towns;       ///< Display town names in the smallmap.
@@ -198,6 +203,8 @@ public:
 	SmallMapWindow(WindowDesc *desc, int window_number);
 	virtual ~SmallMapWindow() { delete this->overlay; }
 
+	static bool MouseOverTileSearchProc(TileIndex tile, void *user_data);
+
 	static void RebuildColourIndexIfNecessary();
 
 	void SmallMapCenterOnCurrentPos();
@@ -214,6 +221,7 @@ public:
 	virtual void OnTick();
 	virtual void OnScroll(Point delta);
 	virtual void OnMouseOver(Point pt, int widget);
+	virtual void OnToolTip(Point pt, int widget, TooltipCloseCondition close_cond);
 };
 
 #endif /* SMALLMAP_GUI_H */

@@ -104,16 +104,16 @@ Order UnpackOldOrder(uint16 packed)
 const SaveLoad *GetOrderDescription()
 {
 	static const SaveLoad _order_desc[] = {
-		     SLE_VAR(Order, type,           SLE_UINT8),
-		     SLE_VAR(Order, flags,          SLE_UINT8),
-		     SLE_VAR(Order, dest,           SLE_UINT16),
-		     SLE_REF(Order, next,           REF_ORDER),
-		 SLE_CONDVAR(Order, refit_cargo,    SLE_UINT8,                36, SL_MAX_VERSION),
-		SLE_CONDNULL(1,                                               36, 181), // refit_subtype
-		 SLE_CONDVAR(Order, wait_time,      SLE_UINT16,               67, SL_MAX_VERSION),
-		 SLE_CONDVAR(Order, travel_time,    SLE_UINT16,               67, SL_MAX_VERSION),
-		 SLE_CONDVAR(Order, max_speed,      SLE_UINT16,              172, SL_MAX_VERSION),
-		 SLE_CONDVAR(Order, jump_counter,   SLE_INT8, SL_PATCH_PACK_1_12, SL_MAX_VERSION),
+		     SLE_VAR(Order, type,             SLE_UINT8),
+		     SLE_VAR(Order, flags,            SLE_UINT8),
+		     SLE_VAR(Order, dest,             SLE_UINT16),
+		     SLE_REF(Order, next,             REF_ORDER),
+		 SLE_CONDVAR(Order, refit_cargo,      SLE_UINT8,                            36, SL_MAX_VERSION),
+		SLE_CONDNULL(1,                                                             36, 181), // refit_subtype
+		 SLE_CONDVAR(Order, wait_time,        SLE_UINT16,                           67, SL_MAX_VERSION),
+		 SLE_CONDVAR(Order, travel_time,      SLE_UINT16,                           67, SL_MAX_VERSION),
+		 SLE_CONDVAR(Order, max_speed,        SLE_UINT16,                          172, SL_MAX_VERSION),
+		 SLE_CONDVAR(Order, jump_counter,     SLE_INT8,             SL_PATCH_PACK_1_12, SL_MAX_VERSION),
 
 		/* Leftover from the minor savegame version stuff
 		 * We will never use those free bytes, but we have to keep this line to allow loading of old savegames */
@@ -192,6 +192,39 @@ static void Load_ORDR()
 				order->SetWaitTimetabled(order->GetWaitTime() > 0);
 			}
 		}
+	}
+}
+  
+const SaveLoad *GetOrderExtraInfoDescription()
+{
+	static const SaveLoad _order_extra_info_desc[] = {
+		SLE_ARR(OrderExtraInfo, cargo_type_flags, SLE_UINT8, NUM_CARGO),
+		SLE_END()
+	};
+
+	return _order_extra_info_desc;
+}
+
+void Save_ORDX()
+{
+	Order *order;
+
+	FOR_ALL_ORDERS(order) {
+		if (order->extra != NULL) {
+			SlSetArrayIndex(order->index);
+			SlObject(order->extra.get(), GetOrderExtraInfoDescription());
+		}
+	}
+}
+
+void Load_ORDX()
+{
+	int index;
+	while ((index = SlIterateArray()) != -1) {
+		Order *order = Order::GetIfValid(index);
+		assert(order != NULL);
+		order->AllocExtraInfo();
+		SlObject(order->extra.get(), GetOrderExtraInfoDescription());
 	}
 }
 
@@ -318,7 +351,8 @@ static void Ptrs_BKOR()
 }
 
 extern const ChunkHandler _order_chunk_handlers[] = {
-	{ 'BKOR', Save_BKOR, Load_BKOR, Ptrs_BKOR, NULL, CH_ARRAY},
-	{ 'ORDR', Save_ORDR, Load_ORDR, Ptrs_ORDR, NULL, CH_ARRAY},
-	{ 'ORDL', Save_ORDL, Load_ORDL, Ptrs_ORDL, NULL, CH_ARRAY | CH_LAST},
+	{ 'BKOR', Save_BKOR, Load_BKOR, Ptrs_BKOR, NULL, CH_ARRAY },
+	{ 'ORDR', Save_ORDR, Load_ORDR, Ptrs_ORDR, NULL, CH_ARRAY },
+	{ 'ORDL', Save_ORDL, Load_ORDL, Ptrs_ORDL, NULL, CH_ARRAY },
+	{ 'ORDX', Save_ORDX, Load_ORDX, NULL,      NULL, CH_SPARSE_ARRAY | CH_LAST },
 };

@@ -1512,6 +1512,79 @@ void SmallMapWindow::SetNewScroll(int sx, int sy, int sub)
 	this->subscroll = sub;
 	if (this->map_type == SMT_LINKSTATS) this->overlay->RebuildCache();
 }
+ 
+/* static */ bool SmallMapWindow::MouseOverTileSearchProc(TileIndex tile, void *user_data)
+{
+	MouseOverTileSearchData *data = reinterpret_cast<MouseOverTileSearchData*>(user_data);
+
+	TileType type = GetTileType(tile);
+	switch (type) {
+		/* industries - after stations */
+		case MP_INDUSTRY:
+			if (data->found_type != MP_INDUSTRY && data->found_type != MP_STATION) {
+				/* check if the industry is visible */
+				if (data->map_type != SMT_INDUSTRY ||
+						_legend_from_industries[_industry_to_list_pos[Industry::GetByTile(tile)->type]].show_on_map) {
+					break;
+				}
+			}
+			return false;
+
+		/* stations - most important if current smallmap marks out stations, otherwise not important */
+		case MP_STATION:
+			if (data->map_type == SMT_CONTOUR || data->map_type == SMT_LINKSTATS || data->map_type == SMT_ROUTES) break;
+			return false;
+
+		/* least important - towns */
+		case MP_ROAD:
+		case MP_TUNNELBRIDGE:
+		case MP_HOUSE:
+			if (data->found_type == MP_VOID && (type == MP_HOUSE || GetTileOwner(tile) == OWNER_TOWN)) break;
+			return false;
+
+		default:
+			return false;
+	}
+
+	data->found_type = type;
+	return true;
+}
+
+/* virtual */ void SmallMapWindow::OnToolTip(Point pt, int widget, TooltipCloseCondition close_cond)
+{
+	if (widget != WID_SM_MAP) {
+		this->Window::OnToolTip(pt, widget, close_cond);
+		return;
+	}
+
+	TileIndex found_tile = INVALID_TILE;
+
+	/* find out which tile area is being displayed at the point */
+	const NWidgetBase *wid = this->GetWidget<NWidgetBase>(WID_SM_MAP);
+	int sub;
+	pt = this->PixelToTile(pt.x - wid->pos_x, pt.y - wid->pos_y, &sub);
+	pt.x += this->scroll_x / (int)TILE_SIZE;
+	pt.y += this->scroll_y / (int)TILE_SIZE;
+	if (IsInsideMM(pt.x, 0, MapSizeX()) && IsInsideMM(pt.y, 0, MapSizeY())) {
+		TileArea ta(TileXY(pt.x, pt.y), this->zoom, this->zoom);
+		ta.ClampToMap();
+		/* search entire area, find best match */
+		TileType best_type = (this->map_type == SMT_CONTOUR || this->map_type == SMT_LINKSTATS || this->map_type == SMT_ROUTES) ? MP_STATION : MP_INDUSTRY;
+		SmallMapWindow::MouseOverTileSearchData search_data = { this->map_type, MP_VOID };
+		TILE_AREA_LOOP(tile, ta) {
+			if (MouseOverTileSearchProc(tile, &search_data)) {
+				found_tile = tile;
+				if (search_data.found_type == best_type) break;
+			}
+		}
+		/* search also some surroundings, find first match */
+		if (found_tile == INVALID_TILE) {
+			found_tile = CircularTileSearch(TileX(ta.tile) - 1, TileY(ta.tile) - 1, 2 * this->zoom, ta.w, ta.h, SmallMapWindow::MouseOverTileSearchProc, &search_data);
+		}
+	}
+
+	GuiShowTooltipsForTile(this, found_tile);
+}
 
 /* virtual */ void SmallMapWindow::OnScroll(Point delta)
 {

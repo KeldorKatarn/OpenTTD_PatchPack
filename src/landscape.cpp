@@ -32,6 +32,7 @@
 #include "company_func.h"
 #include "pathfinder/npf/aystar.h"
 #include "saveload/saveload.h"
+#include <algorithm>
 #include <list>
 #include <set>
 
@@ -87,6 +88,11 @@ extern const byte _slope_to_sprite_offset[32] = {
  * @see GetSnowLine() GameCreationSettings
  */
 static SnowLine *_snow_line = NULL;
+
+static const int LONG_RIVER_LENGTH = 512;
+static TileIndex _current_spring = INVALID_TILE;
+static TileIndex _current_estuary = INVALID_TILE;
+static bool _is_main_river = false;
 
 /**
  * Applies a foundation to a slope.
@@ -1066,6 +1072,7 @@ static void River_FoundEndNode(AyStar *aystar, OpenListNode *current)
 {
 	/* Count river length. */
 	uint length = 0;
+
 	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
 		length++;
 	}
@@ -1076,8 +1083,10 @@ static void River_FoundEndNode(AyStar *aystar, OpenListNode *current)
 		if (!IsWaterTile(tile)) {
 			MakeRiver(tile, Random());
 			/* Widen river depending on how far we are away from the source. */
-			uint radius = min((length - cur_pos) / 15u, 3u);
-			if (radius > 1) {
+			uint current_river_length = DistanceManhattan(_current_spring, path->node.tile);
+			uint radius = std::min(3u, (current_river_length / (LONG_RIVER_LENGTH / 3u)) + 1u);
+
+			if (_is_main_river && (radius > 1)) {
 				CircularTileSearch(&tile, radius + RandomRange(1), RiverMakeWider, (void *)&path->node.tile);
 			} else {
 				/* Remove desert directly around the river tile. */
@@ -1128,17 +1137,26 @@ static void BuildRiver(TileIndex begin, TileIndex end)
 
 /**
  * Try to flow the river down from a given begin.
- * @param spring The springing point of the river.
- * @param begin  The begin point we are looking from; somewhere down hill from the spring.
+ * @param spring           The springing point of the river.
+ * @param begin            The begin point we are looking from; somewhere down hill from the spring.
+ * @param min_river_length The minimum length for the river.
  * @return True iff a river could/has been built, otherwise false.
  */
-static bool FlowRiver(TileIndex spring, TileIndex begin)
+static bool FlowRiver(TileIndex spring, TileIndex begin, uint min_river_length)
 {
 	#define SET_MARK(x) marks.insert(x)
 	#define IS_MARKED(x) (marks.find(x) != marks.end())
 
 	uint height = TileHeight(begin);
-	if (IsWaterTile(begin)) return DistanceManhattan(spring, begin) > _settings_game.game_creation.min_river_length;
+	if (IsWaterTile(begin))
+	{
+		if (GetTileZ(begin) == 0) {
+			_current_estuary = begin;
+			_is_main_river = true;
+		}
+
+		return DistanceManhattan(spring, begin) > min_river_length;
+	}
 
 	std::set<TileIndex> marks;
 	SET_MARK(begin);
@@ -1148,7 +1166,6 @@ static bool FlowRiver(TileIndex spring, TileIndex begin)
 	queue.push_back(begin);
 
 	bool found = false;
-	uint count = 0; // Number of tiles considered; to be used for lake location guessing.
 	TileIndex end;
 	do {
 		end = queue.front();
@@ -1164,7 +1181,6 @@ static bool FlowRiver(TileIndex spring, TileIndex begin)
 			TileIndex t2 = end + TileOffsByDiagDir(d);
 			if (IsValidTile(t2) && !IS_MARKED(t2) && FlowsDown(end, t2)) {
 				SET_MARK(t2);
-				count++;
 				queue.push_back(t2);
 			}
 		}
@@ -1172,39 +1188,13 @@ static bool FlowRiver(TileIndex spring, TileIndex begin)
 
 	if (found) {
 		/* Flow further down hill. */
-		found = FlowRiver(spring, end);
-	} else if (count > 32) {
-		/* Maybe we can make a lake. Find the Nth of the considered tiles. */
-		TileIndex lakeCenter = 0;
-		int i = RandomRange(count - 1) + 1;
-		std::set<TileIndex>::const_iterator cit = marks.begin();
-		while (--i) cit++;
-		lakeCenter = *cit;
-
-		if (IsValidTile(lakeCenter) &&
-				/* A river, or lake, can only be built on flat slopes. */
-				IsTileFlat(lakeCenter) &&
-				/* We want the lake to be built at the height of the river. */
-				TileHeight(begin) == TileHeight(lakeCenter) &&
-				/* We don't want the lake at the entry of the valley. */
-				lakeCenter != begin &&
-				/* We don't want lakes in the desert. */
-				(_settings_game.game_creation.landscape != LT_TROPIC || GetTropicZone(lakeCenter) != TROPICZONE_DESERT) &&
-				/* We only want a lake if the river is long enough. */
-				DistanceManhattan(spring, lakeCenter) > _settings_game.game_creation.min_river_length) {
-			end = lakeCenter;
-			MakeRiver(lakeCenter, Random());
-			uint range = RandomRange(8) + 3;
-			CircularTileSearch(&lakeCenter, range, MakeLake, &height);
-			/* Call the search a second time so artefacts from going circular in one direction get (mostly) hidden. */
-			lakeCenter = end;
-			CircularTileSearch(&lakeCenter, range, MakeLake, &height);
-			found = true;
-		}
+		found = FlowRiver(spring, end, min_river_length);
 	}
 
 	marks.clear();
+
 	if (found) BuildRiver(begin, end);
+
 	return found;
 }
 
@@ -1216,15 +1206,29 @@ static void CreateRivers()
 	int amount = _settings_game.game_creation.amount_of_rivers;
 	if (amount == 0) return;
 
-	uint wells = ScaleByMapSize(4 << _settings_game.game_creation.amount_of_rivers);
+	uint wells = ScaleByMapSize(1 << _settings_game.game_creation.amount_of_rivers);
+	uint num_short_rivers = wells - std::max(1u, wells / 10);
 	SetGeneratingWorldProgress(GWP_RIVER, wells + 256 / 64); // Include the tile loop calls below.
+
+	for (; wells > num_short_rivers; wells--) {
+		IncreaseGeneratingWorldProgress(GWP_RIVER);
+		for (int tries = 0; tries < 2048; tries++) {
+			TileIndex t = RandomTile();
+			if (!CircularTileSearch(&t, 8, FindSpring, NULL)) continue;
+			_current_spring = t;
+			_is_main_river = false;
+			if (FlowRiver(t, t, LONG_RIVER_LENGTH)) break;
+		}
+	}
 
 	for (; wells != 0; wells--) {
 		IncreaseGeneratingWorldProgress(GWP_RIVER);
 		for (int tries = 0; tries < 128; tries++) {
 			TileIndex t = RandomTile();
 			if (!CircularTileSearch(&t, 8, FindSpring, NULL)) continue;
-			if (FlowRiver(t, t)) break;
+			_current_spring = t;
+			_is_main_river = false;
+			if (FlowRiver(t, t, _settings_game.game_creation.min_river_length)) break;
 		}
 	}
 

@@ -1720,6 +1720,11 @@ static CommandCost TownCanBePlacedHere(TileIndex tile)
 		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_ANOTHER_TOWN);
 	}
 
+	/* Cannot build above the tree line. */
+	if (_settings_game.construction.trees_around_snow_line_enabled && (GetTileZ(tile) >= HighestSnowLine() + (_settings_game.construction.trees_around_snow_line_range / 2))) {
+		return_cmd_error(STR_ERROR_SITE_UNSUITABLE);
+	}
+
 	/* Can only build on clear flat areas, possibly with trees. */
 	if ((!IsTileType(tile, MP_CLEAR) && !IsTileType(tile, MP_TREES)) || !IsTileFlat(tile)) {
 		return_cmd_error(STR_ERROR_SITE_UNSUITABLE);

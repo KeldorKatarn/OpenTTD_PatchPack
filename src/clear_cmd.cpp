@@ -352,15 +352,15 @@ void GenerateClearTile()
 
 		for (TileIndex possible_mountain_tile = 0; possible_mountain_tile < MapSize(); ++possible_mountain_tile) {
 			uint8 tile_z = GetTileZ(possible_mountain_tile);
-			bool is_above_snow_line = (tile_z > snow_line_height);
-			bool is_above_rock_line = (tile_z > snow_line_height + 2);
+			bool is_above_snow_line = (tile_z >= snow_line_height);
+			bool is_above_rough_line = (tile_z >= snow_line_height - 2);
 			bool is_clear_tile = IsTileType(possible_mountain_tile, MP_CLEAR);
 
-			if (is_above_snow_line && is_clear_tile) {
+			if (is_above_rough_line && is_clear_tile) {
 				bool is_desert_tile = IsClearGround(possible_mountain_tile, CLEAR_DESERT);
 
 				if (!is_desert_tile) {
-					if (is_above_rock_line) {
+					if (is_above_snow_line) {
 						SetClearGroundDensity(possible_mountain_tile, CLEAR_ROCKS, 3);
 					}
 					else {

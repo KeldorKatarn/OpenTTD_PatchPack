@@ -1206,6 +1206,18 @@ static void CreateRivers()
 	int amount = _settings_game.game_creation.amount_of_rivers;
 	if (amount == 0) return;
 
+	bool has_water_tiles = false;
+	for (TileIndex t = 0; t < MapSize(); t++) {
+		if (IsWaterTile(t))
+		{
+			has_water_tiles = true;
+			break;
+		}
+	}
+
+	// No end points for rivers. Bail.
+	if (!has_water_tiles) return;
+
 	uint wells = ScaleByMapSize(1 << _settings_game.game_creation.amount_of_rivers);
 	uint num_short_rivers = wells - std::max(1u, wells / 10);
 	SetGeneratingWorldProgress(GWP_RIVER, wells + 256 / 64); // Include the tile loop calls below.

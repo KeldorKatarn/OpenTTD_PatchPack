@@ -10,6 +10,8 @@
 /** @file genworld.cpp Functions to generate a map. */
 
 #include "stdafx.h"
+#include <algorithm>
+#include <vector>
 #include "landscape.h"
 #include "company_func.h"
 #include "genworld.h"
@@ -33,6 +35,7 @@
 #include "error.h"
 #include "game/game.hpp"
 #include "game/game_instance.hpp"
+#include "pathfinder/npf/aystar.h"
 #include "string_func.h"
 
 #include "safeguards.h"
@@ -90,6 +93,180 @@ static void CleanupGeneration()
 	MarkWholeScreenDirty();
 }
 
+
+
+static const uint PUBLIC_ROAD_HASH_SIZE = 8U; ///< The number of bits the hash for river finding should have.
+
+/**
+* Simple hash function for public road tiles to be used by AyStar.
+* @param tile The tile to hash.
+* @param dir The unused direction.
+* @return The hash for the tile.
+*/
+static uint PublicRoad_Hash(uint tile, uint dir)
+{
+	return GB(TileHash(TileX(tile), TileY(tile)), 0, PUBLIC_ROAD_HASH_SIZE);
+}
+
+/* AyStar callback for getting the cost of the current node. */
+static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
+{
+	return 1;
+}
+
+/* AyStar callback for getting the estimated cost to the destination. */
+static int32 PublicRoad_CalculateH(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
+{
+	return DistanceManhattan(*(TileIndex*)aystar->user_target, current->tile);
+}
+
+/* Helper function to check if a road along this tile path is possible. */
+static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
+{
+	assert(DistanceManhattan(begin, end) == 1);
+
+	int heightBegin;
+	int heightEnd;
+	Slope slopeBegin = GetTileSlope(begin, &heightBegin);
+	Slope slopeEnd = GetTileSlope(end, &heightEnd);
+
+	return 
+		/* Slope either is inclined or flat; rivers don't support other slopes. */
+		(slopeEnd == SLOPE_FLAT || IsInclinedSlope(slopeEnd)) &&
+		/* Slope continues, then it must be lower... or either end must be flat. */
+		((slopeEnd == slopeBegin && heightEnd != heightBegin) || slopeEnd == SLOPE_FLAT || slopeBegin == SLOPE_FLAT);
+}
+
+/* AyStar callback for getting the neighbouring nodes of the given node. */
+static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
+{
+	TileIndex tile = current->path.node.tile;
+
+	aystar->num_neighbours = 0;
+	for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
+		TileIndex t2 = tile + TileOffsByDiagDir(d);
+		if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
+			(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD))) {
+			aystar->neighbours[aystar->num_neighbours].tile = t2;
+			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+			aystar->num_neighbours++;
+		}
+	}
+}
+
+/* AyStar callback for checking whether we reached our destination. */
+static int32 PublicRoad_EndNodeCheck(AyStar *aystar, OpenListNode *current)
+{
+	return current->path.node.tile == *(TileIndex*)aystar->user_target ? AYSTAR_FOUND_END_NODE : AYSTAR_DONE;
+}
+/* AyStar callback when an route has been found. */
+static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
+{
+	/* Count river length. */
+	uint length = 0;
+
+	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
+		length++;
+	}
+
+	uint cur_pos = 0;
+	PathNode* child = nullptr;
+	for (PathNode *path = &current->path; path != NULL; path = path->parent, cur_pos++) {
+		TileIndex tile = path->node.tile;
+
+		TownID townID = CalcClosestTownFromTile(tile)->index;
+		RoadBits roadBits = ROAD_NONE;
+
+		if (child != nullptr) {
+			TileIndex tile2 = child->node.tile;			
+			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+		}
+		if (path->parent != nullptr) {
+			TileIndex tile2 = path->parent->node.tile;
+			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+		}
+
+		if (child != nullptr || path->parent != nullptr) {
+			if (GetTileType(tile) == MP_ROAD) {
+				SetRoadBits(tile, GetRoadBits(tile, ROADTYPE_ROAD) | roadBits, ROADTYPE_ROAD);
+			} else {
+				MakeRoadNormal(tile, roadBits, ROADTYPES_ROAD, townID, OWNER_TOWN, OWNER_NONE);
+			}
+		}
+
+		child = path;
+	}
+}
+
+/**
+* Build the public road network connecting towns using AyStar.
+*/
+static void GeneratePublicRoads()
+{
+	Town* town;
+	std::vector<TileIndex> towns;
+	std::vector<TileIndex> already_connected_towns;
+	std::vector<TileIndex> unreachable_towns;
+
+	FOR_ALL_TOWNS(town) {
+		towns.push_back(town->xy);
+	}
+
+	AyStar finder;
+	MemSetT(&finder, 0);
+	TileIndex begin;
+	TileIndex end;
+
+	begin = *towns.begin();
+	already_connected_towns.push_back(begin);
+	towns.erase(towns.begin());
+
+	while (!towns.empty()) {
+		begin = *towns.begin();
+
+		std::sort(already_connected_towns.begin(),
+			already_connected_towns.end(),
+			[begin](TileIndex a, TileIndex b) { return DistanceManhattan(begin, a) < DistanceManhattan(begin, b); });
+
+		bool found_connection = false;
+
+		for (auto iter2 = already_connected_towns.begin(); iter2 != already_connected_towns.end(); iter2++) {
+			end = *iter2;
+
+			finder.CalculateG = PublicRoad_CalculateG;
+			finder.CalculateH = PublicRoad_CalculateH;
+			finder.GetNeighbours = PublicRoad_GetNeighbours;
+			finder.EndNodeCheck = PublicRoad_EndNodeCheck;
+			finder.FoundEndNode = PublicRoad_FoundEndNode;
+			finder.user_target = &end;
+
+			finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
+
+			AyStarNode start;
+			start.tile = begin;
+			start.direction = INVALID_TRACKDIR;
+			finder.AddStartNode(&start, 0);
+
+			if (finder.Main() == AYSTAR_FOUND_END_NODE) {
+				already_connected_towns.push_back(end);
+				found_connection = true;
+				break;
+			}
+		}
+
+		if (!found_connection) {
+			towns.erase(towns.begin());
+			unreachable_towns.push_back(begin);
+		}
+
+		// Remove already connected towns from the townlist.
+		for (auto iter3 = already_connected_towns.begin(); iter3 != already_connected_towns.end(); iter3++) {
+			std::remove(towns.begin(), towns.end(), *iter3);
+		}
+	}
+	finder.Free();
+}
+
 /**
  * The internal, real, generate function.
  */
@@ -143,6 +320,7 @@ static void _GenerateWorld(void *)
 				GenerateIndustries();
 				GenerateObjects();
 				GenerateTrees();
+				GeneratePublicRoads();
 			}
 		}
 

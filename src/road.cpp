@@ -10,6 +10,8 @@
 /** @file road.cpp Generic road related functions. */
 
 #include "stdafx.h"
+#include <algorithm>
+#include <vector>
 #include "rail_map.h"
 #include "road_map.h"
 #include "water_map.h"
@@ -19,6 +21,8 @@
 #include "engine_base.h"
 #include "date_func.h"
 #include "landscape.h"
+#include "town.h"
+#include "pathfinder/npf/aystar.h"
 
 #include "safeguards.h"
 
@@ -151,4 +155,165 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 	}
 
 	return rt;
+}
+
+/* ----- Public roads ----- */
+
+static const uint PUBLIC_ROAD_HASH_SIZE = 8U; ///< The number of bits the hash for river finding should have.
+
+/**
+* Simple hash function for public road tiles to be used by AyStar.
+* @param tile The tile to hash.
+* @param dir The unused direction.
+* @return The hash for the tile.
+*/
+static uint PublicRoad_Hash(uint tile, uint dir)
+{
+	return GB(TileHash(TileX(tile), TileY(tile)), 0, PUBLIC_ROAD_HASH_SIZE);
+}
+
+/* AyStar callback for getting the cost of the current node. */
+static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
+{
+	return 1;
+}
+
+/* AyStar callback for getting the estimated cost to the destination. */
+static int32 PublicRoad_CalculateH(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
+{
+	return DistanceManhattan(*(TileIndex*)aystar->user_target, current->tile);
+}
+
+/* Helper function to check if a road along this tile path is possible. */
+static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
+{
+	assert(DistanceManhattan(begin, end) == 1);
+
+	int heightBegin;
+	int heightEnd;
+	Slope slopeBegin = GetTileSlope(begin, &heightBegin);
+	Slope slopeEnd = GetTileSlope(end, &heightEnd);
+
+	return
+		/* Slope either is inclined or flat; rivers don't support other slopes. */
+		(slopeEnd == SLOPE_FLAT || IsInclinedSlope(slopeEnd)) &&
+		/* Slope continues, then it must be lower... or either end must be flat. */
+		((slopeEnd == slopeBegin && heightEnd != heightBegin) || slopeEnd == SLOPE_FLAT || slopeBegin == SLOPE_FLAT);
+}
+
+/* AyStar callback for getting the neighbouring nodes of the given node. */
+static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
+{
+	TileIndex tile = current->path.node.tile;
+
+	aystar->num_neighbours = 0;
+	for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
+		TileIndex t2 = tile + TileOffsByDiagDir(d);
+		if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
+			(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD))) {
+			aystar->neighbours[aystar->num_neighbours].tile = t2;
+			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+			aystar->num_neighbours++;
+		}
+	}
+}
+
+/* AyStar callback for checking whether we reached our destination. */
+static int32 PublicRoad_EndNodeCheck(AyStar *aystar, OpenListNode *current)
+{
+	return current->path.node.tile == *(TileIndex*)aystar->user_target ? AYSTAR_FOUND_END_NODE : AYSTAR_DONE;
+}
+/* AyStar callback when an route has been found. */
+static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
+{
+	/* Count river length. */
+	uint length = 0;
+
+	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
+		length++;
+	}
+
+	uint cur_pos = 0;
+	PathNode* child = nullptr;
+	for (PathNode *path = &current->path; path != NULL; path = path->parent, cur_pos++) {
+		TileIndex tile = path->node.tile;
+
+		TownID townID = CalcClosestTownFromTile(tile)->index;
+		RoadBits roadBits = ROAD_NONE;
+
+		if (child != nullptr) {
+			TileIndex tile2 = child->node.tile;
+			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+		}
+		if (path->parent != nullptr) {
+			TileIndex tile2 = path->parent->node.tile;
+			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+		}
+
+		if (child != nullptr || path->parent != nullptr) {
+			if (GetTileType(tile) == MP_ROAD) {
+				SetRoadBits(tile, GetRoadBits(tile, ROADTYPE_ROAD) | roadBits, ROADTYPE_ROAD);
+			}
+			else {
+				MakeRoadNormal(tile, roadBits, ROADTYPES_ROAD, townID, OWNER_TOWN, OWNER_NONE);
+			}
+		}
+
+		child = path;
+	}
+}
+
+/**
+* Build the public road network connecting towns using AyStar.
+*/
+void GeneratePublicRoads()
+{
+	AyStar finder;
+	MemSetT(&finder, 0);
+
+	std::vector<Town*> towns;
+	std::vector<Town*> unconnected_towns;
+	{
+		Town* town;
+		FOR_ALL_TOWNS(town) {
+			unconnected_towns.push_back(town);
+		}
+	}
+
+	do
+	{
+		towns.clear();
+		std::for_each(unconnected_towns.begin(), unconnected_towns.end(), [&](auto t) { towns.push_back(t); });
+		unconnected_towns.clear();
+
+		std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
+
+		Town* begin = *towns.begin();
+		towns.erase(towns.begin());
+
+		std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
+
+		std::for_each(towns.begin(), towns.end(), [&](auto end) {
+			finder.CalculateG = PublicRoad_CalculateG;
+			finder.CalculateH = PublicRoad_CalculateH;
+			finder.GetNeighbours = PublicRoad_GetNeighbours;
+			finder.EndNodeCheck = PublicRoad_EndNodeCheck;
+			finder.FoundEndNode = PublicRoad_FoundEndNode;
+			finder.user_target = &(end->xy);
+
+			finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
+
+			AyStarNode start;
+			start.tile = begin->xy;
+			start.direction = INVALID_TRACKDIR;
+			finder.AddStartNode(&start, 0);
+
+			if (finder.Main() != AYSTAR_FOUND_END_NODE)
+			{
+				unconnected_towns.push_back(end);
+			}
+		});
+	} while (!unconnected_towns.empty());
+
+	finder.Free();
 }

@@ -164,7 +164,8 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 /*                                PUBLIC ROADS                               */
 /* ========================================================================= */
 
-CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = NULL);
+CommandCost CmdBuildTunnel(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
+CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 
 static const uint PUBLIC_ROAD_HASH_SIZE = 8U; ///< The number of bits the hash for river finding should have.
 
@@ -259,11 +260,43 @@ static TileIndex BuildTunnel(PathNode *current, PathNode *previous, bool build_t
 	bool can_build_tunnel = CmdBuildTunnel(current->node.tile, build_tunnel ? DC_EXEC : DC_NONE, ROADTYPES_ROAD | (TRANSPORT_ROAD << 8), 0).Succeeded();
 	cur_company.Restore();
 
+	assert(!build_tunnel || can_build_tunnel);
+
 	if (!can_build_tunnel) return INVALID_TILE;
 
 	if (!IsTileType(_build_tunnel_endtile, MP_CLEAR) && !IsTileType(_build_tunnel_endtile, MP_TREES)) return INVALID_TILE;
 
 	return _build_tunnel_endtile;
+}
+
+static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previousTile)
+{
+	if (!IsValidTile(tile)) return false;
+
+	if (IsTileType(tile, MP_TUNNELBRIDGE))
+	{
+		if (GetOtherTunnelBridgeEnd(tile) == previousTile) return true;
+
+		auto tunnel_direction = GetTunnelBridgeDirection(tile);
+
+		if (previousTile + TileOffsByDiagDir(tunnel_direction) != tile) return false;
+	} else {
+
+		if (!IsTileType(tile, MP_CLEAR) && !IsTileType(tile, MP_TREES) && !IsTileType(tile, MP_ROAD)) return false;
+
+		auto slope = GetTileSlope(tile);
+
+		if (IsInclinedSlope(slope)) {
+			auto slope_direction = GetInclinedSlopeDirection(slope);
+			auto road_direction = DiagdirBetweenTiles(previousTile, tile);
+
+			if (slope_direction != road_direction && ReverseDiagDir(slope_direction) != road_direction) return false;
+		} else if (slope != SLOPE_FLAT) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /* AyStar callback for getting the neighbouring nodes of the given node. */
@@ -273,48 +306,40 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 
 	aystar->num_neighbours = 0;
 
-	if (IsTileType(tile, MP_TUNNELBRIDGE))
-	{
-		aystar->neighbours[aystar->num_neighbours].tile = GetOtherTunnelBridgeEnd(tile);
-		aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
-		aystar->num_neighbours++;
+	// Check if we just went through a tunnel that is yet to be built.
+	if (current->path.parent != nullptr && !AreTilesAdjacent(tile, current->path.parent->node.tile)) {
+		auto previous_tile = current->path.parent->node.tile;
+		// We went through a future tunnel, this limits our options to proceed to only forward.
+		auto tunnel_direction = DiagdirBetweenTiles(previous_tile, tile);
 
-		auto direction_to_other_end = DiagdirBetweenTiles(tile, GetOtherTunnelBridgeEnd(tile));
-		auto tunnel_direction = GetTunnelBridgeDirection(tile);
-		auto reversed_tunnel_direction = ReverseDiagDir(tunnel_direction);
-
-		TileIndex t2 = tile + TileOffsByDiagDir(reversed_tunnel_direction);
-		auto slope = GetTileSlope(t2);
-		if (IsValidTile(t2) && (slope == SLOPE_FLAT || IsInclinedSlope(slope)) &&
-			(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD))) {
+		TileIndex t2 = tile + TileOffsByDiagDir(tunnel_direction);
+		if (IsValidNeighborOfPreviousTile(t2, tile)) {
 			aystar->neighbours[aystar->num_neighbours].tile = t2;
 			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 			aystar->num_neighbours++;
 		}
 	} else {
-		if (current->path.parent != nullptr && !AreTilesAdjacent(current->path.node.tile, current->path.parent->node.tile)) {
-			// We went through a potential tunnel, this limits our options to proceed to only forward.
-			auto tunnel_direction = DiagdirBetweenTiles(current->path.parent->node.tile, current->path.node.tile);
-			
-			TileIndex t2 = tile + TileOffsByDiagDir(tunnel_direction);
-			if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
-				(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD) || IsTileType(t2, MP_TUNNELBRIDGE))) {
-				aystar->neighbours[aystar->num_neighbours].tile = t2;
+		// Handle all the regular neighbors and existing tunnels/bridges.
+		std::vector<TileIndex> potential_neighbors;
+
+		for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
+			potential_neighbors.push_back(tile + TileOffsByDiagDir(d));
+		}
+
+		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+			potential_neighbors.push_back(GetOtherTunnelBridgeEnd(tile));
+		}
+
+		std::for_each(potential_neighbors.begin(), potential_neighbors.end(), [&](auto neighbor) {
+			if (IsValidNeighborOfPreviousTile(neighbor, tile)) {
+				aystar->neighbours[aystar->num_neighbours].tile = neighbor;
 				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 				aystar->num_neighbours++;
 			}
-		} else {
-			for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
-				TileIndex t2 = tile + TileOffsByDiagDir(d);
-				if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
-					(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD) || 
-					(IsTileType(t2, MP_TUNNELBRIDGE) && GetTunnelBridgeDirection(t2) == DiagdirBetweenTiles(tile, t2)))) {
-					aystar->neighbours[aystar->num_neighbours].tile = t2;
-					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
-					aystar->num_neighbours++;
-				}
-			}
+		});
 
+		// Check if we can turn this into a tunnel.
+		if (!IsTileType(tile, MP_TUNNELBRIDGE)) {
 			auto tunnel_end = BuildTunnel(&current->path, current->path.parent);
 
 			if (tunnel_end != INVALID_TILE) {
@@ -345,23 +370,26 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
 			continue;
 		} else if (path->parent == nullptr || AreTilesAdjacent(tile, path->parent->node.tile)) {
-			RoadBits roadBits = ROAD_NONE;
+			RoadBits road_bits = ROAD_NONE;
 
 			if (child != nullptr) {
 				TileIndex tile2 = child->node.tile;
-				roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+				road_bits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
 			}
 			if (path->parent != nullptr) {
 				TileIndex tile2 = path->parent->node.tile;
-				roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
+				road_bits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
 			}
 
 			if (child != nullptr || path->parent != nullptr) {
-				if (GetTileType(tile) == MP_ROAD) {
-					SetRoadBits(tile, GetRoadBits(tile, ROADTYPE_ROAD) | roadBits, ROADTYPE_ROAD);
-				}
-				else {
-					MakeRoadNormal(tile, roadBits, ROADTYPES_ROAD, townID, OWNER_TOWN, OWNER_NONE);
+				// Check if we need to build anything.
+				if (!IsTileType(tile, MP_ROAD) || ((GetRoadBits(tile, ROADTYPE_ROAD) & road_bits) != road_bits))
+				{
+					Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
+					auto road_built = CmdBuildRoad(tile, DC_EXEC, ROADTYPE_ROAD << 4 | road_bits, 0).Succeeded();
+					cur_company.Restore();
+
+					assert(road_built);
 				}
 			}
 		} else {

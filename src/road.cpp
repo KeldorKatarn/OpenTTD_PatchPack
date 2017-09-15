@@ -23,6 +23,9 @@
 #include "landscape.h"
 #include "town.h"
 #include "pathfinder/npf/aystar.h"
+#include "tunnelbridge.h"
+#include "command_func.h"
+#include "core/backup_type.hpp"
 
 #include "safeguards.h"
 
@@ -157,7 +160,11 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 	return rt;
 }
 
-/* ----- Public roads ----- */
+/* ========================================================================= */
+/*                                PUBLIC ROADS                               */
+/* ========================================================================= */
+
+CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = NULL);
 
 static const uint PUBLIC_ROAD_HASH_SIZE = 8U; ///< The number of bits the hash for river finding should have.
 
@@ -172,16 +179,47 @@ static uint PublicRoad_Hash(uint tile, uint dir)
 	return GB(TileHash(TileX(tile), TileY(tile)), 0, PUBLIC_ROAD_HASH_SIZE);
 }
 
+static const int32 BASE_COST = 100;          // Cost for utilizing an existing road, bridge, or tunnel.
+static const int32 COST_FOR_NEW_ROAD = 1000; // Cost for building a new road.
+static const int32 COST_FOR_TURN = 100;      // Additional cost if the road makes a turn.
+static const int32 COST_FOR_BRIDGE = 1250;   // Cost for building a bridge.
+static const int32 COST_FOR_TUNNEL = 1050;   // Cost for building a tunnel.
+static const int32 COST_FOR_SLOPE = 250;     // Additional cost if the road heads up or down a slope.
+
 /* AyStar callback for getting the cost of the current node. */
 static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
 {
-	return 1;
+	int32 cost = BASE_COST;
+
+	if (!IsTileType(current->tile, MP_ROAD)) {
+		if (!AreTilesAdjacent(parent->path.node.tile, current->tile))
+		{
+			// We're not adjacent, so we built a tunnel or bridge.
+			cost += (DistanceManhattan(parent->path.node.tile, current->tile)) * COST_FOR_NEW_ROAD + 4 * COST_FOR_SLOPE;
+		}
+		else if (!IsTileFlat(current->tile)) {
+			cost += COST_FOR_NEW_ROAD;
+			cost += COST_FOR_SLOPE;
+		}
+		else
+		{
+			cost += COST_FOR_NEW_ROAD;
+		}
+
+		//if (parent->path.parent != nullptr &&
+		//	DiagdirBetweenTiles(parent->path.parent->node.tile, parent->path.node.tile) != DiagdirBetweenTiles(parent->path.node.tile, current->tile))
+		//{
+		//	cost += COST_FOR_TURN;
+		//}
+	}
+
+	return cost;
 }
 
 /* AyStar callback for getting the estimated cost to the destination. */
 static int32 PublicRoad_CalculateH(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
 {
-	return DistanceManhattan(*(TileIndex*)aystar->user_target, current->tile);
+	return DistanceManhattan(*(TileIndex*)aystar->user_target, current->tile) * BASE_COST;
 }
 
 /* Helper function to check if a road along this tile path is possible. */
@@ -201,19 +239,89 @@ static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
 		((slopeEnd == slopeBegin && heightEnd != heightBegin) || slopeEnd == SLOPE_FLAT || slopeBegin == SLOPE_FLAT);
 }
 
+static TileIndex BuildTunnel(PathNode *current, PathNode *previous, bool build_tunnel = false)
+{
+	if (!build_tunnel) {
+		// Check if we are at a current slope.
+		if (!IsInclinedSlope(GetTileSlope(current->node.tile))) return INVALID_TILE;
+
+		// Check if it's an upward slope.
+		DiagDirection slope_direction = GetInclinedSlopeDirection(GetTileSlope(current->node.tile));
+
+		if (previous == nullptr) return INVALID_TILE;
+
+		DiagDirection road_direction = DiagdirBetweenTiles(previous->node.tile, current->node.tile);
+
+		if (slope_direction != road_direction) return INVALID_TILE;
+	}
+
+	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
+	bool can_build_tunnel = CmdBuildTunnel(current->node.tile, build_tunnel ? DC_EXEC : DC_NONE, ROADTYPES_ROAD | (TRANSPORT_ROAD << 8), 0).Succeeded();
+	cur_company.Restore();
+
+	if (!can_build_tunnel) return INVALID_TILE;
+
+	if (!IsTileType(_build_tunnel_endtile, MP_CLEAR) && !IsTileType(_build_tunnel_endtile, MP_TREES)) return INVALID_TILE;
+
+	return _build_tunnel_endtile;
+}
+
 /* AyStar callback for getting the neighbouring nodes of the given node. */
 static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 {
 	TileIndex tile = current->path.node.tile;
 
 	aystar->num_neighbours = 0;
-	for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
-		TileIndex t2 = tile + TileOffsByDiagDir(d);
-		if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
+
+	if (IsTileType(tile, MP_TUNNELBRIDGE))
+	{
+		aystar->neighbours[aystar->num_neighbours].tile = GetOtherTunnelBridgeEnd(tile);
+		aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+		aystar->num_neighbours++;
+
+		auto direction_to_other_end = DiagdirBetweenTiles(tile, GetOtherTunnelBridgeEnd(tile));
+		auto tunnel_direction = GetTunnelBridgeDirection(tile);
+		auto reversed_tunnel_direction = ReverseDiagDir(tunnel_direction);
+
+		TileIndex t2 = tile + TileOffsByDiagDir(reversed_tunnel_direction);
+		auto slope = GetTileSlope(t2);
+		if (IsValidTile(t2) && (slope == SLOPE_FLAT || IsInclinedSlope(slope)) &&
 			(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD))) {
 			aystar->neighbours[aystar->num_neighbours].tile = t2;
 			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 			aystar->num_neighbours++;
+		}
+	} else {
+		if (current->path.parent != nullptr && !AreTilesAdjacent(current->path.node.tile, current->path.parent->node.tile)) {
+			// We went through a potential tunnel, this limits our options to proceed to only forward.
+			auto tunnel_direction = DiagdirBetweenTiles(current->path.parent->node.tile, current->path.node.tile);
+			
+			TileIndex t2 = tile + TileOffsByDiagDir(tunnel_direction);
+			if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
+				(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD) || IsTileType(t2, MP_TUNNELBRIDGE))) {
+				aystar->neighbours[aystar->num_neighbours].tile = t2;
+				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+				aystar->num_neighbours++;
+			}
+		} else {
+			for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
+				TileIndex t2 = tile + TileOffsByDiagDir(d);
+				if (IsValidTile(t2) && CanBuildRoadFromTo(tile, t2) &&
+					(IsTileType(t2, MP_CLEAR) || IsTileType(t2, MP_TREES) || IsTileType(t2, MP_ROAD) || 
+					(IsTileType(t2, MP_TUNNELBRIDGE) && GetTunnelBridgeDirection(t2) == DiagdirBetweenTiles(tile, t2)))) {
+					aystar->neighbours[aystar->num_neighbours].tile = t2;
+					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+					aystar->num_neighbours++;
+				}
+			}
+
+			auto tunnel_end = BuildTunnel(&current->path, current->path.parent);
+
+			if (tunnel_end != INVALID_TILE) {
+				aystar->neighbours[aystar->num_neighbours].tile = tunnel_end;
+				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+				aystar->num_neighbours++;
+			}
 		}
 	}
 }
@@ -223,40 +331,44 @@ static int32 PublicRoad_EndNodeCheck(AyStar *aystar, OpenListNode *current)
 {
 	return current->path.node.tile == *(TileIndex*)aystar->user_target ? AYSTAR_FOUND_END_NODE : AYSTAR_DONE;
 }
+
 /* AyStar callback when an route has been found. */
 static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 {
-	/* Count river length. */
-	uint length = 0;
+	PathNode* child = nullptr;
 
 	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
-		length++;
-	}
-
-	uint cur_pos = 0;
-	PathNode* child = nullptr;
-	for (PathNode *path = &current->path; path != NULL; path = path->parent, cur_pos++) {
 		TileIndex tile = path->node.tile;
 
 		TownID townID = CalcClosestTownFromTile(tile)->index;
-		RoadBits roadBits = ROAD_NONE;
 
-		if (child != nullptr) {
-			TileIndex tile2 = child->node.tile;
-			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
-		}
-		if (path->parent != nullptr) {
-			TileIndex tile2 = path->parent->node.tile;
-			roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
-		}
+		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+			continue;
+		} else if (path->parent == nullptr || AreTilesAdjacent(tile, path->parent->node.tile)) {
+			RoadBits roadBits = ROAD_NONE;
 
-		if (child != nullptr || path->parent != nullptr) {
-			if (GetTileType(tile) == MP_ROAD) {
-				SetRoadBits(tile, GetRoadBits(tile, ROADTYPE_ROAD) | roadBits, ROADTYPE_ROAD);
+			if (child != nullptr) {
+				TileIndex tile2 = child->node.tile;
+				roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
 			}
-			else {
-				MakeRoadNormal(tile, roadBits, ROADTYPES_ROAD, townID, OWNER_TOWN, OWNER_NONE);
+			if (path->parent != nullptr) {
+				TileIndex tile2 = path->parent->node.tile;
+				roadBits |= DiagDirToRoadBits(DiagdirBetweenTiles(tile, tile2));
 			}
+
+			if (child != nullptr || path->parent != nullptr) {
+				if (GetTileType(tile) == MP_ROAD) {
+					SetRoadBits(tile, GetRoadBits(tile, ROADTYPE_ROAD) | roadBits, ROADTYPE_ROAD);
+				}
+				else {
+					MakeRoadNormal(tile, roadBits, ROADTYPES_ROAD, townID, OWNER_TOWN, OWNER_NONE);
+				}
+			}
+		} else {
+			bool tile_and_child_adjacent = (child == nullptr || AreTilesAdjacent(tile, child->node.tile));
+			bool tile_and_parent_adjacent = (path->parent == nullptr || AreTilesAdjacent(tile, path->parent->node.tile));
+
+			BuildTunnel(path, child, true);
 		}
 
 		child = path;

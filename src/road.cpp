@@ -26,6 +26,7 @@
 #include "tunnelbridge.h"
 #include "command_func.h"
 #include "core/backup_type.hpp"
+#include "core/random_func.hpp"
 
 #include "safeguards.h"
 
@@ -164,6 +165,7 @@ RoadTypes GetCompanyRoadtypes(CompanyID company)
 /*                                PUBLIC ROADS                               */
 /* ========================================================================= */
 
+CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 CommandCost CmdBuildTunnel(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 
@@ -183,8 +185,6 @@ static uint PublicRoad_Hash(uint tile, uint dir)
 static const int32 BASE_COST = 10;          // Cost for utilizing an existing road, bridge, or tunnel.
 static const int32 COST_FOR_NEW_ROAD = 100; // Cost for building a new road.
 static const int32 COST_FOR_TURN = 10;      // Additional cost if the road makes a turn.
-static const int32 COST_FOR_BRIDGE = 125;   // Cost for building a bridge.
-static const int32 COST_FOR_TUNNEL = 105;   // Cost for building a tunnel.
 static const int32 COST_FOR_SLOPE = 25;     // Additional cost if the road heads up or down a slope.
 
 /* AyStar callback for getting the cost of the current node. */
@@ -223,6 +223,30 @@ static int32 PublicRoad_CalculateH(AyStar *aystar, AyStarNode *current, OpenList
 	return DistanceManhattan(*(TileIndex*)aystar->user_target, current->tile) * BASE_COST;
 }
 
+/* Helper function to check if a tile along a certain direction is going up an inclined slope. */
+static bool IsUpwardsSlope(TileIndex tile, DiagDirection road_direction)
+{
+	auto slope = GetTileSlope(tile);
+
+	if (!IsInclinedSlope(slope)) return false;
+
+	auto slope_direction = GetInclinedSlopeDirection(slope);
+
+	return road_direction == slope_direction;
+}
+
+/* Helper function to check if a tile along a certain direction is going down an inclined slope. */
+static bool IsDownwardsSlope(TileIndex tile, DiagDirection road_direction)
+{
+	auto slope = GetTileSlope(tile);
+
+	if (!IsInclinedSlope(slope)) return false;
+
+	auto slope_direction = GetInclinedSlopeDirection(slope);
+
+	return road_direction == ReverseDiagDir(slope_direction);
+}
+
 /* Helper function to check if a road along this tile path is possible. */
 static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
 {
@@ -240,46 +264,80 @@ static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
 		((slopeEnd == slopeBegin && heightEnd != heightBegin) || slopeEnd == SLOPE_FLAT || slopeBegin == SLOPE_FLAT);
 }
 
-static TileIndex BuildTunnel(PathNode *current, PathNode *previous, bool build_tunnel = false)
+static TileIndex BuildTunnel(PathNode *current, bool build_tunnel = false)
 {
-	if (!build_tunnel) {
-		// Check if we are at a current slope.
-		if (!IsInclinedSlope(GetTileSlope(current->node.tile))) return INVALID_TILE;
-
-		// Check if it's an upward slope.
-		DiagDirection slope_direction = GetInclinedSlopeDirection(GetTileSlope(current->node.tile));
-
-		if (previous == nullptr) return INVALID_TILE;
-
-		DiagDirection road_direction = DiagdirBetweenTiles(previous->node.tile, current->node.tile);
-
-		if (slope_direction != road_direction) return INVALID_TILE;
-	}
-
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 	bool can_build_tunnel = CmdBuildTunnel(current->node.tile, build_tunnel ? DC_EXEC : DC_NONE, ROADTYPES_ROAD | (TRANSPORT_ROAD << 8), 0).Succeeded();
 	cur_company.Restore();
 
 	assert(!build_tunnel || can_build_tunnel);
+	assert(!build_tunnel || (IsTileType(current->node.tile, MP_TUNNELBRIDGE) && IsTileType(_build_tunnel_endtile, MP_TUNNELBRIDGE)));
 
 	if (!can_build_tunnel) return INVALID_TILE;
-
-	if (!IsTileType(_build_tunnel_endtile, MP_CLEAR) && !IsTileType(_build_tunnel_endtile, MP_TREES)) return INVALID_TILE;
+	if (!build_tunnel && !IsTileType(_build_tunnel_endtile, MP_CLEAR) && !IsTileType(_build_tunnel_endtile, MP_TREES)) return INVALID_TILE;
 
 	return _build_tunnel_endtile;
 }
 
-static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previousTile)
+static TileIndex BuildBridge(PathNode *current, bool build_bridge = false)
+{
+	TileIndex start_tile = current->node.tile;
+	DiagDirection direction = ReverseDiagDir(GetInclinedSlopeDirection(GetTileSlope(start_tile)));
+
+	TileIndex end_tile = INVALID_TILE;
+
+	for (TileIndex tile = start_tile + TileOffsByDiagDir(direction);
+		 IsValidTile(tile) &&
+		   (GetTunnelBridgeLength(start_tile, tile) <= _settings_game.construction.max_bridge_length) &&
+		   (GetTileZ(start_tile) < (GetTileZ(tile) + _settings_game.construction.max_bridge_height)) &&
+		   (GetTileZ(tile) <= GetTileZ(start_tile));
+		 tile += TileOffsByDiagDir(direction)) {
+
+		if (IsUpwardsSlope(tile, direction)) {
+			end_tile = tile;
+			break;
+		}
+	}
+
+	assert(!build_bridge || IsValidTile(end_tile));
+	assert(!build_bridge || IsTileType(end_tile, MP_CLEAR) || IsTileType(end_tile, MP_TREES));
+
+	if (!IsValidTile(end_tile)) return INVALID_TILE;
+	if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
+
+	std::vector<BridgeType> available_bridge_types;
+
+	for (uint i = 0; i < MAX_BRIDGES; ++i) {
+		if (CheckBridgeAvailability((BridgeType)i, GetTunnelBridgeLength(start_tile, end_tile)).Succeeded()) {
+			available_bridge_types.push_back((BridgeType)i);
+		}
+	}
+
+	auto bridge_type = available_bridge_types[RandomRange(available_bridge_types.size())];
+
+	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
+	bool can_build_bridge = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15)).Succeeded();
+	cur_company.Restore();
+
+	assert(!build_bridge || can_build_bridge);
+	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
+
+	if (!can_build_bridge) return INVALID_TILE;
+
+	return end_tile;
+}
+
+static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previous_tile)
 {
 	if (!IsValidTile(tile)) return false;
 
 	if (IsTileType(tile, MP_TUNNELBRIDGE))
 	{
-		if (GetOtherTunnelBridgeEnd(tile) == previousTile) return true;
+		if (GetOtherTunnelBridgeEnd(tile) == previous_tile) return true;
 
 		auto tunnel_direction = GetTunnelBridgeDirection(tile);
 
-		if (previousTile + TileOffsByDiagDir(tunnel_direction) != tile) return false;
+		if (previous_tile + TileOffsByDiagDir(tunnel_direction) != tile) return false;
 	} else {
 
 		if (!IsTileType(tile, MP_CLEAR) && !IsTileType(tile, MP_TREES) && !IsTileType(tile, MP_ROAD)) return false;
@@ -288,7 +346,7 @@ static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previousTile
 
 		if (IsInclinedSlope(slope)) {
 			auto slope_direction = GetInclinedSlopeDirection(slope);
-			auto road_direction = DiagdirBetweenTiles(previousTile, tile);
+			auto road_direction = DiagdirBetweenTiles(previous_tile, tile);
 
 			if (slope_direction != road_direction && ReverseDiagDir(slope_direction) != road_direction) return false;
 		} else if (slope != SLOPE_FLAT) {
@@ -306,13 +364,13 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 
 	aystar->num_neighbours = 0;
 
-	// Check if we just went through a tunnel that is yet to be built.
+	// Check if we just went through a tunnel or a bridge.
 	if (current->path.parent != nullptr && !AreTilesAdjacent(tile, current->path.parent->node.tile)) {
 		auto previous_tile = current->path.parent->node.tile;
-		// We went through a future tunnel, this limits our options to proceed to only forward.
-		auto tunnel_direction = DiagdirBetweenTiles(previous_tile, tile);
+		// We went through a tunnel or bridge, this limits our options to proceed to only forward.
+		auto tunnel_bridge_direction = DiagdirBetweenTiles(previous_tile, tile);
 
-		TileIndex t2 = tile + TileOffsByDiagDir(tunnel_direction);
+		TileIndex t2 = tile + TileOffsByDiagDir(tunnel_bridge_direction);
 		if (IsValidNeighborOfPreviousTile(t2, tile)) {
 			aystar->neighbours[aystar->num_neighbours].tile = t2;
 			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
@@ -338,14 +396,27 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 			}
 		});
 
-		// Check if we can turn this into a tunnel.
-		if (!IsTileType(tile, MP_TUNNELBRIDGE)) {
-			auto tunnel_end = BuildTunnel(&current->path, current->path.parent);
+		// Check if we can turn this into a tunnel or a bridge.
+		if (!IsTileType(tile, MP_TUNNELBRIDGE) && current->path.parent != nullptr) {
+			auto road_direction = DiagdirBetweenTiles(current->path.parent->node.tile, tile);
+			if (IsUpwardsSlope(tile, road_direction)) {
+				auto tunnel_end = BuildTunnel(&current->path);
 
-			if (tunnel_end != INVALID_TILE) {
-				aystar->neighbours[aystar->num_neighbours].tile = tunnel_end;
-				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
-				aystar->num_neighbours++;
+				if (tunnel_end != INVALID_TILE) {
+					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, tunnel_end)));
+					aystar->neighbours[aystar->num_neighbours].tile = tunnel_end;
+					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+					aystar->num_neighbours++;
+				}
+			} else if (IsDownwardsSlope(tile, road_direction)) {
+				auto bridge_end = BuildBridge(&current->path);
+
+				if (bridge_end != INVALID_TILE) {
+					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, bridge_end)));
+					aystar->neighbours[aystar->num_neighbours].tile = bridge_end;
+					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+					aystar->num_neighbours++;
+				}
 			}
 		}
 	}
@@ -393,10 +464,15 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 				}
 			}
 		} else {
-			bool tile_and_child_adjacent = (child == nullptr || AreTilesAdjacent(tile, child->node.tile));
-			bool tile_and_parent_adjacent = (path->parent == nullptr || AreTilesAdjacent(tile, path->parent->node.tile));
+			DiagDirection road_direction = DiagdirBetweenTiles(tile, path->parent->node.tile);
 
-			BuildTunnel(path, child, true);
+			if (IsUpwardsSlope(tile, road_direction)) {
+				auto end_tile = BuildTunnel(path, true);
+				assert(IsValidTile(end_tile));
+			} else if (IsDownwardsSlope(tile, road_direction)) {
+				auto end_tile = BuildBridge(path, true);
+				assert(IsValidTile(end_tile));
+			}
 		}
 
 		child = path;

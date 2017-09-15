@@ -3015,6 +3015,7 @@ STR_GENERATION_PROGRESS_NUM                                     :{BLACK}{NUM} / 
 STR_GENERATION_WORLD_GENERATION                                 :{BLACK}World generation
 STR_GENERATION_RIVER_GENERATION                                 :{BLACK}River generation
 STR_GENERATION_TREE_GENERATION                                  :{BLACK}Tree generation
+STR_GENERATION_PUBLIC_ROADS_GENERATION                          :{BLACK}Public roads generation
 STR_GENERATION_OBJECT_GENERATION                                :{BLACK}Object generation
 STR_GENERATION_CLEARING_TILES                                   :{BLACK}Rough and rocky area generation
 STR_GENERATION_SETTINGUP_GAME                                   :{BLACK}Setting up game

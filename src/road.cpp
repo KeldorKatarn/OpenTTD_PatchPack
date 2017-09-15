@@ -424,6 +424,8 @@ void GeneratePublicRoads()
 		}
 	}
 
+	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, unconnected_towns.size());
+
 	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
 	Town* main_town = *sorted_towns.begin();
 	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town->xy, a->xy) < DistanceManhattan(main_town->xy, b->xy); });
@@ -466,6 +468,8 @@ void GeneratePublicRoads()
 				break;
 			}
 		}
+		
+		IncreaseGeneratingWorldProgress(GWP_PUBLIC_ROADS);
 	});
 
 	finder.Free();

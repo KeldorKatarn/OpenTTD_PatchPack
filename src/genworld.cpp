@@ -20,7 +20,6 @@
 #include "viewport_func.h"
 #include "date_func.h"
 #include "engine_func.h"
-#include "road_func.h"
 #include "water.h"
 #include "video/video_driver.hpp"
 #include "tilehighlight_func.h"
@@ -43,6 +42,7 @@ void GenerateClearTile();
 void GenerateIndustries();
 void GenerateObjects();
 void GenerateTrees();
+void GeneratePublicRoads();
 
 void StartupEconomy();
 void StartupCompanies();

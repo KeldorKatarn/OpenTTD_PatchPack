@@ -66,18 +66,19 @@ struct GenWorldInfo {
 
 /** Current stage of world generation process */
 enum GenWorldProgress {
-	GWP_MAP_INIT,    ///< Initialize/allocate the map, start economy
-	GWP_LANDSCAPE,   ///< Create the landscape
-	GWP_RIVER,       ///< Create the rivers
-	GWP_ROUGH_ROCKY, ///< Make rough and rocky areas
-	GWP_TOWN,        ///< Generate towns
-	GWP_INDUSTRY,    ///< Generate industries
-	GWP_OBJECT,      ///< Generate objects (radio tower, light houses)
-	GWP_TREE,        ///< Generate trees
-	GWP_GAME_INIT,   ///< Initialize the game
-	GWP_RUNTILELOOP, ///< Runs the tile loop 1280 times to make snow etc
-	GWP_RUNSCRIPT,   ///< Runs the game script at most 2500 times, or when ever the script sleeps
-	GWP_GAME_START,  ///< Really prepare to start the game
+	GWP_MAP_INIT,     ///< Initialize/allocate the map, start economy
+	GWP_LANDSCAPE,    ///< Create the landscape
+	GWP_RIVER,        ///< Create the rivers
+	GWP_ROUGH_ROCKY,  ///< Make rough and rocky areas
+	GWP_TOWN,         ///< Generate towns
+	GWP_INDUSTRY,     ///< Generate industries
+	GWP_OBJECT,       ///< Generate objects (radio tower, light houses)
+	GWP_TREE,         ///< Generate trees
+	GWP_PUBLIC_ROADS, ///< Generate public roads
+	GWP_GAME_INIT,    ///< Initialize the game
+	GWP_RUNTILELOOP,  ///< Runs the tile loop 1280 times to make snow etc
+	GWP_RUNSCRIPT,    ///< Runs the game script at most 2500 times, or when ever the script sleeps
+	GWP_GAME_START,   ///< Really prepare to start the game
 	GWP_CLASS_COUNT
 };
 

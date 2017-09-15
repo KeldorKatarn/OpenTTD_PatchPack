@@ -179,12 +179,12 @@ static uint PublicRoad_Hash(uint tile, uint dir)
 	return GB(TileHash(TileX(tile), TileY(tile)), 0, PUBLIC_ROAD_HASH_SIZE);
 }
 
-static const int32 BASE_COST = 100;          // Cost for utilizing an existing road, bridge, or tunnel.
-static const int32 COST_FOR_NEW_ROAD = 1000; // Cost for building a new road.
-static const int32 COST_FOR_TURN = 100;      // Additional cost if the road makes a turn.
-static const int32 COST_FOR_BRIDGE = 1250;   // Cost for building a bridge.
-static const int32 COST_FOR_TUNNEL = 1050;   // Cost for building a tunnel.
-static const int32 COST_FOR_SLOPE = 250;     // Additional cost if the road heads up or down a slope.
+static const int32 BASE_COST = 10;          // Cost for utilizing an existing road, bridge, or tunnel.
+static const int32 COST_FOR_NEW_ROAD = 100; // Cost for building a new road.
+static const int32 COST_FOR_TURN = 10;      // Additional cost if the road makes a turn.
+static const int32 COST_FOR_BRIDGE = 125;   // Cost for building a bridge.
+static const int32 COST_FOR_TUNNEL = 105;   // Cost for building a tunnel.
+static const int32 COST_FOR_SLOPE = 25;     // Additional cost if the road heads up or down a slope.
 
 /* AyStar callback for getting the cost of the current node. */
 static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
@@ -406,12 +406,15 @@ void GeneratePublicRoads()
 		std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
 
 		std::for_each(towns.begin(), towns.end(), [&](auto end) {
+			MemSetT(&finder, 0);
+
 			finder.CalculateG = PublicRoad_CalculateG;
 			finder.CalculateH = PublicRoad_CalculateH;
 			finder.GetNeighbours = PublicRoad_GetNeighbours;
 			finder.EndNodeCheck = PublicRoad_EndNodeCheck;
 			finder.FoundEndNode = PublicRoad_FoundEndNode;
 			finder.user_target = &(end->xy);
+			finder.max_path_cost = DistanceManhattan(begin->xy, end->xy) * COST_FOR_NEW_ROAD * 5;
 
 			finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
 

@@ -383,29 +383,34 @@ void GeneratePublicRoads()
 	AyStar finder;
 	MemSetT(&finder, 0);
 
-	std::vector<Town*> towns;
+	std::vector<Town*> sorted_towns;
 	std::vector<Town*> unconnected_towns;
+	std::vector<Town*> already_connected_towns;
+	std::vector<Town*> towns;
+
 	{
 		Town* town;
 		FOR_ALL_TOWNS(town) {
 			unconnected_towns.push_back(town);
+			sorted_towns.push_back(town);
 		}
 	}
 
-	do
-	{
+	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
+	Town* main_town = *sorted_towns.begin();
+	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town->xy, a->xy) < DistanceManhattan(main_town->xy, b->xy); });
+
+	std::for_each(sorted_towns.begin(), sorted_towns.end(), [&](auto begin) {
+		std::remove(unconnected_towns.begin(), unconnected_towns.end(), begin);
+
+		std::sort(already_connected_towns.begin(), already_connected_towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
+		std::sort(unconnected_towns.begin(), unconnected_towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
+
 		towns.clear();
-		std::for_each(unconnected_towns.begin(), unconnected_towns.end(), [&](auto t) { towns.push_back(t); });
-		unconnected_towns.clear();
+		towns.insert(towns.begin(), unconnected_towns.begin(), unconnected_towns.end());
+		towns.insert(towns.begin(), already_connected_towns.begin(), already_connected_towns.end());
 
-		std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
-
-		Town* begin = *towns.begin();
-		towns.erase(towns.begin());
-
-		std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
-
-		std::for_each(towns.begin(), towns.end(), [&](auto end) {
+		for (auto end = towns.begin(); end != towns.end(); ++end) {
 			MemSetT(&finder, 0);
 
 			finder.CalculateG = PublicRoad_CalculateG;
@@ -413,8 +418,7 @@ void GeneratePublicRoads()
 			finder.GetNeighbours = PublicRoad_GetNeighbours;
 			finder.EndNodeCheck = PublicRoad_EndNodeCheck;
 			finder.FoundEndNode = PublicRoad_FoundEndNode;
-			finder.user_target = &(end->xy);
-			finder.max_path_cost = DistanceManhattan(begin->xy, end->xy) * COST_FOR_NEW_ROAD * 5;
+			finder.user_target = &((*end)->xy);
 
 			finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
 
@@ -423,12 +427,18 @@ void GeneratePublicRoads()
 			start.direction = INVALID_TRACKDIR;
 			finder.AddStartNode(&start, 0);
 
-			if (finder.Main() != AYSTAR_FOUND_END_NODE)
+			if (finder.Main() == AYSTAR_FOUND_END_NODE)
 			{
-				unconnected_towns.push_back(end);
+				already_connected_towns.push_back(begin);
+				std::remove(unconnected_towns.begin(), unconnected_towns.end(), (*end));
+
+				if (std::find(already_connected_towns.begin(), already_connected_towns.end(), (*end)) != already_connected_towns.end())
+					already_connected_towns.push_back((*end));
+
+				break;
 			}
-		});
-	} while (!unconnected_towns.empty());
+		}
+	});
 
 	finder.Free();
 }

@@ -192,10 +192,9 @@ static uint PublicRoad_Hash(uint tile, uint dir)
 	return GB(TileHash(TileX(tile), TileY(tile)), 0, PUBLIC_ROAD_HASH_SIZE);
 }
 
-static const int32 BASE_COST = 10;          // Cost for utilizing an existing road, bridge, or tunnel.
-static const int32 COST_FOR_NEW_ROAD = 100; // Cost for building a new road.
-static const int32 COST_FOR_TURN = 1;       // Additional cost if the road makes a turn.
-static const int32 COST_FOR_SLOPE = 25;     // Additional cost if the road heads up or down a slope.
+static const int32 BASE_COST = 1;          // Cost for utilizing an existing road, bridge, or tunnel.
+static const int32 COST_FOR_NEW_ROAD = 10; // Cost for building a new road.
+static const int32 COST_FOR_SLOPE = 5;     // Additional cost if the road heads up or down a slope.
 
 /* AyStar callback for getting the cost of the current node. */
 static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenListNode *parent)
@@ -206,7 +205,7 @@ static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenList
 		if (!AreTilesAdjacent(parent->path.node.tile, current->tile))
 		{
 			// We're not adjacent, so we built a tunnel or bridge.
-			cost += (DistanceManhattan(parent->path.node.tile, current->tile)) * COST_FOR_NEW_ROAD + 4 * COST_FOR_SLOPE;
+			cost += (DistanceManhattan(parent->path.node.tile, current->tile)) * COST_FOR_NEW_ROAD + 8 * COST_FOR_SLOPE;
 		}
 		else if (!IsTileFlat(current->tile)) {
 			cost += COST_FOR_NEW_ROAD;
@@ -215,12 +214,6 @@ static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenList
 		else
 		{
 			cost += COST_FOR_NEW_ROAD;
-		}
-
-		if (parent->path.parent != nullptr &&
-			DiagdirBetweenTiles(parent->path.parent->node.tile, parent->path.node.tile) != DiagdirBetweenTiles(parent->path.node.tile, current->tile))
-		{
-			cost += COST_FOR_TURN;
 		}
 	}
 
@@ -402,17 +395,6 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 static bool IsValidNeighbourOfPreviousTile(TileIndex tile, TileIndex previous_tile)
 {
 	if (!IsValidTile(tile)) return false;
-
-	// Avoid minipeaks and small dips.
-	auto road_direction = DiagdirBetweenTiles(previous_tile, tile);
-
-	if (!IsTileType(tile, MP_TUNNELBRIDGE) &&
-		!IsTileType(previous_tile, MP_TUNNELBRIDGE) &&
-		AreTilesAdjacent(previous_tile, tile) &&
-		(IsUpwardsSlope(previous_tile, road_direction) && IsDownwardsSlope(tile, road_direction)) ||
-		(IsDownwardsSlope(previous_tile, road_direction) && IsUpwardsSlope(tile, road_direction)))
-		return false;
-
 
 	if (IsTileType(tile, MP_TUNNELBRIDGE))
 	{

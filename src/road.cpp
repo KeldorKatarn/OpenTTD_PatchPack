@@ -392,21 +392,23 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 	cur_company.Restore();
 
 	assert(!build_bridge || can_build_bridge);
-	assert((!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE))) && (!build_bridge || "TileType: " + GetTileType(end_tile)));
+	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
 
 	if (!can_build_bridge) return INVALID_TILE;
 
 	return end_tile;
 }
 
-static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previous_tile)
+static bool IsValidNeighbourOfPreviousTile(TileIndex tile, TileIndex previous_tile)
 {
 	if (!IsValidTile(tile)) return false;
 
 	// Avoid minipeaks and small dips.
 	auto road_direction = DiagdirBetweenTiles(previous_tile, tile);
 
-	if (AreTilesAdjacent(previous_tile, tile) &&
+	if (!IsTileType(tile, MP_TUNNELBRIDGE) &&
+		!IsTileType(previous_tile, MP_TUNNELBRIDGE) &&
+		AreTilesAdjacent(previous_tile, tile) &&
 		(IsUpwardsSlope(previous_tile, road_direction) && IsDownwardsSlope(tile, road_direction)) ||
 		(IsDownwardsSlope(previous_tile, road_direction) && IsUpwardsSlope(tile, road_direction)))
 		return false;
@@ -452,36 +454,34 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 		auto tunnel_bridge_direction = DiagdirBetweenTiles(previous_tile, tile);
 
 		TileIndex t2 = tile + TileOffsByDiagDir(tunnel_bridge_direction);
-		if (IsValidNeighborOfPreviousTile(t2, tile)) {
+		if (IsValidNeighbourOfPreviousTile(t2, tile)) {
 			aystar->neighbours[aystar->num_neighbours].tile = t2;
 			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 			aystar->num_neighbours++;
 		}
 	} else {
-		// Handle all the regular neighbors and existing tunnels/bridges.
-		std::vector<TileIndex> potential_neighbors;
+		// Handle all the regular neighbours and existing tunnels/bridges.
+		std::vector<TileIndex> potential_neighbours;
 
 		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
-			auto neighbor = GetOtherTunnelBridgeEnd(tile);
+			auto neighbour = GetOtherTunnelBridgeEnd(tile);
 
-			if (IsValidNeighborOfPreviousTile(neighbor, tile)) {
-				aystar->neighbours[aystar->num_neighbours].tile = neighbor;
-				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
-				aystar->num_neighbours++;
-			}
+			aystar->neighbours[aystar->num_neighbours].tile = neighbour;
+			aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+			aystar->num_neighbours++;
 
-			neighbor = tile + TileOffsByDiagDir(ReverseDiagDir(DiagdirBetweenTiles(tile, neighbor)));
+			neighbour = tile + TileOffsByDiagDir(ReverseDiagDir(DiagdirBetweenTiles(tile, neighbour)));
 
-			if (IsValidNeighborOfPreviousTile(neighbor, tile)) {
-				aystar->neighbours[aystar->num_neighbours].tile = neighbor;
+			if (IsValidNeighbourOfPreviousTile(neighbour, tile)) {
+				aystar->neighbours[aystar->num_neighbours].tile = neighbour;
 				aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 				aystar->num_neighbours++;
 			}
 		} else {
 			for (DiagDirection d = DIAGDIR_BEGIN; d < DIAGDIR_END; d++) {
-				auto neighbor = tile + TileOffsByDiagDir(d);
-				if (IsValidNeighborOfPreviousTile(neighbor, tile)) {
-					aystar->neighbours[aystar->num_neighbours].tile = neighbor;
+				auto neighbour = tile + TileOffsByDiagDir(d);
+				if (IsValidNeighbourOfPreviousTile(neighbour, tile)) {
+					aystar->neighbours[aystar->num_neighbours].tile = neighbour;
 					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
 					aystar->num_neighbours++;
 				}
@@ -646,8 +646,8 @@ void GeneratePublicRoads()
 
 	vector<Town*> towns;
 
-	AyStar finder;
-	MemSetT(&finder, 0);
+	
+	
 
 	{
 		Town* town;
@@ -683,6 +683,8 @@ void GeneratePublicRoads()
 		auto reachable_network_iter = _towns_reachable_networks.find(begin_town);
 
 		if (reachable_network_iter != _towns_reachable_networks.end()) {
+			AyStar finder;
+			MemSetT(&finder, 0);
 			auto reachable_network = reachable_network_iter->second;
 
 			sort(reachable_network->begin(), reachable_network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town->xy, a->xy) < DistanceManhattan(begin_town->xy, b->xy); });
@@ -697,11 +699,14 @@ void GeneratePublicRoads()
 			for_each(_towns_visited_along_the_way.begin(), _towns_visited_along_the_way.end(), [&](const Town* visited_town) {
 				if (visited_town != begin_town) _towns_reachable_networks.insert(make_pair(visited_town, reachable_network_iter->second));
 			});
+			finder.Free();
 		} else {
 			// Sort networks by failed connection attempts, so we try the most likely one first.
 			sort(town_networks.begin(), town_networks.end(), [&](auto a, auto b) { return a.first < b.first; });
 
 			if (!any_of(town_networks.begin(), town_networks.end(), [&](auto network_pair) {
+				AyStar finder;
+				MemSetT(&finder, 0);
 				auto network = network_pair.second;
 
 				// Try to connect to the town in the network that is closest to us.
@@ -719,6 +724,7 @@ void GeneratePublicRoads()
 
 				// Increase number of failed attempts if necessary.
 				network_pair.first += (found_path ? 0 : 1);
+				finder.Free();
 
 				return found_path;
 
@@ -759,5 +765,5 @@ void GeneratePublicRoads()
 	DEBUG(misc, 0, "checked_nodes_on_failure_avg: " + checked_nodes_on_failure_avg);
 	DEBUG(misc, 0, "times_we_found_path_the_easy_way: " + times_we_found_path_the_easy_way);
 
-	finder.Free();
+	
 }

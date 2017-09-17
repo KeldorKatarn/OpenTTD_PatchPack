@@ -282,6 +282,7 @@ static TileIndex BuildTunnel(PathNode *current, bool build_tunnel = false)
 static TileIndex BuildBridge(PathNode *current, TileIndex end_tile = INVALID_TILE, bool build_bridge = false)
 {
 	TileIndex start_tile = current->node.tile;
+
 	DiagDirection direction = ReverseDiagDir(GetInclinedSlopeDirection(GetTileSlope(start_tile)));
 
 	if (!build_bridge) {
@@ -293,18 +294,18 @@ static TileIndex BuildBridge(PathNode *current, TileIndex end_tile = INVALID_TIL
 			(GetTileZ(tile) <= GetTileZ(start_tile));
 			tile += TileOffsByDiagDir(direction)) {
 
-			if (IsUpwardsSlope(tile, direction)) {
+			// No supershort bridges and always ending up on a matching upwards slope.
+			if (!AreTilesAdjacent(start_tile, tile) && IsUpwardsSlope(tile, direction)) {
 				end_tile = tile;
 				break;
 			}
 		}
+
+		if (!IsValidTile(end_tile)) return INVALID_TILE;
+		if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
 	}
 
 	assert(!build_bridge || IsValidTile(end_tile));
-	assert(!build_bridge || IsTileType(end_tile, MP_CLEAR) || IsTileType(end_tile, MP_TREES));
-
-	if (!IsValidTile(end_tile)) return INVALID_TILE;
-	if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
 
 	std::vector<BridgeType> available_bridge_types;
 
@@ -359,13 +360,12 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 				break;
 			}
 		}
+
+		if (!IsValidTile(end_tile)) return INVALID_TILE;
+		if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
 	}
 
 	assert(!build_bridge || IsValidTile(end_tile));
-	assert(!build_bridge || IsTileType(end_tile, MP_CLEAR) || IsTileType(end_tile, MP_TREES));
-
-	if (!IsValidTile(end_tile)) return INVALID_TILE;
-	if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
 
 	std::vector<BridgeType> available_bridge_types;
 
@@ -382,7 +382,7 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 	cur_company.Restore();
 
 	assert(!build_bridge || can_build_bridge);
-	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
+	assert((!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE))) && (!build_bridge || "TileType: " + GetTileType(end_tile)));
 
 	if (!can_build_bridge) return INVALID_TILE;
 
@@ -392,6 +392,15 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 static bool IsValidNeighborOfPreviousTile(TileIndex tile, TileIndex previous_tile)
 {
 	if (!IsValidTile(tile)) return false;
+
+	// Avoid minipeaks and small dips.
+	auto road_direction = DiagdirBetweenTiles(previous_tile, tile);
+
+	if (AreTilesAdjacent(previous_tile, tile) &&
+		(IsUpwardsSlope(previous_tile, road_direction) && IsDownwardsSlope(tile, road_direction)) ||
+		(IsDownwardsSlope(previous_tile, road_direction) && IsUpwardsSlope(tile, road_direction)))
+		return false;
+
 
 	if (IsTileType(tile, MP_TUNNELBRIDGE))
 	{
@@ -463,7 +472,6 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 			auto road_direction = DiagdirBetweenTiles(current->path.parent->node.tile, tile);
 			if (IsUpwardsSlope(tile, road_direction)) {
 				auto tunnel_end = BuildTunnel(&current->path);
-				assert(tunnel_end == INVALID_TILE || IsDownwardsSlope(tunnel_end, road_direction));
 
 				if (tunnel_end != INVALID_TILE) {
 					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, tunnel_end)));
@@ -473,7 +481,6 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 				}
 			} else if (IsDownwardsSlope(tile, road_direction)) {
 				auto bridge_end = BuildBridge(&current->path);
-				assert(bridge_end == INVALID_TILE || IsUpwardsSlope(bridge_end, road_direction));
 
 				if (bridge_end != INVALID_TILE) {
 					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, bridge_end)));
@@ -550,23 +557,44 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 
 			auto end_tile = INVALID_TILE;
 
+			auto start_slope = GetTileSlope(tile);
+
 			if (IsUpwardsSlope(tile, road_direction)) {
 				end_tile = BuildTunnel(path, true);
-				assert(IsValidTile(end_tile));
+				assert(IsValidTile(end_tile) && IsDownwardsSlope(end_tile, road_direction));
 			} else if (IsDownwardsSlope(tile, road_direction)) {
 				// Provide the function with the end tile, since we already know it, but still check the result.
 				end_tile = BuildBridge(path, path->parent->node.tile, true);
-				assert(IsValidTile(end_tile));
+				assert(IsValidTile(end_tile) && IsUpwardsSlope(end_tile, road_direction));
 			} else {
 				// River bridge is the last possibility.
 				assert(GetTileSlope(tile) == SLOPE_FLAT);
 				end_tile = BuildRiverBridge(path, road_direction, path->parent->node.tile, true);
-				assert(IsValidTile(end_tile));
+				assert(IsValidTile(end_tile) && GetTileSlope(end_tile) == SLOPE_FLAT);
 			}
 		}
 
 		child = path;
 	}
+}
+
+bool FindPath(AyStar& finder, TileIndex from, TileIndex to)
+{
+	finder.CalculateG = PublicRoad_CalculateG;
+	finder.CalculateH = PublicRoad_CalculateH;
+	finder.GetNeighbours = PublicRoad_GetNeighbours;
+	finder.EndNodeCheck = PublicRoad_EndNodeCheck;
+	finder.FoundEndNode = PublicRoad_FoundEndNode;
+	finder.user_target = &(to);
+
+	finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
+
+	AyStarNode start;
+	start.tile = from;
+	start.direction = INVALID_TRACKDIR;
+	finder.AddStartNode(&start, 0);
+
+	return (finder.Main() == AYSTAR_FOUND_END_NODE);
 }
 
 /**
@@ -577,64 +605,57 @@ void GeneratePublicRoads()
 	AyStar finder;
 	MemSetT(&finder, 0);
 
-	std::vector<Town*> sorted_towns;
-	std::vector<Town*> unconnected_towns;
-	std::vector<Town*> already_connected_towns;
 	std::vector<Town*> towns;
 
 	{
 		Town* town;
 		FOR_ALL_TOWNS(town) {
-			unconnected_towns.push_back(town);
-			sorted_towns.push_back(town);
+			towns.push_back(town);
 		}
 	}
 
-	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, unconnected_towns.size());
+	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, towns.size());
 
-	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
-	Town* main_town = *sorted_towns.begin();
-	std::sort(sorted_towns.begin(), sorted_towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town->xy, a->xy) < DistanceManhattan(main_town->xy, b->xy); });
+	// Create a list of networks which also contain a value indicating how many times we failed to connect to them.
+	std::vector<std::pair<uint, std::vector<Town*>>> town_networks;
 
-	std::for_each(sorted_towns.begin(), sorted_towns.end(), [&](auto begin) {
-		std::remove(unconnected_towns.begin(), unconnected_towns.end(), begin);
+	std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
+	Town* main_town = *towns.begin();
+	towns.erase(towns.begin());
 
-		std::sort(already_connected_towns.begin(), already_connected_towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
-		std::sort(unconnected_towns.begin(), unconnected_towns.end(), [&](auto a, auto b) { return DistanceManhattan(begin->xy, a->xy) < DistanceManhattan(begin->xy, b->xy); });
+	std::vector<Town*> main_network;
+	main_network.push_back(main_town);
 
-		towns.clear();
-		towns.insert(towns.begin(), unconnected_towns.begin(), unconnected_towns.end());
-		towns.insert(towns.begin(), already_connected_towns.begin(), already_connected_towns.end());
+	town_networks.push_back(std::make_pair(0, main_network));
+	IncreaseGeneratingWorldProgress(GWP_PUBLIC_ROADS);
 
-		for (auto end = towns.begin(); end != towns.end(); ++end) {
-			MemSetT(&finder, 0);
+	std::sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town->xy, a->xy) < DistanceManhattan(main_town->xy, b->xy); });
 
-			finder.CalculateG = PublicRoad_CalculateG;
-			finder.CalculateH = PublicRoad_CalculateH;
-			finder.GetNeighbours = PublicRoad_GetNeighbours;
-			finder.EndNodeCheck = PublicRoad_EndNodeCheck;
-			finder.FoundEndNode = PublicRoad_FoundEndNode;
-			finder.user_target = &((*end)->xy);
+	std::for_each(towns.begin(), towns.end(), [&](auto begin_town) {
+		// Sort networks by failed connection attempts, so we try the most likely one first.
+		std::sort(town_networks.begin(), town_networks.end(), [&](auto a, auto b) { return a.first < b.first; });
 
-			finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
+		// Check if we can connect to any of the networks.
+		if (!std::any_of(town_networks.begin(), town_networks.end(), [&](auto network) {
+			// Try to connect to the town in the network that is closest to us.
+			// If we can't connect to that one, we can't connect to any of them since they are all interconnected.
+			std::sort(network.second.begin(), network.second.end(), [&](auto a, auto b) { return DistanceManhattan(begin_town->xy, a->xy) < DistanceManhattan(begin_town->xy, b->xy); });
+			Town* end_town = *network.second.begin();
 
-			AyStarNode start;
-			start.tile = begin->xy;
-			start.direction = INVALID_TRACKDIR;
-			finder.AddStartNode(&start, 0);
+			bool found_path = FindPath(finder, begin_town->xy, end_town->xy);
 
-			if (finder.Main() == AYSTAR_FOUND_END_NODE)
-			{
-				already_connected_towns.push_back(begin);
-				std::remove(unconnected_towns.begin(), unconnected_towns.end(), (*end));
+			// Increase number of failed attempts if necessary.
+			network.first += (found_path ? 0 : 1);
 
-				if (std::find(already_connected_towns.begin(), already_connected_towns.end(), (*end)) != already_connected_towns.end())
-					already_connected_towns.push_back((*end));
+			return found_path;
 
-				break;
-			}
+		})) {
+			// We failed to connect to any network, so we are a separate network. Let future towns try to connect to us.
+			std::vector<Town*> new_network;
+			new_network.push_back(begin_town);
+			town_networks.push_back(std::make_pair(0, new_network));
 		}
-		
+
 		IncreaseGeneratingWorldProgress(GWP_PUBLIC_ROADS);
 	});
 

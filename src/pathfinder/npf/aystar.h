@@ -19,6 +19,8 @@
 #define AYSTAR_H
 
 #include "queue.h"
+#include <unordered_map>
+#include <memory>
 #include "../../tile_type.h"
 #include "../../track_type.h"
 
@@ -57,6 +59,15 @@ struct PathNode {
 struct OpenListNode {
 	int g;
 	PathNode path;
+};
+
+struct PairHash {
+public:
+	template <typename T, typename U>
+	std::size_t operator()(const std::pair<T, U> &x) const
+	{
+		return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+	}
 };
 
 struct AyStar;
@@ -135,14 +146,14 @@ struct AyStar {
 	void *user_target;
 	void *user_data;
 
-	byte loops_per_tick;   ///< How many loops are there called before Main() gives control back to the caller. 0 = until done.
-	uint max_path_cost;    ///< If the g-value goes over this number, it stops searching, 0 = infinite.
-	uint max_search_nodes; ///< The maximum number of nodes that will be expanded, 0 = infinite.
+	byte loops_per_tick = 0;   ///< How many loops are there called before Main() gives control back to the caller. 0 = until done.
+	uint max_path_cost = 0;    ///< If the g-value goes over this number, it stops searching, 0 = infinite.
+	uint max_search_nodes = 0; ///< The maximum number of nodes that will be expanded, 0 = infinite.
 
 	/* These should be filled with the neighbours of a tile by
 	 * GetNeighbours */
 	AyStarNode neighbours[12];
-	byte num_neighbours;
+	byte num_neighbours = 0;
 
 	void Init(Hash_HashProc hash, uint num_buckets);
 
@@ -156,9 +167,9 @@ struct AyStar {
 	void CheckTile(AyStarNode *current, OpenListNode *parent);
 
 protected:
-	Hash       closedlist_hash; ///< The actual closed list.
+	std::unordered_map<std::pair<TileIndex, Trackdir>, PathNode*, PairHash> closedlist_hash;
 	BinaryHeap openlist_queue;  ///< The open queue.
-	Hash       openlist_hash;   ///< An extra hash to speed up the process of looking up an element in the open list.
+	std::unordered_map<std::pair<TileIndex, Trackdir>, OpenListNode*, PairHash> openlist_hash;
 
 	void OpenListAdd(PathNode *parent, const AyStarNode *node, int f, int g);
 	OpenListNode *OpenListIsInList(const AyStarNode *node);

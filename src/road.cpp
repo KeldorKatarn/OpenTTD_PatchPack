@@ -627,10 +627,6 @@ void GeneratePublicRoads()
 	using namespace std;
 
 	vector<Town*> towns;
-
-	
-	
-
 	{
 		Town* town;
 		FOR_ALL_TOWNS(town) {
@@ -666,7 +662,6 @@ void GeneratePublicRoads()
 
 		if (reachable_network_iter != _towns_reachable_networks.end()) {
 			AyStar finder;
-			MemSetT(&finder, 0);
 			auto reachable_network = reachable_network_iter->second;
 
 			sort(reachable_network->begin(), reachable_network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town->xy, a->xy) < DistanceManhattan(begin_town->xy, b->xy); });
@@ -688,7 +683,6 @@ void GeneratePublicRoads()
 
 			if (!any_of(town_networks.begin(), town_networks.end(), [&](auto network_pair) {
 				AyStar finder;
-				MemSetT(&finder, 0);
 				auto network = network_pair.second;
 
 				// Try to connect to the town in the network that is closest to us.

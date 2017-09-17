@@ -279,23 +279,24 @@ static TileIndex BuildTunnel(PathNode *current, bool build_tunnel = false)
 	return _build_tunnel_endtile;
 }
 
-static TileIndex BuildBridge(PathNode *current, bool build_bridge = false)
+static TileIndex BuildBridge(PathNode *current, TileIndex end_tile = INVALID_TILE, bool build_bridge = false)
 {
 	TileIndex start_tile = current->node.tile;
 	DiagDirection direction = ReverseDiagDir(GetInclinedSlopeDirection(GetTileSlope(start_tile)));
 
-	TileIndex end_tile = INVALID_TILE;
+	if (!build_bridge) {
+		// We are not building yet, so we still need to find the end_tile.
+		for (TileIndex tile = start_tile + TileOffsByDiagDir(direction);
+			IsValidTile(tile) &&
+			(GetTunnelBridgeLength(start_tile, tile) <= _settings_game.construction.max_bridge_length) &&
+			(GetTileZ(start_tile) < (GetTileZ(tile) + _settings_game.construction.max_bridge_height)) &&
+			(GetTileZ(tile) <= GetTileZ(start_tile));
+			tile += TileOffsByDiagDir(direction)) {
 
-	for (TileIndex tile = start_tile + TileOffsByDiagDir(direction);
-		 IsValidTile(tile) &&
-		   (GetTunnelBridgeLength(start_tile, tile) <= _settings_game.construction.max_bridge_length) &&
-		   (GetTileZ(start_tile) < (GetTileZ(tile) + _settings_game.construction.max_bridge_height)) &&
-		   (GetTileZ(tile) <= GetTileZ(start_tile));
-		 tile += TileOffsByDiagDir(direction)) {
-
-		if (IsUpwardsSlope(tile, direction)) {
-			end_tile = tile;
-			break;
+			if (IsUpwardsSlope(tile, direction)) {
+				end_tile = tile;
+				break;
+			}
 		}
 	}
 
@@ -313,7 +314,68 @@ static TileIndex BuildBridge(PathNode *current, bool build_bridge = false)
 		}
 	}
 
-	auto bridge_type = available_bridge_types[RandomRange(available_bridge_types.size())];
+	assert(!build_bridge || !available_bridge_types.empty());
+	if (available_bridge_types.empty()) return INVALID_TILE;
+
+	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
+
+	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
+	bool can_build_bridge = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15)).Succeeded();
+	cur_company.Restore();
+
+	assert(!build_bridge || can_build_bridge);
+	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
+
+	if (!can_build_bridge) return INVALID_TILE;
+
+	return end_tile;
+}
+
+static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_direction, TileIndex end_tile = INVALID_TILE, bool build_bridge = false)
+{
+	TileIndex start_tile = current->node.tile;
+
+	if (!build_bridge) {
+		// We are not building yet, so we still need to find the end_tile.
+		// We will only build a bridge if we need to cross a river, so first check for that.
+		TileIndex tile = start_tile + TileOffsByDiagDir(road_direction);
+
+		if (!IsWaterTile(tile) || !IsRiver(tile)) return INVALID_TILE;
+
+		// Now let's see if we can bridge it. But don't bridge anything more than 4 river tiles. Cities aren't allowed to, so public roads we are not either.
+		// Only bridges starting at slopes should be longer ones. The others look like crap when built this way. Players can build them but the map generator
+		// should not force that on them. This is just to bridge rivers, not to make long bridges.
+		for (;
+			IsValidTile(tile) &&
+			(GetTunnelBridgeLength(start_tile, tile) <= 5) &&
+			(GetTileZ(start_tile) < (GetTileZ(tile) + _settings_game.construction.max_bridge_height)) &&
+			(GetTileZ(tile) <= GetTileZ(start_tile));
+			tile += TileOffsByDiagDir(road_direction)) {
+
+			if ((IsTileType(tile, MP_CLEAR) || IsTileType(tile, MP_TREES)) &&
+				GetTileZ(tile) <= GetTileZ(start_tile) &&
+				GetTileSlope(tile) == SLOPE_FLAT) {
+				end_tile = tile;
+				break;
+			}
+		}
+	}
+
+	assert(!build_bridge || IsValidTile(end_tile));
+	assert(!build_bridge || IsTileType(end_tile, MP_CLEAR) || IsTileType(end_tile, MP_TREES));
+
+	if (!IsValidTile(end_tile)) return INVALID_TILE;
+	if (!IsTileType(end_tile, MP_CLEAR) && !IsTileType(end_tile, MP_TREES)) return INVALID_TILE;
+
+	std::vector<BridgeType> available_bridge_types;
+
+	for (uint i = 0; i < MAX_BRIDGES; ++i) {
+		if (CheckBridgeAvailability((BridgeType)i, GetTunnelBridgeLength(start_tile, end_tile)).Succeeded()) {
+			available_bridge_types.push_back((BridgeType)i);
+		}
+	}
+
+	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 	bool can_build_bridge = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15)).Succeeded();
@@ -401,6 +463,7 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 			auto road_direction = DiagdirBetweenTiles(current->path.parent->node.tile, tile);
 			if (IsUpwardsSlope(tile, road_direction)) {
 				auto tunnel_end = BuildTunnel(&current->path);
+				assert(tunnel_end == INVALID_TILE || IsDownwardsSlope(tunnel_end, road_direction));
 
 				if (tunnel_end != INVALID_TILE) {
 					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, tunnel_end)));
@@ -410,6 +473,7 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 				}
 			} else if (IsDownwardsSlope(tile, road_direction)) {
 				auto bridge_end = BuildBridge(&current->path);
+				assert(bridge_end == INVALID_TILE || IsUpwardsSlope(bridge_end, road_direction));
 
 				if (bridge_end != INVALID_TILE) {
 					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, bridge_end)));
@@ -418,7 +482,22 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 					aystar->num_neighbours++;
 				}
 			}
+			else if (GetTileSlope(tile) == SLOPE_FLAT)
+			{
+				// Check if we could bridge a river from a flat tile. Not looking pretty on the map but you gotta do what you gotta do.
+				auto bridge_end = BuildRiverBridge(&current->path, DiagdirBetweenTiles(current->path.parent->node.tile, tile));
+				assert(bridge_end == INVALID_TILE || GetTileSlope(bridge_end) == SLOPE_FLAT);
+
+				if (bridge_end != INVALID_TILE) {
+					assert(IsValidDiagDirection(DiagdirBetweenTiles(tile, bridge_end)));
+					aystar->neighbours[aystar->num_neighbours].tile = bridge_end;
+					aystar->neighbours[aystar->num_neighbours].direction = INVALID_TRACKDIR;
+					aystar->num_neighbours++;
+				}
+
+			}
 		}
+
 	}
 }
 
@@ -439,6 +518,7 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 		TownID townID = CalcClosestTownFromTile(tile)->index;
 
 		if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+			// Just follow the path; infrastructure is already in place.
 			continue;
 		} else if (path->parent == nullptr || AreTilesAdjacent(tile, path->parent->node.tile)) {
 			RoadBits road_bits = ROAD_NONE;
@@ -454,6 +534,7 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 
 			if (child != nullptr || path->parent != nullptr) {
 				// Check if we need to build anything.
+				// If it is already a road and has the right bits, we are good. Otherwise build the needed ones.
 				if (!IsTileType(tile, MP_ROAD) || ((GetRoadBits(tile, ROADTYPE_ROAD) & road_bits) != road_bits))
 				{
 					Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
@@ -464,13 +545,22 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 				}
 			}
 		} else {
+			// We only get here if we have a parent and we're not adjacent to it. River/Tunnel time!
 			DiagDirection road_direction = DiagdirBetweenTiles(tile, path->parent->node.tile);
 
+			auto end_tile = INVALID_TILE;
+
 			if (IsUpwardsSlope(tile, road_direction)) {
-				auto end_tile = BuildTunnel(path, true);
+				end_tile = BuildTunnel(path, true);
 				assert(IsValidTile(end_tile));
 			} else if (IsDownwardsSlope(tile, road_direction)) {
-				auto end_tile = BuildBridge(path, true);
+				// Provide the function with the end tile, since we already know it, but still check the result.
+				end_tile = BuildBridge(path, path->parent->node.tile, true);
+				assert(IsValidTile(end_tile));
+			} else {
+				// River bridge is the last possibility.
+				assert(GetTileSlope(tile) == SLOPE_FLAT);
+				end_tile = BuildRiverBridge(path, road_direction, path->parent->node.tile, true);
 				assert(IsValidTile(end_tile));
 			}
 		}

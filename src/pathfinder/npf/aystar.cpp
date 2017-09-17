@@ -313,7 +313,7 @@ void AyStar::AddStartNode(AyStarNode *start_node, uint g)
  */
 void AyStar::Init(Hash_HashProc hash, uint num_buckets)
 {
-	//MemSetT(&neighbours, 0);
+	MemSetT(&neighbours, 0);
 	MemSetT(&openlist_queue, 0);
 
 	/* Allocated the Hash for the OpenList and ClosedList */

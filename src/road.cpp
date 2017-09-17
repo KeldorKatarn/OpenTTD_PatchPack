@@ -48,6 +48,13 @@ static bool IsPossibleCrossing(const TileIndex tile, Axis ax)
 		GetFoundationSlope(tile) == SLOPE_FLAT);
 }
 
+/** Whether to build public roads */
+enum PublicRoadsConstruction {
+	PRC_NONE,         ///< Generate no public roads
+	PRC_WITH_CURVES,  ///< Generate roads with lots of curves
+	PRC_AVOID_CURVES, ///< Generate roads avoiding curves if possible
+};
+
 /**
  * Clean up unnecessary RoadBits of a planed tile.
  * @param tile current tile
@@ -215,6 +222,12 @@ static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenList
 		{
 			cost += COST_FOR_NEW_ROAD;
 		}
+	}
+
+	if (_settings_game.game_creation.build_public_roads == PRC_AVOID_CURVES &&
+		parent->path.parent != nullptr &&
+		DiagdirBetweenTiles(parent->path.parent->node.tile, parent->path.node.tile) != DiagdirBetweenTiles(parent->path.node.tile, current->tile)) {
+		cost += 1;
 	}
 
 	return cost;
@@ -625,6 +638,8 @@ bool FindPath(AyStar& finder, TileIndex from, TileIndex to)
 void GeneratePublicRoads()
 {
 	using namespace std;
+
+	if (_settings_game.game_creation.build_public_roads == PRC_NONE) return;
 
 	vector<Town*> towns;
 	{

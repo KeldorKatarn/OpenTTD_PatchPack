@@ -679,8 +679,6 @@ void GeneratePublicRoads()
 			found_easy_path = FindPath(finder, begin_town, end_town);
 
 			finder.Free();
-
-			assert(found_easy_path);
 		}
 
 		if (found_easy_path) {

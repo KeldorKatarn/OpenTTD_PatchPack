@@ -11,9 +11,9 @@
 
 #include "stdafx.h"
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <numeric>
+#include <unordered_map>
 #include <vector>
 #include "rail_map.h"
 #include "road_map.h"
@@ -179,14 +179,9 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 CommandCost CmdBuildTunnel(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text = nullptr);
 
-static std::map<TileIndex, Town*> _town_centers;
-static std::vector<Town*> _towns_visited_along_the_way;
-static std::map<const Town*, std::shared_ptr<std::vector<Town*>>> _towns_reachable_networks;
+static std::vector<TileIndex> _town_centers;
+static std::vector<TileIndex> _towns_visited_along_the_way;
 static const uint PUBLIC_ROAD_HASH_SIZE = 8U; ///< The number of bits the hash for river finding should have.
-
-static int checked_nodes = 0;
-static std::vector<int> _checked_nodes_on_success;
-static std::vector<int> _checked_nodes_on_failure;
 
 /**
 * Simple hash function for public road tiles to be used by AyStar.
@@ -283,13 +278,13 @@ static bool CanBuildRoadFromTo(TileIndex begin, TileIndex end)
 static TileIndex BuildTunnel(PathNode *current, bool build_tunnel = false)
 {
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
-	bool can_build_tunnel = CmdBuildTunnel(current->node.tile, build_tunnel ? DC_EXEC : DC_NONE, ROADTYPES_ROAD | (TRANSPORT_ROAD << 8), 0).Succeeded();
+	auto build_tunnel_cmd = CmdBuildTunnel(current->node.tile, build_tunnel ? DC_EXEC : DC_NONE, ROADTYPES_ROAD | (TRANSPORT_ROAD << 8), 0);
 	cur_company.Restore();
 
-	assert(!build_tunnel || can_build_tunnel);
+	assert(!build_tunnel || build_tunnel_cmd.Succeeded());
 	assert(!build_tunnel || (IsTileType(current->node.tile, MP_TUNNELBRIDGE) && IsTileType(_build_tunnel_endtile, MP_TUNNELBRIDGE)));
 
-	if (!can_build_tunnel) return INVALID_TILE;
+	if (!build_tunnel_cmd.Succeeded()) return INVALID_TILE;
 	if (!build_tunnel && !IsTileType(_build_tunnel_endtile, MP_CLEAR) && !IsTileType(_build_tunnel_endtile, MP_TREES)) return INVALID_TILE;
 
 	return _build_tunnel_endtile;
@@ -337,13 +332,13 @@ static TileIndex BuildBridge(PathNode *current, TileIndex end_tile = INVALID_TIL
 	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
-	bool can_build_bridge = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15)).Succeeded();
+	auto build_bridge_cmd = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15));
 	cur_company.Restore();
 
-	assert(!build_bridge || can_build_bridge);
+	assert(!build_bridge || build_bridge_cmd.Succeeded());
 	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
 
-	if (!can_build_bridge) return INVALID_TILE;
+	if (!build_bridge_cmd.Succeeded()) return INVALID_TILE;
 
 	return end_tile;
 }
@@ -394,13 +389,13 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
-	bool can_build_bridge = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15)).Succeeded();
+	auto build_bridge_cmd = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15));
 	cur_company.Restore();
 
-	assert(!build_bridge || can_build_bridge);
+	assert(!build_bridge || build_bridge_cmd.Succeeded());
 	assert(!build_bridge || (IsTileType(start_tile, MP_TUNNELBRIDGE) && IsTileType(end_tile, MP_TUNNELBRIDGE)));
 
-	if (!can_build_bridge) return INVALID_TILE;
+	if (!build_bridge_cmd.Succeeded()) return INVALID_TILE;
 
 	return end_tile;
 }
@@ -419,8 +414,12 @@ static bool IsValidNeighbourOfPreviousTile(TileIndex tile, TileIndex previous_ti
 	} else {
 
 		if (!IsTileType(tile, MP_CLEAR) && !IsTileType(tile, MP_TREES) && !IsTileType(tile, MP_ROAD)) return false;
-
+		
 		auto slope = GetTileSlope(tile);
+
+		// Do not allow foundations. We'll mess things up later.
+		bool hasFoundation = GetFoundationSlope(tile) != slope;
+		if (hasFoundation) return false;
 
 		if (IsInclinedSlope(slope)) {
 			auto slope_direction = GetInclinedSlopeDirection(slope);
@@ -527,13 +526,11 @@ static void PublicRoad_GetNeighbours(AyStar *aystar, OpenListNode *current)
 /* AyStar callback for checking whether we reached our destination. */
 static int32 PublicRoad_EndNodeCheck(AyStar *aystar, OpenListNode *current)
 {
-	++checked_nodes;
-
 	// Mark towns visited along the way.
-	auto search_result = _town_centers.find(current->path.node.tile);
+	auto search_result = std::find(_town_centers.begin(), _town_centers.end(), current->path.node.tile);
 
 	if (search_result != _town_centers.end()) {
-		_towns_visited_along_the_way.push_back(search_result->second);
+		_towns_visited_along_the_way.push_back(current->path.node.tile);
 	};
 
 	return current->path.node.tile == *(TileIndex*)aystar->user_target ? AYSTAR_FOUND_END_NODE : AYSTAR_DONE;
@@ -570,10 +567,10 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 				if (!IsTileType(tile, MP_ROAD) || ((GetRoadBits(tile, ROADTYPE_ROAD) & road_bits) != road_bits))
 				{
 					Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
-					auto road_built = CmdBuildRoad(tile, DC_EXEC, ROADTYPE_ROAD << 4 | road_bits, 0).Succeeded();
+					auto road_built = CmdBuildRoad(tile, DC_EXEC, ROADTYPE_ROAD << 4 | road_bits, 0);
 					cur_company.Restore();
 
-					assert(road_built);
+					assert(road_built.Succeeded());
 				}
 			}
 		} else {
@@ -621,14 +618,6 @@ bool FindPath(AyStar& finder, TileIndex from, TileIndex to)
 
 	bool found_path = (finder.Main() == AYSTAR_FOUND_END_NODE);
 
-	if (found_path) {
-		_checked_nodes_on_success.push_back(checked_nodes);
-	} else {
-		_checked_nodes_on_failure.push_back(checked_nodes);
-	}
-
-	checked_nodes = 0;
-
 	return found_path;
 }
 
@@ -641,87 +630,99 @@ void GeneratePublicRoads()
 
 	if (_settings_game.game_creation.build_public_roads == PRC_NONE) return;
 
-	vector<Town*> towns;
+	_town_centers.clear();
+	_towns_visited_along_the_way.clear();
+
+	vector<TileIndex> towns;
+	towns.clear();
 	{
 		Town* town;
 		FOR_ALL_TOWNS(town) {
-			towns.push_back(town);
-			_town_centers.insert(make_pair(town->xy, town));
+			towns.push_back(town->xy);
+			_town_centers.push_back(town->xy);
 		}
 	}
 	
 	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, towns.size());
 
 	// Create a list of networks which also contain a value indicating how many times we failed to connect to them.
-	vector<pair<uint, shared_ptr<vector<Town*>>>> town_networks;
+	vector<pair<uint, shared_ptr<vector<TileIndex>>>> town_networks;
+	unordered_map<TileIndex, shared_ptr<vector<TileIndex>>> towns_reachable_networks;
 
-	sort(towns.begin(), towns.end(), [&](auto a, auto b) { return a->cache.population < b->cache.population; });
-	Town* main_town = *towns.begin();
+	TileIndex main_town = *towns.begin();
 	towns.erase(towns.begin());
 
-	shared_ptr<vector<Town*>> main_network(new vector<Town*>);
+	shared_ptr<vector<TileIndex>> main_network = make_shared<vector<TileIndex>>();
 	main_network->push_back(main_town);
 
 	town_networks.push_back(make_pair(0, main_network));
 	IncreaseGeneratingWorldProgress(GWP_PUBLIC_ROADS);
 
-	sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town->xy, a->xy) < DistanceManhattan(main_town->xy, b->xy); });
+	sort(towns.begin(), towns.end(), [&](auto a, auto b) { return DistanceManhattan(main_town, a) < DistanceManhattan(main_town, b); });
 
-	int times_we_found_path_the_easy_way = 0;
-
-	for_each(towns.begin(), towns.end(), [&](auto begin_town) {
+	for (auto begin_town : towns) {
 		// Check if we can connect to any of the networks.
 		_towns_visited_along_the_way.clear();
 
-		auto reachable_network_iter = _towns_reachable_networks.find(begin_town);
+		auto reachable_network_iter = towns_reachable_networks.find(begin_town);
+		bool found_easy_path = false;
 
-		if (reachable_network_iter != _towns_reachable_networks.end()) {
-			AyStar finder;
+		if (reachable_network_iter != towns_reachable_networks.end()) {
 			auto reachable_network = reachable_network_iter->second;
 
-			sort(reachable_network->begin(), reachable_network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town->xy, a->xy) < DistanceManhattan(begin_town->xy, b->xy); });
+			sort(reachable_network->begin(), reachable_network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town, a) < DistanceManhattan(begin_town, b); });
 
-			Town* end_town = *reachable_network->begin();
+			TileIndex end_town = *reachable_network->begin();
 
-			bool found_path = FindPath(finder, begin_town->xy, end_town->xy);
+			AyStar finder;
 
-			assert(found_path);
-			++times_we_found_path_the_easy_way;
+			found_easy_path = FindPath(finder, begin_town, end_town);
 
-			for_each(_towns_visited_along_the_way.begin(), _towns_visited_along_the_way.end(), [&](const Town* visited_town) {
-				if (visited_town != begin_town) _towns_reachable_networks.insert(make_pair(visited_town, reachable_network_iter->second));
-			});
 			finder.Free();
+
+			assert(found_easy_path);
+		}
+
+		if (found_easy_path) {
+			reachable_network_iter->second->push_back(begin_town);
+
+			for (const TileIndex visited_town : _towns_visited_along_the_way) {
+				if (visited_town != begin_town) towns_reachable_networks[visited_town] = reachable_network_iter->second;
+			}
 		} else {
 			// Sort networks by failed connection attempts, so we try the most likely one first.
 			sort(town_networks.begin(), town_networks.end(), [&](auto a, auto b) { return a.first < b.first; });
 
 			if (!any_of(town_networks.begin(), town_networks.end(), [&](auto network_pair) {
 				AyStar finder;
+
 				auto network = network_pair.second;
 
 				// Try to connect to the town in the network that is closest to us.
 				// If we can't connect to that one, we can't connect to any of them since they are all interconnected.
-				sort(network->begin(), network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town->xy, a->xy) < DistanceManhattan(begin_town->xy, b->xy); });
-				Town* end_town = *network->begin();
+				sort(network->begin(), network->end(), [&](auto a, auto b) { return DistanceManhattan(begin_town, a) < DistanceManhattan(begin_town, b); });
+				TileIndex end_town = *network->begin();
 
-				bool found_path = FindPath(finder, begin_town->xy, end_town->xy);
+				bool found_path = FindPath(finder, begin_town, end_town);
 
 				if (found_path) {
-					for_each(_towns_visited_along_the_way.begin(), _towns_visited_along_the_way.end(), [&](auto visited_town) {
-						if (visited_town != begin_town) _towns_reachable_networks.insert(make_pair(visited_town, network));
-					});
+					network->push_back(begin_town);
+
+					for (auto visited_town : _towns_visited_along_the_way) {
+						if (visited_town != begin_town) towns_reachable_networks[visited_town] = network;
+					}
 				}
 
 				// Increase number of failed attempts if necessary.
-				network_pair.first += (found_path ? 0 : 1);
+				network_pair.first += (found_path ? (network_pair.first > 0 ? -1 : 0) : 1);
+
 				finder.Free();
 
 				return found_path;
 
 			})) {
 				// We failed to connect to any network, so we are a separate network. Let future towns try to connect to us.
-				shared_ptr<vector<Town*>> new_network(new vector<Town*>);
+				shared_ptr<vector<TileIndex>> new_network = make_shared<vector<TileIndex>>();
 				new_network->push_back(begin_town);
 
 				// We basically failed to connect to this many towns.
@@ -731,30 +732,12 @@ void GeneratePublicRoads()
 
 				town_networks.push_back(make_pair(towns_already_in_networks, new_network));
 
-				for_each(_towns_visited_along_the_way.begin(), _towns_visited_along_the_way.end(), [&](const Town* visited_town) {
-					if (visited_town != begin_town) _towns_reachable_networks.insert(make_pair(visited_town, new_network));
-				});
+				for (const TileIndex visited_town : _towns_visited_along_the_way) {
+					if (visited_town != begin_town) towns_reachable_networks.insert(make_pair(visited_town, new_network));
+				}
 			}
 		}
 
 		IncreaseGeneratingWorldProgress(GWP_PUBLIC_ROADS);
-	});
-
-	auto checked_nodes_on_success_min = _checked_nodes_on_success.empty() ? 0 : *min_element(_checked_nodes_on_success.begin(), _checked_nodes_on_success.end());
-	auto checked_nodes_on_success_max = _checked_nodes_on_success.empty() ? 0 : *max_element(_checked_nodes_on_success.begin(), _checked_nodes_on_success.end());
-	auto checked_nodes_on_success_avg = _checked_nodes_on_success.empty() ? 0 : accumulate(_checked_nodes_on_success.begin(), _checked_nodes_on_success.end(), 0) / _checked_nodes_on_success.size();
-
-	auto checked_nodes_on_failure_min = _checked_nodes_on_failure.empty() ? 0 : *min_element(_checked_nodes_on_failure.begin(), _checked_nodes_on_failure.end());
-	auto checked_nodes_on_failure_max = _checked_nodes_on_failure.empty() ? 0 : *max_element(_checked_nodes_on_failure.begin(), _checked_nodes_on_failure.end());
-	auto checked_nodes_on_failure_avg = _checked_nodes_on_failure.empty() ? 0 : accumulate(_checked_nodes_on_failure.begin(), _checked_nodes_on_failure.end(), 0) / _checked_nodes_on_failure.size();
-
-	DEBUG(misc, 0, "checked_nodes_on_success_min: " + checked_nodes_on_success_min);
-	DEBUG(misc, 0, "checked_nodes_on_success_max: " + checked_nodes_on_success_max);
-	DEBUG(misc, 0, "checked_nodes_on_success_avg: " + checked_nodes_on_success_avg);
-	DEBUG(misc, 0, "checked_nodes_on_failure_min: " + checked_nodes_on_failure_min);
-	DEBUG(misc, 0, "checked_nodes_on_failure_max: " + checked_nodes_on_failure_max);
-	DEBUG(misc, 0, "checked_nodes_on_failure_avg: " + checked_nodes_on_failure_avg);
-	DEBUG(misc, 0, "times_we_found_path_the_easy_way: " + times_we_found_path_the_easy_way);
-
-	
+	}
 }

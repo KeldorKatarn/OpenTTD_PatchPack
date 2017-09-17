@@ -308,6 +308,7 @@ struct GameCreationSettings {
 	byte   min_river_length;                 ///< the minimum river length
 	byte   river_route_random;               ///< the amount of randomicity for the route finding
 	byte   amount_of_rivers;                 ///< the amount of rivers
+	uint8  build_public_roads;               ///< build public roads connecting towns (none, with curves, avoiding curves)
 };
 
 /** Settings related to construction in-game */

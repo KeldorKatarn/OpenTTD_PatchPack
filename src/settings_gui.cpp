@@ -1691,6 +1691,7 @@ static SettingsContainer &GetSettingsTree()
 			genworld->Add(new SettingEntry("game_creation.variety"));
 			genworld->Add(new SettingEntry("game_creation.snow_line_height"));
 			genworld->Add(new SettingEntry("game_creation.amount_of_rivers"));
+			genworld->Add(new SettingEntry("game_creation.min_river_length"));
 			genworld->Add(new SettingEntry("game_creation.tree_placer"));
 			genworld->Add(new SettingEntry("vehicle.road_side"));
 			genworld->Add(new SettingEntry("economy.larger_towns"));
@@ -1699,6 +1700,7 @@ static SettingsContainer &GetSettingsTree()
 			genworld->Add(new SettingEntry("economy.town_layout"));
 			genworld->Add(new SettingEntry("economy.town_min_distance"));
 			genworld->Add(new SettingEntry("economy.max_town_heightlevel"));
+			genworld->Add(new SettingEntry("game_creation.build_public_roads"));
 			genworld->Add(new SettingEntry("difficulty.industry_density"));
 			genworld->Add(new SettingEntry("gui.pause_on_newgame"));
 		}

@@ -42,6 +42,7 @@ void GenerateClearTile();
 void GenerateIndustries();
 void GenerateObjects();
 void GenerateTrees();
+void GeneratePublicRoads();
 
 void StartupEconomy();
 void StartupCompanies();
@@ -143,6 +144,7 @@ static void _GenerateWorld(void *)
 				GenerateIndustries();
 				GenerateObjects();
 				GenerateTrees();
+				GeneratePublicRoads();
 			}
 		}
 

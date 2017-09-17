@@ -1629,6 +1629,12 @@ STR_CONFIG_SETTING_EXTRA_TREE_PLACEMENT_NONE                    :None {RED}(brea
 STR_CONFIG_SETTING_EXTRA_TREE_PLACEMENT_RAINFOREST              :Only in rain forests
 STR_CONFIG_SETTING_EXTRA_TREE_PLACEMENT_ALL                     :Everywhere
 
+STR_CONFIG_SETTING_BUILD_PUBLIC_ROADS                           :Build public roads connecting towns: {STRING2}
+STR_CONFIG_SETTING_BUILD_PUBLIC_ROADS_HELPTEXT                  :Generates public roads which connect the times. Takes a bit of time on bigger maps. 'Build and avoid' generates roads which avoid curves and result in very grid-like connections.
+STR_CONFIG_SETTING_BUILD_PUBLIC_ROADS_NONE                      :None (Default)
+STR_CONFIG_SETTING_BUILD_PUBLIC_ROADS_WITH_CURVES               :Build with curves
+STR_CONFIG_SETTING_BUILD_PUBLIC_ROADS_AVOID_CURVES              :Build and avoid curves
+
 STR_CONFIG_SETTING_TREE_GROWTH                                  :Trees growth speed: {STRING2}
 STR_CONFIG_SETTING_TREE_GROWTH_NORMAL                           :Normal
 STR_CONFIG_SETTING_TREE_GROWTH_SLOW                             :Slow

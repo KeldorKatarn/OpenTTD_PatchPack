@@ -205,7 +205,7 @@ static int32 PublicRoad_CalculateG(AyStar *aystar, AyStarNode *current, OpenList
 		if (!AreTilesAdjacent(parent->path.node.tile, current->tile))
 		{
 			// We're not adjacent, so we built a tunnel or bridge.
-			cost += (DistanceManhattan(parent->path.node.tile, current->tile)) * COST_FOR_NEW_ROAD + 8 * COST_FOR_SLOPE;
+			cost += (DistanceManhattan(parent->path.node.tile, current->tile)) * COST_FOR_NEW_ROAD + 6 * COST_FOR_SLOPE;
 		}
 		else if (!IsTileFlat(current->tile)) {
 			cost += COST_FOR_NEW_ROAD;

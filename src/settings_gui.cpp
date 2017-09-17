@@ -1691,6 +1691,7 @@ static SettingsContainer &GetSettingsTree()
 			genworld->Add(new SettingEntry("game_creation.variety"));
 			genworld->Add(new SettingEntry("game_creation.snow_line_height"));
 			genworld->Add(new SettingEntry("game_creation.amount_of_rivers"));
+			genworld->Add(new SettingEntry("game_creation.min_river_length"));
 			genworld->Add(new SettingEntry("game_creation.tree_placer"));
 			genworld->Add(new SettingEntry("vehicle.road_side"));
 			genworld->Add(new SettingEntry("economy.larger_towns"));

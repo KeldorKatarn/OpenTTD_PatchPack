@@ -563,14 +563,20 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 
 			if (child != nullptr || path->parent != nullptr) {
 				// Check if we need to build anything.
+				bool need_to_build_road = true;
+
+				if (IsTileType(tile, MP_ROAD)) {
+					RoadBits existing_bits = GetRoadBits(tile, ROADTYPE_ROAD);
+					CLRBITS(road_bits, existing_bits);
+					if (road_bits == ROAD_NONE) need_to_build_road = false;
+				}
+
 				// If it is already a road and has the right bits, we are good. Otherwise build the needed ones.
-				if (!IsTileType(tile, MP_ROAD) || ((GetRoadBits(tile, ROADTYPE_ROAD) & road_bits) != road_bits))
+				if (need_to_build_road)
 				{
 					Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 					auto road_built = CmdBuildRoad(tile, DC_EXEC, ROADTYPE_ROAD << 4 | road_bits, 0);
 					cur_company.Restore();
-
-					assert(road_built.Succeeded());
 				}
 			}
 		} else {
@@ -608,6 +614,7 @@ bool FindPath(AyStar& finder, TileIndex from, TileIndex to)
 	finder.EndNodeCheck = PublicRoad_EndNodeCheck;
 	finder.FoundEndNode = PublicRoad_FoundEndNode;
 	finder.user_target = &(to);
+	finder.max_search_nodes = 1 << 20; // 1,048,576
 
 	finder.Init(PublicRoad_Hash, 1 << PUBLIC_ROAD_HASH_SIZE);
 

@@ -2787,7 +2787,7 @@ bool AfterLoadGame()
 		_settings_game.game_creation.snow_line_height /= TILE_HEIGHT;
 	}
 
-	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_18_5)) {
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_18_6)) {
 		_settings_game.game_creation.tree_line_height = _settings_game.game_creation.snow_line_height;
 	}
 

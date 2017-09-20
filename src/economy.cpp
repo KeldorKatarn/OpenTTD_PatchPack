@@ -1287,7 +1287,7 @@ void CargoPayment::PayFinalDelivery(const CargoPacket *cp, uint count)
 	// Allows the actual profits for only the last part of the trip to be calculated and, consequently, paid.
 	Money profit = GetTransportedGoodsIncome(count, distance, cp->DaysInTransit(), this->ct);
 
-	this->route_profit += profit;
+	this->route_profit += profit + cp->FeederShare();
 	this->visual_profit += profit;
 }
 
@@ -1314,7 +1314,6 @@ Money CargoPayment::PayTransfer(CargoPacket *cp, uint count)
 	cp->ResetTransitDays();
 
 	this->visual_transfer += profit;
-	this->route_profit += profit;
 
 	return profit;
 }

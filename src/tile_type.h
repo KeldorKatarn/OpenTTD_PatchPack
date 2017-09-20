@@ -29,6 +29,14 @@ static const uint MIN_SNOWLINE_HEIGHT = 2;                     ///< Minimum snow
 static const uint DEF_SNOWLINE_HEIGHT = 15;                    ///< Default snowline height
 static const uint MAX_SNOWLINE_HEIGHT = (MAX_TILE_HEIGHT - 2); ///< Maximum allowed snowline height
 
+static const uint MIN_MIN_RIVER_LENGTH = 2;                    ///< Minimum snowline height
+static const uint DEF_MIN_RIVER_LENGTH = 16;                   ///< Default snowline height
+static const uint MAX_MIN_RIVER_LENGTH = 255;                  ///< Maximum allowed snowline height
+
+static const uint MIN_TREELINE_HEIGHT = 2;                     ///< Minimum treeline height
+static const uint DEF_TREELINE_HEIGHT = 15;                    ///< Default treeline height
+static const uint MAX_TREELINE_HEIGHT = (MAX_TILE_HEIGHT - 2); ///< Maximum allowed treeline height
+
 static const uint MIN_DESERT_AMOUNT   = 2;                     ///< Minimum allowed desert amount.
 static const uint DEF_DESERT_AMOUNT   = 4;                     ///< Default desert amount.
 static const uint MAX_DESERT_AMOUNT   = (MAX_TILE_HEIGHT - 2); ///< Maximum allowed desert amount.

@@ -1256,7 +1256,7 @@ CargoPayment::~CargoPayment()
 				this->front->z_pos, -this->visual_profit);
 	}
 
-	this->front->trip_history.AddValue(this->route_profit, _date);
+	this->front->trip_history.AddValue((this->visual_profit + this->visual_transfer), _date);
 	InvalidateWindowData(WC_VEHICLE_TRIP_HISTORY, this->front->index);
 	cur_company.Restore();
 }

@@ -71,11 +71,9 @@ static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
 			return !IsBridgeAbove(tile) && IsCoast(tile) && !IsSlopeWithOneCornerRaised(GetTileSlope(tile));
 
 		case MP_CLEAR: {
-			bool snow_line_enabled = _settings_game.construction.trees_around_snow_line_enabled;
-			uint8 range = _settings_game.construction.trees_around_snow_line_range;
-			bool is_above_final_snow_line = GetTileZ(tile) >= (HighestSnowLine() + range);
+			bool is_above_tree_line = GetTileZ(tile) >= _settings_game.game_creation.tree_line_height;
 
-			return !(snow_line_enabled && is_above_final_snow_line) && !IsBridgeAbove(tile) && !IsClearGround(tile, CLEAR_FIELDS) && GetRawClearGround(tile) != CLEAR_ROCKS &&
+			return !is_above_tree_line && !IsBridgeAbove(tile) && !IsClearGround(tile, CLEAR_FIELDS) && GetRawClearGround(tile) != CLEAR_ROCKS &&
 				(allow_desert || !IsClearGround(tile, CLEAR_DESERT));
 		}
 
@@ -119,14 +117,16 @@ static void PlantTreesOnTile(TileIndex tile, TreeType treetype, uint count, uint
 
 		default: NOT_REACHED();
 	}
-	if (_settings_game.construction.trees_around_snow_line_enabled && GetTileZ(tile) >= HighestSnowLine()) {
-		// Slowly thin out trees.
-		uint16 snow_line_range = _settings_game.construction.trees_around_snow_line_range;
-		uint16 snow_line_height = HighestSnowLine();
-		uint16 height_above_snow_line = max(0, GetTileZ(tile) - snow_line_height);
-		uint16 percent_of_range = 100 - (height_above_snow_line * 100 / snow_line_range);
 
-		count = max(1u, (count * percent_of_range) / 100);
+	uint16 tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+	uint16 min_tree_line_height = _settings_game.game_creation.tree_line_height - tree_line_range;
+
+	if (GetTileZ(tile) >= min_tree_line_height) {
+		// Slowly thin out trees.
+		uint16 height_above_min_tree_line = max(0, GetTileZ(tile) - min_tree_line_height);
+		uint16 percent_of_range = 100u - (height_above_min_tree_line * 100u / tree_line_range);
+
+		count = max((count * percent_of_range) / 100u, 1u);
 	}
 
 	MakeTree(tile, treetype, count, growth, ground, density);
@@ -196,12 +196,12 @@ static TreeType GetRandomTreeType(TileIndex tile, uint seed)
 			}
 		case LT_ARCTIC: {
 			// Don't use temperate trees in arctic if a variable snow line is set. That will look awful.
-			if (!_settings_game.construction.trees_around_snow_line_enabled || IsSnowLineSet()) {
+			if (IsSnowLineSet()) {
 				return (TreeType)(seed * TREE_COUNT_SUB_ARCTIC / 256 + TREE_SUB_ARCTIC);
 			}
 
-			uint8 range = _settings_game.construction.trees_around_snow_line_range;
-			if (range != _previous_trees_around_snow_line_range) RecalculateArcticTreeOccuranceArray();
+			uint8 tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+			if (tree_line_range != _previous_trees_around_snow_line_range) RecalculateArcticTreeOccuranceArray();
 
 			int z = GetTileZ(tile);
 			int height_above_snow_line = z - _settings_game.game_creation.snow_line_height;
@@ -349,14 +349,16 @@ void PlaceTreesRandomly()
 			ht = GetTileZ(tile);
 			/* The higher we get, the more trees we plant */
 			j = max(1, (GetTileZ(tile) - 1) * 2);
-			if (_settings_game.construction.trees_around_snow_line_enabled && GetTileZ(tile) >= HighestSnowLine()) {
-				// Slowly thin out trees.
-				uint16 snow_line_range = _settings_game.construction.trees_around_snow_line_range;
-				uint16 snow_line_height = HighestSnowLine();
-				uint16 height_above_snow_line = max(0, GetTileZ(tile) - snow_line_height);
-				uint16 percent_of_range = (height_above_snow_line * 100 / snow_line_range);
 
-				j = j - (j * percent_of_range) / 100;
+			uint16 tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+			uint16 min_tree_line_height = _settings_game.game_creation.tree_line_height - tree_line_range;
+
+			if (GetTileZ(tile) >= min_tree_line_height) {
+				// Slowly thin out trees.
+				uint16 height_above_min_tree_line = max(0, GetTileZ(tile) - min_tree_line_height);
+				uint16 percent_of_range = (height_above_min_tree_line * 100u / tree_line_range);
+
+				j = j - ((j * percent_of_range) / 100u);
 			} else if (_settings_game.game_creation.landscape == LT_ARCTIC && ht > GetSnowLine()) {
 				// Above snowline more trees.
 				j *= 3;
@@ -443,25 +445,23 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	TILE_AREA_LOOP(tile, ta) {
 		switch (GetTileType(tile)) {
 			case MP_TREES:
+			{
 				/* no more space for trees? */
 				if (_game_mode != GM_EDITOR && (GetTreeCount(tile) >= 4 || ((int)GetTreeCount(tile) >= (GetTileZ(tile) + (_settings_game.game_creation.landscape != LT_TROPIC ? 0 : 1))))) {
 					msg = STR_ERROR_TREE_ALREADY_HERE;
 					continue;
 				}
 
-				/* Thin out trees along the snow line tree range */
-				if (_settings_game.construction.trees_around_snow_line_enabled) {
-					
-					int snow_line_range = _settings_game.construction.trees_around_snow_line_range;
-					int snow_line_height = HighestSnowLine();
-					int height_above_snow_line = max(0, GetTileZ(tile) - snow_line_height);
-					int percent_of_range = height_above_snow_line * 100 / snow_line_range;
-					int max_tree_count = 4 - (4 * percent_of_range) / 100;
+				/* Thin out trees along the tree line range */
+				uint tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+				uint min_tree_line_height = _settings_game.game_creation.tree_line_height - tree_line_range;
+				uint height_above_min_tree_line = max(0u, GetTileZ(tile) - min_tree_line_height);
+				uint percent_of_range = height_above_min_tree_line * 100u / tree_line_range;
+				uint max_tree_count = 4u - ((4u * percent_of_range) / 100u);
 
-					if (GetTreeCount(tile) >= max_tree_count) {
-						msg = STR_ERROR_TREE_PLANT_LIMIT_REACHED;
-						continue;
-					}
+				if (GetTreeCount(tile) >= max_tree_count) {
+					msg = STR_ERROR_TREE_PLANT_LIMIT_REACHED;
+					continue;
 				}
 
 				/* Test tree limit. */
@@ -478,6 +478,7 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				/* 2x as expensive to add more trees to an existing tile */
 				cost.AddCost(_price[PR_BUILD_TREES] * 2);
 				break;
+			}
 
 			case MP_WATER:
 				if (!CanPlantTreesOnTile(tile, false) || !IsCoast(tile) || IsSlopeWithOneCornerRaised(GetTileSlope(tile))) {
@@ -537,7 +538,7 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 						if (treetype == TREE_INVALID) {
 							if (_settings_game.construction.trees_around_snow_line_enabled && _settings_game.game_creation.landscape != LT_TROPIC) {
-								if (GetTileZ(tile) <= (int)_settings_game.game_creation.snow_line_height) {
+								if (GetTileZ(tile) <= HighestSnowLine()) {
 									treetype = (TreeType)(GB(Random(), 24, 8) * TREE_COUNT_TEMPERATE / 256 + TREE_TEMPERATE);
 								}
 								else {
@@ -794,8 +795,6 @@ static void TileLoop_Trees(TileIndex tile)
 	}
 	SetTreeCounter(tile, 0);
 
-	bool snowline_treecount_exceeded = false;
-
 	switch (GetTreeGrowth(tile)) {
 		case 3: // regular sized tree
 			if (_settings_game.game_creation.landscape == LT_TROPIC &&
@@ -809,20 +808,22 @@ static void TileLoop_Trees(TileIndex tile)
 						break;
 
 					case 1: // add a tree
+					{
+						int tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+						int min_tree_line_height = _settings_game.game_creation.tree_line_height - tree_line_range;
+						bool treeline_treecount_exceeded = false;
 
-						if (_settings_game.construction.trees_around_snow_line_enabled && GetTileZ(tile) >= HighestSnowLine()) {
+						if (GetTileZ(tile) >= min_tree_line_height) {
 							// Slowly thin out trees.
-							uint snow_line_range = _settings_game.construction.trees_around_snow_line_range;
-							uint snow_line_height = HighestSnowLine();
-							uint height_above_snow_line = (uint)max(0, GetTileZ(tile) - (int)snow_line_height);
-							uint percent_of_range = 100 - (height_above_snow_line * 100 / snow_line_range);
+							int height_above_min_tree_line = max(0, GetTileZ(tile) - min_tree_line_height);
+							int percent_of_range = 100 - (height_above_min_tree_line * 100 / tree_line_range);
 
-							uint allowed_tree_count = (4 * percent_of_range) / 100;
+							uint allowed_tree_count = (4u * percent_of_range) / 100u;
 
-							snowline_treecount_exceeded = GetTreeCount(tile) >= allowed_tree_count;
+							treeline_treecount_exceeded = GetTreeCount(tile) >= allowed_tree_count;
 						}
 
-						if ((GetTreeCount(tile) < 4) && (GetTreeType(tile) != TREE_CACTUS) && !snowline_treecount_exceeded && ((int)GetTreeCount(tile) < (GetTileZ(tile) + (_settings_game.game_creation.landscape != LT_TROPIC ? 0 : 1)))) {
+						if ((GetTreeCount(tile) < 4) && (GetTreeType(tile) != TREE_CACTUS) && !treeline_treecount_exceeded && ((int)GetTreeCount(tile) < (GetTileZ(tile) + (_settings_game.game_creation.landscape != LT_TROPIC ? 0 : 1)))) {
 							AddTreeCount(tile, 1);
 							SetTreeGrowth(tile, 0);
 						}

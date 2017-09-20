@@ -1693,6 +1693,8 @@ static SettingsContainer &GetSettingsTree()
 			genworld->Add(new SettingEntry("game_creation.amount_of_rivers"));
 			genworld->Add(new SettingEntry("game_creation.min_river_length"));
 			genworld->Add(new SettingEntry("game_creation.tree_placer"));
+			genworld->Add(new SettingEntry("game_creation.tree_line_height"));
+			genworld->Add(new SettingEntry("construction.trees_around_snow_line_range"));
 			genworld->Add(new SettingEntry("vehicle.road_side"));
 			genworld->Add(new SettingEntry("economy.larger_towns"));
 			genworld->Add(new SettingEntry("economy.initial_city_size"));
@@ -1752,8 +1754,6 @@ static SettingsContainer &GetSettingsTree()
 			environment->Add(new SettingEntry("station.modified_catchment"));
 			environment->Add(new SettingEntry("construction.extra_tree_placement"));
 			environment->Add(new SettingEntry("construction.tree_growth_rate"));
-			environment->Add(new SettingEntry("construction.trees_around_snow_line_enabled"));
-			environment->Add(new SettingEntry("construction.trees_around_snow_line_range"));
 		}
 
 		SettingsPage *ai = main->Add(new SettingsPage(STR_CONFIG_SETTING_AI));

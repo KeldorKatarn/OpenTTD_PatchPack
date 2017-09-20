@@ -1318,6 +1318,8 @@ STR_CONFIG_SETTING_OIL_REF_EDGE_DISTANCE                        :Maximum distanc
 STR_CONFIG_SETTING_OIL_REF_EDGE_DISTANCE_HELPTEXT               :Oil refineries are only constructed near the map border, that is at the coast for island maps
 STR_CONFIG_SETTING_SNOWLINE_HEIGHT                              :Snow line height: {STRING2}
 STR_CONFIG_SETTING_SNOWLINE_HEIGHT_HELPTEXT                     :Control at what height snow starts in sub-arctic landscape. Snow also affects industry generation and town growth requirements
+STR_CONFIG_SETTING_TREELINE_HEIGHT                              :Tree line height: {STRING2}
+STR_CONFIG_SETTING_TREELINE_HEIGHT_HELPTEXT                     :Control at what height trees stop growing and only rocky mountain tiles show up
 STR_CONFIG_SETTING_DESERT_AMOUNT                                :Amount of desert: {STRING2}
 STR_CONFIG_SETTING_ROUGHNESS_OF_TERRAIN                         :Roughness of terrain: {STRING2}
 STR_CONFIG_SETTING_ROUGHNESS_OF_TERRAIN_HELPTEXT                :(TerraGenesis only) Choose the frequency of hills: Smooth landscapes have fewer, more wide-spread hills. Rough landscapes have many hills, which may look repetitive
@@ -1646,8 +1648,8 @@ STR_CONFIG_SETTING_TREE_GROWTH_HELPTEXT                         :Trees growth sp
  
 STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE                        :Adjusted tree placement around snow line: {STRING2}
 STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE_HELPTEXT               :Adjust placement of trees around snow line in artic and temperate climates. Trees thin out above snowline. Trees are a mix of arctic and temperate just below snowline. Below that trees are temperate.
-STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE_RANGE                  :Arctic tree range: {STRING2}
-STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE_RANGE_HELPTEXT         :Approximate range of arctic trees around snow line
+STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE_RANGE                  :Treeline range: {STRING2}
+STR_CONFIG_SETTING_TREES_AROUND_SNOWLINE_RANGE_HELPTEXT         :Range below the treeline and snowline in which the trees slowly thin out (treeline) or become artic trees (snowline)
 
 STR_CONFIG_SETTING_TOOLBAR_POS                                  :Position of main toolbar: {STRING2}
 STR_CONFIG_SETTING_TOOLBAR_POS_HELPTEXT                         :Horizontal position of the main toolbar at the top of the screen
@@ -2968,6 +2970,9 @@ STR_MAPGEN_MAX_HEIGHTLEVEL_DOWN                                 :{BLACK}Decrease
 STR_MAPGEN_SNOW_LINE_HEIGHT                                     :{BLACK}Snow line height:
 STR_MAPGEN_SNOW_LINE_UP                                         :{BLACK}Move the snow line height one up
 STR_MAPGEN_SNOW_LINE_DOWN                                       :{BLACK}Move the snow line height one down
+STR_MAPGEN_TREE_LINE_HEIGHT                                     :{BLACK}Tree line height:
+STR_MAPGEN_TREE_LINE_UP                                         :{BLACK}Move the tree line height one up
+STR_MAPGEN_TREE_LINE_DOWN                                       :{BLACK}Move the tree line height one down
 STR_MAPGEN_DESERT_AMOUNT                                        :{BLACK}Amount of desert:
 STR_MAPGEN_DESERT_AMOUNT_UP                                     :{BLACK}Increase the amount of desert tiles
 STR_MAPGEN_DESERT_AMOUNT_DOWN                                   :{BLACK}Decrease the amount of desert tiles
@@ -2976,6 +2981,9 @@ STR_MAPGEN_TREE_PLACER                                          :{BLACK}Tree alg
 STR_MAPGEN_TERRAIN_TYPE                                         :{BLACK}Terrain type:
 STR_MAPGEN_QUANTITY_OF_SEA_LAKES                                :{BLACK}Sea level:
 STR_MAPGEN_QUANTITY_OF_RIVERS                                   :{BLACK}Rivers:
+STR_MAPGEN_MIN_RIVER_LENGTH                                     :{BLACK}Minimum river length:
+STR_MAPGEN_MIN_RIVER_LENGTH_UP                                  :{BLACK}Increase the minimum river length
+STR_MAPGEN_MIN_RIVER_LENGTH_DOWN                                :{BLACK}Decrease the minimum river length
 STR_MAPGEN_SMOOTHNESS                                           :{BLACK}Smoothness:
 STR_MAPGEN_VARIETY                                              :{BLACK}Variety distribution:
 STR_MAPGEN_GENERATE                                             :{WHITE}Generate
@@ -2999,8 +3007,10 @@ STR_MAPGEN_HEIGHTMAP_SIZE                                       :{ORANGE}{NUM} x
 
 STR_MAPGEN_MAX_HEIGHTLEVEL_QUERY_CAPT                           :{WHITE}Change maximum map height
 STR_MAPGEN_SNOW_LINE_QUERY_CAPT                                 :{WHITE}Change snow line height
+STR_MAPGEN_TREE_LINE_QUERY_CAPT                                 :{WHITE}Change tree line height
 STR_MAPGEN_DESERT_AMOUNT_QUERY_CAPT                             :{WHITE}Change amount of desert tiles
 STR_MAPGEN_START_DATE_QUERY_CAPT                                :{WHITE}Change starting year
+STR_MAPGEN_MIN_RIVER_LENGTH_QUERY_CAPT                          :{WHITE}Change minimum river length
 
 # SE Map generation
 STR_SE_MAPGEN_CAPTION                                           :{WHITE}Scenario Type

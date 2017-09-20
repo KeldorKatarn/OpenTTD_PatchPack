@@ -2787,6 +2787,10 @@ bool AfterLoadGame()
 		_settings_game.game_creation.snow_line_height /= TILE_HEIGHT;
 	}
 
+	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_18_6)) {
+		_settings_game.game_creation.tree_line_height = _settings_game.game_creation.snow_line_height;
+	}
+
 	if (IsSavegameVersionBefore(164) && !IsSavegameVersionBefore(32)) {
 		/* We store 4 fences in the field tiles instead of only SE and SW. */
 		for (TileIndex t = 0; t < map_size; t++) {

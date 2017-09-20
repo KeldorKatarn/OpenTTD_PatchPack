@@ -1257,7 +1257,7 @@ CargoPayment::~CargoPayment()
 				this->front->z_pos, -this->visual_profit);
 	}
 
-	this->front->trip_history.AddValue(this->route_profit, _date);
+	this->front->trip_history.AddValue((this->visual_profit + this->visual_transfer), _date);
 	InvalidateWindowData(WC_VEHICLE_TRIP_HISTORY, this->front->index);
 	cur_company.Restore();
 }
@@ -1287,7 +1287,7 @@ void CargoPayment::PayFinalDelivery(const CargoPacket *cp, uint count)
 	// Allows the actual profits for only the last part of the trip to be calculated and, consequently, paid.
 	Money profit = GetTransportedGoodsIncome(count, distance, cp->DaysInTransit(), this->ct);
 
-	this->route_profit += profit;
+	this->route_profit += profit + cp->FeederShare();
 	this->visual_profit += profit;
 }
 
@@ -1314,7 +1314,6 @@ Money CargoPayment::PayTransfer(CargoPacket *cp, uint count)
 	cp->ResetTransitDays();
 
 	this->visual_transfer += profit;
-	this->route_profit += profit;
 
 	return profit;
 }

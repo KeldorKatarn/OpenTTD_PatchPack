@@ -294,6 +294,7 @@ struct GameCreationSettings {
 	byte   land_generator;                   ///< the landscape generator
 	byte   oil_refinery_limit;               ///< distance oil refineries allowed from map edge
 	byte   snow_line_height;                 ///< the configured snow line height
+	byte   tree_line_height;                 ///< the configured tree line height
 	byte   desert_amount;                    ///< A number 0-15 that configured amount of desert.
 	byte   tgen_smoothness;                  ///< how rough is the terrain from 0-3
 	byte   tree_placer;                      ///< the tree placer algorithm
@@ -328,9 +329,9 @@ struct ConstructionSettings {
 	bool   freeform_edges;                   ///< allow terraforming the tiles at the map edges
 	uint8  extra_tree_placement;             ///< (dis)allow building extra trees in-game
 	uint8  tree_growth_rate;                 ///< tree growth rate
-	uint8  trees_around_snow_line_range;     ///< range around snowline for mixed and arctic forest.
+	uint8  trees_around_snow_line_range;     ///< range around treeline (formerly snowline) for thinning out forest.
 	uint32 no_trees_on_this_level;           ///< (Outdated)
-	bool   trees_around_snow_line_enabled;   ///< enable mixed and arctic forest around snowline, and no trees above snowline
+	bool   trees_around_snow_line_enabled;   ///< (Outdated)
 	uint8  command_pause_level;              ///< level/amount of commands that can't be executed while paused
 	byte   simulated_wormhole_signals;       ///< simulate signals in tunnel
 

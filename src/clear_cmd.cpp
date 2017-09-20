@@ -344,35 +344,31 @@ void GenerateClearTile()
 	i = ScaleByMapSize(GB(Random(), 0, 10) + 0x400);
 	gi = ScaleByMapSize(GB(Random(), 0, 7) + 0x80);
 
-	if (_settings_game.construction.trees_around_snow_line_enabled) {
-		SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i + MapSize());
+	SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i + MapSize());
 
-		uint16 range = _settings_game.construction.trees_around_snow_line_range;
-		uint16 snow_line_height = HighestSnowLine() + range;
+	uint16 tree_line_range = _settings_game.construction.trees_around_snow_line_range;
+	uint16 tree_line_height = _settings_game.game_creation.tree_line_height;
 
-		for (TileIndex possible_mountain_tile = 0; possible_mountain_tile < MapSize(); ++possible_mountain_tile) {
-			uint8 tile_z = GetTileZ(possible_mountain_tile);
-			bool is_above_snow_line = (tile_z >= snow_line_height);
-			bool is_above_rough_line = (tile_z >= snow_line_height - 2);
-			bool is_clear_tile = IsTileType(possible_mountain_tile, MP_CLEAR);
+	for (TileIndex possible_mountain_tile = 0; possible_mountain_tile < MapSize(); ++possible_mountain_tile) {
+		uint8 tile_z = GetTileZ(possible_mountain_tile);
+		bool is_above_tree_line = (tile_z >= tree_line_height);
+		bool is_above_rough_line = (tile_z >= tree_line_height - tree_line_range);
+		bool is_clear_tile = IsTileType(possible_mountain_tile, MP_CLEAR);
 
-			if (is_above_rough_line && is_clear_tile) {
-				bool is_desert_tile = IsClearGround(possible_mountain_tile, CLEAR_DESERT);
+		if (is_above_rough_line && is_clear_tile) {
+			bool is_desert_tile = IsClearGround(possible_mountain_tile, CLEAR_DESERT);
 
-				if (!is_desert_tile) {
-					if (is_above_snow_line) {
-						SetClearGroundDensity(possible_mountain_tile, CLEAR_ROCKS, 3);
-					}
-					else {
-						SetClearGroundDensity(possible_mountain_tile, CLEAR_ROUGH, 3);
-					}
+			if (!is_desert_tile) {
+				if (is_above_tree_line) {
+					SetClearGroundDensity(possible_mountain_tile, CLEAR_ROCKS, 3);
+				}
+				else {
+					SetClearGroundDensity(possible_mountain_tile, CLEAR_ROUGH, 3);
 				}
 			}
-
-			IncreaseGeneratingWorldProgress(GWP_ROUGH_ROCKY);
 		}
-	} else {
-		SetGeneratingWorldProgress(GWP_ROUGH_ROCKY, gi + i);
+
+		IncreaseGeneratingWorldProgress(GWP_ROUGH_ROCKY);
 	}
 	
 	do {

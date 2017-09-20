@@ -39,6 +39,10 @@ enum GenerateLandscapeWidgets {
 	WID_GL_SNOW_LEVEL_TEXT,             ///< Snow level.
 	WID_GL_SNOW_LEVEL_UP,               ///< Increase snow level.
 
+	WID_GL_TREE_LEVEL_DOWN,             ///< Decrease snow level.
+	WID_GL_TREE_LEVEL_TEXT,             ///< Snow level.
+	WID_GL_TREE_LEVEL_UP,               ///< Increase snow level.
+
 	WID_GL_DESERT_AMOUNT_DOWN,          ///< Decrease desert amount.
 	WID_GL_DESERT_AMOUNT_TEXT,          ///< Desert level.
 	WID_GL_DESERT_AMOUNT_UP,            ///< Increase desert amount.
@@ -55,6 +59,10 @@ enum GenerateLandscapeWidgets {
 	WID_GL_RIVER_PULLDOWN,              ///< Dropdown 'Rivers'.
 	WID_GL_SMOOTHNESS_PULLDOWN,         ///< Dropdown 'Smoothness'.
 	WID_GL_VARIETY_PULLDOWN,            ///< Dropdown 'Variety distribution'.
+
+	WID_GL_MIN_RIVER_LENGTH_DOWN,       ///< Decrease minimum river length.
+	WID_GL_MIN_RIVER_LENGTH_TEXT,       ///< Minimum river length.
+	WID_GL_MIN_RIVER_LENGTH_UP,         ///< Increase minimum river length.
 
 	WID_GL_BORDERS_RANDOM,              ///< 'Random'/'Manual' borders.
 	WID_GL_WATER_NW,                    ///< NW 'Water'/'Freeform'.

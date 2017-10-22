@@ -2546,6 +2546,34 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
  */
 bool ProcessOrders(Vehicle *v)
 {
+	// Check if we have an illegal manual depot order. Could happen if we deleted the depot order from the orders list after sending
+	// the vehicle to the depot.
+	if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT)) {
+		int next_depot_index = -1;
+
+		for (int i = 0; i < v->GetNumOrders(); ++i) {
+			Order* order = v->GetOrder(i);
+
+			bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+			bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+
+			if (isRegularOrder && isDepotOrder) {
+				if (i >= v->cur_implicit_order_index) {
+					next_depot_index = i;
+					break;
+				}
+				else if (next_depot_index < 0) {
+					next_depot_index = i;
+				}
+			}
+		}
+
+		if (next_depot_index == -1) {
+			ClrBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
+			ClrBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
+		}
+	}
+
 	switch (v->current_order.GetType()) {
 		case OT_GOTO_DEPOT:
 			// Check whether the vehicle was manually ordered to go to the depot on its order list.

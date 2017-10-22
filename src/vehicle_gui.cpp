@@ -2737,11 +2737,12 @@ public:
 		} else if (v->type == VEH_AIRCRAFT && HasBit(Aircraft::From(v)->flags, VAF_DEST_TOO_FAR) && !v->current_order.IsType(OT_LOADING)) {
 			str = STR_VEHICLE_STATUS_AIRCRAFT_TOO_FAR;
 		} else { // vehicle is in a "normal" state, show current order
+			int next_depot_index = -1;
+
 			if (v->GetNumOrders() > 0 && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT))) {
-				int next_depot_index = -1;
-				
-				for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
-					Order* order = v->orders.list->GetOrderAt(i);
+
+				for (int i = 0; i < v->GetNumOrders(); ++i) {
+					Order* order = v->GetOrder(i);
 
 					bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
 					bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
@@ -2756,17 +2757,18 @@ public:
 						}
 					}
 				}
+			}
 
+			if (next_depot_index >= 0) {
 				SetDParam(0, v->type);
-				SetDParam(1, v->orders.list->GetOrderAt(next_depot_index)->GetDestination());
+				SetDParam(1, v->GetOrder(next_depot_index)->GetDestination());
 				SetDParam(2, v->GetDisplaySpeed());
 				if (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT)) {
 					str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_VEL;
 				} else {
 					str = STR_VEHICLE_STATUS_HEADING_FOR_DEPOT_SERVICE_VEL;
 				}
-			}
-			else {
+			} else {
 				switch (v->current_order.GetType()) {
 				case OT_GOTO_STATION: {
 					SetDParam(0, v->current_order.GetDestination());

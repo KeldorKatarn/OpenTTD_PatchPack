@@ -1980,6 +1980,13 @@ static void LoadUnloadVehicle(Vehicle *front)
 						(cargo_not_full && (cargo_full & ~cargo_not_full) == 0)) { // There are still non-full cargoes
 					finished_loading = false;
 				}
+			} else if (front->current_order.GetLoadType() == OLFB_CARGO_TYPE_LOAD) {
+				for (Vehicle *v = front; v != NULL; v = v->Next()) {
+					if ((front->current_order.GetCargoLoadTypeRaw(v->cargo_type) & OLFB_FULL_LOAD) && HasBit(cargo_not_full, v->cargo_type)) {
+						finished_loading = false;
+						break;
+					}
+				}
 			} else if (cargo_not_full != 0) {
 				finished_loading = false;
 			}

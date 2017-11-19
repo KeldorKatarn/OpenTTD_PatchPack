@@ -2927,7 +2927,7 @@ static void TileLoop_Track(TileIndex tile)
 				switch (f) {
 					case FOUNDATION_NONE:
 						/* no foundation - is the track on the upper side of three corners raised tile? */
-						if (IsSlopeWithThreeCornersRaised(slope)) z++;
+						if (slope != SLOPE_FLAT) z++;
 						break;
 
 					case FOUNDATION_INCLINED_X:

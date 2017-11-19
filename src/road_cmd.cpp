@@ -1502,7 +1502,7 @@ static void TileLoop_Road(TileIndex tile)
 {
 	switch (_settings_game.game_creation.landscape) {
 		case LT_ARCTIC:
-			if (IsOnSnow(tile) != (GetTileZ(tile) > GetSnowLine())) {
+			if (IsOnSnow(tile) != (GetTileMaxZ(tile) > GetSnowLine())) {
 				ToggleSnow(tile);
 				MarkTileDirtyByTile(tile);
 			}

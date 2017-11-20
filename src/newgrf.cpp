@@ -13,6 +13,8 @@
 
 #include <stdarg.h>
 
+#include <map>
+
 #include "debug.h"
 #include "fileio_func.h"
 #include "engine_func.h"
@@ -8485,22 +8487,33 @@ static bool IsHouseSpecValid(HouseSpec *hs, const HouseSpec *next1, const HouseS
  */
 static void EnsureEarlyHouse(HouseZones bitmask)
 {
-	Year min_year = MAX_YEAR;
+	std::map<int32, Year> min_year;
 
 	for (int i = 0; i < NUM_HOUSES; i++) {
 		HouseSpec *hs = HouseSpec::Get(i);
 		if (hs == NULL || !hs->enabled) continue;
 		if ((hs->building_availability & bitmask) != bitmask) continue;
-		if (hs->min_year < min_year) min_year = hs->min_year;
+		
+		int32 grfid = (hs->grf_prop.grffile != nullptr) ? hs->grf_prop.grffile->grfid : -1;
+		min_year[grfid] = MAX_YEAR;
 	}
 
-	if (min_year == 0) return;
+	for (int i = 0; i < NUM_HOUSES; i++) {
+		HouseSpec *hs = HouseSpec::Get(i);
+		if (hs == NULL || !hs->enabled) continue;
+		if ((hs->building_availability & bitmask) != bitmask) continue;
+
+		int32 grfid = (hs->grf_prop.grffile != nullptr) ? hs->grf_prop.grffile->grfid : -1;
+		if (hs->min_year < min_year[grfid]) min_year[grfid] = hs->min_year;
+	}
 
 	for (int i = 0; i < NUM_HOUSES; i++) {
 		HouseSpec *hs = HouseSpec::Get(i);
 		if (hs == NULL || !hs->enabled) continue;
 		if ((hs->building_availability & bitmask) != bitmask) continue;
-		if (hs->min_year == min_year) hs->min_year = 0;
+
+		int32 grfid = (hs->grf_prop.grffile != nullptr) ? hs->grf_prop.grffile->grfid : -1;
+		if (hs->min_year == min_year[grfid]) hs->min_year = 0;
 	}
 }
 

@@ -3002,11 +3002,13 @@ draw_default_foundation:
 		}
 
 		/* Road catenary takes precendence over tram */
-		if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-			DrawRoadCatenary(ti, rtids.road_identifier, catenary_bits);
-		} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-			DrawRoadCatenary(ti, rtids.tram_identifier, catenary_bits);
-		}
+		//if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+		//	DrawRoadCatenary(ti, rtids.road_identifier, catenary_bits);
+		//} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+		//	DrawRoadCatenary(ti, rtids.tram_identifier, catenary_bits);
+		//}
+
+		DrawCatenary(ti);
 	}
 
 	if (IsRailWaypoint(ti->tile)) {

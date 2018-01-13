@@ -1442,6 +1442,44 @@ void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
 	if (front != 0) AddSortableSpriteToDraw(front, PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
 }
 
+void DrawCatenary(const TileInfo *ti)
+{
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+	const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+
+	RoadBits road;
+	RoadBits tram;
+
+	if (IsTileType(ti->tile, MP_ROAD)) {
+		if (IsNormalRoad(ti->tile)) {
+			road = GetRoadBits(ti->tile, ROADTYPE_ROAD);
+			tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
+		}
+		else if (IsLevelCrossing(ti->tile)) {
+			tram = road = (GetCrossingRailAxis(ti->tile) == AXIS_Y ? ROAD_X : ROAD_Y);
+		}
+	}
+	else if (IsTileType(ti->tile, MP_STATION)) {
+		if (IsRoadStop(ti->tile)) {
+			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
+			tram = road = (axis == AXIS_X ? ROAD_X : ROAD_Y);
+		}
+	}
+	else {
+		// No road here, no catenary to draw
+		return;
+	}
+
+	if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+		DrawRoadCatenary(ti, rtids.road_identifier, road);
+	}
+
+	if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+		DrawRoadCatenary(ti, rtids.tram_identifier, tram);
+	}
+}
+
 /**
  * Draws details on/around the road
  * @param img the sprite to draw
@@ -1547,13 +1585,15 @@ static void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Road catenary takes precendence over tram */
-	if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-		RoadBits bits = road;
-		if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) bits |= tram;
-		DrawRoadCatenary(ti, rtids.road_identifier, bits);
-	} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-		DrawRoadCatenary(ti, rtids.tram_identifier, tram);
-	}
+	//if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+	//	RoadBits bits = road;
+	//	if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) bits |= tram;
+	//	DrawRoadCatenary(ti, rtids.road_identifier, bits);
+	//} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+	//	DrawRoadCatenary(ti, rtids.tram_identifier, tram);
+	//}
+
+	DrawCatenary(ti);
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */
 	if (!HasBit(_display_opt, DO_FULL_DETAIL) || _cur_dpi->zoom > ZOOM_LVL_DETAIL) return;
@@ -1681,11 +1721,13 @@ static void DrawTile_Road(TileInfo *ti)
 			}
 
 			/* Draw road catenary; Road catenary takes precendence over tram */
-			if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-				DrawRoadCatenary(ti, rtids.road_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
-			} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-				DrawRoadCatenary(ti, rtids.tram_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
-			}
+			//if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+			//	DrawRoadCatenary(ti, rtids.road_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
+			//} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+			//	DrawRoadCatenary(ti, rtids.tram_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
+			//}
+
+			DrawCatenary(ti);
 
 			/* Draw rail catenary */
 			if (HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);

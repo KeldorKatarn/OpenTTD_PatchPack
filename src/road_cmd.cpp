@@ -1438,8 +1438,9 @@ void DrawRoadTypeCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits 
 		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[rb];
 	}
 
-	if (back != 0) AddSortableSpriteToDraw(back,  PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
-	if (front != 0) AddSortableSpriteToDraw(front, PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
+	PaletteID pal = COMPANY_SPRITE_COLOUR(GetRoadOwner(ti->tile, rtid.basetype));
+	if (back != 0) AddSortableSpriteToDraw(back,  pal, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
+	if (front != 0) AddSortableSpriteToDraw(front, pal, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
 }
 
 /**
@@ -1690,7 +1691,7 @@ static void DrawTile_Road(TileInfo *ti)
 					if (ground != 0) DrawGroundSprite(ground + axis, PAL_NONE);
 				}
 			}
-	
+
 			/* Draw tram overlay */
 			if (tram_rti != NULL) {
 				if (tram_rti->UsesOverlay()) {

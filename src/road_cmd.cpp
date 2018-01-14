@@ -1390,12 +1390,12 @@ static bool DrawRoadAsSnowDesert(TileIndex tile, Roadside roadside)
 }
 
 /**
- * Draws the catenary for the given tile
+ * Draws the catenary for the RoadType of the given tile
  * @param ti   information about the tile (slopes, height etc)
  * @param rtid road type to draw catenary for
  * @param rb   the roadbits for the tram
  */
-void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
+void DrawRoadTypeCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
 {
 	/* Don't draw the catenary under a low bridge */
 	if (IsBridgeAbove(ti->tile) && !IsTransparencySet(TO_CATENARY)) {
@@ -1440,6 +1440,48 @@ void DrawRoadCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits rb)
 
 	if (back != 0) AddSortableSpriteToDraw(back,  PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
 	if (front != 0) AddSortableSpriteToDraw(front, PAL_NONE, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
+}
+
+/**
+ * Draws the catenary for the given tile
+ * @param ti information about the tile (slopes, height etc)
+ */
+void DrawRoadCatenary(const TileInfo *ti)
+{
+	RoadBits road;
+	RoadBits tram;
+
+	if (IsTileType(ti->tile, MP_ROAD)) {
+		if (IsNormalRoad(ti->tile)) {
+			road = GetRoadBits(ti->tile, ROADTYPE_ROAD);
+			tram = GetRoadBits(ti->tile, ROADTYPE_TRAM);
+		}
+		else if (IsLevelCrossing(ti->tile)) {
+			tram = road = (GetCrossingRailAxis(ti->tile) == AXIS_Y ? ROAD_X : ROAD_Y);
+		}
+	}
+	else if (IsTileType(ti->tile, MP_STATION)) {
+		if (IsRoadStop(ti->tile)) {
+			Axis axis = GetRoadStopDir(ti->tile) == DIAGDIR_NE ? AXIS_X : AXIS_Y;
+			tram = road = (axis == AXIS_X ? ROAD_X : ROAD_Y);
+		}
+	}
+	else {
+		// No road here, no catenary to draw
+		return;
+	}
+
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(ti->tile);
+	const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+
+	if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
+		DrawRoadTypeCatenary(ti, rtids.road_identifier, road);
+	}
+
+	if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
+		DrawRoadTypeCatenary(ti, rtids.tram_identifier, tram);
+	}
 }
 
 /**
@@ -1546,14 +1588,8 @@ static void DrawRoadBits(TileInfo *ti)
 		return;
 	}
 
-	/* Road catenary takes precendence over tram */
-	if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-		RoadBits bits = road;
-		if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) bits |= tram;
-		DrawRoadCatenary(ti, rtids.road_identifier, bits);
-	} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-		DrawRoadCatenary(ti, rtids.tram_identifier, tram);
-	}
+	/* Draw road, tram catenary */
+	DrawRoadCatenary(ti);
 
 	/* Return if full detail is disabled, or we are zoomed fully out. */
 	if (!HasBit(_display_opt, DO_FULL_DETAIL) || _cur_dpi->zoom > ZOOM_LVL_DETAIL) return;
@@ -1680,12 +1716,8 @@ static void DrawTile_Road(TileInfo *ti)
 				DrawGroundSprite(rail, pal);
 			}
 
-			/* Draw road catenary; Road catenary takes precendence over tram */
-			if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-				DrawRoadCatenary(ti, rtids.road_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
-			} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-				DrawRoadCatenary(ti, rtids.tram_identifier, axis == AXIS_Y ? ROAD_X : ROAD_Y);
-			}
+			/* Draw road, tram catenary */
+			DrawRoadCatenary(ti);
 
 			/* Draw rail catenary */
 			if (HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);

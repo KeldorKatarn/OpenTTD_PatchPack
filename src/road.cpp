@@ -314,7 +314,7 @@ bool CanBuildRoadTypeInfrastructure(RoadTypeIdentifier rtid, CompanyID company)
 		/* Can we actually build the vehicle type? */
 		const Engine *e;
 		FOR_ALL_ENGINES_OF_TYPE(e, VEH_ROAD) {
-			if (HasPowerOnRoad(e->GetRoadType(), rtid)) return true;
+			if (HasPowerOnRoad(e->GetRoadType(), rtid) || HasPowerOnRoad(rtid, e->GetRoadType())) return true;
 		}
 		return false;
 	}

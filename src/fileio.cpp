@@ -522,7 +522,7 @@ FILE *FioFOpenFile(const char *filename, const char *mode, Subdirectory subdir, 
 			case BASESET_DIR:
 				f = FioFOpenFile(filename, mode, OLD_GM_DIR, filesize);
 				if (f != NULL) break;
-				/* FALL THROUGH */
+				FALLTHROUGH;
 			case NEWGRF_DIR:
 				f = FioFOpenFile(filename, mode, OLD_DATA_DIR, filesize);
 				break;
@@ -582,32 +582,6 @@ bool AppendPathSeparator(char *buf, const char *last)
 	}
 
 	return true;
-}
-
-/**
- * Allocates and files a variable with the full path
- * based on the given directory.
- * @param dir the directory to base the path on
- * @return the malloced full path
- */
-char *BuildWithFullPath(const char *dir)
-{
-	char *dest = MallocT<char>(MAX_PATH);
-	char *last = dest + MAX_PATH - 1;
-	strecpy(dest, dir, last);
-
-	/* Check if absolute or relative path */
-	const char *s = strchr(dest, PATHSEPCHAR);
-
-	/* Add absolute path */
-	if (s == NULL || dest != s) {
-		if (getcwd(dest, MAX_PATH) == NULL) *dest = '\0';
-		AppendPathSeparator(dest, last);
-		strecat(dest, dir, last);
-	}
-	AppendPathSeparator(dest, last);
-
-	return dest;
 }
 
 /**
@@ -1477,7 +1451,7 @@ uint FileScanner::Scan(const char *extension, Subdirectory sd, bool tars, bool r
 	switch (sd) {
 		case BASESET_DIR:
 			num += this->Scan(extension, OLD_GM_DIR, tars, recursive);
-			/* FALL THROUGH */
+			FALLTHROUGH;
 		case NEWGRF_DIR:
 			num += this->Scan(extension, OLD_DATA_DIR, tars, recursive);
 			break;

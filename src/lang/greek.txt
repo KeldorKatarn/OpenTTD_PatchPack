@@ -3222,8 +3222,8 @@ STR_STATION_VIEW_ACCEPTS_BUTTON                                 :{BLACK}Δέχε
 STR_STATION_VIEW_ACCEPTS_TOOLTIP                                :{BLACK}Εμφάνιση λίστας αποδεκτών φορτίων
 STR_STATION_VIEW_ACCEPTS_CARGO                                  :{BLACK}Δέχεται: {WHITE}{CARGO_LIST}
 
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Αυτός ο σταθμός έχει αποκλειστικά δικαιώματα μεταφοράς σε αυτήν την πόλη.
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :Η {YELLOW}{COMPANY}{BLACK} αγόρασε αποκλειστικά δικαιώματα για αυτήν την πόλη.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Αυτός ο σταθμός έχει αποκλειστικά δικαιώματα μεταφοράς σε αυτήν την πόλη.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :Η {YELLOW}{COMPANY}{BLACK} αγόρασε αποκλειστικά δικαιώματα για αυτήν την πόλη.
 
 STR_STATION_VIEW_RATINGS_BUTTON                                 :{BLACK}Βαθμολογίες
 STR_STATION_VIEW_RATINGS_TOOLTIP                                :{BLACK}Εμφάνιση στατιστικών σταθμού
@@ -3400,9 +3400,9 @@ STR_INDUSTRY_VIEW_REQUIRES_CARGO_CARGO                          :{BLACK}Απαι
 STR_INDUSTRY_VIEW_REQUIRES_CARGO_CARGO_CARGO                    :{BLACK}Απαιτεί: {YELLOW}{STRING}{STRING}, {STRING}{STRING}, {STRING}{STRING}
 ############ range for requires ends
 
-STR_INDUSTRY_VIEW_REQUIRES                                      :{BLACK}Απαιτεί
-STR_INDUSTRY_VIEW_ACCEPT_CARGO                                  :{YELLOW}{STRING}
-STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT                           :{YELLOW}{CARGO_LONG} {BLACK}σε αναμονή
+STR_INDUSTRY_VIEW_REQUIRES                                      :{BLACK}Απαιτεί:
+STR_INDUSTRY_VIEW_ACCEPT_CARGO                                  :{YELLOW}{STRING}{BLACK}{3:STRING}
+STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT                           :{YELLOW}{STRING}{BLACK}: {CARGO_SHORT} σε αναμονή{STRING}
 
 ############ range for produces starts
 STR_INDUSTRY_VIEW_PRODUCES_CARGO                                :{BLACK}Παράγει: {YELLOW}{STRING}{STRING}

@@ -3116,8 +3116,8 @@ STR_STATION_VIEW_ACCEPTS_BUTTON                                 :{BLACK}Accepter
 STR_STATION_VIEW_ACCEPTS_TOOLTIP                                :{BLACK}Visa lista över accepterat gods
 STR_STATION_VIEW_ACCEPTS_CARGO                                  :{BLACK}Accepterar: {WHITE}{CARGO_LIST}
 
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Den här stationen har exklusiva transporträttigheter i den här staden.
-STR_STATIOV_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :{YELLOW}{COMPANY}{BLACK} har köpt exklusiva transporträttigheter i den här staden.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_SELF                          :{BLACK}Den här stationen har exklusiva transporträttigheter i den här staden.
+STR_STATION_VIEW_EXCLUSIVE_RIGHTS_COMPANY                       :{YELLOW}{COMPANY}{BLACK} har köpt exklusiva transporträttigheter i den här staden.
 
 STR_STATION_VIEW_RATINGS_BUTTON                                 :{BLACK}Värderingar
 STR_STATION_VIEW_RATINGS_TOOLTIP                                :{BLACK}Visa stationens klassificering
@@ -3294,11 +3294,9 @@ STR_INDUSTRY_VIEW_REQUIRES_CARGO_CARGO                          :{BLACK}Kräver:
 STR_INDUSTRY_VIEW_REQUIRES_CARGO_CARGO_CARGO                    :{BLACK}Kräver: {YELLOW}{STRING}{STRING}, {STRING}{STRING}, {STRING}{STRING}
 ############ range for requires ends
 
-STR_INDUSTRY_VIEW_REQUIRES                                      :{BLACK}Kräver
-STR_INDUSTRY_VIEW_ACCEPT_CARGO                                  :{YELLOW}{STRING}
-STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT                           :{YELLOW}{CARGO_LONG} {BLACK}väntar
-STR_INDUSTRY_VIEW_ACCEPT_CARGO_TEXT                             :{YELLOW}{STRING}{STRING}
-STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT_TEXT                      :{YELLOW}{CARGO_LONG}{STRING}
+STR_INDUSTRY_VIEW_REQUIRES                                      :{BLACK}Kräver:
+STR_INDUSTRY_VIEW_ACCEPT_CARGO                                  :{YELLOW}{STRING}{BLACK}{3:STRING}
+STR_INDUSTRY_VIEW_ACCEPT_CARGO_AMOUNT                           :{YELLOW}{STRING}{BLACK}: {CARGO_SHORT} väntar{STRING}
 
 ############ range for produces starts
 STR_INDUSTRY_VIEW_PRODUCES_CARGO                                :{BLACK}Producerar: {YELLOW}{STRING}{STRING}

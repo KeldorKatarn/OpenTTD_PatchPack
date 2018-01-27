@@ -2265,6 +2265,7 @@ static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
  * Checks the tile and returns whether the current player is allowed to convert the roadtype to another roadtype
  * @param tile the tile to convert
  * @param to_type the RoadTypeIdentifier to be converted
+ * @return whether the road is convertible
  */
 static bool CanConvertRoadType(Owner owner, RoadType basetype)
 {

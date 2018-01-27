@@ -2262,6 +2262,16 @@ static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
 }
 
 /**
+ * Checks the tile and returns whether the current player is allowed to convert the roadtype to another roadtype
+ * @param tile the tile to convert
+ * @param to_type the RoadTypeIdentifier to be converted
+ */
+static bool CanConvertRoadType(Owner owner, RoadType basetype)
+{
+	return !(owner == OWNER_NONE || (owner == OWNER_TOWN && basetype == ROADTYPE_ROAD));
+}
+
+/**
  * Convert one road subtype to another.
  * Not meant to convert from road to tram.
  *
@@ -2320,13 +2330,14 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		/* Trying to convert other's road */ // TODO allow upgrade?
 		Owner owner = GetRoadOwner(tile, to_type.basetype);
-		if (owner != OWNER_NONE) {
+		if (CanConvertRoadType(owner, to_type.basetype)) {
 			CommandCost ret = CheckOwnership(owner, tile);
 			if (ret.Failed()) {
 				error = ret;
 				continue;
 			}
 		}
+
 
 		/* Vehicle on the tile when not converting normal <-> powered
 		 * Tunnels and bridges have special check later */
@@ -2344,7 +2355,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) { // we can safely convert, too
 				/* Update the company infrastructure counters. */
-				if (!IsRoadStopTile(tile) && owner != OWNER_NONE) { // TODO transfer ownership?
+				if (!IsRoadStopTile(tile) && CanConvertRoadType(owner, to_type.basetype)) { // TODO transfer ownership?
 					Company *c = Company::Get(owner);
 					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
 					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
@@ -2389,7 +2400,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) {
 				/* Update the company infrastructure counters. */
-				if (owner != OWNER_NONE) { // TODO transfer ownership?
+				if (CanConvertRoadType(owner, to_type.basetype)) { // TODO transfer ownership?
 					Company *c = Company::Get(owner);
 					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
 					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;

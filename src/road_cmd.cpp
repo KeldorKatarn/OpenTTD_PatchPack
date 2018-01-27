@@ -2269,7 +2269,39 @@ static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
  */
 static bool CanConvertRoadType(Owner owner, RoadType basetype)
 {
-	return !(owner == OWNER_NONE || (owner == OWNER_TOWN && basetype == ROADTYPE_ROAD));
+	return (owner == OWNER_NONE || (owner == OWNER_TOWN && basetype == ROADTYPE_ROAD));
+}
+
+/**
+ * Convert the ownership of the RoadType of the tile if applyable
+ * @param tile the tile of which convert ownership
+ * @param num_pieces the count of the roadbits to assign to the new owner
+ * @param owner the current owner of the RoadType
+ * @param from_type the old RoadTypeIdentifier
+ * @param to_type the new RoadTypeIdentifier
+ */
+static void ConvertRoadTypeOwner(TileIndex tile, uint num_pieces, Owner owner, RoadTypeIdentifier from_type, RoadTypeIdentifier to_type)
+{
+	// We can't get a company from invalid owners but we can get ownership of roads without an owner
+	if (owner >= MAX_COMPANIES && owner != OWNER_NONE) return;
+
+	Company *c;
+
+	switch (owner) {
+	case OWNER_NONE:
+		SetRoadOwner(tile, to_type.basetype, (Owner)_current_company);
+		c = Company::Get(_current_company);
+		c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
+		DirtyCompanyInfrastructureWindows(c->index);
+		break;
+
+	default:
+		c = Company::Get(owner);
+		c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
+		c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
+		DirtyCompanyInfrastructureWindows(c->index);
+		break;
+	}
 }
 
 /**
@@ -2331,7 +2363,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		/* Trying to convert other's road */ // TODO allow upgrade?
 		Owner owner = GetRoadOwner(tile, to_type.basetype);
-		if (CanConvertRoadType(owner, to_type.basetype)) {
+		if (!CanConvertRoadType(owner, to_type.basetype)) {
 			CommandCost ret = CheckOwnership(owner, tile);
 			if (ret.Failed()) {
 				error = ret;
@@ -2355,11 +2387,8 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) { // we can safely convert, too
 				/* Update the company infrastructure counters. */
-				if (!IsRoadStopTile(tile) && CanConvertRoadType(owner, to_type.basetype)) { // TODO transfer ownership?
-					Company *c = Company::Get(owner);
-					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
-					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
-					DirtyCompanyInfrastructureWindows(c->index);
+				if (!IsRoadStopTile(tile) && CanConvertRoadType(owner, to_type.basetype) && owner != OWNER_TOWN) {
+					ConvertRoadTypeOwner(tile, num_pieces, owner, from_type, to_type);
 				}
 
 				/* Perform the conversion */
@@ -2400,11 +2429,10 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) {
 				/* Update the company infrastructure counters. */
-				if (CanConvertRoadType(owner, to_type.basetype)) { // TODO transfer ownership?
-					Company *c = Company::Get(owner);
-					c->infrastructure.road[from_type.basetype][from_type.subtype] -= num_pieces;
-					c->infrastructure.road[to_type.basetype][to_type.subtype] += num_pieces;
-					DirtyCompanyInfrastructureWindows(c->index);
+				if (CanConvertRoadType(owner, to_type.basetype) && owner != OWNER_TOWN) {
+					ConvertRoadTypeOwner(tile, num_pieces, owner, from_type, to_type);
+					ConvertRoadTypeOwner(endtile, num_pieces, owner, from_type, to_type);
+					SetTunnelBridgeOwner(tile, endtile, _current_company);
 				}
 
 				/* Perform the conversion */

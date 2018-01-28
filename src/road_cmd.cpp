@@ -2282,9 +2282,12 @@ static bool CanConvertRoadType(Owner owner, RoadType basetype)
  */
 static void ConvertRoadTypeOwner(TileIndex tile, uint num_pieces, Owner owner, RoadTypeIdentifier from_type, RoadTypeIdentifier to_type)
 {
+	// Scenario editor, maybe? Don't touch the owners when converting roadtypes...
+	if (_current_company >= MAX_COMPANIES) return;
+
 	// We can't get a company from invalid owners but we can get ownership of roads without an owner
 	if (owner >= MAX_COMPANIES && owner != OWNER_NONE) return;
-
+	
 	Company *c;
 
 	switch (owner) {
@@ -2378,6 +2381,11 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				CommandCost ret = EnsureNoVehicleOnGround(tile);
 				if (ret.Failed()) {
 					error = ret;
+					continue;
+				}
+
+				if (to_type.basetype == ROADTYPE_ROAD && owner == OWNER_TOWN) {
+					error.MakeError(STR_ERROR_INCOMPATIBLE_ROAD);
 					continue;
 				}
 			}

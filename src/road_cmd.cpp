@@ -2429,6 +2429,11 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 					error = ret;
 					continue;
 				}
+
+				if (to_type.basetype == ROADTYPE_ROAD && owner == OWNER_TOWN) {
+					error.MakeError(STR_ERROR_INCOMPATIBLE_ROAD);
+					continue;
+				}
 			}
 
 			/* There are 2 pieces on *every* tile of the bridge or tunnel */

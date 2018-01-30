@@ -128,7 +128,7 @@ static uint32 GetCountAndDistanceOfClosestInstance(byte param_setID, byte layout
 
 		case 0xFFFFFFFF: // current grf
 			GrfID = GetIndustrySpec(current->type)->grf_prop.grffile->grfid;
-			/* FALL THROUGH */
+			FALLTHROUGH;
 
 		default: // use the grfid specified in register 100h
 			SetBit(param_setID, 7); // bit 7 means it is not an old type
@@ -380,13 +380,7 @@ static uint32 GetCountAndDistanceOfClosestInstance(byte param_setID, byte layout
 
 /* virtual */ uint32 IndustriesScopeResolver::GetTriggers() const
 {
-	return this->industry != NULL ? this->industry->random_triggers : 0;
-}
-
-/* virtual */ void IndustriesScopeResolver::SetTriggers(int triggers) const
-{
-	assert(this->industry != NULL && this->industry->index != INVALID_INDUSTRY);
-	this->industry->random_triggers = triggers;
+	return 0;
 }
 
 /* virtual */ void IndustriesScopeResolver::StorePSA(uint pos, int32 value)

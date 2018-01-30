@@ -154,7 +154,7 @@ static void ConvertTownOwner()
 				if (GB(_m[tile].m5, 4, 2) == ROAD_TILE_CROSSING && HasBit(_m[tile].m3, 7)) {
 					_m[tile].m3 = OWNER_TOWN;
 				}
-				/* FALL THROUGH */
+				FALLTHROUGH;
 
 			case MP_TUNNELBRIDGE:
 				if (_m[tile].m1 & 0x80) SetTileOwner(tile, OWNER_TOWN);
@@ -1225,7 +1225,8 @@ bool AfterLoadGame()
 		}
 	}
 
-	if (IsSavegameVersionBefore(196)) {
+	extern const uint16 NRT_SAVEGAME_VERSION;
+	if (IsSavegameVersionBefore(NRT_SAVEGAME_VERSION)) {
 		/* Add road subtypes */
 		for (TileIndex t = 0; t < map_size; t++) {
 			bool has_road = false;

@@ -266,6 +266,7 @@
  *  196   27778   1.7.x
  */
 extern const uint16 SAVEGAME_VERSION = 196; ///< Current savegame version of OpenTTD.
+extern const uint16 NRT_SAVEGAME_VERSION = 196; // compatible to all NRT version, compatible with 1.6.x, NOT COMPATIBLE with 1.7.x
 
 SavegameType _savegame_type; ///< type of savegame we are loading
 FileToSaveLoad _file_to_saveload; ///< File to save or load in the openttd loop.

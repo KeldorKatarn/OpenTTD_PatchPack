@@ -3001,12 +3001,8 @@ draw_default_foundation:
 			}
 		}
 
-		/* Road catenary takes precendence over tram */
-		if (road_rti != NULL && HasRoadCatenaryDrawn(rtids.road_identifier)) {
-			DrawRoadCatenary(ti, rtids.road_identifier, catenary_bits);
-		} else if (tram_rti != NULL && HasRoadCatenaryDrawn(rtids.tram_identifier)) {
-			DrawRoadCatenary(ti, rtids.tram_identifier, catenary_bits);
-		}
+		/* Draw road, tram catenary */
+		DrawRoadCatenary(ti);
 	}
 
 	if (IsRailWaypoint(ti->tile)) {
@@ -3230,7 +3226,8 @@ static void TileLoop_Station(TileIndex tile)
 
 		case STATION_DOCK:
 			if (!IsTileFlat(tile)) break; // only handle water part
-			/* FALL THROUGH */
+			FALLTHROUGH;
+
 		case STATION_OILRIG: //(station part)
 		case STATION_BUOY:
 			TileLoop_Water(tile);

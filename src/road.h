@@ -254,6 +254,8 @@ RoadTypeIdentifier GetRoadTypeByLabel(RoadTypeLabel label, RoadType subtype, boo
 void ResetRoadTypes();
 void InitRoadTypes();
 RoadTypeIdentifier AllocateRoadType(RoadTypeLabel label, RoadType basetype);
+RoadSubTypes ExistingRoadSubTypesForRoadType(RoadType rt, CompanyID c);
+bool CanBuildRoadTypeInfrastructure(RoadTypeIdentifier rtid, CompanyID company);
 
 extern RoadTypeIdentifier _sorted_roadtypes[ROADTYPE_END][ROADSUBTYPE_END];
 extern uint8 _sorted_roadtypes_size[ROADTYPE_END];

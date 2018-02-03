@@ -1714,12 +1714,12 @@ UnitID GetFreeUnitNumber(VehicleType type)
  * vehicle type. This to disable building stations etc. when
  * you are not allowed/able to have the vehicle type yet.
  * @param type the vehicle type to check this for
- * @param subtype for road vehicles, either ROADTYPE_ROAD, ROADTYPE_TRAM or INVALID_ROADTYPE
  * @return true if there is any reason why you may build
  *         the infrastructure for the given vehicle type
  */
-bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype)
+bool CanBuildVehicleInfrastructure(VehicleType type)
 {
+	assert(type != VEH_ROAD);
 	assert(IsCompanyBuildableVehicleType(type));
 
 	if (!Company::IsValidID(_local_company)) return false;
@@ -1728,9 +1728,9 @@ bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype)
 	UnitID max;
 	switch (type) {
 		case VEH_TRAIN:    max = _settings_game.vehicle.max_trains; break;
-		case VEH_ROAD:     max = _settings_game.vehicle.max_roadveh; break;
 		case VEH_SHIP:     max = _settings_game.vehicle.max_ships; break;
 		case VEH_AIRCRAFT: max = _settings_game.vehicle.max_aircraft; break;
+		/* VEH_ROAD is not handled here, see CanBuildRoadTypeInfrastructure() */
 		default: NOT_REACHED();
 	}
 
@@ -1739,8 +1739,7 @@ bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype)
 		/* Can we actually build the vehicle type? */
 		const Engine *e;
 		FOR_ALL_ENGINES_OF_TYPE(e, type) {
-			if ((type != VEH_ROAD || subtype == INVALID_ROADTYPE || subtype == e->GetRoadType().basetype) &&
-					HasBit(e->company_avail, _local_company)) return true;
+			if (HasBit(e->company_avail, _local_company)) return true;
 		}
 		return false;
 	}
@@ -1748,14 +1747,11 @@ bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype)
 	/* We should be able to build infrastructure when we have the actual vehicle type */
 	const Vehicle *v;
 	FOR_ALL_VEHICLES(v) {
-		if (v->type == type &&
-				(type != VEH_ROAD || subtype == INVALID_ROADTYPE || subtype == RoadVehicle::From(v)->rtid.basetype) &&
-				v->owner == _local_company) return true;
+		if (v->type == type && v->owner == _local_company) return true;
 	}
 
 	return false;
 }
-
 
 /**
  * Determines the #LiveryScheme for a vehicle.

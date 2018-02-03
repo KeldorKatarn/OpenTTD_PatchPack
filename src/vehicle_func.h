@@ -71,7 +71,7 @@ UnitID GetFreeUnitNumber(VehicleType type);
 
 void VehicleEnterDepot(Vehicle *v);
 
-bool CanBuildVehicleInfrastructure(VehicleType type, uint subtype);
+bool CanBuildVehicleInfrastructure(VehicleType type);
 
 /** Position information of a vehicle after it moved */
 struct GetNewVehiclePosResult {

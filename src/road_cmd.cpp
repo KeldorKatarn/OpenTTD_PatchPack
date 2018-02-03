@@ -1438,7 +1438,8 @@ void DrawRoadTypeCatenary(const TileInfo *ti, RoadTypeIdentifier rtid, RoadBits 
 		front = SPR_TRAMWAY_BASE + _road_frontwire_sprites_1[rb];
 	}
 
-	PaletteID pal = COMPANY_SPRITE_COLOUR(GetRoadOwner(ti->tile, rtid.basetype));
+	Owner owner = GetRoadOwner(ti->tile, rtid.basetype);
+	PaletteID pal = (owner == OWNER_NONE || owner == OWNER_TOWN ? GENERAL_SPRITE_COLOUR(COLOUR_GREY) : COMPANY_SPRITE_COLOUR(owner));
 	if (back != 0) AddSortableSpriteToDraw(back,  pal, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
 	if (front != 0) AddSortableSpriteToDraw(front, pal, ti->x, ti->y, 16, 16, TILE_HEIGHT + BB_HEIGHT_UNDER_BRIDGE, ti->z, IsTransparencySet(TO_CATENARY));
 }
@@ -2287,7 +2288,7 @@ static void ConvertRoadTypeOwner(TileIndex tile, uint num_pieces, Owner owner, R
 
 	// We can't get a company from invalid owners but we can get ownership of roads without an owner
 	if (owner >= MAX_COMPANIES && owner != OWNER_NONE) return;
-	
+
 	Company *c;
 
 	switch (owner) {

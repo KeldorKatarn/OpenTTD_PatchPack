@@ -224,7 +224,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		ROADSUBTYPES_NORMAL | ROADSUBTYPES_ELECTRIC,
 
 		/* flags */
-		ROTFB_NONE,
+		ROTFB_NO_HOUSES,
 
 		/* cost multiplier */
 		8,
@@ -303,7 +303,7 @@ static const RoadtypeInfo _original_tramtypes[] = {
 		ROADSUBTYPES_ELECTRIC,
 
 		/* flags */
-		ROTFB_CATENARY,
+		ROTFB_CATENARY | ROTFB_NO_HOUSES,
 
 		/* cost multiplier */
 		16,

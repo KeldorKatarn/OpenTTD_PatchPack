@@ -813,7 +813,7 @@ static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner r
 	SetTileOwner(t, rail);
 	_m[t].m2 = town;
 	_m[t].m3 = rat;
-	_m[t].m4 = 0;
+	_m[t].m4 = INVALID_ROADTYPES;
 	_m[t].m5 = ROAD_TILE_CROSSING << 6 | roaddir;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = road;
@@ -835,7 +835,7 @@ static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDire
 	SetTileOwner(t, owner);
 	_m[t].m2 = did;
 	_m[t].m3 = 0;
-	_m[t].m4 = 0;
+	_m[t].m4 = INVALID_ROADTYPES;
 	_m[t].m5 = ROAD_TILE_DEPOT << 6 | dir;
 	SB(_me[t].m6, 2, 4, 0);
 	_me[t].m7 = owner;

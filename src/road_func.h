@@ -163,7 +163,7 @@ static inline RoadBits AxisToRoadBits(Axis a)
 static inline Money RoadMaintenanceCost(RoadTypeIdentifier rtid, uint32 num, uint32 total_num)
 {
 	assert(rtid.IsValid());
-	return (_price[PR_INFRASTRUCTURE_ROAD] * GetRoadTypeInfo(rtid)->maintenance_multiplier * num * (1 + IntSqrt(total_num))) >> 11;
+	return (_price[PR_INFRASTRUCTURE_ROAD] * GetRoadTypeInfo(rtid)->maintenance_multiplier * num * (1 + IntSqrt(total_num))) >> 12;
 }
 
 /**

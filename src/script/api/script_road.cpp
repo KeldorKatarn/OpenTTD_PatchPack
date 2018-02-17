@@ -521,7 +521,7 @@ static bool NeighbourHasReachableRoad(::RoadTypes rts, TileIndex start_tile, Dia
 		entrance_dir = (::TileX(tile) == ::TileX(front)) ? (::TileY(tile) < ::TileY(front) ? 1 : 3) : (::TileX(tile) < ::TileX(front) ? 2 : 0);
 	}
 
-	uint p2 = station_id == ScriptStation::STATION_JOIN_ADJACENT ? 0 : 32;
+	uint p2 = (station_id == ScriptStation::STATION_JOIN_ADJACENT) << 2;
 	p2 |= drive_through ? 2 : 0;
 	p2 |= road_veh_type == ROADVEHTYPE_TRUCK ? 1 : 0;
 	p2 |= ScriptObject::GetRoadType().Pack() << 5;

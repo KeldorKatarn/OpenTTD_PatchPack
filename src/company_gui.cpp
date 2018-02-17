@@ -2228,7 +2228,7 @@ struct CompanyWindow : Window
 				uint rail_pices = c->infrastructure.signal;
 				uint road_pieces = 0;
 				for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pices += c->infrastructure.rail[i];
-				for (RoadType rt = ROADTYPE_BEGIN; rt <= ROADTYPE_END; rt++) {
+				for (RoadType rt = ROADTYPE_BEGIN; rt < ROADTYPE_END; rt++) {
 					for (uint i = 0; i < lengthof(c->infrastructure.road[rt]); i++) road_pieces += c->infrastructure.road[rt][i];
 				}
 

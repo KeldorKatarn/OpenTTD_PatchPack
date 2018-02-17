@@ -222,6 +222,9 @@ static inline Money RoadBuildCost(RoadTypeIdentifier rtid)
  */
 static inline Money RoadConvertCost(RoadTypeIdentifier from, RoadTypeIdentifier to)
 {
+	/* Don't apply convert costs when converting to the same roadtype (ex. building a roadstop over existing road) */
+	if (from == to) return (Money)0;
+
 	/* Get the costs for removing and building anew
 	 * A conversion can never be more costly */
 	Money rebuildcost = RoadBuildCost(to) - _price[PR_CLEAR_ROAD];

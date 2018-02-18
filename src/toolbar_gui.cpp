@@ -2055,7 +2055,7 @@ struct MainToolbarWindow : Window {
 		this->SetWidgetDisabledState(WID_TN_STORY, StoryPage::GetNumItems() == 0);
 
 		this->SetWidgetDisabledState(WID_TN_RAILS, !CanBuildVehicleInfrastructure(VEH_TRAIN));
-		this->SetWidgetDisabledState(WID_TN_TRAMS, !CanBuildRoadTypeInfrastructure(RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_NORMAL), _local_company)); //TODO: should loop through all tramtypes
+		this->SetWidgetDisabledState(WID_TN_TRAMS, GetCompanyRoadtypes(_local_company, ROADTYPE_TRAM) == ROADSUBTYPES_NONE);
 		this->SetWidgetDisabledState(WID_TN_AIR, !CanBuildVehicleInfrastructure(VEH_AIRCRAFT));
 
 		this->DrawWidgets();

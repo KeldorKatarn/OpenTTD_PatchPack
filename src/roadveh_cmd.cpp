@@ -1310,9 +1310,9 @@ again:
 
 			if (GetRoadType(old_tile, v->rtid.basetype) != GetRoadType(tile, v->rtid.basetype)) {
 				v->First()->CargoChanged();
-                if (v->IsFrontEngine()) {
-                    RoadVehUpdateCache(v);
-                }
+				if (v->IsFrontEngine()) {
+					RoadVehUpdateCache(v);
+				}
 			}
 		}
 		if (new_dir != v->direction) {

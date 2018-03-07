@@ -1307,12 +1307,11 @@ again:
 			v->tile = tile;
 			v->state = (byte)dir;
 			v->frame = start_frame;
-
 			if (GetRoadType(old_tile, v->rtid.basetype) != GetRoadType(tile, v->rtid.basetype)) {
-				v->First()->CargoChanged();
 				if (v->IsFrontEngine()) {
 					RoadVehUpdateCache(v);
 				}
+				v->First()->CargoChanged();
 			}
 		}
 		if (new_dir != v->direction) {

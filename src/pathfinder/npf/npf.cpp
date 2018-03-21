@@ -902,7 +902,7 @@ static void NPFFollowTrack(AyStar *aystar, OpenListNode *current)
 		/* We leave src_tile in src_exitdir and reach dst_tile */
 		dst_tile = AddTileIndexDiffCWrap(src_tile, TileIndexDiffCByDiagDir(src_exitdir));
 
-		if (dst_tile != INVALID_TILE && !CanEnterTile(dst_tile, src_exitdir, user)) dst_tile = INVALID_TILE;
+		if (dst_tile != INVALID_TILE && IsNormalRoadTile(dst_tile) && !CanEnterTile(dst_tile, src_exitdir, user)) dst_tile = INVALID_TILE;
 
 		if (dst_tile == INVALID_TILE) {
 			/* We cannot enter the next tile. Road vehicles can reverse, others reach dead end */

@@ -446,10 +446,16 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		switch (GetTileType(tile)) {
 			case MP_TREES:
 			{
+				bool grow_existing_tree_instead = false;
+
 				/* no more space for trees? */
 				if (_game_mode != GM_EDITOR && (GetTreeCount(tile) >= 4 || ((int)GetTreeCount(tile) >= (GetTileZ(tile) + (_settings_game.game_creation.landscape != LT_TROPIC ? 0 : 1))))) {
-					msg = STR_ERROR_TREE_ALREADY_HERE;
-					continue;
+					if (GetTreeGrowth(tile) < 3) {
+						grow_existing_tree_instead = true;
+					} else {
+						msg = STR_ERROR_TREE_ALREADY_HERE;
+						continue;
+					}
 				}
 
 				/* Thin out trees along the tree line range */
@@ -460,8 +466,13 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				uint max_tree_count = 4u - ((4u * percent_of_range) / 100u);
 
 				if (GetTreeCount(tile) >= max_tree_count) {
-					msg = STR_ERROR_TREE_PLANT_LIMIT_REACHED;
-					continue;
+					if (GetTreeGrowth(tile) < 3) {
+						grow_existing_tree_instead = true;
+					}
+					else {
+						msg = STR_ERROR_TREE_PLANT_LIMIT_REACHED;
+						continue;
+					}
 				}
 
 				/* Test tree limit. */
@@ -471,7 +482,11 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				}
 
 				if (flags & DC_EXEC) {
-					AddTreeCount(tile, 1);
+					if (grow_existing_tree_instead) {
+						SetTreeGrowth(tile, 3);
+					} else {
+						AddTreeCount(tile, 1);
+					}
 					MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 					if (c != NULL) c->tree_limit -= 1 << 16;
 				}
@@ -782,18 +797,22 @@ static void TileLoop_Trees(TileIndex tile)
 			MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
 		}
 	}
+
 	if (GetTreeCounter(tile) < 15) {
-		if (_settings_game.construction.tree_growth_rate > 0) {
-			/* Nature randomness */
-			uint8 grow_slowing_values[3] = { 5, 20, 120 }; // slow, very slow, extremely slow
-			uint16 prob = 0x10000 / grow_slowing_values[_settings_game.construction.tree_growth_rate - 1];
-			if (GB(Random(), 0, 16) < prob) AddTreeCounter(tile, 1);
-		} else {
-			AddTreeCounter(tile, 1);
-		}
+		AddTreeCounter(tile, 1);
 		return;
 	}
+
 	SetTreeCounter(tile, 0);
+
+	if (_settings_game.construction.tree_growth_rate > 0) {
+		/* Nature randomness */
+		uint8 grow_slowing_values[3] = { 5, 20, 120 }; // slow, very slow, extremely slow
+		uint16 prob = 0x10000 / grow_slowing_values[_settings_game.construction.tree_growth_rate - 1];
+		if (GB(Random(), 0, 16) >= (prob / 15)) {
+			return;
+		}
+	}
 
 	switch (GetTreeGrowth(tile)) {
 		case 3: // regular sized tree

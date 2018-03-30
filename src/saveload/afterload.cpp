@@ -281,6 +281,12 @@ static void InitializeWindowsAndCaches()
 			(*it)->tile = t->xy;
 		}
 	}
+	RoadVehicle *rv;
+	FOR_ALL_ROADVEHICLES(rv) {
+		if (rv->IsFrontEngine()) {
+			rv->CargoChanged();
+		}
+	}
 
 	RecomputePrices();
 

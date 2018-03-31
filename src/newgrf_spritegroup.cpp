@@ -234,7 +234,10 @@ const SpriteGroup *DeterministicSpriteGroup::Resolve(ResolverObject &object) con
 			value = GetVariable(object, scope, adjust->variable, adjust->parameter, &available);
 		}
 
-		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV || adjust->operation == DSGA_OP_UMOD));
+		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV ||
+			                                        adjust->operation == DSGA_OP_UMOD ||
+			                                        adjust->operation == DSGA_OP_SDIV ||
+			                                        adjust->operation == DSGA_OP_SMOD));
 
 		if (!available || possible_div_by_zero) {
 			/* Unsupported variable: skip further processing and return either

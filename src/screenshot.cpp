@@ -26,6 +26,7 @@
 #include "tile_map.h"
 #include "landscape.h"
 #include "smallmap_gui.h"
+#include "smallmap_colours.h"
 
 #include "table/strings.h"
 
@@ -68,6 +69,8 @@ struct ScreenshotFormat {
 	const char *extension;       ///< File extension.
 	ScreenshotHandlerProc *proc; ///< Function for writing the screenshot.
 };
+
+#define MKCOLOUR(x) TO_LE32X(x)
 
 /*************************************************
  **** SCREENSHOT CODE FOR WINDOWS BITMAP (.BMP)
@@ -826,6 +829,77 @@ static void ShowScreenshotResultMessage(bool ret)
 }
 
 /**
+* Return the colour a tile would be displayed with in the small map in mode "Owner".
+*
+* @param tile The tile of which we would like to get the colour.
+* @return The colour of tile in the small map in mode "Owner"
+*/
+static inline byte GetMinimapPixels(TileIndex tile)
+{
+	auto t = GetTileType(tile);
+
+	if (t == MP_STATION) {
+		switch (GetStationType(tile)) {
+		case STATION_RAIL:    return MKCOLOUR(PC_LIGHT_BLUE);
+		case STATION_AIRPORT: return MKCOLOUR(PC_RED);
+		case STATION_TRUCK:   return MKCOLOUR(PC_ORANGE);
+		case STATION_BUS:     return MKCOLOUR(PC_YELLOW);
+		case STATION_DOCK:    return MKCOLOUR(PC_GREEN);
+		default:              return MKCOLOUR(PC_WHITE);
+		}
+	}
+
+	switch (t) {
+	case MP_RAILWAY:  return MKCOLOUR(PC_GREY);
+	case MP_ROAD:     return MKCOLOUR(PC_BLACK);
+	case MP_HOUSE:    return MKCOLOUR(PC_DARK_RED);
+	case MP_WATER:    return MKCOLOUR(PC_WATER);
+	case MP_INDUSTRY: return MKCOLOUR(0x60);
+	default:          return MKCOLOUR(PC_GRASS_LAND);
+	}
+}
+
+static void MinimapCallback(void *userdata, void *buf, uint y, uint pitch, uint n)
+{
+	uint8 *ubuf = (uint8 *)buf;
+
+	uint num = (pitch * n);
+	uint row, col;
+	byte val;
+
+	for (uint i = 0; i < num; i++) {
+		row = y + (int)(i / pitch);
+		col = (MapSizeX() - 1) - (i % pitch);
+
+		TileIndex tile = TileXY(col, row);
+
+		if (IsTileType(tile, MP_VOID)) {
+			val = 0x00;
+		}
+		else {
+			val = GetMinimapPixels(tile);
+		}
+
+		*ubuf = (uint8)_cur_palette.palette[val].b;
+		ubuf += sizeof(uint8); *ubuf = (uint8)_cur_palette.palette[val].g;
+		ubuf += sizeof(uint8); *ubuf = (uint8)_cur_palette.palette[val].r;
+		ubuf += sizeof(uint8);
+		ubuf += sizeof(uint8);
+	}
+}
+
+/**
+* Saves the complete savemap in a PNG-file.
+*/
+static bool MakeFlatMinimapScreenshot()
+{
+	_screenshot_name[0] = '\0';
+
+	const ScreenshotFormat *sf = _screenshot_formats + _cur_screenshot_format;
+	return sf->proc(MakeScreenshotName("minimap", sf->extension), MinimapCallback, NULL, MapSizeX(), MapSizeY(), 32, _cur_palette.palette);
+}
+
+/**
  * Make an actual screenshot.
  * @param t    the type of screenshot to make.
  * @param name the name to give to the screenshot.
@@ -864,6 +938,11 @@ bool MakeScreenshot(ScreenshotType t, const char *name)
 		case SC_HEIGHTMAP: {
 			const ScreenshotFormat *sf = _screenshot_formats + _cur_screenshot_format;
 			ret = MakeHeightmapScreenshot(MakeScreenshotName(HEIGHTMAP_NAME, sf->extension));
+			break;
+		}
+
+		case SC_MINIMAP: {
+			ret = MakeFlatMinimapScreenshot();
 			break;
 		}
 

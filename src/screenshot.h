@@ -24,6 +24,7 @@ enum ScreenshotType {
 	SC_DEFAULTZOOM, ///< Zoomed to default zoom level screenshot of the visible area.
 	SC_WORLD,       ///< World screenshot.
 	SC_HEIGHTMAP,   ///< Heightmap of the world.
+	SC_MINIMAP,     ///< Flat screenshot of the minimap.
 };
 
 class SmallMapWindow;

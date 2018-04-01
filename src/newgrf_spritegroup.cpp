@@ -265,23 +265,30 @@ const SpriteGroup *DeterministicSpriteGroup::Resolve(ResolverObject &object) con
 			value = GetVariable(object, scope, adjust->variable, adjust->parameter, &available);
 		}
 
-		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV ||
-			                                        adjust->operation == DSGA_OP_UMOD ||
-			                                        adjust->operation == DSGA_OP_SDIV ||
-			                                        adjust->operation == DSGA_OP_SMOD));
-
-		if (!available || possible_div_by_zero) {
+		if (!available) {
 			/* Unsupported variable: skip further processing and return either
 			 * the group from the first range or the default group. */
 			return SpriteGroup::Resolve(this->num_ranges > 0 ? this->ranges[0].group : this->default_group, object, false);
 		}
 
-		switch (this->size) {
-			case DSG_SIZE_BYTE:  value = EvalAdjustT<uint8,  int8> (adjust, scope, last_value, value); break;
-			case DSG_SIZE_WORD:  value = EvalAdjustT<uint16, int16>(adjust, scope, last_value, value); break;
-			case DSG_SIZE_DWORD: value = EvalAdjustT<uint32, int32>(adjust, scope, last_value, value); break;
-			default: NOT_REACHED();
+		bool possible_div_by_zero = (value == 0 && (adjust->operation == DSGA_OP_UDIV ||
+													adjust->operation == DSGA_OP_UMOD ||
+													adjust->operation == DSGA_OP_SDIV ||
+													adjust->operation == DSGA_OP_SMOD));
+
+		if (possible_div_by_zero) {
+			value = last_value;
 		}
+		else
+		{
+			switch (this->size) {
+				case DSG_SIZE_BYTE:  value = EvalAdjustT<uint8, int8>(adjust, scope, last_value, value); break;
+				case DSG_SIZE_WORD:  value = EvalAdjustT<uint16, int16>(adjust, scope, last_value, value); break;
+				case DSG_SIZE_DWORD: value = EvalAdjustT<uint32, int32>(adjust, scope, last_value, value); break;
+				default: NOT_REACHED();
+			}
+		}
+
 		last_value = value;
 	}
 

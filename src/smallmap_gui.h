@@ -186,7 +186,7 @@ protected:
 	void DrawSmallMapColumn(void *dst, uint xc, uint yc, int pitch, int reps, int start_pos, int end_pos, Blitter *blitter) const;
 	void DrawVehicles(const DrawPixelInfo *dpi, Blitter *blitter) const;
 	void DrawTowns(const DrawPixelInfo *dpi) const;
-	void DrawSmallMap(DrawPixelInfo *dpi) const;
+	void DrawSmallMap(DrawPixelInfo *dpi, bool draw_indicators = true) const;
 
 	Point RemapTile(int tile_x, int tile_y) const;
 	Point PixelToTile(int px, int py, int *sub, bool add_sub = true) const;
@@ -223,6 +223,9 @@ public:
 	virtual void OnScroll(Point delta);
 	virtual void OnMouseOver(Point pt, int widget);
 	virtual void OnToolTip(Point pt, int widget, TooltipCloseCondition close_cond);
+	
+	void TakeScreenshot();
+	void ScreenshotCallbackHandler(void *buf, uint y, uint pitch, uint n);
 };
 
 #endif /* SMALLMAP_GUI_H */

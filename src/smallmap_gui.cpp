@@ -23,6 +23,7 @@
 #include "sound_func.h"
 #include "window_func.h"
 #include "company_base.h"
+#include "screenshot.h"
 
 #include "smallmap_colours.h"
 #include "smallmap_gui.h"
@@ -840,7 +841,7 @@ void SmallMapWindow::DrawMapIndicators() const
  *
  * @param dpi pointer to pixel to write onto
  */
-void SmallMapWindow::DrawSmallMap(DrawPixelInfo *dpi) const
+void SmallMapWindow::DrawSmallMap(DrawPixelInfo *dpi, bool draw_indicators) const
 {
 	Blitter *blitter = BlitterFactory::GetCurrentBlitter();
 	DrawPixelInfo *old_dpi;
@@ -896,7 +897,7 @@ void SmallMapWindow::DrawSmallMap(DrawPixelInfo *dpi) const
 	if (this->show_towns) this->DrawTowns(dpi);
 
 	/* Draw map indicators */
-	this->DrawMapIndicators();
+	if (draw_indicators) this->DrawMapIndicators();
 
 	_cur_dpi = old_dpi;
 }
@@ -1396,6 +1397,10 @@ int SmallMapWindow::GetPositionOnLegend(Point pt)
 			NotifyAllViewports(VPMT_INDUSTRY);
 			this->SetDirty();
 			break;
+
+		case WID_SM_SCREENSHOT:
+			TakeScreenshot();
+			break;
 	}
 }
 
@@ -1631,6 +1636,71 @@ Point SmallMapWindow::GetStationMiddle(const Station *st) const
 	ret.x -= 3 + this->subscroll;
 	return ret;
 }
+ 
+/**
+ * Take a screenshot of the contents of the smallmap window, at the current zoom level and mode
+ * This calls MakeSmallMapScreenshot which uses ScreenshotCallbackHandler as the screenshot callback
+ */
+void SmallMapWindow::TakeScreenshot()
+{
+	int32 width = ((MapMaxX() + MapMaxY()) * 2) / this->zoom;
+	int32 height = (MapMaxX() + MapMaxY() + 1) / this->zoom;
+
+	int32 saved_scroll_x = this->scroll_x;
+	int32 saved_scroll_y = this->scroll_y;
+	int32 saved_subscroll = this->subscroll;
+	this->subscroll = 0;
+	MakeSmallMapScreenshot(width, height, this);
+	this->scroll_x = saved_scroll_x;
+	this->scroll_y = saved_scroll_y;
+	this->subscroll = saved_subscroll;
+}
+
+/**
+ * Callback called by the screenshot code to draw a section of the smallmap to the output buffer
+ * @param buf Videobuffer with same bitdepth as current blitter
+ * @param y First line to render
+ * @param pitch Pitch of the videobuffer
+ * @param n Number of lines to render
+ */
+void SmallMapWindow::ScreenshotCallbackHandler(void *buf, uint y, uint pitch, uint n)
+{
+	DrawPixelInfo dpi, *old_dpi;
+
+	/* We are no longer rendering to the screen */
+	DrawPixelInfo old_screen = _screen;
+	bool old_disable_anim = _screen_disable_anim;
+
+	_screen.dst_ptr = buf;
+	_screen.width = pitch;
+	_screen.height = n;
+	_screen.pitch = pitch;
+	_screen_disable_anim = true;
+
+	old_dpi = _cur_dpi;
+	_cur_dpi = &dpi;
+
+	dpi.dst_ptr = buf;
+	dpi.height = n;
+	dpi.width = ((MapMaxX() + MapMaxY()) * 2) / this->zoom;
+	dpi.pitch = pitch;
+	dpi.zoom = ZOOM_LVL_NORMAL;
+	dpi.left = 0;
+	dpi.top = y;
+
+	int32 pos = (((int32)MapMaxX() + 1) * TILE_PIXELS) / 4;
+	this->scroll_x = pos;
+	this->scroll_y = -pos;
+
+	/* make the screenshot */
+	this->DrawSmallMap(&dpi, false);
+
+	_cur_dpi = old_dpi;
+
+	/* Switch back to rendering to the screen */
+	_screen = old_screen;
+	_screen_disable_anim = old_disable_anim;
+}
 
 SmallMapWindow::SmallMapType SmallMapWindow::map_type = SMT_CONTOUR;
 bool SmallMapWindow::show_towns = true;
@@ -1780,6 +1850,7 @@ static const NWidgetPart _nested_smallmap_widgets[] = {
 	NWidgetFunction(SmallMapDisplay), // Smallmap display and legend bar + image buttons.
 	/* Bottom button row and resize box. */
 	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_PUSHTXTBTN, COLOUR_BROWN, WID_SM_SCREENSHOT), SetDataTip(STR_SMALLMAP_SCREENSHOT, STR_NULL),
 		NWidget(NWID_SELECTION, INVALID_COLOUR, WID_SM_SELECT_BUTTONS),
 			NWidget(NWID_HORIZONTAL, NC_EQUALSIZE),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_BROWN, WID_SM_ENABLE_ALL), SetDataTip(STR_SMALLMAP_ENABLE_ALL, STR_NULL),

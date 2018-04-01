@@ -24,10 +24,14 @@ enum ScreenshotType {
 	SC_DEFAULTZOOM, ///< Zoomed to default zoom level screenshot of the visible area.
 	SC_WORLD,       ///< World screenshot.
 	SC_HEIGHTMAP,   ///< Heightmap of the world.
+	SC_MINIMAP,     ///< Flat screenshot of the minimap.
 };
+
+class SmallMapWindow;
 
 void SetupScreenshotViewport(ScreenshotType t, struct ViewPort *vp);
 bool MakeHeightmapScreenshot(const char *filename);
+bool MakeSmallMapScreenshot(unsigned int width, unsigned int height, SmallMapWindow *window);
 bool MakeScreenshot(ScreenshotType t, const char *name);
 
 extern char _screenshot_format_name[8];

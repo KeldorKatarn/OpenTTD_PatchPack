@@ -25,6 +25,8 @@
 #include "window_func.h"
 #include "tile_map.h"
 #include "landscape.h"
+#include "smallmap_gui.h"
+#include "smallmap_colours.h"
 
 #include "table/strings.h"
 
@@ -67,6 +69,8 @@ struct ScreenshotFormat {
 	const char *extension;       ///< File extension.
 	ScreenshotHandlerProc *proc; ///< Function for writing the screenshot.
 };
+
+#define MKCOLOUR(x) TO_LE32X(x)
 
 /*************************************************
  **** SCREENSHOT CODE FOR WINDOWS BITMAP (.BMP)
@@ -811,6 +815,91 @@ bool MakeHeightmapScreenshot(const char *filename)
 }
 
 /**
+ * Show a a success or failure message indicating the result of a screenshot action
+ * @param ret  whether the screenshot action was successful
+ */
+static void ShowScreenshotResultMessage(bool ret)
+{
+	if (ret) {
+		SetDParamStr(0, _screenshot_name);
+		ShowErrorMessage(STR_MESSAGE_SCREENSHOT_SUCCESSFULLY, INVALID_STRING_ID, WL_WARNING);
+	} else {
+		ShowErrorMessage(STR_ERROR_SCREENSHOT_FAILED, INVALID_STRING_ID, WL_ERROR);
+	}
+}
+
+/**
+* Return the colour a tile would be displayed with in the small map in mode "Owner".
+*
+* @param tile The tile of which we would like to get the colour.
+* @return The colour of tile in the small map in mode "Owner"
+*/
+static inline byte GetMinimapPixels(TileIndex tile)
+{
+	auto t = GetTileType(tile);
+
+	if (t == MP_STATION) {
+		switch (GetStationType(tile)) {
+		case STATION_RAIL:    return MKCOLOUR(PC_LIGHT_BLUE);
+		case STATION_AIRPORT: return MKCOLOUR(PC_RED);
+		case STATION_TRUCK:   return MKCOLOUR(PC_ORANGE);
+		case STATION_BUS:     return MKCOLOUR(PC_YELLOW);
+		case STATION_DOCK:    return MKCOLOUR(PC_GREEN);
+		default:              return MKCOLOUR(PC_WHITE);
+		}
+	}
+
+	switch (t) {
+	case MP_RAILWAY:  return MKCOLOUR(PC_GREY);
+	case MP_ROAD:     return MKCOLOUR(PC_BLACK);
+	case MP_HOUSE:    return MKCOLOUR(PC_DARK_RED);
+	case MP_WATER:    return MKCOLOUR(PC_WATER);
+	case MP_INDUSTRY: return MKCOLOUR(0x60);
+	default:          return MKCOLOUR(PC_GRASS_LAND);
+	}
+}
+
+static void MinimapCallback(void *userdata, void *buf, uint y, uint pitch, uint n)
+{
+	uint8 *ubuf = (uint8 *)buf;
+
+	uint num = (pitch * n);
+	uint row, col;
+	byte val;
+
+	for (uint i = 0; i < num; i++) {
+		row = y + (int)(i / pitch);
+		col = (MapSizeX() - 1) - (i % pitch);
+
+		TileIndex tile = TileXY(col, row);
+
+		if (IsTileType(tile, MP_VOID)) {
+			val = 0x00;
+		}
+		else {
+			val = GetMinimapPixels(tile);
+		}
+
+		*ubuf = (uint8)_cur_palette.palette[val].b;
+		ubuf += sizeof(uint8); *ubuf = (uint8)_cur_palette.palette[val].g;
+		ubuf += sizeof(uint8); *ubuf = (uint8)_cur_palette.palette[val].r;
+		ubuf += sizeof(uint8);
+		ubuf += sizeof(uint8);
+	}
+}
+
+/**
+* Saves the complete savemap in a PNG-file.
+*/
+static bool MakeFlatMinimapScreenshot()
+{
+	_screenshot_name[0] = '\0';
+
+	const ScreenshotFormat *sf = _screenshot_formats + _cur_screenshot_format;
+	return sf->proc(MakeScreenshotName("minimap", sf->extension), MinimapCallback, NULL, MapSizeX(), MapSizeY(), 32, _cur_palette.palette);
+}
+
+/**
  * Make an actual screenshot.
  * @param t    the type of screenshot to make.
  * @param name the name to give to the screenshot.
@@ -852,16 +941,46 @@ bool MakeScreenshot(ScreenshotType t, const char *name)
 			break;
 		}
 
+		case SC_MINIMAP: {
+			ret = MakeFlatMinimapScreenshot();
+			break;
+		}
+
 		default:
 			NOT_REACHED();
 	}
 
-	if (ret) {
-		SetDParamStr(0, _screenshot_name);
-		ShowErrorMessage(STR_MESSAGE_SCREENSHOT_SUCCESSFULLY, INVALID_STRING_ID, WL_WARNING);
-	} else {
-		ShowErrorMessage(STR_ERROR_SCREENSHOT_FAILED, INVALID_STRING_ID, WL_ERROR);
-	}
+	ShowScreenshotResultMessage(ret);
 
+	return ret;
+}
+
+/**
+ * Callback for generating a smallmap screenshot.
+ * @param userdata SmallMapWindow window pointer
+ * @param buf Videobuffer with same bitdepth as current blitter
+ * @param y First line to render
+ * @param pitch Pitch of the videobuffer
+ * @param n Number of lines to render
+ */
+static void SmallMapCallback(void *userdata, void *buf, uint y, uint pitch, uint n)
+{
+	SmallMapWindow *window = static_cast<SmallMapWindow *>(userdata);
+	window->ScreenshotCallbackHandler(buf, y, pitch, n);
+}
+
+/**
+ * Make a screenshot of the smallmap
+ * @param width   the width of the screenshot
+ * @param height  the height of the screenshot
+ * @param window  a pointer to the smallmap window to use, the current mode and zoom status of the window is used for the screenshot
+ * @return true iff the screenshot was made successfully
+ */
+bool MakeSmallMapScreenshot(unsigned int width, unsigned int height, SmallMapWindow *window)
+{
+	_screenshot_name[0] = '\0';
+	const ScreenshotFormat *sf = _screenshot_formats + _cur_screenshot_format;
+	bool ret = sf->proc(MakeScreenshotName(SCREENSHOT_NAME, sf->extension), SmallMapCallback, window, width, height, BlitterFactory::GetCurrentBlitter()->GetScreenDepth(), _cur_palette.palette);
+	ShowScreenshotResultMessage(ret);
 	return ret;
 }

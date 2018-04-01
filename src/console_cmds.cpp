@@ -1383,6 +1383,28 @@ DEF_CONSOLE_CMD(ConScreenShot)
 	return true;
 }
 
+DEF_CONSOLE_CMD(ConMinimap)
+{
+	if (argc == 0) {
+		IConsoleHelp("Create a flat image of the game minimap. Usage: 'minimap [owner] [file name]'");
+		IConsoleHelp("'owner' uses the tile owner to colour the minimap image, this is the only mode at present");
+		return true;
+	}
+
+	const char *name = NULL;
+	if (argc > 1) {
+		if (strcmp(argv[1], "owner") != 0) {
+			/* invalid mode */
+			return false;
+		}
+	}
+	if (argc > 2) {
+		name = argv[2];
+	}
+
+	return MakeScreenshot(SC_MINIMAP, name);
+}
+
 DEF_CONSOLE_CMD(ConInfoCmd)
 {
 	if (argc == 0) {
@@ -1913,6 +1935,7 @@ void IConsoleStdLibRegister()
 	IConsoleCmdRegister("reset_enginepool", ConResetEnginePool, ConHookNoNetwork);
 	IConsoleCmdRegister("return",       ConReturn);
 	IConsoleCmdRegister("screenshot",   ConScreenShot);
+	IConsoleCmdRegister("minimap",      ConMinimap);
 	IConsoleCmdRegister("script",       ConScript);
 	IConsoleCmdRegister("scrollto",     ConScrollToTile);
 	IConsoleCmdRegister("alias",        ConAlias);

@@ -481,6 +481,7 @@ STR_ABOUT_MENU_SCREENSHOT                                       :Screenshot
 STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Fully zoomed in screenshot
 STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Default zoom screenshot
 STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Whole map screenshot
+STR_ABOUT_MENU_FLAT_MINIMAP_SCREENSHOT                          :Flat minimap screenshot
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :About 'OpenTTD'
 STR_ABOUT_MENU_SPRITE_ALIGNER                                   :Sprite aligner
 STR_ABOUT_MENU_TOGGLE_BOUNDING_BOXES                            :Toggle bounding boxes
@@ -759,6 +760,7 @@ STR_SMALLMAP_INDUSTRY                                           :{TINY_FONT}{STR
 STR_SMALLMAP_LINKSTATS                                          :{TINY_FONT}{STRING}
 STR_SMALLMAP_COMPANY                                            :{TINY_FONT}{COMPANY}
 STR_SMALLMAP_TOWN                                               :{TINY_FONT}{WHITE}{TOWN}
+STR_SMALLMAP_SCREENSHOT                                         :{BLACK}Screenshot
 STR_SMALLMAP_DISABLE_ALL                                        :{BLACK}Disable all
 STR_SMALLMAP_ENABLE_ALL                                         :{BLACK}Enable all
 STR_SMALLMAP_SHOW_HEIGHT                                        :{BLACK}Show height

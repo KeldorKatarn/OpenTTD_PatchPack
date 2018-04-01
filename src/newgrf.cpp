@@ -9359,3 +9359,16 @@ void LoadNewGRF(uint load_index, uint file_index, uint num_baseset)
 	_tick_counter = tick_counter;
 	_display_opt  = display_opt;
 }
+
+/**
+ * Returns amount of user selected NewGRFs files.
+ */
+int CountSelectedGRFs(GRFConfig *grfconf)
+{
+	int i = 0;
+
+	/* Find last entry in the list */
+	for (const GRFConfig *list = grfconf; list != NULL; list = list->next, i++) {
+	}
+	return i;
+}

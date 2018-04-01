@@ -585,13 +585,13 @@ static void TileLoop_Town(TileIndex tile)
 		}
 	} else {
 		if (GB(r, 0, 8) < hs->population) {
-			uint amt = GB(r, 0, 8) / 8 + 1;
+			uint amt = GB(r, 16, 3) + 1;
 
 			TownGenerateCargo(t, CT_PASSENGERS, amt, stations, true);
 		}
 
 		if (GB(r, 8, 8) < hs->mail_generation) {
-			uint amt = GB(r, 8, 8) / 8 + 1;
+			uint amt = GB(r, 24, 3) + 1;
 
 			TownGenerateCargo(t, CT_MAIL, amt, stations, true);
 		}

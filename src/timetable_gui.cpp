@@ -236,6 +236,8 @@ struct TimetableWindow : Window {
 	 */
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
+		this->new_sep_settings = (vehicle->orders.list != NULL) ? vehicle->orders.list->GetSepSettings() : TTSepSettings();
+
 		switch (data) {
 			case VIWD_AUTOREPLACE:
 				/* Autoreplace replaced the vehicle */
@@ -323,7 +325,7 @@ struct TimetableWindow : Window {
 
 			this->SetWidgetDisabledState(WID_VT_CONFIRM_ALL, v->orders.list == NULL);
 			this->SetWidgetDisabledState(WID_VT_RESET_LATENESS, v->orders.list == NULL);
-			this->SetWidgetDisabledState(WID_VT_AUTOFILL, v->orders.list == NULL);
+			this->SetWidgetDisabledState(WID_VT_AUTOMATE, v->orders.list == NULL);
 		} else {
 			this->DisableWidget(WID_VT_CONFIRM_ALL);
 			this->DisableWidget(WID_VT_CHANGE_TIME);
@@ -331,7 +333,7 @@ struct TimetableWindow : Window {
 			this->DisableWidget(WID_VT_CHANGE_SPEED);
 			this->DisableWidget(WID_VT_CLEAR_SPEED);
 			this->DisableWidget(WID_VT_RESET_LATENESS);
-			this->DisableWidget(WID_VT_AUTOFILL);
+			this->DisableWidget(WID_VT_AUTOMATE);
 			this->DisableWidget(WID_VT_SHARED_ORDER_LIST);
 		}
 
@@ -340,7 +342,7 @@ struct TimetableWindow : Window {
 
 		this->SetWidgetDisabledState(WID_VT_TTSEP_SET_PARAMETER, !enabled_state);
 
-		this->SetWidgetLoweredState(WID_VT_AUTOFILL, HasBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE));
+		this->SetWidgetLoweredState(WID_VT_AUTOMATE, HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE));
 
 		this->DrawWidgets();
 	}
@@ -727,11 +729,11 @@ struct TimetableWindow : Window {
 				DoCommandP(0, v->index, 0, CMD_SET_VEHICLE_ON_TIME | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 				break;
 
-			case WID_VT_AUTOFILL: { // Autofill the timetable.
+			case WID_VT_AUTOMATE: { // Automate the timetable.
 				uint32 p2 = 0;
-				if (!HasBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE)) SetBit(p2, 0);
+				if (!HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE)) SetBit(p2, 0);
 				if (_ctrl_pressed) SetBit(p2, 1);
-				DoCommandP(0, v->index, p2, CMD_AUTOFILL_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
+				DoCommandP(0, v->index, p2, CMD_AUTOMATE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 				break;
 			}
 
@@ -913,7 +915,7 @@ static const NWidgetPart _nested_timetable_widgets[] = {
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_RESET_LATENESS), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_RESET_LATENESS, STR_TIMETABLE_RESET_LATENESS_TOOLTIP),
 			EndContainer(),
 			NWidget(NWID_VERTICAL, NC_EQUALSIZE),
-			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_AUTOFILL), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_AUTOFILL, STR_TIMETABLE_AUTOFILL_TOOLTIP),
+			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_AUTOMATE), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_TIMETABLE_AUTOMATE, STR_TIMETABLE_AUTOMATE_TOOLTIP),
 				NWidget(NWID_SELECTION, INVALID_COLOUR, WID_VT_EXPECTED_SELECTION),
 					NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_EXPECTED), SetResize(1, 0), SetFill(1, 1), SetDataTip(STR_BLACK_STRING, STR_TIMETABLE_EXPECTED_TOOLTIP),
 					NWidget(WWT_PANEL, COLOUR_GREY), SetResize(1, 0), SetFill(1, 1), EndContainer(),

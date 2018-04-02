@@ -749,6 +749,13 @@ void OrderList::InitializeSeparation()
 	this->last_timetable_init = GetCurrentTickCount();
 	this->separation_counter = 0;
 
+	this->UpdateSeparationTime();
+
+	this->is_separation_valid = true;
+}
+
+void OrderList::UpdateSeparationTime()
+{
 	// Calculate separation amount depending on mode of operation.
 	switch (current_sep_mode) {
 	case TTS_MODE_AUTO: {
@@ -782,8 +789,6 @@ void OrderList::InitializeSeparation()
 		NOT_REACHED();
 		break;
 	}
-
-	this->is_separation_valid = true;
 }
 
 /**
@@ -793,6 +798,8 @@ Ticks OrderList::SeparateVehicle()
 {
 	if (!this->is_separation_valid || this->current_sep_mode == TTS_MODE_OFF)
 		return INVALID_TICKS;
+
+	UpdateSeparationTime();
 
 	Ticks result = GetCurrentTickCount() - (this->separation_counter * this->current_separation + this->last_timetable_init);
 	this->IncreaseSeparationCounter();
@@ -1933,6 +1940,21 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 				/* Link this vehicle in the shared-list */
 				dst->AddToShared(src);
 
+				/* Set automation bit if target has it. */
+				if (HasBit(src->vehicle_flags, VF_AUTOMATE_TIMETABLE)) {
+					SetBit(dst->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+				}
+				else {
+					ClrBit(dst->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+				}
+
+				if (HasBit(src->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME)) {
+					SetBit(dst->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
+				}
+				else {
+					ClrBit(dst->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
+				}
+
 				InvalidateVehicleOrder(dst, VIWD_REMOVE_ALL_ORDERS);
 				InvalidateVehicleOrder(src, VIWD_MODIFY_ORDERS);
 
@@ -1994,6 +2016,21 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 					delete dst->orders.list;
 					assert(OrderList::CanAllocateItem());
 					dst->orders.list = new OrderList(first, dst);
+				}
+
+				/* Set automation bit if target has it. */
+				if (HasBit(src->vehicle_flags, VF_AUTOMATE_TIMETABLE)) {
+					SetBit(dst->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+				}
+				else {
+					ClrBit(dst->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+				}
+
+				if (HasBit(src->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME)) {
+					SetBit(dst->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
+				}
+				else {
+					ClrBit(dst->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
 				}
 
 				InvalidateVehicleOrder(dst, VIWD_REMOVE_ALL_ORDERS);

@@ -606,8 +606,11 @@ public:
 		if (this->is_separation_valid) {
 			return this->current_separation;
 		}
-		else {
+		else if (this->IsCompleteTimetable()) {
 			return this->GetTimetableTotalDuration() / this->GetNumVehicles();
+		}
+		else {
+			return 1;
 		}
 	}
 
@@ -716,6 +719,8 @@ public:
 
 	/** Initializes the separation system. */
 	void InitializeSeparation();
+
+	void UpdateSeparationTime();
 
 	void FreeChain(bool keep_orderlist = false);
 

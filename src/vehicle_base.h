@@ -49,8 +49,8 @@ enum VehicleFlags {
 	VF_CARGO_UNLOADING,         ///< Vehicle is unloading cargo.
 	VF_BUILT_AS_PROTOTYPE,      ///< Vehicle is a prototype (accepted as exclusive preview).
 	VF_TIMETABLE_STARTED,       ///< Whether the vehicle has started running on the timetable yet.
-	VF_AUTOFILL_TIMETABLE,      ///< Whether the vehicle should fill in the timetable automatically.
-	VF_AUTOFILL_PRES_WAIT_TIME, ///< Whether non-destructive auto-fill should preserve waiting times
+	VF_AUTOMATE_TIMETABLE,      ///< Whether the vehicle should fill and update in the timetable automatically.
+	VF_AUTOMATE_PRES_WAIT_TIME, ///< Whether non-destructive automate should preserve waiting times
 	VF_STOP_LOADING,            ///< Don't load anymore during the next load cycle.
 	VF_PATHFINDER_LOST,         ///< Vehicle's pathfinder is lost.
 	VF_SERVINT_IS_CUSTOM,       ///< Service interval is custom.

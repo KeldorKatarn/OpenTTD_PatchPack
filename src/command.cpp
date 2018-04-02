@@ -215,7 +215,7 @@ CommandProc CmdSetGroupReplaceProtection;
 CommandProc CmdMoveOrder;
 CommandProc CmdChangeTimetable;
 CommandProc CmdSetVehicleOnTime;
-CommandProc CmdAutofillTimetable;
+CommandProc CmdAutomateTimetable;
 CommandProc CmdConfirmAll;
 CommandProc CmdReinitSeparation;
 
@@ -406,7 +406,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdMoveOrder,                                      0, CMDT_ROUTE_MANAGEMENT      ), // CMD_MOVE_ORDER
 	DEF_CMD(CmdChangeTimetable,                                0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CHANGE_TIMETABLE
 	DEF_CMD(CmdSetVehicleOnTime,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_VEHICLE_ON_TIME
-	DEF_CMD(CmdAutofillTimetable,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_AUTOFILL_TIMETABLE
+	DEF_CMD(CmdAutomateTimetable,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_AUTOMATE_TIMETABLE
 	DEF_CMD(CmdConfirmAll,                                     0, CMDT_ROUTE_MANAGEMENT      ), // CMD_CONFIRM_ALL
 	DEF_CMD(CmdReinitSeparation,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_REINIT_SEPARATION
 

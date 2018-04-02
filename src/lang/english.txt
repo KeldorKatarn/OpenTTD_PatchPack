@@ -4314,7 +4314,7 @@ STR_TIMETABLE_AUTOFILL                                          :{BLACK}Autofill
 STR_TIMETABLE_AUTOFILL_TOOLTIP                                  :{BLACK}Fill the timetable automatically with the values from the next journey (Ctrl+Click to try to keep waiting times)
 
 STR_TIMETABLE_AUTOMATE                                          :{BLACK}Automate
-STR_TIMETABLE_AUTOMATE_TOOLTIP                                  :{BLACK}Manage the timetable automatically by updating the values for each journey
+STR_TIMETABLE_AUTOMATE_TOOLTIP                                  :{BLACK}Manage the timetable automatically by updating the values for each journey (Ctrl+Click to try to keep waiting times)
 
 STR_TIMETABLE_EXPECTED                                          :{BLACK}Expected
 STR_TIMETABLE_SCHEDULED                                         :{BLACK}Scheduled

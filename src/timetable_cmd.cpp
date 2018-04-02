@@ -82,8 +82,6 @@ static void ChangeTimetable(Vehicle *v, VehicleOrderID order_number, uint16 val,
 				default:
 					NOT_REACHED();
 			}
-			
-			v->MarkSeparationInvalid();
 		}
 		SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
 	}
@@ -322,53 +320,46 @@ CommandCost CmdSetTimetableStart(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	return CommandCost();
 }
 
-
 /**
- * Start or stop filling the timetable automatically from the time the vehicle
- * actually takes to complete it. When starting to autofill the current times
- * are cleared and the timetable will start again from scratch.
- * @param tile Not used.
- * @param flags Operation to perform.
- * @param p1 Vehicle index.
- * @param p2 Various bitstuffed elements
- * - p2 = (bit 0) - Set to 1 to enable, 0 to disable autofill.
- * - p2 = (bit 1) - Set to 1 to preserve waiting times in non-destructive mode
- * @param text unused
- * @return the cost of this operation or an error
- */
-CommandCost CmdAutofillTimetable(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+* Start or stop automatic management of timetables.
+* @param tile Not used.
+* @param flags Operation to perform.
+* @param p1 Vehicle index.
+* @param p2 Various bitstuffed elements
+* - p2 = (bit 0) - Set to 1 to enable, 0 to disable automation.
+* - p2 = (bit 1) - Ctrl was pressed. Used to keep wait times.
+* @param text unused
+* @return the cost of this operation or an error
+*/
+CommandCost CmdAutomateTimetable(TileIndex index, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	VehicleID veh = GB(p1, 0, 20);
+	VehicleID veh = GB(p1, 0, 16);
 
 	Vehicle *v = Vehicle::GetIfValid(veh);
-	if (v == NULL || !v->IsPrimaryVehicle() || v->orders.list == NULL) return CMD_ERROR;
+	if (v == NULL || !v->IsPrimaryVehicle()) return CMD_ERROR;
 
 	CommandCost ret = CheckOwnership(v->owner);
 	if (ret.Failed()) return ret;
 
 	if (flags & DC_EXEC) {
-		if (HasBit(p2, 0)) {
-			/* Start autofilling the timetable, which clears the
-			 * "timetable has started" bit. Times are not cleared anymore, but are
-			 * overwritten when the order is reached now. */
-			SetBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE);
-			ClrBit(v->vehicle_flags, VF_TIMETABLE_STARTED);
-
-			/* Overwrite waiting times only if they got longer */
-			if (HasBit(p2, 1)) SetBit(v->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME);
-
-			v->timetable_start = 0;
-			v->lateness_counter = 0;
-		} else {
-			ClrBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE);
-			ClrBit(v->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME);
-		}
-
 		for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
-			if (v2 != v) {
-				/* Stop autofilling; only one vehicle at a time can perform autofill */
-				ClrBit(v2->vehicle_flags, VF_AUTOFILL_TIMETABLE);
-				ClrBit(v2->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME);
+			if (HasBit(p2, 0)) {
+				/* Automated timetable. */
+				SetBit(v2->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+
+				if (HasBit(p2, 1)) {
+					SetBit(v2->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
+				}
+
+				ClrBit(v2->vehicle_flags, VF_TIMETABLE_STARTED);
+				v2->timetable_start = 0;
+				v2->lateness_counter = 0;
+				v2->current_loading_time = 0;
+			}
+			else {
+				/* De-automate timetable. */
+				ClrBit(v2->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+				ClrBit(v2->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME);
 			}
 			SetWindowDirty(WC_VEHICLE_TIMETABLE, v2->index);
 		}
@@ -428,24 +419,24 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 * Set new separation parameters
 * @param tile  Not used.
 * @param flags Operation to perform.
-* @param p1    Order lit id.
+* @param p1    Vehicle id.
 * @param p2
-*   - p2 = (bit 0-1)  - Separation mode (@see TTSepMode)
-*   - p2 = (bit 2-31) - Separation parameter (Unused if #TTS_MODE_OFF | #TTS_MODE_AUTO,
+*   - p2 = (bit 0-2)  - Separation mode (@see TTSepMode)
+*   - p2 = (bit 3-31) - Separation parameter (Unused if #TTS_MODE_OFF | #TTS_MODE_AUTO,
 *                       Number of vehicles if #TTS_MODE_MAN_N, separation delay in ticks if #TTS_MODE_MAN_T).
 * @param text  Not used.
 * @return      The error or cost of the operation.
 */
 CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	Vehicle *v = Vehicle::GetIfValid(GB(p1, 0, 20));
+	Vehicle *v = Vehicle::GetIfValid(p1);
 	if (v == NULL || !v->IsPrimaryVehicle()) return CMD_ERROR;
 
 	CommandCost ret = CheckOwnership(v->owner);
 	if (ret.Failed()) return ret;
 
 	if (flags & DC_EXEC) {
-		v->SetSepSettings((TTSepMode)GB(p2, 0, 3), GB(p2, 2, 29));
+		v->SetSepSettings((TTSepMode)GB(p2, 0, 3), GB(p2, 3, 29));
 	}
 
 	return CommandCost();
@@ -458,9 +449,12 @@ CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, 
  */
 void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 {
+	if (!travelling) v->current_loading_time++; // +1 because this time is one tick behind
 	uint time_taken = v->current_order_time;
+	uint time_loading = v->current_loading_time;
 
 	v->current_order_time = 0;
+	v->current_loading_time = 0;
 
 	if (v->current_order.IsType(OT_IMPLICIT)) return; // no timetabling of auto orders
 
@@ -473,6 +467,18 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	}
 
 	bool just_started = false;
+
+	/* Start automated timetables at first opportunity */
+	if (!HasBit(v->vehicle_flags, VF_TIMETABLE_STARTED) && HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE)) {
+		SetBit(v->vehicle_flags, VF_TIMETABLE_STARTED);
+
+		v->lateness_counter = 0;
+
+		for (v = v->FirstShared(); v != NULL; v = v->NextShared()) {
+			SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
+		}
+		return;
+	}
 
 	/* This vehicle is arriving at the first destination in the timetable. */
 	if (v->cur_real_order_index == first_manual_order && travelling) {
@@ -494,9 +500,8 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 
 	if (!HasBit(v->vehicle_flags, VF_TIMETABLE_STARTED)) return;
 
-	bool autofilling = HasBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE);
 	bool remeasure_wait_time = !real_current_order->IsWaitTimetabled() ||
-			(autofilling && !HasBit(v->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME));
+		(HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE) && !HasBit(v->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME));
 
 	if (travelling && remeasure_wait_time) {
 		/* We just finished traveling and want to remeasure the loading time,
@@ -517,25 +522,60 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 		 * processing of different orders when filling the timetable. */
 		uint time_to_set = max(time_taken, 1U);
 
-		if (travelling && (autofilling || !real_current_order->IsTravelTimetabled())) {
-			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_TRAVEL_TIME, autofilling);
-		} else if (!travelling && (autofilling || !real_current_order->IsWaitTimetabled())) {
-			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_WAIT_TIME, autofilling);
+		if (travelling && !real_current_order->IsTravelTimetabled()) {
+			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_TRAVEL_TIME, false);
+		} else if (!travelling && !real_current_order->IsWaitTimetabled()) {
+			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_WAIT_TIME, false);
 		}
 	}
 
-	if (v->cur_real_order_index == first_manual_order && travelling) {
-		/* If we just started we would have returned earlier and have not reached
-		 * this code. So obviously, we have completed our round: So turn autofill
-		 * off again. */
-		ClrBit(v->vehicle_flags, VF_AUTOFILL_TIMETABLE);
-		ClrBit(v->vehicle_flags, VF_AUTOFILL_PRES_WAIT_TIME);
-	}
-
-	if (autofilling) return;
-
 	uint timetabled = travelling ? real_current_order->GetTimetabledTravel() :
 			real_current_order->GetTimetabledWait();
+
+	/* Update the timetable to gradually shift order times towards the actual travel times. */
+	if (timetabled != 0 && HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE) && (travelling || !HasBit(v->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME))) {
+		int32 new_time;
+		if (travelling) {
+			new_time = time_taken;
+		}
+		else {
+			new_time = time_loading;
+		}
+
+		if (new_time > (int32)timetabled * 4 && travelling) {
+			/* Possible jam, clear time and restart timetable for all vehicles.
+			* Otherwise we risk trains blocking 1-lane stations for long times. */
+			ChangeTimetable(v, v->cur_real_order_index, 0, (travelling ? MTF_TRAVEL_TIME : MTF_WAIT_TIME), true);
+			for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
+				ClrBit(v2->vehicle_flags, VF_TIMETABLE_STARTED);
+				SetWindowDirty(WC_VEHICLE_TIMETABLE, v2->index);
+			}
+			return;
+		}
+		else if (new_time >= (int32)timetabled / 2) {
+			/* Compute running average, with sign conversion to avoid negative overflow. */
+			if (new_time < (int32)timetabled) {
+				new_time = ((int32)timetabled * 3 + new_time * 2 + 2) / 5;
+			}
+			else {
+				new_time = ((int32)timetabled * 9 + new_time + 5) / 10;
+			}
+		}
+		else {
+			/* new time is less than half old time, set value directly */
+		}
+
+		if (new_time < 1) new_time = 1;
+		if (new_time != (int32)timetabled) {
+			ChangeTimetable(v, v->cur_real_order_index, new_time, travelling ? MTF_TRAVEL_TIME : MTF_WAIT_TIME, true);
+		}
+	}
+	else if (timetabled == 0 && HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE)) {
+		/* Add times for orders that are not yet timetabled, even while not autofilling */
+		const int32 new_time = travelling ? time_taken : time_loading;
+
+		ChangeTimetable(v, v->cur_real_order_index, new_time, travelling ? MTF_TRAVEL_TIME : MTF_WAIT_TIME, true);
+	}
 
 	/* Vehicles will wait at stations if they arrive early even if they are not
 	 * timetabled to wait there, so make sure the lateness counter is updated

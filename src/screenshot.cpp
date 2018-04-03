@@ -27,6 +27,7 @@
 #include "landscape.h"
 #include "smallmap_gui.h"
 #include "smallmap_colours.h"
+#include "industry.h"
 
 #include "table/strings.h"
 
@@ -832,35 +833,225 @@ static void ShowScreenshotResultMessage(bool ret)
 * Return the colour a tile would be displayed with in the small map in mode "Owner".
 *
 * @param tile The tile of which we would like to get the colour.
+* @param type The type of screenshot to create tile colors for.
 * @return The colour of tile in the small map in mode "Owner"
 */
-static inline byte GetMinimapPixels(TileIndex tile)
+static inline byte GetMinimapPixels(TileIndex tile, ScreenshotType type)
 {
 	auto t = GetTileType(tile);
 
-	if (t == MP_STATION) {
-		switch (GetStationType(tile)) {
-		case STATION_RAIL:    return MKCOLOUR(PC_LIGHT_BLUE);
-		case STATION_AIRPORT: return MKCOLOUR(PC_RED);
-		case STATION_TRUCK:   return MKCOLOUR(PC_ORANGE);
-		case STATION_BUS:     return MKCOLOUR(PC_YELLOW);
-		case STATION_DOCK:    return MKCOLOUR(PC_GREEN);
-		default:              return MKCOLOUR(PC_WHITE);
-		}
-	}
+	switch (type) {
+		case SC_MINIMAP: {
+			if (t == MP_STATION) {
+				switch (GetStationType(tile)) {
+					case STATION_RAIL:     return MKCOLOUR(PC_LIGHT_BLUE);
+					case STATION_AIRPORT:  return MKCOLOUR(0xCF);
+					case STATION_TRUCK:    return MKCOLOUR(PC_ORANGE);
+					case STATION_BUS:      return MKCOLOUR(PC_YELLOW);
+					case STATION_OILRIG:   // FALLTHROUGH
+					case STATION_DOCK:     return MKCOLOUR(PC_WHITE);
+					case STATION_BUOY:     return MKCOLOUR(PC_WATER);
+					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
+					default:               NOT_REACHED();
+				}
+			}
+			
+			if (IsBridgeAbove(tile)) {
+				return MKCOLOUR(PC_DARK_GREY);
+			}
 
-	switch (t) {
-	case MP_RAILWAY:  return MKCOLOUR(PC_GREY);
-	case MP_ROAD:     return MKCOLOUR(PC_BLACK);
-	case MP_HOUSE:    return MKCOLOUR(PC_DARK_RED);
-	case MP_WATER:    return MKCOLOUR(PC_WATER);
-	case MP_INDUSTRY: return MKCOLOUR(0x60);
-	default:          return MKCOLOUR(PC_GRASS_LAND);
+			switch (t) {
+				case MP_TUNNELBRIDGE:	return MKCOLOUR(PC_DARK_GREY);
+				case MP_RAILWAY:		return MKCOLOUR(PC_GREY);
+				case MP_ROAD:			return MKCOLOUR(PC_BLACK);
+				case MP_HOUSE:			return MKCOLOUR(0xB5);
+				case MP_WATER:			return MKCOLOUR(PC_WATER);
+				case MP_INDUSTRY:		return MKCOLOUR(0xA2);
+				default:				return MKCOLOUR(0x51);
+			}
+			break;
+		}
+
+		case SC_MINI_HEIGHTMAP: {
+			if (t == MP_STATION) {
+				switch (GetStationType(tile)) {
+					case STATION_RAIL:     return MKCOLOUR(PC_GREY);
+					case STATION_AIRPORT:  return MKCOLOUR(PC_GREY);
+					case STATION_TRUCK:    return MKCOLOUR(PC_BLACK);
+					case STATION_BUS:      return MKCOLOUR(PC_BLACK);
+					case STATION_OILRIG:   // FALLTHROUGH
+					case STATION_DOCK:     return MKCOLOUR(PC_GREY);
+					case STATION_BUOY:     return MKCOLOUR(PC_WATER);
+					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
+					default:               NOT_REACHED();
+				}
+			}
+			
+			if (IsBridgeAbove(tile)) {
+				return MKCOLOUR(PC_DARK_GREY);
+			}
+
+			switch (t) {
+				case MP_TUNNELBRIDGE:	return MKCOLOUR(PC_DARK_GREY);
+				case MP_RAILWAY:		return MKCOLOUR(PC_GREY);
+				case MP_ROAD:			return MKCOLOUR(PC_BLACK);
+				case MP_HOUSE:			return MKCOLOUR(0xB5);
+				case MP_WATER:			return MKCOLOUR(PC_WATER);
+				case MP_INDUSTRY:		return MKCOLOUR(0xA2);
+				default:
+				{
+					auto tile_z = GetTileZ(tile);
+					auto max_z = _settings_game.construction.max_heightlevel;
+
+					auto color_index = (tile_z * 16) / max_z;
+
+					switch (color_index) {
+						case 0:  return MKCOLOUR(0x50);
+						case 1:  return MKCOLOUR(0x51);
+						case 2:  return MKCOLOUR(0x52);
+						case 3:  return MKCOLOUR(0x53);
+						case 4:  return MKCOLOUR(0x54);
+						case 5:  return MKCOLOUR(0x55);
+						case 6:  return MKCOLOUR(0x56);
+						case 7:  return MKCOLOUR(0x57);
+						case 8:  return MKCOLOUR(0x3B);
+						case 9:  return MKCOLOUR(0x3A);
+						case 10: return MKCOLOUR(0x39);
+						case 11: return MKCOLOUR(0x38);
+						case 12: return MKCOLOUR(0x37);
+						case 13: return MKCOLOUR(0x36);
+						case 14: return MKCOLOUR(0x35);
+						case 15: return MKCOLOUR(0x69);
+						default: return MKCOLOUR(0x46);
+					}
+					break;
+				}
+			}
+			break;
+		}
+
+		case SC_MINI_INDUSTRYMAP: {
+			if (t == MP_STATION) {
+				switch (GetStationType(tile)) {
+					case STATION_RAIL:     return MKCOLOUR(PC_DARK_GREY);
+					case STATION_AIRPORT:  return MKCOLOUR(GREY_SCALE(12));
+					case STATION_TRUCK:    return MKCOLOUR(PC_GREY);
+					case STATION_BUS:      return MKCOLOUR(PC_GREY);
+					case STATION_OILRIG:   // FALLTHROUGH
+					case STATION_DOCK:     return MKCOLOUR(PC_GREY);
+					case STATION_BUOY:     return MKCOLOUR(PC_BLACK);
+					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
+					default:               NOT_REACHED();
+				}
+			}
+
+			if (IsBridgeAbove(tile)) {
+				return MKCOLOUR(GREY_SCALE(12));
+			}
+
+			switch (t) {
+				case MP_TUNNELBRIDGE:	return MKCOLOUR(GREY_SCALE(12));
+				case MP_RAILWAY:		return MKCOLOUR(PC_DARK_GREY);
+				case MP_ROAD:			return MKCOLOUR(PC_GREY);
+				case MP_HOUSE:			return MKCOLOUR(GREY_SCALE(4));
+				case MP_WATER:			return MKCOLOUR(0x12);
+				case MP_INDUSTRY:
+				{
+					IndustryType type = Industry::GetByTile(tile)->type;
+
+					return GetIndustrySpec(type)->map_colour * 0x01010101;
+				}
+				default:		return MKCOLOUR(GREY_SCALE(2));
+			}
+			break;
+		}
+
+		case SC_MINI_OWNERMAP: {
+			if (IsBridgeAbove(tile)) return MKCOLOUR(PC_DARK_GREY);
+
+			/* setup owner table */
+			const Company *c;
+			uint32 _owner_colours[OWNER_END + 1];
+
+			/* fill with some special colours */
+			_owner_colours[OWNER_TOWN] = MKCOLOUR(0x00994433);
+			_owner_colours[OWNER_NONE] = MKCOLOUR(0x54545454);
+			_owner_colours[OWNER_WATER] = MKCOLOUR(0x00000066);
+			_owner_colours[OWNER_END]   = MKCOLOUR(0x20202020); // industry
+
+			/* now fill with the company colours */
+			FOR_ALL_COMPANIES(c) {
+				_owner_colours[c->index] =
+					_colour_gradient[c->colour][5];
+			}
+
+			Owner o = GetTileOwner(tile);
+
+			switch (GetTileType(tile)) {
+				case MP_HOUSE:        return MKCOLOUR(GREY_SCALE(12));
+				case MP_INDUSTRY:     return MKCOLOUR(PC_GREY);
+
+				case MP_RAILWAY:      return _owner_colours[GetTileOwner(tile)];
+
+				case MP_STATION:
+				{
+					Owner o = GetTileOwner(tile);
+
+					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
+					{
+						return MKCOLOUR(PC_DARK_GREY);
+					}
+					else
+					{
+						return _owner_colours[GetTileOwner(tile)];
+					}
+				}
+
+				case MP_ROAD:
+				{
+					Owner o = GetTileOwner(tile);
+
+					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
+					{
+						return MKCOLOUR(PC_DARK_GREY);
+					}
+					else
+					{
+						return _owner_colours[GetTileOwner(tile)];
+					}
+				}
+
+				case MP_TUNNELBRIDGE: 
+				{
+					Owner o = GetTileOwner(tile);
+
+					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
+					{
+						return MKCOLOUR(PC_DARK_GREY);
+					}
+					else
+					{
+						return _owner_colours[GetTileOwner(tile)];
+					}
+				}
+
+				case MP_OBJECT:       // FALLTHROUGH
+				case MP_CLEAR:        // FALLTHROUGH
+				case MP_TREES:        return MKCOLOUR(GREY_SCALE(2));
+				case MP_WATER:        return MKCOLOUR(0x12);
+				case MP_VOID:         return MKCOLOUR(PC_BLACK);
+				default:		      NOT_REACHED();
+			}
+		}
+
+		default:
+			NOT_REACHED();
 	}
 }
 
 static void MinimapCallback(void *userdata, void *buf, uint y, uint pitch, uint n)
 {
+	ScreenshotType type = *(ScreenshotType*)userdata;
 	uint8 *ubuf = (uint8 *)buf;
 
 	uint num = (pitch * n);
@@ -877,7 +1068,7 @@ static void MinimapCallback(void *userdata, void *buf, uint y, uint pitch, uint 
 			val = 0x00;
 		}
 		else {
-			val = GetMinimapPixels(tile);
+			val = GetMinimapPixels(tile, type);
 		}
 
 		*ubuf = (uint8)_cur_palette.palette[val].b;
@@ -891,12 +1082,12 @@ static void MinimapCallback(void *userdata, void *buf, uint y, uint pitch, uint 
 /**
 * Saves the complete savemap in a PNG-file.
 */
-static bool MakeFlatMinimapScreenshot()
+static bool MakeFlatMinimapScreenshot(ScreenshotType screenshotType)
 {
 	_screenshot_name[0] = '\0';
 
 	const ScreenshotFormat *sf = _screenshot_formats + _cur_screenshot_format;
-	return sf->proc(MakeScreenshotName("minimap", sf->extension), MinimapCallback, NULL, MapSizeX(), MapSizeY(), 32, _cur_palette.palette);
+	return sf->proc(MakeScreenshotName("minimap", sf->extension), MinimapCallback, &screenshotType, MapSizeX(), MapSizeY(), 32, _cur_palette.palette);
 }
 
 /**
@@ -942,7 +1133,22 @@ bool MakeScreenshot(ScreenshotType t, const char *name)
 		}
 
 		case SC_MINIMAP: {
-			ret = MakeFlatMinimapScreenshot();
+			ret = MakeFlatMinimapScreenshot(SC_MINIMAP);
+			break;
+		}
+
+		case SC_MINI_HEIGHTMAP: {
+			ret = MakeFlatMinimapScreenshot(SC_MINI_HEIGHTMAP);
+			break;
+		}
+
+		case SC_MINI_INDUSTRYMAP: {
+			ret = MakeFlatMinimapScreenshot(SC_MINI_INDUSTRYMAP);
+			break;
+		}
+
+		case SC_MINI_OWNERMAP: {
+			ret = MakeFlatMinimapScreenshot(SC_MINI_OWNERMAP);
 			break;
 		}
 

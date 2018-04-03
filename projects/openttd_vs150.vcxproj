@@ -352,6 +352,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\departures.cpp" />
+    <ClCompile Include="..\src\departures_gui.cpp" />
     <ClCompile Include="..\src\dock.cpp" />
     <ClCompile Include="..\src\overlay_cmd.cpp" />
     <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp" />
@@ -361,6 +363,8 @@
     <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
     <ClInclude Include="..\src\bridge_signal_map.h" />
     <ClInclude Include="..\src\core\container_func.hpp" />
+    <ClInclude Include="..\src\departures_gui.h" />
+    <ClInclude Include="..\src\departures_type.h" />
     <ClInclude Include="..\src\dock_base.h" />
     <ClInclude Include="..\src\overlay.h" />
     <ClInclude Include="..\src\overlay_cmd.h" />
@@ -743,6 +747,7 @@
     <ClInclude Include="..\src\water.h" />
     <ClInclude Include="..\src\waypoint_base.h" />
     <ClInclude Include="..\src\waypoint_func.h" />
+    <ClInclude Include="..\src\widgets\departures_widget.h" />
     <ClInclude Include="..\src\widgets\plans_widget.h" />
     <ClInclude Include="..\src\widget_type.h" />
     <ClInclude Include="..\src\os\windows\win32.h" />

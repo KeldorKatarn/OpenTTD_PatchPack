@@ -190,7 +190,7 @@ struct TimetableWindow : Window {
 		assert(HasBit(v->vehicle_flags, VF_TIMETABLE_STARTED));
 
 		bool travelling = (!(v->current_order.IsType(OT_LOADING) || v->current_order.IsType(OT_WAITING)) || v->current_order.GetNonStopType() == ONSF_STOP_EVERYWHERE);
-		Ticks start_time = _date_fract - v->current_order_time;
+		Ticks start_time = GetCurrentTickCount() - v->current_order_time;
 
 		FillTimetableArrivalDepartureTable(v, v->cur_real_order_index % v->GetNumOrders(), travelling, table, start_time);
 
@@ -442,7 +442,7 @@ struct TimetableWindow : Window {
 
 				int y = r.top + WD_FRAMERECT_TOP;
 
-				bool show_late = this->show_expected && v->lateness_counter > DAY_TICKS;
+				bool show_late = this->show_expected && v->lateness_counter > TICKS_PER_MINUTE;
 				Ticks offset = show_late ? 0 : -v->lateness_counter;
 
 				bool rtl = _current_text_dir == TD_RTL;
@@ -459,19 +459,19 @@ struct TimetableWindow : Window {
 						if (arr_dep[i / 2].arrival != INVALID_TICKS) {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_ARRIVAL_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
 							if (this->show_expected && i / 2 == earlyID) {
-								SetDParam(0, _date + arr_dep[i / 2].arrival / DAY_TICKS);
-								DrawString(time_left, time_right, y, STR_JUST_DATE_TINY, TC_GREEN);
+								SetDParam(0, arr_dep[i / 2].arrival);
+								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, TC_GREEN);
 							} else {
-								SetDParam(0, _date + (arr_dep[i / 2].arrival + offset) / DAY_TICKS);
-								DrawString(time_left, time_right, y, STR_JUST_DATE_TINY, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
+								SetDParam(0, arr_dep[i / 2].arrival + offset);
+								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 							}
 						}
 					}
 					else {
 						if (arr_dep[i / 2].departure != INVALID_TICKS) {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_DEPARTURE_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
-							SetDParam(0, _date + (arr_dep[i / 2].departure + offset) / DAY_TICKS);
-							DrawString(time_left, time_right, y, STR_JUST_DATE_TINY,
+							SetDParam(0, arr_dep[i / 2].departure + offset);
+							DrawString(time_left, time_right, y, STR_JUST_TIME_TINY,
 								show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 						}
 					}
@@ -888,14 +888,14 @@ static const NWidgetPart _nested_timetable_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TIMETABLE_PANEL), SetMinimalSize(388, 82), SetResize(1, 10), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		NWidget(NWID_SELECTION, INVALID_COLOUR, WID_VT_ARRIVAL_DEPARTURE_SELECTION),
-			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(110, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
+			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(80, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		EndContainer(),
 		NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_VT_SCROLLBAR),
 		NWidget(WWT_PANEL, COLOUR_GREY),
 			NWidget(WWT_FRAME, COLOUR_GREY), SetDataTip(STR_TTSEPARATION_SETTINGS_DESC, STR_NULL), SetPadding(3),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_VT_TTSEP_MODE_DROPDOWN), SetDataTip(STR_JUST_STRING, STR_TIMETABLE_TOOLTIP),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_TTSEP_SET_PARAMETER), SetFill(1, 0), SetDataTip(STR_TTSEPARATION_SET_XX, STR_TIMETABLE_TOOLTIP),
-				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(0, 44), EndContainer(),
+				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(180, 44), EndContainer(),
 			EndContainer(),
 		EndContainer(),
 	EndContainer(),

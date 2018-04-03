@@ -124,6 +124,21 @@ struct GUISettings {
 	uint32 dash_level_of_route_lines;        ///< the dash level passed to GfxDrawLine() (plain if 0)
 	bool   use_owner_colour_for_tunnelbridge;///< bridges and tunnels are rendered with their owner's colour
 	bool   timetable_arrival_departure;      ///< show arrivals and departures in vehicle timetables
+	uint8  max_departures;                   ///< maximum number of departures to show per station
+	uint16 departure_calc_frequency;         ///< how often to calculate departures (in ticks)
+	bool   departure_show_vehicle;           ///< whether to show vehicle names with departures
+	bool   departure_show_group;             ///< whether to show group names with departures
+	bool   departure_show_company;           ///< whether to show company names with departures
+	bool   departure_show_vehicle_type;      ///< whether to show vehicle type icons with departures
+	bool   departure_show_vehicle_color;     ///< whether to show vehicle type icons in silver instead of orange
+	bool   departure_larger_font;            ///< whether to show the calling at list in a larger font
+	bool   departure_destination_type;       ///< whether to show destination types for ports and airports
+	bool   departure_show_both;              ///< whether to show departure and arrival times on the same line
+	bool   departure_only_passengers;        ///< whether to only show passenger services
+	bool   departure_smart_terminus;         ///< don't show termini that can be reached sooner on a later vehicle
+	uint8  departure_conditionals;           ///< how to handle conditional orders
+	bool   departure_show_all_stops;         ///< whether to show stops regardless of loading/unloading done at them
+	bool   departure_merge_identical;        ///< whether to merge identical departures
 	bool   left_mouse_btn_scrolling;         ///< left mouse button scroll
 	bool   right_mouse_wnd_close;            ///< close window with right click
 	bool   pause_on_newgame;                 ///< whether to start new games paused or not

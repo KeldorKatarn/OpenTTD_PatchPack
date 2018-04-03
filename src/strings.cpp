@@ -403,6 +403,19 @@ static char *FormatBytes(char *buff, int64 number, const char *last)
 
 	return buff;
 }
+ 
+static char *FormatTimeString(char *buff, Ticks ticks, const char *last, uint case_index)
+{
+	auto minutes = ticks / TICKS_PER_MINUTE;
+	char hour[3], minute[3];
+	seprintf(hour,   lastof(hour),   "%02i", ((minutes / 60) % 24));
+	seprintf(minute, lastof(minute), "%02i", (minutes % 60));
+
+	int64 args[2] = { (int64)hour, (int64)minute };
+	StringParameters tmp_params(args);
+
+	return FormatString(buff, GetStringPtr(STR_FORMAT_TIME), &tmp_params, last, case_index);
+}
 
 static char *FormatYmdString(char *buff, Date date, const char *last, uint case_index)
 {
@@ -1221,6 +1234,14 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 
 			case SCC_DATE_ISO: // {DATE_ISO}
 				buff = FormatTinyOrISODate(buff, args->GetInt32(), STR_FORMAT_DATE_ISO, last);
+				break;
+ 
+			case SCC_TIME: // {TIME}
+				buff = FormatTimeString(buff, args->GetInt64(SCC_TIME), last, next_substr_case_index);
+				break;
+
+			case SCC_TIME_TINY: // {TIME_TINY}
+				buff = FormatTimeString(buff, args->GetInt64(SCC_TIME_TINY), last, next_substr_case_index);
 				break;
 
 			case SCC_FORCE: { // {FORCE}

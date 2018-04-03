@@ -2355,28 +2355,37 @@ void Vehicle::BeginLoading()
 void Vehicle::HandleAutomaticTimetableSeparation()
 {
 	/* If all requirements for separation are met, we can initialize it. */
-	if (_settings_game.order.automatic_timetable_separation) {
-		int first_wait_index = -1;
+	if (!_settings_game.order.automatic_timetable_separation) return;
 
-		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
-			Order* order = this->orders.list->GetOrderAt(i);
+	if (!this->IsOrderListShared() || !this->orders.list->IsCompleteTimetable()) return;
 
-			if (order->IsWaitTimetabled() && !order->IsType(OT_IMPLICIT)) {
-				first_wait_index = i;
-				break;
-			}
+	int first_wait_index = -1;
+
+	for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+		Order* order = this->orders.list->GetOrderAt(i);
+
+		if (order->IsWaitTimetabled() && !order->IsType(OT_IMPLICIT)) {
+			first_wait_index = i;
+			break;
 		}
+	}
 
-		if (this->IsOrderListShared() &&
-			this->orders.list->IsCompleteTimetable() &&
-			(this->cur_implicit_order_index == first_wait_index)) {
+	if (this->cur_implicit_order_index != first_wait_index) return;
 
-			if (!this->orders.list->IsSeparationValid()) {
-				this->orders.list->InitializeSeparation();
-				SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
-			}
+	if (!this->orders.list->IsSeparationValid()) {
+		this->orders.list->InitializeSeparation();
+		this->lateness_counter = this->orders.list->SeparateVehicle();
+		SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
+	}
+	else
+	{
+		this->lateness_counter = this->orders.list->SeparateVehicle();
+
+		if (this->lateness_counter > 0)
+		{
+			this->orders.list->InitializeSeparation();
 			this->lateness_counter = this->orders.list->SeparateVehicle();
-
+			SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
 		}
 	}
 }

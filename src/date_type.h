@@ -28,6 +28,7 @@ typedef uint8  Day;   ///< Type for the day of the month, note: 1 based, first d
  */
 
 static const int DEFAULT_DAY_TICKS          = 74;                         ///< ticks per day
+static const int TICKS_PER_MINUTE           = DEFAULT_DAY_TICKS / 5;      ///< one default day == 5 minutes
 static const int DAYS_IN_YEAR               = 365;                        ///< days per year
 static const int DAYS_IN_LEAP_YEAR          = 366;                        ///< sometimes, you need one day more...
 

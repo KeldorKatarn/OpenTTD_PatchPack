@@ -1056,7 +1056,7 @@ static CallBackFunction PlaceLandBlockInfo()
 
 static CallBackFunction ToolbarHelpClick(Window *w)
 {
-	PopupMainToolbMenu(w, WID_TN_HELP, STR_ABOUT_MENU_LAND_BLOCK_INFO, _settings_client.gui.newgrf_developer_tools ? 13 : 10);
+	PopupMainToolbMenu(w, WID_TN_HELP, STR_ABOUT_MENU_LAND_BLOCK_INFO, _settings_client.gui.newgrf_developer_tools ? 16 : 13);
 	return CBF_NONE;
 }
 
@@ -1065,9 +1065,9 @@ static void MenuClickSmallScreenshot()
 	MakeScreenshot(SC_VIEWPORT, NULL);
 }
 
-static void MenuClickFlatMinimapScreenshot()
+static void MenuClickFlatMinimapScreenshot(ScreenshotType type)
 {
-	MakeScreenshot(SC_MINIMAP, NULL);
+	MakeScreenshot(type, NULL);
 }
 
 /**
@@ -1163,11 +1163,14 @@ static CallBackFunction MenuClickHelp(int index)
 		case  5: MenuClickLargeWorldScreenshot(SC_ZOOMEDIN);    break;
 		case  6: MenuClickLargeWorldScreenshot(SC_DEFAULTZOOM); break;
 		case  7: MenuClickLargeWorldScreenshot(SC_WORLD);       break;
-		case  8: MenuClickFlatMinimapScreenshot(); break;
-		case  9: ShowAboutWindow();                break;
-		case 10: ShowSpriteAlignerWindow();        break;
-		case 11: ToggleBoundingBoxes();            break;
-		case 12: ToggleDirtyBlocks();              break;
+		case  8: MenuClickFlatMinimapScreenshot(SC_MINIMAP); break;
+		case  9: MenuClickFlatMinimapScreenshot(SC_MINI_HEIGHTMAP); break;
+		case 10: MenuClickFlatMinimapScreenshot(SC_MINI_INDUSTRYMAP); break;
+		case 11: MenuClickFlatMinimapScreenshot(SC_MINI_OWNERMAP); break;
+		case 12: ShowAboutWindow();                break;
+		case 13: ShowSpriteAlignerWindow();        break;
+		case 14: ToggleBoundingBoxes();            break;
+		case 15: ToggleDirtyBlocks();              break;
 	}
 	return CBF_NONE;
 }

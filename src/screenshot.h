@@ -18,13 +18,16 @@ const char *GetCurrentScreenshotExtension();
 
 /** Type of requested screenshot */
 enum ScreenshotType {
-	SC_VIEWPORT,    ///< Screenshot of viewport.
-	SC_CRASHLOG,    ///< Raw screenshot from blitter buffer.
-	SC_ZOOMEDIN,    ///< Fully zoomed in screenshot of the visible area.
-	SC_DEFAULTZOOM, ///< Zoomed to default zoom level screenshot of the visible area.
-	SC_WORLD,       ///< World screenshot.
-	SC_HEIGHTMAP,   ///< Heightmap of the world.
-	SC_MINIMAP,     ///< Flat screenshot of the minimap.
+	SC_VIEWPORT,         ///< Screenshot of viewport.
+	SC_CRASHLOG,         ///< Raw screenshot from blitter buffer.
+	SC_ZOOMEDIN,         ///< Fully zoomed in screenshot of the visible area.
+	SC_DEFAULTZOOM,      ///< Zoomed to default zoom level screenshot of the visible area.
+	SC_WORLD,            ///< World screenshot.
+	SC_HEIGHTMAP,        ///< Heightmap of the world.
+	SC_MINIMAP,          ///< Flat screenshot of the minimap showing the routes.
+	SC_MINI_HEIGHTMAP,   ///< Flat screenshot of the minimap showing only topography.
+	SC_MINI_INDUSTRYMAP, ///< Flat screenshot of the minimap showing color coded industries.
+	SC_MINI_OWNERMAP,    ///< Flat screenshot of the minimap showing routes colored by owner.
 };
 
 class SmallMapWindow;

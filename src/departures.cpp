@@ -98,7 +98,7 @@ DepartureList* MakeDepartureList(StationID station, bool show_vehicle_types[5], 
 	SmallVector<OrderDate*, 32> next_orders;
 
 	/* The maximum possible date for departures to be scheduled to occur. */
-	Ticks max_date = MAX_DAY * DEFAULT_DAY_TICKS;
+	Ticks max_date = INT_MAX;
 
 	/* The scheduled order in next_orders with the earliest expected_date field. */
 	OrderDate *least_order = NULL;

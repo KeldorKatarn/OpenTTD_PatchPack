@@ -563,5 +563,13 @@ static inline void free(const void *ptr)
 	#define INCLUDE_FOR_PREFETCH_NTA "stdafx.h"
 	#define PREFETCH_NTA(address)
 #endif
+ 
+#ifdef __GNUC__
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+#else
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#endif
 
 #endif /* STDAFX_H */

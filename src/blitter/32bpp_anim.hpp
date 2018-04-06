@@ -59,6 +59,15 @@ public:
 	{
 		return this->palette.palette[index];
 	}
+ 
+	inline int ScreenToAnimOffset(const uint32 *video)
+	{
+		int raw_offset = video - (const uint32 *)_screen.dst_ptr;
+		if (_screen.pitch == this->anim_buf_pitch) return raw_offset;
+		int lines = raw_offset / _screen.pitch;
+		int across = raw_offset % _screen.pitch;
+		return across + (lines * this->anim_buf_pitch);
+	}
 
 	template <BlitterMode mode> void Draw(const Blitter::BlitterParams *bp, ZoomLevel zoom);
 };

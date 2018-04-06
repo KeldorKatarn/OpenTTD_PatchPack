@@ -57,7 +57,9 @@ static const SaveLoad _industry_desc[] = {
 	SLEG_CONDARR(_old_ind_persistent_storage.storage, SLE_UINT32, 16,            76, 160),
 	SLE_CONDREF(Industry, psa,                        REF_STORAGE,              161, SL_MAX_VERSION),
 
-	SLE_CONDNULL(1, 82, 196), // random_triggers
+	SLE_CONDNULL(1, 82, 196),                             // random_triggers
+	SLE_CONDNULL(1, SL_PATCH_PACK, SL_PATCH_PACK_1_18_6), // random_triggers
+
 	SLE_CONDVAR(Industry, random,                     SLE_UINT16,                82, SL_MAX_VERSION),
 
 	SLE_CONDNULL(32, 2, 143), // old reserved space

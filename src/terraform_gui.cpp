@@ -308,6 +308,7 @@ struct TerraformToolbarWindow : Window {
 	virtual void OnPlaceObjectAbort()
 	{
 		this->RaiseButtons();
+		this->SetDirty();
 	}
 
 	static HotkeyList hotkeys;

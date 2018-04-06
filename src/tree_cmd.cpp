@@ -846,7 +846,8 @@ static void TileLoop_Trees(TileIndex tile)
 							AddTreeCount(tile, 1);
 							SetTreeGrowth(tile, 0);
 						}
-						FALLTHROUGH;
+					}
+					FALLTHROUGH;
 
 					case 2: { // add a neighbouring tree
 						/* Don't plant extra trees if that's not allowed. */

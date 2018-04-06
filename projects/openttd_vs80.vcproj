@@ -443,14 +443,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\tbtr_template_gui_create_virtualtrain.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_gui_replaceall.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\tbtr_template_vehicle.cpp"
 				>
 			</File>
@@ -467,19 +459,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\tbtr_template_gui_create_virtualtrain.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_gui_replaceall.h"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\tbtr_template_vehicle.h"
 				>
 			</File>
 			<File
 				RelativePath=".\..\src\tbtr_template_vehicle_func.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay_cmd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay_cmd.cpp"
 				>
 			</File>
 			<File
@@ -559,7 +555,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\departures.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\depot.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\disaster_vehicle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\dock.cpp"
 				>
 			</File>
 			<File
@@ -748,6 +756,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\pbs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\plans.cpp"
 				>
 			</File>
 			<File
@@ -1059,6 +1071,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\departures_func.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\departures_gui.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\departures_type.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\depot_base.h"
 				>
 			</File>
@@ -1083,7 +1107,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\disaster_vehicle.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\music\dmusic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\dock_base.h"
 				>
 			</File>
 			<File
@@ -1567,6 +1599,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\plans_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\plans_func.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\plans_type.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\progress.h"
 				>
 			</File>
@@ -1620,6 +1664,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\safeguards.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\scope.h"
 				>
 			</File>
 			<File
@@ -1982,6 +2030,10 @@
 				RelativePath=".\..\src\zoom_type.h"
 				>
 			</File>
+			<File
+				RelativePath=".\..\src\zoning.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Core Source Code"
@@ -2008,6 +2060,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\core\bitmath_func.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\core\container_func.hpp"
 				>
 			</File>
 			<File
@@ -2143,6 +2199,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\departures_gui.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\depot_gui.cpp"
 				>
 			</File>
@@ -2247,6 +2307,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\plans_gui.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\rail_gui.cpp"
 				>
 			</File>
@@ -2334,6 +2398,10 @@
 				RelativePath=".\..\src\waypoint_gui.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\..\src\zoning_gui.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Widgets"
@@ -2376,6 +2444,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\widgets\date_widget.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\widgets\departures_widget.h"
 				>
 			</File>
 			<File
@@ -2495,6 +2567,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\widgets\plans_widget.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\widgets\rail_widget.h"
 				>
 			</File>
@@ -2591,10 +2667,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\disaster_cmd.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\group_cmd.cpp"
 				>
 			</File>
@@ -2616,6 +2688,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\order_cmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\plans_cmd.cpp"
 				>
 			</File>
 			<File
@@ -2680,6 +2756,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\waypoint_cmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\zoning_cmd.cpp"
 				>
 			</File>
 		</Filter>
@@ -2803,6 +2883,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\saveload\plans_sl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\saveload\saveload.cpp"
 				>
 			</File>
@@ -2852,6 +2936,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\saveload\waypoint_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\bridge_signal_sl.cpp"
 				>
 			</File>
 			<File
@@ -2911,6 +2999,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\table\darklight_colours.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\table\elrail_data.h"
 				>
 			</File>
@@ -2920,6 +3012,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\table\genland.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\table\heightmap_colours.h"
 				>
 			</File>
 			<File
@@ -2976,6 +3072,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\table\strgen_tables.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\table\string_colours.h"
 				>
 			</File>
 			<File
@@ -3215,31 +3315,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdblob.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\3rdparty\squirrel\sqstdlib\sqstdblobimpl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdio.h"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdmath.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\3rdparty\squirrel\sqstdlib\sqstdstream.h"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdstring.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\3rdparty\squirrel\include\sqstdsystem.h"
 				>
 			</File>
 			<File
@@ -4156,6 +4236,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\bridge_map.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\bridge_signal_map.h"
 				>
 			</File>
 			<File

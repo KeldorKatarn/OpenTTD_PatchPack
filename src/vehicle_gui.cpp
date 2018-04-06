@@ -2030,10 +2030,12 @@ struct VehicleDetailsWindow : Window {
 	{
 		switch (widget) {
 			case WID_VD_TOP_DETAILS: {
+				const Vehicle *v = Vehicle::Get(this->window_number);
 				Dimension dim = { 0, 0 };
-				size->height = WD_FRAMERECT_TOP + 4 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
 
-				for (uint i = 0; i < 4; i++) SetDParamMaxValue(i, INT16_MAX);
+				size->height = WD_FRAMERECT_TOP + 5 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
+
+				for (uint i = 0; i < 5; i++) SetDParamMaxValue(i, INT16_MAX);
 				static const StringID info_strings[] = {
 					STR_VEHICLE_INFO_MAX_SPEED,
 					STR_VEHICLE_INFO_WEIGHT_POWER_MAX_SPEED,
@@ -2046,6 +2048,18 @@ struct VehicleDetailsWindow : Window {
 				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
 				for (uint i = 1; i < 4; i++) SetDParamMaxValue(i, 1 << 24);
 				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME));
+			
+				if (v->type == VEH_TRAIN) {
+					SetDParamMaxValue(0, _settings_game.vehicle.max_train_length * 10);
+					SetDParam(1, 1);
+					SetDParam(2, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+					dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_TRAIN_LENGTH));
+				} else {
+					dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR));
+				}
+				
+				SetDParam(0, v->group_id);
+				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_GROUP));
 				SetDParam(0, STR_VEHICLE_INFO_AGE);
 				dim = maxdim(dim, GetStringBoundingBox(STR_VEHICLE_INFO_AGE_RUNNING_COST_YR));
 				size->width = dim.width + WD_FRAMERECT_LEFT + WD_FRAMERECT_RIGHT;
@@ -2186,17 +2200,32 @@ struct VehicleDetailsWindow : Window {
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw profit */
-				SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
-				SetDParam(1, v->GetDisplayProfitThisYear());
-				SetDParam(2, v->GetDisplayProfitLastYear());
-				SetDParam(3, v->GetDisplayProfitLifetime());
-				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
+				if (v->type == VEH_TRAIN) {
+					const GroundVehicleCache *gcache = v->GetGroundVehicleCache();
+					SetDParam(0, CeilDiv(gcache->cached_total_length * 10, TILE_SIZE));
+					SetDParam(1, 1);
+					SetDParam(2, v->GetDisplayProfitThisYear());
+					SetDParam(3, v->GetDisplayProfitLastYear());
+					SetDParam(4, v->GetDisplayProfitLifetime());
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_TRAIN_LENGTH);
+				} else {
+					SetDParam(0, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR);
+					SetDParam(1, v->GetDisplayProfitThisYear());
+					SetDParam(2, v->GetDisplayProfitLastYear());
+					SetDParam(3, v->GetDisplayProfitLifetime());
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
+				}
 				y += FONT_HEIGHT_NORMAL;
 
 				/* Draw breakdown & reliability */
 				SetDParam(0, ToPercent16(v->reliability));
 				SetDParam(1, v->breakdowns_since_last_service);
 				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_RELIABILITY_BREAKDOWNS);
+				y += FONT_HEIGHT_NORMAL;
+
+				SetDParam(0, v->group_id);
+				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_GROUP);
+				const_cast<VehicleDetailsWindow *>(this)->ReInit();
 				break;
 			}
 

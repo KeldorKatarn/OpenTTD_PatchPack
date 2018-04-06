@@ -55,6 +55,7 @@
 #include "linkgraph/linkgraph_base.h"
 #include "linkgraph/refresh.h"
 #include "widgets/station_widget.h"
+#include "zoning.h"
 
 #include "table/strings.h"
 #include "newgrf_townname.h"
@@ -1514,6 +1515,7 @@ CommandCost CmdBuildRailStation(TileIndex tile_org, DoCommandFlag flags, uint32 
 		st->UpdateVirtCoord();
 		UpdateStationAcceptance(st, false);
 		st->RecomputeIndustriesNear();
+		ZoningMarkDirtyStationCoverageArea(st);
 		InvalidateWindowData(WC_SELECT_STATION, 0, 0);
 		InvalidateWindowData(WC_STATION_LIST, st->owner, 0);
 		SetWindowWidgetDirty(WC_STATION_VIEW, st->index, WID_SV_TRAINS);
@@ -1626,6 +1628,9 @@ CommandCost RemoveFromRailBaseStation(TileArea ta, SmallVector<T *, 4> &affected
 		}
 
 		if (flags & DC_EXEC) {
+			bool already_affected = affected_stations.Include(st);
+			if (!already_affected) ZoningMarkDirtyStationCoverageArea(st);
+
 			/* read variables before the station tile is removed */
 			uint specindex = GetCustomStationSpecIndex(tile);
 			Track track = GetRailStationTrack(tile);
@@ -1655,8 +1660,6 @@ CommandCost RemoveFromRailBaseStation(TileArea ta, SmallVector<T *, 4> &affected
 			YapfNotifyTrackLayoutChange(tile, track);
 
 			DeallocateSpecFromStation(st, specindex);
-
-			affected_stations.Include(st);
 
 			if (v != NULL) RestoreTrainReservation(v);
 		}
@@ -1796,6 +1799,9 @@ static CommandCost RemoveRailStation(TileIndex tile, DoCommandFlag flags)
 	}
 
 	Station *st = Station::GetByTile(tile);
+
+	if (flags & DC_EXEC) ZoningMarkDirtyStationCoverageArea(st);
+
 	CommandCost cost = RemoveRailStation(st, flags, _price[PR_CLEAR_STATION_RAIL]);
 
 	if (flags & DC_EXEC) st->RecomputeIndustriesNear();
@@ -1986,6 +1992,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 			MarkTileDirtyByTile(cur_tile);
 		}
+		ZoningMarkDirtyStationCoverageArea(st);
 	}
 
 	if (st != NULL) {
@@ -2056,6 +2063,7 @@ static CommandCost RemoveRoadStop(TileIndex tile, DoCommandFlag flags)
 	}
 
 	if (flags & DC_EXEC) {
+		ZoningMarkDirtyStationCoverageArea(st);
 		if (*primary_stop == cur_stop) {
 			/* removed the first stop in the list */
 			*primary_stop = cur_stop->next;
@@ -2516,6 +2524,7 @@ CommandCost CmdBuildAirport(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 
 		UpdateStationAcceptance(st, false);
 		st->RecomputeIndustriesNear();
+		ZoningMarkDirtyStationCoverageArea(st);
 		InvalidateWindowData(WC_SELECT_STATION, 0, 0);
 		InvalidateWindowData(WC_STATION_LIST, st->owner, 0);
 		InvalidateWindowData(WC_STATION_VIEW, st->index, -1);
@@ -2701,6 +2710,7 @@ static CommandCost RemoveAirport(TileIndex tile, DoCommandFlag flags)
 		nearest->noise_reached -= GetAirportNoiseLevelForTown(as, it, nearest->xy);
 
 		TILE_AREA_LOOP(tile_cur, st->airport) {
+			ZoningMarkDirtyStationCoverageArea(st);
 			const AirportSpec *as = st->airport.GetSpec();
 			if (IsHangarTile(tile_cur)) OrderBackup::Reset(tile_cur, false);
 			DeleteAnimatedTile(tile_cur);
@@ -2904,6 +2914,7 @@ CommandCost CmdBuildDock(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		st->UpdateVirtCoord();
 		UpdateStationAcceptance(st, false);
 		st->RecomputeIndustriesNear();
+		ZoningMarkDirtyStationCoverageArea(st);
 		InvalidateWindowData(WC_SELECT_STATION, 0, 0);
 		InvalidateWindowData(WC_STATION_LIST, st->owner, 0);
 		SetWindowWidgetDirty(WC_STATION_VIEW, st->index, WID_SV_SHIPS);
@@ -2940,6 +2951,7 @@ static CommandCost RemoveDock(TileIndex tile, DoCommandFlag flags)
 	if (flags & DC_EXEC) {
 		st->catchment.AfterRemoveTile(tile1, CA_DOCK);
 		st->catchment.AfterRemoveTile(tile2, CA_DOCK);
+		ZoningMarkDirtyStationCoverageArea(st);
 
 		if (st->docks == removing_dock) {
 			/* The first dock in the list is removed. */
@@ -4313,11 +4325,13 @@ void BuildOilRig(TileIndex tile)
 	st->UpdateVirtCoord();
 	UpdateStationAcceptance(st, false);
 	st->RecomputeIndustriesNear();
+	ZoningMarkDirtyStationCoverageArea(st);
 }
 
 void DeleteOilRig(TileIndex tile)
 {
 	Station *st = Station::GetByTile(tile);
+	ZoningMarkDirtyStationCoverageArea(st);
 
 	st->catchment.AfterRemoveTile(tile, st->GetCatchmentRadius());
 	MakeWaterKeepingClass(tile, OWNER_NONE);

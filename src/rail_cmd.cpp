@@ -1084,8 +1084,10 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	/* You can only build signals on plain rail tiles or tunnel/bridges, and the selected track must exist */
 	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
 		if (GetTunnelBridgeTransportType(tile) != TRANSPORT_RAIL) return CMD_ERROR;
-		//CommandCost ret = EnsureNoTrainOnTrack(GetOtherTunnelBridgeEnd(tile), track);
-		//if (ret.Failed()) return ret;
+		CommandCost ret = EnsureNoTrainOnTrack(GetOtherTunnelBridgeEnd(tile), track);
+		if (ret.Failed()) return ret;
+		ret = EnsureNoTrainOnTrack(tile, track);
+		if (ret.Failed()) return ret;
 	} else if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) || !HasTrack(tile, track)) {
 		return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
 	}
@@ -1615,7 +1617,9 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 		cost *= ((GetTunnelBridgeLength(tile, end) + 4) >> 2);
 
 		CommandCost ret = EnsureNoTrainOnTrack(GetOtherTunnelBridgeEnd(tile), track);
-		//if (ret.Failed()) return ret;
+		if (ret.Failed()) return ret;
+		ret = EnsureNoTrainOnTrack(tile, track);
+		if (ret.Failed()) return ret;
 	} else {
 		if (!ValParamTrackOrientation(track) || !IsPlainRailTile(tile) || !HasTrack(tile, track)) {
 			return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
@@ -1624,7 +1628,7 @@ CommandCost CmdRemoveSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 			return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
 		}
 		CommandCost ret = EnsureNoTrainOnTrack(tile, track);
-		//if (ret.Failed()) return ret;
+		if (ret.Failed()) return ret;
 	}
 
 	/* Only water can remove signals from anyone */

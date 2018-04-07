@@ -64,32 +64,32 @@ static const int BRIDGE_Z_START = 3;
  * @param direction Direction from \a begin to \a end.
  * @param bridge_height Bridge height level.
  */
-void MarkBridgeDirty(TileIndex begin, TileIndex end, DiagDirection direction, uint bridge_height)
+void MarkBridgeDirty(TileIndex begin, TileIndex end, DiagDirection direction, uint bridge_height, const ZoomLevel mark_dirty_if_zoomlevel_is_below)
 {
 	TileIndexDiff delta = TileOffsByDiagDir(direction);
 	for (TileIndex t = begin; t != end; t += delta) {
-		MarkTileDirtyByTile(t, ZOOM_LVL_DRAW_MAP, bridge_height - TileHeight(t));
+		MarkTileDirtyByTile(t, mark_dirty_if_zoomlevel_is_below, bridge_height - TileHeight(t));
 	}
-	MarkTileDirtyByTile(end);
+	MarkTileDirtyByTile(end, mark_dirty_if_zoomlevel_is_below);
 }
 
 /**
  * Mark bridge tiles dirty.
  * @param tile Bridge head.
  */
-void MarkBridgeDirty(TileIndex tile)
+void MarkBridgeDirty(TileIndex tile, const ZoomLevel mark_dirty_if_zoomlevel_is_below)
 {
-	MarkBridgeDirty(tile, GetOtherTunnelBridgeEnd(tile), GetTunnelBridgeDirection(tile), GetBridgeHeight(tile));
+	MarkBridgeDirty(tile, GetOtherTunnelBridgeEnd(tile), GetTunnelBridgeDirection(tile), GetBridgeHeight(tile), mark_dirty_if_zoomlevel_is_below);
 }
 
 /**
  * Mark bridge or tunnel tiles dirty.
  * @param tile Bridge head or tunnel entrance.
  */
-void MarkBridgeOrTunnelDirty(TileIndex tile)
+void MarkBridgeOrTunnelDirty(TileIndex tile, const ZoomLevel mark_dirty_if_zoomlevel_is_below)
 {
 	if (IsBridge(tile)) {
-		MarkBridgeDirty(tile);
+		MarkBridgeDirty(tile, mark_dirty_if_zoomlevel_is_below);
 	} else {
 		MarkTileDirtyByTile(tile);
 		MarkTileDirtyByTile(GetOtherTunnelBridgeEnd(tile));

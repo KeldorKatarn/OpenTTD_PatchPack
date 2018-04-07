@@ -40,6 +40,7 @@
 #include "tbtr_template_vehicle_func.h"
 #include "autoreplace_func.h"
 #include "bridge_signal_map.h"
+#include "tunnelbridge.h"
 
 #include "table/strings.h"
 #include "table/train_cmd.h"
@@ -4170,7 +4171,25 @@ static void DeleteLastWagon(Train *v)
 	if (IsLevelCrossingTile(tile)) UpdateLevelCrossing(tile);
 
 	/* Update signals */
-	if (IsTileType(tile, MP_TUNNELBRIDGE) || IsRailDepotTile(tile)) {
+	if (IsTileType(tile, MP_TUNNELBRIDGE)) {
+		UpdateSignalsOnSegment(tile, INVALID_DIAGDIR, owner);
+		if (IsTunnelBridgeWithSignalSimulation(tile)) {
+			TileIndex end = GetOtherTunnelBridgeEnd(tile);
+			UpdateSignalsOnSegment(end, INVALID_DIAGDIR, owner);
+			bool is_entrance = IsTunnelBridgeSignalSimulationEntrance(tile);
+			TileIndex entrance = is_entrance ? tile : end;
+			if (TunnelBridgeIsFree(tile, end, nullptr).Succeeded()) {
+				if (IsBridge(entrance)) {
+					SetAllBridgeEntranceSimulatedSignalsGreen(entrance);
+					MarkBridgeDirty(entrance, ZOOM_LVL_DRAW_MAP);
+				}
+				if (IsTunnelBridgeSignalSimulationEntrance(entrance) && GetTunnelBridgeSignalState(entrance) == SIGNAL_STATE_RED) {
+					SetTunnelBridgeSignalState(entrance, SIGNAL_STATE_GREEN);
+					MarkTileDirtyByTile(entrance);
+				}
+			}
+		}
+	} else if (IsRailDepotTile(tile)) {
 		UpdateSignalsOnSegment(tile, INVALID_DIAGDIR, owner);
 	} else {
 		SetSignalsOnBothDir(tile, track, owner);

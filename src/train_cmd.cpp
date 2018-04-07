@@ -617,7 +617,7 @@ void DrawTrainEngine(int left, int right, int preferred_x, int y, EngineID engin
 		seqf.GetBounds(&rectf);
 		seqr.GetBounds(&rectr);
 
-		preferred_x = Clamp(preferred_x,
+		preferred_x = SoftClamp(preferred_x,
 				left - UnScaleGUI(rectf.left) + ScaleGUITrad(14),
 				right - UnScaleGUI(rectr.right) - ScaleGUITrad(15));
 

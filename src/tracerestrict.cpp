@@ -659,6 +659,7 @@ void TraceRestrictCreateProgramMapping(TraceRestrictRefId ref, TraceRestrictProg
 
 /**
  * Remove a program mapping
+ * @return true if a mapping was actually removed
  */
 bool TraceRestrictRemoveProgramMapping(TraceRestrictRefId ref)
 {

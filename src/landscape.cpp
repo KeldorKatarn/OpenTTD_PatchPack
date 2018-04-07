@@ -33,7 +33,7 @@
 #include "pathfinder/npf/aystar.h"
 #include "saveload/saveload.h"
 #include <algorithm>
-#include <list>
+#include <deque>
 #include <set>
 
 #include "table/strings.h"
@@ -1161,7 +1161,7 @@ static bool FlowRiver(TileIndex spring, TileIndex begin, uint min_river_length)
 	SET_MARK(begin);
 
 	/* Breadth first search for the closest tile we can flow down to. */
-	std::list<TileIndex> queue;
+	std::deque<TileIndex> queue;
 	queue.push_back(begin);
 
 	bool found = false;

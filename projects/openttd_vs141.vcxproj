@@ -90,7 +90,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
-  </PropertyGroup> 
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
     <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
@@ -98,6 +98,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
     <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -218,6 +226,10 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <PostBuildEvent>
+      <Message>Copy executable to /bin</Message>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -338,6 +350,10 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <PostBuildEvent>
+      <Message>Copy executable to /bin</Message>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />

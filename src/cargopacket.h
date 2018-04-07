@@ -19,7 +19,7 @@
 #include "cargo_type.h"
 #include "vehicle_type.h"
 #include "core/multimap.hpp"
-#include <list>
+#include <deque>
 
 /** Unique identifier for a single cargo packet. */
 typedef uint32 CargoPacketID;
@@ -283,7 +283,7 @@ public:
 	void InvalidateCache();
 };
 
-typedef std::list<CargoPacket *> CargoPacketList;
+typedef std::deque<CargoPacket *> CargoPacketList;
 
 /**
  * CargoList that is used for vehicles.
@@ -462,7 +462,7 @@ public:
 	}
 };
 
-typedef MultiMap<StationID, CargoPacket *> StationCargoPacketMap;
+typedef MultiMap<StationID, CargoPacket *, CargoPacketList> StationCargoPacketMap;
 typedef std::map<StationID, uint> StationCargoAmountMap;
 
 /**

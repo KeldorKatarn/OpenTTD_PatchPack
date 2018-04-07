@@ -34,13 +34,13 @@ INSTANTIATE_POOL_METHODS(LinkGraphJob)
  * original. The job is immediately started.
  * @param orig Original LinkGraph to be copied.
  */
-LinkGraphJob::LinkGraphJob(const LinkGraph &orig) :
+LinkGraphJob::LinkGraphJob(const LinkGraph &orig, uint duration_multiplier) :
 		/* Copying the link graph here also copies its index member.
 		 * This is on purpose. */
 		link_graph(orig),
 		settings(_settings_game.linkgraph),
 		thread(NULL),
-		join_date(_date + max(1, (_settings_game.linkgraph.recalc_time / _settings_game.economy.daylength))),
+		join_date(_date + max(1u, (_settings_game.linkgraph.recalc_time / _settings_game.economy.daylength) * duration_multiplier)),
 		job_completed(false)
 {
 }

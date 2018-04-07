@@ -270,7 +270,7 @@ public:
 	LinkGraphJob() : settings(_settings_game.linkgraph), thread(NULL),
 		join_date(INVALID_DATE), job_completed(false) {}
 
-	LinkGraphJob(const LinkGraph &orig);
+	LinkGraphJob(const LinkGraph &orig, uint duration_multiplier);
 	~LinkGraphJob();
 
 	void Init();

@@ -40,7 +40,8 @@ LinkGraphJob::LinkGraphJob(const LinkGraph &orig, uint duration_multiplier) :
 		link_graph(orig),
 		settings(_settings_game.linkgraph),
 		join_date(_date + max(1u, (_settings_game.linkgraph.recalc_time / _settings_game.economy.daylength) * duration_multiplier)),
-		job_completed(false)
+		job_completed(false),
+		abort_job(false)
 {
 }
 
@@ -171,6 +172,41 @@ bool LinkGraphJob::IsJobCompleted() const
 	return __atomic_load_n(&job_completed, __ATOMIC_RELAXED);
 #else
 	return job_completed;
+#endif
+}
+ 
+/**
+ * Check if job has been requested to be aborted.
+ * This is allowed to spuriously return a falsely negative value.
+ * @return True if job abort has been requested.
+ */
+bool LinkGraphJob::IsJobAborted() const
+{
+#if defined(__GNUC__) || defined(__clang__)
+	return __atomic_load_n(&abort_job, __ATOMIC_RELAXED);
+#else
+	return abort_job;
+#endif
+}
+
+/**
+ * Abort job.
+ * The job may exit early at the next available opportunity.
+ * After this method has been called the state of the job is undefined, and the only valid operation
+ * is to join the thread and discard the job data.
+ */
+void LinkGraphJob::AbortJob()
+{
+	/*
+	 * Note that this it not guaranteed to be an atomic write and there are no memory barriers or other protections.
+	 * Readers of this variable in another thread may see an out of date value.
+	 * However this is OK as if this method is called the state of the job/thread does not matter anyway.
+	 */
+
+#if defined(__GNUC__) || defined(__clang__)
+	__atomic_store_n(&(abort_job), true, __ATOMIC_RELAXED);
+#else
+	abort_job = true;
 #endif
 }
 

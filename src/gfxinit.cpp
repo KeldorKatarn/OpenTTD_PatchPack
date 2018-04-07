@@ -456,6 +456,8 @@ void GfxLoadSprites()
 {
 	DEBUG(sprite, 2, "Loading sprite set %d", _settings_game.game_creation.landscape);
 
+	_grf_bug_too_many_strings = false;
+
 	SwitchNewGRFBlitter();
 	ClearFontCache();
 	GfxInitSpriteMem();
@@ -465,6 +467,8 @@ void GfxLoadSprites()
 
 	UpdateRouteStepSpriteSize();
 	UpdateCursorSize();
+
+	DEBUG(sprite, 2, "Completed loading sprite set %d", _settings_game.game_creation.landscape);
 }
 
 bool GraphicsSet::FillSetDetails(IniFile *ini, const char *path, const char *full_filename)

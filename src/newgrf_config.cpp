@@ -194,6 +194,8 @@ GRFConfig *_grfconfig_newgame;
 GRFConfig *_grfconfig_static;
 uint _missing_extra_graphics = 0;
 
+bool _grf_bug_too_many_strings = false;
+
 /**
  * Construct a new GRFError.
  * @param severity The severity of this error.

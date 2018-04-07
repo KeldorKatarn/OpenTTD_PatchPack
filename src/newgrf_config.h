@@ -204,6 +204,8 @@ extern GRFConfig *_grfconfig_newgame; ///< First item in list of default GRF set
 extern GRFConfig *_grfconfig_static;  ///< First item in list of static GRF set up
 extern uint _missing_extra_graphics;  ///< Number of sprites provided by the fallback extra GRF, i.e. missing in the baseset.
 
+extern bool _grf_bug_too_many_strings;///< NewGRF bug: Insufficient available string IDs for GRFs
+
 /** Callback for NewGRF scanning. */
 struct NewGRFScanCallback {
 	/** Make sure the right destructor gets called. */

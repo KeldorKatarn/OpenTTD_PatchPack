@@ -962,6 +962,9 @@ static void MakeNewGameDone()
 {
 	SettingsDisableElrail(_settings_game.vehicle.disable_elrails);
 
+	extern void PostCheckNewGRFLoadWarnings();
+	PostCheckNewGRFLoadWarnings();
+
 	/* In a dedicated server, the server does not play */
 	if (!VideoDriver::GetInstance()->HasGUI()) {
 		SetLocalCompany(COMPANY_SPECTATOR);
@@ -1010,6 +1013,9 @@ static void MakeNewGame(bool from_heightmap, bool reset_settings)
 static void MakeNewEditorWorldDone()
 {
 	SetLocalCompany(OWNER_NONE);
+	
+	extern void PostCheckNewGRFLoadWarnings();
+	PostCheckNewGRFLoadWarnings();
 }
 
 static void MakeNewEditorWorld()

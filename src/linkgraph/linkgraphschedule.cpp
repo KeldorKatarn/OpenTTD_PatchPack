@@ -215,7 +215,7 @@ void OnTick_LinkGraph()
 	}
 	else
 	{
-		uint16 interval_in_ticks = _settings_game.linkgraph.recalc_interval * DEFAULT_DAY_TICKS;
+		uint16 interval_in_ticks = max<int>(2, (_settings_game.linkgraph.recalc_interval * DEFAULT_DAY_TICKS));
 		Date offset = _date_fract % interval_in_ticks;
 
 		if (offset == 0) {

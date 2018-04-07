@@ -328,10 +328,10 @@ void Vehicle::SetSepSettings(TTSepMode Mode, uint Parameter)
  */
 bool Vehicle::IsDrawn() const
 {
-	return !(this->vehstatus & VS_HIDDEN) ||
+	return !(HasBit(this->subtype, GVSF_VIRTUAL)) && (!(this->vehstatus & VS_HIDDEN) ||
 			(IsTransparencySet(TO_TUNNELS) &&
 				((this->type == VEH_TRAIN && Train::From(this)->track == TRACK_BIT_WORMHOLE) ||
-				(this->type == VEH_ROAD && RoadVehicle::From(this)->state == RVSB_WORMHOLE)));
+				(this->type == VEH_ROAD && RoadVehicle::From(this)->state == RVSB_WORMHOLE))));
 }
 
 /**

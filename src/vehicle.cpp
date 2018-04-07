@@ -2563,11 +2563,7 @@ void Vehicle::LeaveStation()
 
 		if (wasLastLoadingOrder)
 		{
-			if (station_occupancies.size() == 0)
-			{
-				trip_occupancy = -1;
-			}
-			else
+			if (station_occupancies.size() != 0)
 			{
 				int sum = 0;
 
@@ -2575,13 +2571,11 @@ void Vehicle::LeaveStation()
 				for (it = station_occupancies.begin(); it != station_occupancies.end(); ++it)
 					sum += *it;
 
-				trip_occupancy = (uint8)(sum / (int)station_occupancies.size());
 				station_occupancies.clear();
 			}
 		}
 	}
 	else {
-		trip_occupancy = -1;
 		station_occupancies.clear();
 	}
 
@@ -2591,7 +2585,6 @@ void Vehicle::LeaveStation()
 	st->loading_vehicles.remove(this);
 
 	HideFillingPercent(&this->fill_percent_te_id);
-	trip_occupancy = CalcPercentVehicleFilled(this, NULL);
 
 	if (this->type == VEH_TRAIN && !(this->vehstatus & VS_CRASHED)) {
 		/* Trigger station animation (trains only) */

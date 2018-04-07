@@ -227,7 +227,7 @@ private:
 		this->tiny_step_height = this->column_size[VGC_COLLAPSED].height;
 
 		this->column_size[VGC_NAME] = maxdim(GetStringBoundingBox(STR_GROUP_DEFAULT_TRAINS + this->vli.vtype), GetStringBoundingBox(STR_GROUP_ALL_TRAINS + this->vli.vtype));
-		this->column_size[VGC_NAME].width = max((300u * FONT_HEIGHT_NORMAL) / 10u, this->column_size[VGC_NAME].width);
+		this->column_size[VGC_NAME].width = max((170u * FONT_HEIGHT_NORMAL) / 10u, this->column_size[VGC_NAME].width);
 		this->tiny_step_height = max(this->tiny_step_height, this->column_size[VGC_NAME].height);
 
 		this->column_size[VGC_PROTECT] = GetSpriteSize(SPR_GROUP_REPLACE_PROTECT);
@@ -416,7 +416,7 @@ public:
 				max_icon_height = max(max_icon_height, GetSpriteSize(this->GetWidget<NWidgetCore>(WID_GL_REPLACE_PROTECTION)->widget_data).height);
 
 				/* ... minus the height of the group info ... */
-				max_icon_height += (FONT_HEIGHT_NORMAL * 5) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
+				max_icon_height += (FONT_HEIGHT_NORMAL * 3) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 
 				/* Get a multiple of tiny_step_height of that amount */
 				size->height = Ceil(size->height - max_icon_height, tiny_step_height);
@@ -452,7 +452,7 @@ public:
 			}
 
 			case WID_GL_INFO: {
-				size->height = (FONT_HEIGHT_NORMAL * 5) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
+				size->height = (FONT_HEIGHT_NORMAL * 3) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 				break;
 			}
 		}
@@ -613,12 +613,6 @@ public:
 					this_year += v->GetDisplayProfitThisYear();
 					last_year += v->GetDisplayProfitLastYear();
 					lifetime  += v->GetDisplayProfitLifetime();
-
-					if (v->trip_occupancy >= 0)
-					{
-						occupancy += v->trip_occupancy;
-						group_vehicles++;
-					}
 				}
 
 				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 1, STR_GROUP_PROFIT_THIS_YEAR, TC_BLACK);
@@ -632,18 +626,6 @@ public:
 				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_GROUP_LIFETIME_PROFIT, TC_BLACK);
 				SetDParam(0, lifetime);
 				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + 3, STR_JUST_CURRENCY_LONG, TC_BLACK, SA_RIGHT);
-
-				DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_GROUP_OCCUPANCY, TC_BLACK);
-
-				if (group_vehicles > 0)
-				{
-					SetDParam(0, occupancy / group_vehicles);
-					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_GROUP_OCCUPANCY_VALUE, TC_BLACK, SA_RIGHT);
-				}
-				else
-				{
-					DrawString(r.left + WD_FRAMERECT_LEFT + 8, r.right - WD_FRAMERECT_RIGHT - 16, r.top + WD_FRAMERECT_TOP + 3 * FONT_HEIGHT_NORMAL + 4, STR_QUANTITY_N_A, TC_BLACK, SA_RIGHT);
-				}
 
 				break;
 			}

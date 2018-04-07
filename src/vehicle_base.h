@@ -324,7 +324,6 @@ public:
 	VehicleCargoList cargo;             ///< The cargo this vehicle is carrying
 	uint16 cargo_age_counter;           ///< Ticks till cargo is aged next.
 	std::vector<int8> station_occupancies; ///< Occupancies of vehicle at each station (set after leaving a station).
-	int8 trip_occupancy;                ///< Occupancy of vehicle of the current trip (updated after leaving the last station in the order list).
 
 	byte day_counter;                   ///< Increased by one for each day
 	byte tick_counter;                  ///< Increased by one for each tick

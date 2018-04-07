@@ -227,7 +227,7 @@ private:
 		this->tiny_step_height = this->column_size[VGC_COLLAPSED].height;
 
 		this->column_size[VGC_NAME] = maxdim(GetStringBoundingBox(STR_GROUP_DEFAULT_TRAINS + this->vli.vtype), GetStringBoundingBox(STR_GROUP_ALL_TRAINS + this->vli.vtype));
-		this->column_size[VGC_NAME].width = max(300u, this->column_size[VGC_NAME].width);
+		this->column_size[VGC_NAME].width = max((300u * FONT_HEIGHT_NORMAL) / 10u, this->column_size[VGC_NAME].width);
 		this->tiny_step_height = max(this->tiny_step_height, this->column_size[VGC_NAME].height);
 
 		this->column_size[VGC_PROTECT] = GetSpriteSize(SPR_GROUP_REPLACE_PROTECT);

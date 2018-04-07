@@ -344,7 +344,7 @@ void InitializeWindowViewport(Window *w, int x, int y,
 		veh = Vehicle::Get(vp->follow_vehicle);
 		pt = MapXYZToViewport(vp, veh->x_pos, veh->y_pos, veh->z_pos);
 		MarkAllRoutePathsDirty(veh);
-		MarkAllRouteStepsDirty(w);
+		MarkAllRouteStepsDirty(veh);
 	} else {
 		uint x = TileX(follow_flags) * TILE_SIZE;
 		uint y = TileY(follow_flags) * TILE_SIZE;
@@ -2950,9 +2950,8 @@ static void MarkRouteStepDirty(const TileIndex tile, uint order_nr)
 	}
 }
 
-void MarkAllRouteStepsDirty(Window *vehicle_window)
+void MarkAllRouteStepsDirty(const Vehicle *veh)
 {
-	const Vehicle * const veh = GetVehicleFromWindow(vehicle_window);
 	ViewportPrepareVehicleRouteSteps(veh);
 	for (RouteStepsMap::const_iterator cit = _vp_route_steps.begin(); cit != _vp_route_steps.end(); cit++) {
 		MarkRouteStepDirty(cit);
@@ -3119,6 +3118,15 @@ void MarkBridgeTilesDirtyByTile(TileIndex tile_start, TileIndex tile_end)
 	TileIndexDiff delta = (direction == AXIS_X ? TileDiffXY(1, 0) : TileDiffXY(0, 1));
 	for (TileIndex tile = tile_start; tile <= tile_end; tile += delta) {
 		MarkTileDirtyByTile(tile);
+	}
+}
+ 
+void CheckMarkDirtyFocusedRoutePaths(const Vehicle *veh)
+{
+	const Vehicle *focused_veh = GetVehicleFromWindow(_focused_window);
+	if (focused_veh && veh == focused_veh) {
+		MarkAllRoutePathsDirty(veh);
+		MarkAllRouteStepsDirty(veh);
 	}
 }
 

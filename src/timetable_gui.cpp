@@ -153,7 +153,7 @@ struct TimetableWindow : Window {
 	uint deparr_abbr_width;               ///< The width of the departure/arrival abbreviation
 	Scrollbar *vscroll;
 	bool query_is_speed_query;            ///< The currently open query window is a speed query and not a time query
-	bool query_is_global_query;           ///< The currently open query window applies to all relevant orders.
+	bool query_is_bulk_query;             ///< The currently open query window applies to all relevant orders.
 	TTSepSettings new_sep_settings;       ///< Contains new separation settings.
 	VehicleTimetableWidgets query_widget; ///< Required to determinate source of input query
 
@@ -665,7 +665,7 @@ struct TimetableWindow : Window {
 
 				this->query_widget = WID_VT_CHANGE_TIME;
 				this->query_is_speed_query = false;
-				this->query_is_global_query = _ctrl_pressed;
+				this->query_is_bulk_query = _ctrl_pressed;
 				ShowQueryString(current, STR_TIMETABLE_CHANGE_TIME, 31, this, CS_NUMERAL, QSF_ACCEPT_UNCHANGED);
 				break;
 			}
@@ -687,42 +687,20 @@ struct TimetableWindow : Window {
 
 				this->query_widget = WID_VT_CHANGE_SPEED;
 				this->query_is_speed_query = true;
-				this->query_is_global_query = _ctrl_pressed;
+				this->query_is_bulk_query = _ctrl_pressed;
 				ShowQueryString(current, STR_TIMETABLE_CHANGE_SPEED, 31, this, CS_NUMERAL, QSF_NONE);
 				break;
 			}
 
 			case WID_VT_CLEAR_TIME: { // Clear waiting time.
-				uint32 p1;
-				if (_ctrl_pressed) {
-					for (int i = 0, sel = this->sel_index % 2; i < v->GetNumOrders(); ++i, sel += 2) {
-						if (!IsActionDisabled(v, sel)) {
-							p1 = PackTimetableArgs(v, sel, false);
-							DoCommandP(0, p1, 0, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-						}
-					}
-				}
-				else {
-					p1 = PackTimetableArgs(v, this->sel_index, false);
-					DoCommandP(0, p1, 0, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-				}
+				uint32 p1 = PackTimetableArgs(v, this->sel_index, false);
+				DoCommandP(0, p1, 0, (_ctrl_pressed ? CMD_BULK_CHANGE_TIMETABLE : CMD_CHANGE_TIMETABLE) | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 				break;
 			}
 
 			case WID_VT_CLEAR_SPEED: { // Clear max speed button.
-				uint32 p1;
-				if (_ctrl_pressed) {
-					for (int i = 0, sel = 1; i < v->GetNumOrders(); ++i, sel += 2) {
-						if (!IsActionDisabled(v, sel)) {
-							p1 = PackTimetableArgs(v, sel, true);
-							DoCommandP(0, p1, UINT16_MAX, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-						}
-					}
-				}
-				else {
-					p1 = PackTimetableArgs(v, this->sel_index, true);
-					DoCommandP(0, p1, UINT16_MAX, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-				}
+				uint32 p1 = PackTimetableArgs(v, this->sel_index, true);
+				DoCommandP(0, p1, UINT16_MAX, (_ctrl_pressed ? CMD_BULK_CHANGE_TIMETABLE : CMD_CHANGE_TIMETABLE) | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 				break;
 			}
 
@@ -783,7 +761,7 @@ struct TimetableWindow : Window {
 		case WID_VT_CHANGE_SPEED: {
 			const Vehicle *v = this->vehicle;
 
-			uint32 p1;
+			uint32 p1 = PackTimetableArgs(v, this->sel_index, this->query_is_speed_query);
 
 			uint64 val = StrEmpty(str) ? 0 : strtoul(str, NULL, 10);
 			if (this->query_is_speed_query) {
@@ -792,19 +770,7 @@ struct TimetableWindow : Window {
 
 			uint32 p2 = minu(val, UINT16_MAX);
 
-
-			if (this->query_is_global_query) {
-				for (int i = 0, sel = this->sel_index % 2; i < v->GetNumOrders(); ++i, sel += 2) {
-					if (!IsActionDisabled(v, sel)) {
-						p1 = PackTimetableArgs(v, sel, this->query_is_speed_query);
-						DoCommandP(0, p1, p2, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-					}
-				}
-			}
-			else {
-				p1 = PackTimetableArgs(v, this->sel_index, this->query_is_speed_query);
-				DoCommandP(0, p1, p2, CMD_CHANGE_TIMETABLE | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
-			}
+			DoCommandP(0, p1, p2, (this->query_is_bulk_query ? CMD_BULK_CHANGE_TIMETABLE : CMD_CHANGE_TIMETABLE) | CMD_MSG(STR_ERROR_CAN_T_TIMETABLE_VEHICLE));
 			break;
 		}
 		case WID_VT_TTSEP_SET_PARAMETER: {

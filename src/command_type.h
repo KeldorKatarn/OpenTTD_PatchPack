@@ -345,6 +345,7 @@ enum Commands {
 
 	CMD_MOVE_ORDER,                   ///< move an order
 	CMD_CHANGE_TIMETABLE,             ///< change the timetable for a vehicle
+	CMD_BULK_CHANGE_TIMETABLE,        ///< change the timetable for all orders of a vehicle
 	CMD_SET_VEHICLE_ON_TIME,          ///< set the vehicle on time feature (timetable)
 	CMD_AUTOMATE_TIMETABLE,           ///< automatically fill and update the timetable
 	CMD_CONFIRM_ALL,                  ///< confirms all estimated wait and travel times as timetabled

@@ -4937,6 +4937,9 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 		*remainder_chain = 0,
 		*tmp_chain = 0;
 	TemplateVehicle *tv = GetTemplateVehicleByGroupID(incoming->group_id);
+	if (tv == nullptr) {
+		return CMD_ERROR;
+	}
 
 	CommandCost buy(EXPENSES_NEW_VEHICLES);
 	CommandCost move_cost(EXPENSES_NEW_VEHICLES);

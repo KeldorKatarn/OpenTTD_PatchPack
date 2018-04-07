@@ -131,15 +131,6 @@ TemplateReplacement* GetTemplateReplacementByGroupID(GroupID gid)
 	return 0;
 }
 
-TemplateReplacement* GetTemplateReplacementByTemplateID(TemplateID tid) {
-	TemplateReplacement *tr;
-	FOR_ALL_TEMPLATE_REPLACEMENTS(tr) {
-		if ( tr->Template() == tid )
-			return tr;
-	}
-	return 0;
-}
-
 bool IssueTemplateReplacement(GroupID gid, TemplateID tid) {
 
 	TemplateReplacement *tr = GetTemplateReplacementByGroupID(gid);

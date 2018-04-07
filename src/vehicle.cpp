@@ -57,6 +57,8 @@
 
 #include "table/strings.h"
 
+#include <algorithm>
+
 #include "tbtr_template_vehicle_func.h"
 #include "safeguards.h"
 
@@ -861,7 +863,7 @@ void Vehicle::PreDestructor()
 
 	if (Station::IsValidID(this->last_station_visited)) {
 		Station *st = Station::Get(this->last_station_visited);
-		st->loading_vehicles.remove(this);
+		st->loading_vehicles.erase(std::remove(st->loading_vehicles.begin(), st->loading_vehicles.end(), this), st->loading_vehicles.end());
 
 		HideFillingPercent(&this->fill_percent_te_id);
 		this->CancelReservation(INVALID_STATION, st);
@@ -2582,7 +2584,7 @@ void Vehicle::LeaveStation()
 	this->current_order.MakeLeaveStation();
 	Station *st = Station::Get(this->last_station_visited);
 	this->CancelReservation(INVALID_STATION, st);
-	st->loading_vehicles.remove(this);
+	st->loading_vehicles.erase(std::remove(st->loading_vehicles.begin(), st->loading_vehicles.end(), this), st->loading_vehicles.end());
 
 	HideFillingPercent(&this->fill_percent_te_id);
 

@@ -2225,7 +2225,6 @@ struct VehicleDetailsWindow : Window {
 
 				SetDParam(0, v->group_id);
 				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_GROUP);
-				const_cast<VehicleDetailsWindow *>(this)->ReInit();
 				break;
 			}
 

@@ -363,7 +363,7 @@ typedef SaveLoad SaveLoadGlobVarList;
 
 /**
  * Empty space in some savegame versions.
- * @param length Length of the empty space.
+ * @param length Length of the empty space in bytes.
  * @param from   First savegame version that has the empty space.
  * @param to     Last savegame version that has the empty space.
  */

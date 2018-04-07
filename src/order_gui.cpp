@@ -2109,14 +2109,14 @@ public:
 			}
 		}
 
-		copyShareOrders(share_order);
+		CopyShareOrders(share_order);
 		return true;
 	}
 
 	/** Copy or Share the orders of a vehicle
 	 *  @param share_order true for sharing, false for copying
 	*/
-	void copyShareOrders(bool share_order)
+	void CopyShareOrders(bool share_order)
 	{
 		if (DoCommandP(this->vehicle->tile, this->vehicle->index | (share_order ? CO_SHARE : CO_COPY) << 30, index_vehicle_share,
 				share_order ? CMD_CLONE_ORDER | CMD_MSG(STR_ERROR_CAN_T_SHARE_ORDER_LIST) : CMD_CLONE_ORDER | CMD_MSG(STR_ERROR_CAN_T_COPY_ORDER_LIST))) {
@@ -2195,7 +2195,7 @@ void AskShareOrdersCallback(Window *w, bool confirmed)
 	OrdersWindow *ow = static_cast<OrdersWindow *>(w);
 
 	if (confirmed) {
-		ow->copyShareOrders(true);
+		ow->CopyShareOrders(true);
 	}
 
 }

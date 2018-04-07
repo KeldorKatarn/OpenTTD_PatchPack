@@ -43,6 +43,7 @@ FontCache::FontCache(FontSize fs) : parent(FontCache::Get(fs)), fs(fs), height(_
 {
 	assert(this->parent == NULL || this->fs == this->parent->fs);
 	FontCache::caches[this->fs] = this;
+	font_height_cache[this->fs] = this->height;
 	Layouter::ResetFontCache(this->fs);
 }
 
@@ -52,17 +53,6 @@ FontCache::~FontCache()
 	assert(this->fs == this->parent->fs);
 	FontCache::caches[this->fs] = this->parent;
 	Layouter::ResetFontCache(this->fs);
-}
-
-
-/**
- * Get height of a character for a given font size.
- * @param size Font size to get height of
- * @return     Height of characters in the given font (pixels)
- */
-int GetCharacterHeight(FontSize size)
-{
-	return FontCache::Get(size)->GetHeight();
 }
 
 
@@ -151,6 +141,8 @@ void SpriteFontCache::InitializeUnicodeGlyphMap()
 			this->SetUnicodeGlyph(_default_unicode_map[i].code, sprite);
 		}
 	}
+
+	font_height_cache[this->fs] = this->GetHeight();
 }
 
 /**
@@ -197,6 +189,14 @@ bool SpriteFontCache::GetDrawGlyphShadow()
 }
 
 /* static */ FontCache *FontCache::caches[FS_END] = { new SpriteFontCache(FS_NORMAL), new SpriteFontCache(FS_SMALL), new SpriteFontCache(FS_LARGE), new SpriteFontCache(FS_MONO) };
+int font_height_cache[FS_END];
+ 
+void UpdateFontHeightCache()
+{
+	for (int i = 0; i < FS_END; i++) {
+		font_height_cache[i] = FontCache::Get((FontSize) i)->GetHeight();
+	}
+}
 
 #ifdef WITH_FREETYPE
 #include <ft2build.h>
@@ -242,7 +242,13 @@ public:
 	~FreeTypeFontCache();
 	virtual SpriteID GetUnicodeGlyph(WChar key) { return this->parent->GetUnicodeGlyph(key); }
 	virtual void SetUnicodeGlyph(WChar key, SpriteID sprite) { this->parent->SetUnicodeGlyph(key, sprite); }
-	virtual void InitializeUnicodeGlyphMap() { this->parent->InitializeUnicodeGlyphMap(); }
+	
+	virtual void InitializeUnicodeGlyphMap()
+	{
+		this->parent->InitializeUnicodeGlyphMap();
+		font_height_cache[this->fs] = this->GetHeight();
+	}
+
 	virtual void ClearFontCache();
 	virtual const Sprite *GetGlyph(GlyphID key);
 	virtual uint GetGlyphWidth(GlyphID key);
@@ -312,6 +318,8 @@ FreeTypeFontCache::FreeTypeFontCache(FontSize fs, FT_Face face, int pixels) : Fo
 		/* Both FT_Set_Pixel_Sizes and FT_Select_Size failed. */
 		DEBUG(freetype, 0, "Font size selection failed. Using FontCache defaults.");
 	}
+
+	font_height_cache[this->fs] = this->GetHeight();
 }
 
 /**

@@ -452,7 +452,7 @@ public:
 			}
 
 			case WID_GL_INFO: {
-				size->height = (FONT_HEIGHT_NORMAL * 3) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
+				size->height = (FONT_HEIGHT_NORMAL * 3) + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM + 5;
 				break;
 			}
 		}
@@ -785,15 +785,7 @@ public:
 				break;
 			}
 			case WID_GL_AUTO_GROUP: {
-				const Vehicle* v;
-				FOR_ALL_VEHICLES(v) {
-					if (!HasBit(v->subtype, GVSF_VIRTUAL) && v->type == vli.vtype && v->IsPrimaryVehicle() &&
-						v->owner == vli.company && v->group_id == DEFAULT_GROUP) {
-						const VehicleID vindex = v->index;
-
-						DoCommandP(0, vindex | (1 << 31), 0, CMD_CREATE_GROUP_SPECIFIC_NAME | CMD_MSG(STR_ERROR_GROUP_CAN_T_CREATE_SPECIFIC_NAME), NULL);
-					}
-				}
+				DoCommandP(0, vli.company, vli.vtype, CMD_AUTO_GROUP_VEHICLES, NULL);
 
 				this->vehicle_sel = INVALID_VEHICLE;
 				this->group_over = INVALID_GROUP;

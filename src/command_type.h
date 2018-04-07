@@ -341,6 +341,7 @@ enum Commands {
 	CMD_ADD_VEHICLE_GROUP,            ///< add a vehicle to a group
 	CMD_ADD_SHARED_VEHICLE_GROUP,     ///< add all other shared vehicles to a group which are missing
 	CMD_REMOVE_ALL_VEHICLES_GROUP,    ///< remove all vehicles from a group
+	CMD_AUTO_GROUP_VEHICLES,          ///< create groups for all vehicles of a certain type that are not yet in any group
 	CMD_SET_GROUP_REPLACE_PROTECTION, ///< set the autoreplace-protection for a group
 
 	CMD_MOVE_ORDER,                   ///< move an order

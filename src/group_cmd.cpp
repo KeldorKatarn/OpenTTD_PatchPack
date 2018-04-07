@@ -365,6 +365,8 @@ CommandCost CmdDeleteGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		InvalidateWindowData(GetWindowClassForVehicleType(vt), VehicleListIdentifier(VL_GROUP_LIST, vt, _current_company).Pack());
 		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+		InvalidateWindowClassesData(WC_VEHICLE_VIEW);
+		InvalidateWindowClassesData(WC_VEHICLE_DETAILS);
 	}
 
 	return CommandCost();
@@ -435,6 +437,8 @@ CommandCost CmdAlterGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 		SetWindowDirty(WC_REPLACE_VEHICLE, g->vehicle_type);
 		InvalidateWindowData(GetWindowClassForVehicleType(g->vehicle_type), VehicleListIdentifier(VL_GROUP_LIST, g->vehicle_type, _current_company).Pack());
 		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+		InvalidateWindowClassesData(WC_VEHICLE_VIEW);
+		InvalidateWindowClassesData(WC_VEHICLE_DETAILS);
 	}
 
 	return CommandCost();
@@ -517,6 +521,8 @@ CommandCost CmdAddVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 		SetWindowDirty(WC_REPLACE_VEHICLE, v->type);
 		InvalidateWindowData(GetWindowClassForVehicleType(v->type), VehicleListIdentifier(VL_GROUP_LIST, v->type, _current_company).Pack());
 		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+		InvalidateWindowClassesData(WC_VEHICLE_VIEW);
+		InvalidateWindowClassesData(WC_VEHICLE_DETAILS);
 	}
 
 	return CommandCost();
@@ -667,7 +673,9 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		if (HasBit(p1, 31)) {
 			/* Add vehicles in the shared order list as well. */
 			for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
-				if (v2->group_id != new_g) AddVehicleToGroup(v2, new_g);
+				if (v2->group_id != new_g) {
+					AddVehicleToGroup(v2, new_g);
+				}
 			}
 		}
 
@@ -709,7 +717,9 @@ CommandCost CmdAddSharedVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32
 
 				/* For each shared vehicles add it to the group */
 				for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
-					if (v2->group_id != id_g) DoCommand(tile, id_g, v2->index, flags, CMD_ADD_VEHICLE_GROUP, text);
+					if (v2->group_id != id_g) {
+						DoCommand(tile, id_g, v2->index, flags, CMD_ADD_VEHICLE_GROUP, text);
+					}
 				}
 			}
 		}
@@ -753,6 +763,44 @@ CommandCost CmdRemoveAllVehiclesGroup(TileIndex tile, DoCommandFlag flags, uint3
 		}
 
 		InvalidateWindowData(GetWindowClassForVehicleType(g->vehicle_type), VehicleListIdentifier(VL_GROUP_LIST, g->vehicle_type, _current_company).Pack());
+	}
+
+	return CommandCost();
+}
+
+
+/**
+* Create groups for all vehicles of a certain type that are not yet in any group.
+* @param tile unused
+* @param flags type of operation
+* @param p1   The ID of the company whos vehicles should be auto-grouped.
+* @param p2   The VehicleType of the vehicles that should be auto-grouped.
+* @param text unused
+* @return the cost of this operation or an error
+*/
+CommandCost CmdAutoGroupVehicles(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	CompanyID company_id = (CompanyID)p1;
+	VehicleType vehicle_type = (VehicleType)p2;
+
+	Company* company = Company::GetIfValid(company_id);
+
+	assert(company != nullptr);
+	
+	if (flags & DC_EXEC) {
+		const Vehicle* v;
+		FOR_ALL_VEHICLES(v) {
+			if (!HasBit(v->subtype, GVSF_VIRTUAL) && v->type == vehicle_type && v->IsPrimaryVehicle() &&
+				v->owner == company_id && v->group_id == DEFAULT_GROUP) {
+				DoCommand(0, v->index | (1 << 31), 0, flags, CMD_CREATE_GROUP_SPECIFIC_NAME);
+			}
+		}
+
+		InvalidateWindowData(GetWindowClassForVehicleType(vehicle_type), VehicleListIdentifier(VL_GROUP_LIST, vehicle_type, _current_company).Pack());
+		InvalidateWindowClassesData(GetWindowClassForVehicleType(vehicle_type));
+		InvalidateWindowClassesData(WC_TEMPLATEGUI_MAIN);
+		InvalidateWindowClassesData(WC_VEHICLE_VIEW);
+		InvalidateWindowClassesData(WC_VEHICLE_DETAILS);
 	}
 
 	return CommandCost();

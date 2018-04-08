@@ -1547,6 +1547,10 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 				buff = StationGetSpecialString(buff, args->GetInt32(SCC_STATION_FEATURES), last);
 				break;
 			}
+ 
+			case SCC_CONSUME_ARG:
+				// do nothing
+				break;
 
 			default:
 				if (buff + Utf8CharLen(b) < last) buff += Utf8Encode(buff, b);

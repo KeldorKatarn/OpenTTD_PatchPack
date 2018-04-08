@@ -23,6 +23,7 @@
 #include "clear_map.h"
 #include "clear_func.h"
 #include "tree_map.h"
+#include "scope.h"
 #include "table/tree_land.h"
 #include "blitter/32bpp_base.hpp"
 
@@ -310,8 +311,11 @@ static bool SwitchNewGRFBlitter()
 
 	const bool animation_wanted = HasBit(_display_opt, DO_FULL_ANIMATION);
 	const char *cur_blitter = BlitterFactory::GetCurrentBlitter()->GetName();
-
+ 
 	VideoDriver::GetInstance()->AcquireBlitterLock();
+	auto guard = scope_guard([&]() {
+		VideoDriver::GetInstance()->ReleaseBlitterLock();
+	});
 
 	for (uint i = 0; i < lengthof(replacement_blitters); i++) {
 		if (animation_wanted && (replacement_blitters[i].animation == 0)) continue;
@@ -338,8 +342,6 @@ static bool SwitchNewGRFBlitter()
 		/* Failed to switch blitter, let's hope we can return to the old one. */
 		if (BlitterFactory::SelectBlitter(cur_blitter) == NULL || !VideoDriver::GetInstance()->AfterBlitterChange()) usererror("Failed to reinitialize video driver. Specify a fixed blitter in the config");
 	}
-
-	VideoDriver::GetInstance()->ReleaseBlitterLock();
 
 	return true;
 }

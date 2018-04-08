@@ -16,6 +16,7 @@
 #include "vehicle_gui.h"
 #include "landscape.h"
 #include "window_func.h"
+#include "tunnel_map.h"
 #include "widgets/vehicle_widget.h"
 
 /** What is the status of our acceleration? */
@@ -53,6 +54,7 @@ enum GroundVehicleFlags {
 	GVF_GOINGUP_BIT              = 0,  ///< Vehicle is currently going uphill. (Cached track information for acceleration)
 	GVF_GOINGDOWN_BIT            = 1,  ///< Vehicle is currently going downhill. (Cached track information for acceleration)
 	GVF_SUPPRESS_IMPLICIT_ORDERS = 2,  ///< Disable insertion and removal of automatic orders until the vehicle completes the real order.
+	GVF_CHUNNEL_BIT              = 3,  ///< Vehicle may currently be in a chunnel. (Cached track information for inclination changes)
 };
 
 /**
@@ -220,6 +222,10 @@ struct GroundVehicle : public SpecializedVehicle<T, Type> {
 			 * without any shift */
 			this->z_pos += HasBit(this->gv_flags, GVF_GOINGUP_BIT) ? d : -d;
 		}
+ 
+		if (HasBit(this->gv_flags, GVF_CHUNNEL_BIT) && !IsTunnelTile(this->tile)) {
+			ClrBit(this->gv_flags, GVF_CHUNNEL_BIT);
+		}
 
 #ifdef _DEBUG
 		assert(this->z_pos == GetSlopePixelZ(this->x_pos, this->y_pos));
@@ -239,7 +245,7 @@ struct GroundVehicle : public SpecializedVehicle<T, Type> {
 		int old_z = this->z_pos;
 
 		if (in_wormhole) {
-			this->UpdateZPositionInWormhole();
+			if (HasBit(this->gv_flags, GVF_CHUNNEL_BIT)) this->UpdateZPositionInWormhole();
 		} else if (new_tile) {
 			this->UpdateZPositionAndInclination();
 		} else {

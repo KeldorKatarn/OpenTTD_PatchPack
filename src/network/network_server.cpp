@@ -1369,15 +1369,17 @@ void NetworkServerSendChat(NetworkAction action, DestType desttype, int dest, co
 			FALLTHROUGH;
 
 		case DESTTYPE_BROADCAST:
+		case DESTTYPE_BROADCAST_SS:
 			FOR_ALL_CLIENT_SOCKETS(cs) {
-				cs->SendChat(action, from_id, false, msg, data);
+				cs->SendChat(action, from_id, (desttype == DESTTYPE_BROADCAST_SS && from_id == cs->client_id), msg, data);
 			}
 
 			NetworkAdminChat(action, desttype, from_id, msg, data, from_admin);
 
 			ci = NetworkClientInfo::GetByClientID(from_id);
 			if (ci != NULL) {
-				NetworkTextMessage(action, GetDrawStringCompanyColour(ci->client_playas), false, ci->client_name, msg, data);
+				NetworkTextMessage(action, GetDrawStringCompanyColour(ci->client_playas),
+					(desttype == DESTTYPE_BROADCAST_SS && from_id == CLIENT_ID_SERVER), ci->client_name, msg, data);
 			}
 			break;
 	}

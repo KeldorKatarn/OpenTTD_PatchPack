@@ -13,6 +13,7 @@
 #define LINKGRAPHJOB_H
 
 #include "../thread/thread.h"
+#include "../core/dyn_arena_alloc.hpp"
 #include "linkgraph.h"
 #include <list>
 #include <memory>
@@ -74,6 +75,8 @@ protected:
 	void SetJobGroup(std::shared_ptr<LinkGraphJobGroup> group);
 
 public:
+
+	DynUniformArenaAllocator path_allocator; ///< Arena allocator used for paths
 
 	bool IsJobAborted() const;
 

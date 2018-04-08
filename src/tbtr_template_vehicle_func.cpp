@@ -196,29 +196,6 @@ TemplateVehicle* TemplateVehicleFromVirtualTrain(Train *virt)
 	return tmp->First();
 }
 
-// return last in a chain (really last, so even a singular articulated part of a vehicle if the last one is artic)
-inline TemplateVehicle* Last(TemplateVehicle *chain) {
-	if ( !chain ) return 0;
-	while ( chain->Next() ) chain = chain->Next();
-	return chain;
-}
-
-inline Train* Last(Train *chain) {
-	if ( !chain ) return 0;
-	while ( chain->GetNextUnit() ) chain = chain->GetNextUnit();
-	return chain;
-}
-
-// return: pointer to former vehicle
-TemplateVehicle *DeleteTemplateVehicle(TemplateVehicle *todel)
-{
-	if ( !todel )
-		return 0;
-	TemplateVehicle *cur = todel;
-	delete todel;
-	return cur;
-}
-
 // forward declaration, defined in train_cmd.cpp
 CommandCost CmdSellRailWagon(DoCommandFlag, Vehicle*, uint16, uint32);
 
@@ -310,27 +287,13 @@ Train* DepotContainsEngine(TileIndex tile, EngineID eid, Train *not_in=0) {
 	return 0;
 }
 
-void CopyStatus(Train *from, Train *to) {
-	DoCommand(to->tile, from->group_id, to->index, DC_EXEC, CMD_ADD_VEHICLE_GROUP);
-	to->cargo_type = from->cargo_type;
-	to->cargo_subtype = from->cargo_subtype;
-
-	// swap names
-	char *tmp = to->name;
-	to->name = from->name;
-	from->name = tmp;
-	/*if ( !from->name || !to->name ) {
-		int tmpind = from->index;
-		from->index = to->index;
-		to->index = tmpind;
-	}*/
-}
 void NeutralizeStatus(Train *t) {
 	DoCommand(t->tile, DEFAULT_GROUP, t->index, DC_EXEC, CMD_ADD_VEHICLE_GROUP);
 	DoCommand(0, t->index | CO_UNSHARE << 30, 0, DC_EXEC, CMD_CLONE_ORDER);
 	DoCommand(0, t->index, FreeUnitIDGenerator(VEH_TRAIN, t->owner).NextID(), DC_EXEC, CMD_SET_VEHICLE_UNIT_NUMBER);
 	DoCommand(0, t->index, 0, DC_EXEC, CMD_RENAME_VEHICLE, NULL);
 }
+
 bool TrainMatchesTemplate(const Train *t, TemplateVehicle *tv) {
 	while ( t && tv ) {
 		if ( t->engine_type != tv->engine_type )
@@ -369,72 +332,6 @@ void BreakUpRemainders(Train *t) {
 		else
 			t = t->Next();
 	}
-}
-
-short CountEnginesInChain(Train *t)
-{
-	short count = 0;
-	for ( ; t; t=t->GetNextUnit() )
-		if ( HasBit(t->subtype, GVSF_ENGINE) )
-			count++;
-	return count;
-}
-
-int countOccurrencesInTrain(Train *t, EngineID eid) {
-	int count = 0;
-	Train *tmp = t;
-	for ( ; tmp; tmp=tmp->GetNextUnit() )
-		if ( tmp->engine_type == eid )
-			count++;
-	return count;
-}
-
-int countOccurrencesInTemplateVehicle(TemplateVehicle *contain, EngineID eid) {
-	int count = 0;
-	for ( ; contain; contain=contain->GetNextUnit() )
-		if ( contain->engine_type == eid )
-			count++;
-	return count;
-}
-
-int countOccurrencesInDepot(TileIndex tile, EngineID eid, Train *not_in=0) {
-	int count = 0;
-	Vehicle *v;
-	FOR_ALL_VEHICLES(v) {
-		// conditions: v is stopped in the given depot, has the right engine and if 'not_in' is given v must not be contained within 'not_in'
-		// if 'not_in' is NULL, no check is needed
-		if ( v->tile==tile && v->IsStoppedInDepot() && v->engine_type==eid &&
-				(not_in==0 || ChainContainsVehicle(not_in, (Train*)v)==0))
-			count++;
-	}
-	return count;
-}
-
-// basically does the same steps as CmdTemplateReplaceVehicle but without actually moving things around
-CommandCost CalculateTemplateReplacementCost(Train *incoming) {
-	TileIndex tile = incoming->tile;
-	TemplateVehicle *tv = GetTemplateVehicleByGroupID(incoming->group_id);
-	CommandCost estimate(EXPENSES_NEW_VEHICLES);
-
-	// count for each different eid in the incoming train
-	std::map<EngineID, short> unique_eids;
-	for ( TemplateVehicle *tmp=tv; tmp; tmp=tmp->GetNextUnit() )
-		unique_eids[tmp->engine_type]++;
-	std::map<EngineID, short>::iterator it = unique_eids.begin();
-	for ( ; it!=unique_eids.end(); it++ ) {
-		it->second -= countOccurrencesInTrain(incoming, it->first);
-		it->second -= countOccurrencesInDepot(incoming->tile, it->first, incoming);
-		if ( it->second < 0 ) it->second = 0;
-	}
-
-	// get overall buying cost
-	for ( it=unique_eids.begin(); it!=unique_eids.end(); it++ ) {
-		for ( int j=0; j<it->second; j++ ) {
-			estimate.AddCost(DoCommand(tile, it->first, 0, DC_NONE, CMD_BUILD_VEHICLE));
-		}
-	}
-
-	return estimate;
 }
 
 // make sure the real train wagon has the right cargo

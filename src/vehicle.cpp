@@ -175,7 +175,8 @@ void VehicleServiceInDepot(Vehicle *v)
 		v->breakdowns_since_last_service = 0;
 		v->reliability = v->GetEngine()->reliability;
 		/* Prevent vehicles from breaking down directly after exiting the depot. */
-		v->breakdown_chance /= 4;
+		v->breakdown_chance = 0;
+		v->breakdown_ctr = 0;
 		v = v->Next();
 	} while (v != NULL && v->HasEngineType());
 }

@@ -33,9 +33,9 @@
 #include "company_func.h"
 #include "pathfinder/npf/aystar.h"
 #include "saveload/saveload.h"
+#include "3rdparty/cpp-btree/btree_set.h"
 #include <algorithm>
 #include <deque>
-#include <set>
 
 #include "table/strings.h"
 #include "table/sprites.h"
@@ -1162,7 +1162,7 @@ static bool FlowRiver(TileIndex spring, TileIndex begin, uint min_river_length)
 		return DistanceManhattan(spring, begin) > min_river_length;
 	}
 
-	std::set<TileIndex> marks;
+	btree::btree_set<TileIndex> marks;
 	SET_MARK(begin);
 
 	/* Breadth first search for the closest tile we can flow down to. */

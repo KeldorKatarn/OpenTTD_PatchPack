@@ -111,7 +111,7 @@ tgp.cpp
 tile_map.cpp
 tilearea.cpp
 townname.cpp
-triphistory_cmd.cpp
+tracerestrict.cpp
 #if WIN32
 #else
 	#if WINCE
@@ -401,6 +401,7 @@ town.h
 town_type.h
 townname_func.h
 townname_type.h
+tracerestrict.h
 track_func.h
 track_type.h
 train.h
@@ -533,6 +534,7 @@ textfile_gui.cpp
 timetable_gui.cpp
 toolbar_gui.cpp
 town_gui.cpp
+tracerestrict_gui.cpp
 train_gui.cpp
 transparency_gui.cpp
 tree_gui.cpp
@@ -626,6 +628,7 @@ timetable_cmd.cpp
 town_cmd.cpp
 train_cmd.cpp
 tree_cmd.cpp
+triphistory_cmd.cpp
 tunnelbridge_cmd.cpp
 vehicle_cmd.cpp
 void_cmd.cpp
@@ -639,6 +642,7 @@ saveload/ai_sl.cpp
 saveload/airport_sl.cpp
 saveload/animated_tile_sl.cpp
 saveload/autoreplace_sl.cpp
+saveload/bridge_signal_sl.cpp
 saveload/cargomonitor_sl.cpp
 saveload/cargopacket_sl.cpp
 saveload/cheat_sl.cpp
@@ -674,12 +678,12 @@ saveload/storage_sl.cpp
 saveload/strings_sl.cpp
 saveload/story_sl.cpp
 saveload/subsidy_sl.cpp
-saveload/town_sl.cpp
-saveload/vehicle_sl.cpp
-saveload/waypoint_sl.cpp
-saveload/bridge_signal_sl.cpp
 saveload/tbtr_template_replacement_sl.cpp
 saveload/tbtr_template_veh_sl.cpp
+saveload/town_sl.cpp
+saveload/tracerestrict_sl.cpp
+saveload/vehicle_sl.cpp
+saveload/waypoint_sl.cpp
 
 # Tables
 table/airport_defaults.h
@@ -1245,7 +1249,11 @@ thread/thread.h
 	thread/thread_none.cpp
 #end
 
-tracerestrict.h
-tracerestrict.cpp
-tracerestrict_gui.cpp
-saveload/tracerestrict_sl.cpp
+# Btree containers
+3rdparty/cpp-btree/btree.h
+3rdparty/cpp-btree/btree_container.h
+3rdparty/cpp-btree/btree_map.h
+3rdparty/cpp-btree/btree_set.h
+3rdparty/cpp-btree/safe_btree.h
+3rdparty/cpp-btree/safe_btree_map.h
+3rdparty/cpp-btree/safe_btree_set.h

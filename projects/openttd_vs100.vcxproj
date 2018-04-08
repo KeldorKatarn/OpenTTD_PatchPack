@@ -411,7 +411,7 @@
     <ClCompile Include="..\src\tile_map.cpp" />
     <ClCompile Include="..\src\tilearea.cpp" />
     <ClCompile Include="..\src\townname.cpp" />
-    <ClCompile Include="..\src\triphistory_cmd.cpp" />
+    <ClCompile Include="..\src\tracerestrict.cpp" />
     <ClCompile Include="..\src\vehicle.cpp" />
     <ClCompile Include="..\src\vehiclelist.cpp" />
     <ClCompile Include="..\src\viewport.cpp" />
@@ -672,6 +672,7 @@
     <ClInclude Include="..\src\town_type.h" />
     <ClInclude Include="..\src\townname_func.h" />
     <ClInclude Include="..\src\townname_type.h" />
+    <ClInclude Include="..\src\tracerestrict.h" />
     <ClInclude Include="..\src\track_func.h" />
     <ClInclude Include="..\src\track_type.h" />
     <ClInclude Include="..\src\train.h" />
@@ -785,6 +786,7 @@
     <ClCompile Include="..\src\timetable_gui.cpp" />
     <ClCompile Include="..\src\toolbar_gui.cpp" />
     <ClCompile Include="..\src\town_gui.cpp" />
+    <ClCompile Include="..\src\tracerestrict_gui.cpp" />
     <ClCompile Include="..\src\train_gui.cpp" />
     <ClCompile Include="..\src\transparency_gui.cpp" />
     <ClCompile Include="..\src\tree_gui.cpp" />
@@ -874,6 +876,7 @@
     <ClCompile Include="..\src\town_cmd.cpp" />
     <ClCompile Include="..\src\train_cmd.cpp" />
     <ClCompile Include="..\src\tree_cmd.cpp" />
+    <ClCompile Include="..\src\triphistory_cmd.cpp" />
     <ClCompile Include="..\src\tunnelbridge_cmd.cpp" />
     <ClCompile Include="..\src\vehicle_cmd.cpp" />
     <ClCompile Include="..\src\void_cmd.cpp" />
@@ -885,6 +888,7 @@
     <ClCompile Include="..\src\saveload\airport_sl.cpp" />
     <ClCompile Include="..\src\saveload\animated_tile_sl.cpp" />
     <ClCompile Include="..\src\saveload\autoreplace_sl.cpp" />
+    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp" />
     <ClCompile Include="..\src\saveload\cargomonitor_sl.cpp" />
     <ClCompile Include="..\src\saveload\cargopacket_sl.cpp" />
     <ClCompile Include="..\src\saveload\cheat_sl.cpp" />
@@ -920,12 +924,12 @@
     <ClCompile Include="..\src\saveload\strings_sl.cpp" />
     <ClCompile Include="..\src\saveload\story_sl.cpp" />
     <ClCompile Include="..\src\saveload\subsidy_sl.cpp" />
-    <ClCompile Include="..\src\saveload\town_sl.cpp" />
-    <ClCompile Include="..\src\saveload\vehicle_sl.cpp" />
-    <ClCompile Include="..\src\saveload\waypoint_sl.cpp" />
-    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp" />
     <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp" />
     <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp" />
+    <ClCompile Include="..\src\saveload\town_sl.cpp" />
+    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp" />
+    <ClCompile Include="..\src\saveload\vehicle_sl.cpp" />
+    <ClCompile Include="..\src\saveload\waypoint_sl.cpp" />
     <ClInclude Include="..\src\table\airport_defaults.h" />
     <ClInclude Include="..\src\table\airport_movement.h" />
     <ClInclude Include="..\src\table\airporttile_ids.h" />
@@ -1332,10 +1336,13 @@
     <ClCompile Include="..\src\os\windows\win32.cpp" />
     <ClInclude Include="..\src\thread\thread.h" />
     <ClCompile Include="..\src\thread\thread_win32.cpp" />
-    <ClInclude Include="..\src\tracerestrict.h" />
-    <ClCompile Include="..\src\tracerestrict.cpp" />
-    <ClCompile Include="..\src\tracerestrict_gui.cpp" />
-    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_container.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_map.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_set.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_map.h" />
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_set.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />

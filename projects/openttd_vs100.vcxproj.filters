@@ -100,6 +100,9 @@
     <Filter Include="Threading">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000032}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Btree containers">
+      <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000033}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
@@ -426,7 +429,7 @@
     <ClCompile Include="..\src\townname.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\triphistory_cmd.cpp">
+    <ClCompile Include="..\src\tracerestrict.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vehicle.cpp">
@@ -1209,6 +1212,9 @@
     <ClInclude Include="..\src\townname_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\tracerestrict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\track_func.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1548,6 +1554,9 @@
     <ClCompile Include="..\src\town_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\tracerestrict_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\train_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1815,6 +1824,9 @@
     <ClCompile Include="..\src\tree_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\triphistory_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\tunnelbridge_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
@@ -1846,6 +1858,9 @@
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\autoreplace_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\cargomonitor_sl.cpp">
@@ -1953,22 +1968,22 @@
     <ClCompile Include="..\src\saveload\subsidy_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\saveload\town_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\vehicle_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\saveload\waypoint_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\bridge_signal_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tbtr_template_replacement_sl.cpp">
-      <Filter>Save/Load handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
     <ClInclude Include="..\src\table\airport_defaults.h">
@@ -3189,18 +3204,27 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClInclude Include="..\src\tracerestrict.h">
-      <Filter>Threading</Filter>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree.h">
+      <Filter>Btree containers</Filter>
     </ClInclude>
-    <ClCompile Include="..\src\tracerestrict.cpp">
-      <Filter>Threading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tracerestrict_gui.cpp">
-      <Filter>Threading</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
-      <Filter>Threading</Filter>
-    </ClCompile>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_container.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_map.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\btree_set.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_map.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_set.h">
+      <Filter>Btree containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />

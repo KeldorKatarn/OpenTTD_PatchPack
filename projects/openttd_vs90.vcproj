@@ -864,7 +864,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\triphistory_cmd.cpp"
+				RelativePath=".\..\src\tracerestrict.cpp"
 				>
 			</File>
 			<File
@@ -1912,6 +1912,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\tracerestrict.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\track_func.h"
 				>
 			</File>
@@ -2372,6 +2376,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\tracerestrict_gui.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\train_gui.cpp"
 				>
 			</File>
@@ -2736,6 +2744,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\triphistory_cmd.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\tunnelbridge_cmd.cpp"
 				>
 			</File>
@@ -2781,6 +2793,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\saveload\autoreplace_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\bridge_signal_sl.cpp"
 				>
 			</File>
 			<File
@@ -2924,7 +2940,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\saveload\tbtr_template_replacement_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\tbtr_template_veh_sl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\saveload\town_sl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\saveload\tracerestrict_sl.cpp"
 				>
 			</File>
 			<File
@@ -2933,18 +2961,6 @@
 			</File>
 			<File
 				RelativePath=".\..\src\saveload\waypoint_sl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\saveload\bridge_signal_sl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\saveload\tbtr_template_replacement_sl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\saveload\tbtr_template_veh_sl.cpp"
 				>
 			</File>
 		</Filter>
@@ -4675,20 +4691,36 @@
 				RelativePath=".\..\src\thread\thread_win32.cpp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Btree containers"
+			>
 			<File
-				RelativePath=".\..\src\tracerestrict.h"
+				RelativePath=".\..\src\3rdparty\cpp-btree\btree.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\tracerestrict.cpp"
+				RelativePath=".\..\src\3rdparty\cpp-btree\btree_container.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\tracerestrict_gui.cpp"
+				RelativePath=".\..\src\3rdparty\cpp-btree\btree_map.h"
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\saveload\tracerestrict_sl.cpp"
+				RelativePath=".\..\src\3rdparty\cpp-btree\btree_set.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\cpp-btree\safe_btree.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\cpp-btree\safe_btree_map.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\3rdparty\cpp-btree\safe_btree_set.h"
 				>
 			</File>
 		</Filter>

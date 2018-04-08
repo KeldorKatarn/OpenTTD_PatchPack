@@ -364,6 +364,8 @@ enum Commands {
 
 	CMD_PROGRAM_LOGIC_SIGNAL,         ///< modify a logic signal program
 
+	CMD_DESYNC_CHECK,                 ///< Force desync checks to be run
+
 	CMD_END,                          ///< Must ALWAYS be on the end of this list!! (period)
 };
 

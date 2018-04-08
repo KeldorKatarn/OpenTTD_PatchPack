@@ -1238,11 +1238,13 @@ void SwitchToMode(SwitchMode new_mode)
  * the cached value and what the value would
  * be when calculated from the 'base' data.
  */
-static void CheckCaches()
+void CheckCaches(bool force_check)
 {
-	/* Return here so it is easy to add checks that are run
-	 * always to aid testing of caches. */
-	if (_debug_desync_level <= 1) return;
+	if (!force_check) {
+		/* Return here so it is easy to add checks that are run
+		 * always to aid testing of caches. */
+		if (_debug_desync_level < 1) return;
+	}
 
 	/* Check the town caches. */
 	SmallVector<TownCache, 4> old_town_caches;
@@ -1387,6 +1389,24 @@ static void CheckCaches()
 		}
 	}
 }
+ 
+/**
+ * Network-safe forced desync check.
+ * @param tile unused
+ * @param flags operation to perform
+ * @param p1 unused
+ * @param p2 unused
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdDesyncCheck(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	if (flags & DC_EXEC) {
+		CheckCaches(true);
+	}
+
+	return CommandCost();
+}
 
 /**
  * State controlling game loop.
@@ -1431,7 +1451,7 @@ void StateGameLoop()
 			SaveOrLoad(name, SLO_SAVE, DFT_GAME_FILE, AUTOSAVE_DIR, false);
 		}
 
-		CheckCaches();
+		CheckCaches(false);
 
 		/* All these actions has to be done from OWNER_NONE
 		 *  for multiplayer compatibility */

@@ -235,6 +235,8 @@ CommandProc CmdProgramSignalTraceRestrict;
 
 CommandProc CmdProgramLogicSignal;
 
+CommandProc CmdDesyncCheck;
+
 #define DEF_CMD(proc, flags, type) {proc, #proc, (CommandFlags)flags, type}
 
 /**
@@ -426,6 +428,8 @@ static const Command _command_proc_table[] = {
 
 	DEF_CMD(CmdProgramSignalTraceRestrict,                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_TRACERESTRICT_SIGNAL
 	DEF_CMD(CmdProgramLogicSignal,                             0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_LOGIC_SIGNAL
+
+	DEF_CMD(CmdDesyncCheck,                           CMD_SERVER, CMDT_SERVER_SETTING        ), // CMD_DESYNC_CHECK
 };
  
 

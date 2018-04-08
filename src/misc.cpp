@@ -28,6 +28,7 @@
 #include "core/pool_type.hpp"
 #include "game/game.hpp"
 #include "linkgraph/linkgraphschedule.h"
+#include "command_func.h"
 #include "viewport_func.h"
 #include "tracerestrict.h"
 #include "logic_signals.h"
@@ -62,6 +63,8 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	UnInitWindowSystem();
 
 	AllocateMap(size_x, size_y);
+
+	ClearCommandLog();
 
 	ViewportMapClearTunnelCache();
 

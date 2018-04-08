@@ -31,6 +31,7 @@
 #include "ai/ai_info.hpp"
 #include "game/game.hpp"
 #include "game/game_info.hpp"
+#include "command_func.h"
 #include "company_base.h"
 #include "company_func.h"
 
@@ -307,6 +308,19 @@ char *CrashLog::LogGamelog(char *buffer, const char *last) const
 	GamelogPrint(&CrashLog::GamelogFillCrashLog);
 	return CrashLog::gamelog_buffer + seprintf(CrashLog::gamelog_buffer, last, "\n");
 }
+ 
+/**
+ * Writes the command log data to the buffer.
+ * @param buffer The begin where to write at.
+ * @param last   The last position in the buffer to write to.
+ * @return the position of the \c '\0' character after the buffer.
+ */
+char *CrashLog::LogCommandLog(char *buffer, const char *last) const
+{
+	buffer = DumpCommandLog(buffer, last);
+	buffer += seprintf(buffer, last, "\n");
+	return buffer;
+}
 
 /**
  * Fill the crash log buffer with all data of a crash log.
@@ -334,6 +348,7 @@ char *CrashLog::FillCrashLog(char *buffer, const char *last) const
 	buffer = this->LogLibraries(buffer, last);
 	buffer = this->LogModules(buffer, last);
 	buffer = this->LogGamelog(buffer, last);
+	buffer = this->LogCommandLog(buffer, last);
 
 	buffer += seprintf(buffer, last, "*** End of OpenTTD Crash Report ***\n");
 	return buffer;
@@ -426,7 +441,7 @@ bool CrashLog::MakeCrashLog() const
 	crashlogged = true;
 
 	char filename[MAX_PATH];
-	char buffer[65536];
+	char buffer[65536 * 2];
 	bool ret = true;
 
 	printf("Crash encountered, generating crash log...\n");

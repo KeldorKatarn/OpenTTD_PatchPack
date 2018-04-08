@@ -1906,6 +1906,19 @@ DEF_CONSOLE_CMD(ConNewGRFReload)
 	PostCheckNewGRFLoadWarnings();
 	return true;
 }
+ 
+DEF_CONSOLE_CMD(ConDumpCommandLog)
+{
+	if (argc == 0) {
+		IConsoleHelp("Dump log of recently executed commands.");
+		return true;
+	}
+
+	char buffer[32768];
+	DumpCommandLog(buffer, lastof(buffer));
+	PrintLineByLine(buffer);
+	return true;
+}
 
 #ifdef _DEBUG
 /******************
@@ -2051,6 +2064,7 @@ void IConsoleStdLibRegister()
 #ifdef _DEBUG
 	IConsoleDebugLibRegister();
 #endif
+	IConsoleCmdRegister("dump_command_log", ConDumpCommandLog, nullptr);
 
 	/* NewGRF development stuff */
 	IConsoleCmdRegister("reload_newgrfs",  ConNewGRFReload, ConHookNewGRFDeveloperTool);

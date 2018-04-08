@@ -282,7 +282,6 @@ struct AnnoSetAllocatorStore {
 		}
 	}
 };
-#endif
 
 /**
  * Custom allocator specifically for use with MultiCommodityFlow::Dijkstra::AnnoSet
@@ -338,6 +337,7 @@ struct AnnoSetAllocator {
 		store.last_freed = p;
 	}
 };
+#endif
 
 /**
  * Annotation wrapper class which also stores an iterator to the AnnoSet node which points to this annotation

@@ -338,6 +338,8 @@ static void ShutdownGame()
 
 	UninitFreeType();
 
+	ClearCommandLog();
+
 	ViewportMapClearTunnelCache();
 }
 

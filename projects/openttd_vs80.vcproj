@@ -2967,6 +2967,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\saveload\tunnel_sl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\saveload\vehicle_sl.cpp"
 				>
 			</File>

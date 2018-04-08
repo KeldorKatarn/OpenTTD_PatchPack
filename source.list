@@ -684,6 +684,7 @@ saveload/tbtr_template_replacement_sl.cpp
 saveload/tbtr_template_veh_sl.cpp
 saveload/town_sl.cpp
 saveload/tracerestrict_sl.cpp
+saveload/tunnel_sl.cpp
 saveload/vehicle_sl.cpp
 saveload/waypoint_sl.cpp
 

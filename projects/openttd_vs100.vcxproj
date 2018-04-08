@@ -930,6 +930,7 @@
     <ClCompile Include="..\src\saveload\tbtr_template_veh_sl.cpp" />
     <ClCompile Include="..\src\saveload\town_sl.cpp" />
     <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp" />
+    <ClCompile Include="..\src\saveload\tunnel_sl.cpp" />
     <ClCompile Include="..\src\saveload\vehicle_sl.cpp" />
     <ClCompile Include="..\src\saveload\waypoint_sl.cpp" />
     <ClInclude Include="..\src\table\airport_defaults.h" />

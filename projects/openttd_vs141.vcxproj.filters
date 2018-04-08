@@ -1986,6 +1986,9 @@
     <ClCompile Include="..\src\saveload\tracerestrict_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\saveload\tunnel_sl.cpp">
+      <Filter>Save/Load handlers</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\saveload\vehicle_sl.cpp">
       <Filter>Save/Load handlers</Filter>
     </ClCompile>

@@ -57,6 +57,7 @@
 #include "../order_backup.h"
 #include "../error.h"
 #include "../disaster_vehicle.h"
+#include "../tunnel_map.h"
 
 
 #include "saveload_internal.h"
@@ -1968,8 +1969,8 @@ bool AfterLoadGame()
 
 					const Tunnel *t = new Tunnel(start_tile, end_tile, false);
 
-					_m[start_tile].m2 = t->index;
-					_m[end_tile].m2 = t->index;
+					SetTunnelIndex(start_tile, t->index);
+					SetTunnelIndex(end_tile, t->index);
 				}
 			}
 		}

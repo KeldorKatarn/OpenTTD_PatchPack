@@ -20,6 +20,7 @@
 #include "linkgraph/linkgraph_type.h"
 #include "newgrf_storage.h"
 #include "core/smallvec_type.hpp"
+#include "3rdparty/cpp-btree/btree_map.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -38,7 +39,7 @@ static const byte INITIAL_STATION_RATING = 175;
  */
 class FlowStat {
 public:
-	typedef std::map<uint32, StationID> SharesMap;
+	typedef btree::btree_map<uint32, StationID> SharesMap;
 
 	static const SharesMap empty_sharesmap;
 

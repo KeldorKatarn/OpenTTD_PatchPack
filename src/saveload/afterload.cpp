@@ -3025,7 +3025,7 @@ bool AfterLoadGame()
 		}
 	}
  
-	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_19) {
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_19)) {
 		/* ensure that previously unused custom bridge-head bits are cleared */
 		for (TileIndex t = 0; t < map_size; t++) {
 			if (IsBridgeTile(t) && GetTunnelBridgeTransportType(t) == TRANSPORT_ROAD) {

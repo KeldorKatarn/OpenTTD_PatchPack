@@ -1967,7 +1967,7 @@ bool AfterLoadGame()
 						return false;
 					}
 
-					const Tunnel *t = new Tunnel(start_tile, end_tile, false);
+					const Tunnel *t = new Tunnel(start_tile, end_tile, TileHeight(start_tile), false);
 
 					SetTunnelIndex(start_tile, t->index);
 					SetTunnelIndex(end_tile, t->index);

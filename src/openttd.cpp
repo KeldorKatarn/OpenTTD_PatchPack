@@ -1275,6 +1275,11 @@ static void CheckCaches()
 	FOR_ALL_COMPANIES(c) {
 		if (MemCmpT(old_infrastructure.Get(i), &c->infrastructure) != 0) {
 			DEBUG(desync, 2, "infrastructure cache mismatch: company %i", (int)c->index);
+			char buffer[4096];
+			old_infrastructure.Get(i)->Dump(buffer, lastof(buffer));
+			DEBUG(desync, 0, "Previous:\n%s", buffer);
+			c->infrastructure.Dump(buffer, lastof(buffer));
+			DEBUG(desync, 0, "Recalculated:\n%s", buffer);
 		}
 		i++;
 	}

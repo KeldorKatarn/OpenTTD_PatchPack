@@ -100,6 +100,7 @@ Money CalculateOverallTemplateCost(const TemplateVehicle *tv)
 
 	for (; tv; tv = tv->GetNextUnit()) {
 		val += (Engine::Get(tv->engine_type))->GetCost();
+	}
 	return val;
 }
 

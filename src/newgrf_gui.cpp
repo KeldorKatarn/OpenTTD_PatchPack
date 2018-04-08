@@ -1525,7 +1525,7 @@ private:
 			if (!HasBit((*list)->flags, GCF_STATIC)) count++;
 		}
 		if (entry == NULL) entry = list;
-		if (count >= MAX_FILE_SLOTS-2) {
+		if (count >= MAX_NEWGRFS) {
 			ShowErrorMessage(STR_NEWGRF_TOO_MANY_NEWGRFS, INVALID_STRING_ID, WL_INFO);
 			return false;
 		}

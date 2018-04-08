@@ -9,6 +9,20 @@
 #include "../safeguards.h"
 
 typedef btree::btree_map<NodeID, Path *> PathViaMap;
+ 
+/**
+ * This is a wrapper around Tannotation* which also stores a cache of GetAnnotation() and GetNode()
+ * to remove the need dereference the Tannotation* pointer when sorting/inseting/erasing in MultiCommodityFlow::Dijkstra::AnnoSet
+ */
+template<typename Tannotation>
+class AnnoSetItem {
+public:
+	Tannotation *anno_ptr;
+	typename Tannotation::AnnotationValueType cached_annotation;
+	NodeID node_id;
+
+	AnnoSetItem(Tannotation *anno) : anno_ptr(anno), cached_annotation(anno->GetAnnotation()), node_id(anno->GetNode()) {}
+};
 
 /**
  * Distance-based annotation for use in the Dijkstra algorithm. This is close
@@ -17,6 +31,7 @@ typedef btree::btree_map<NodeID, Path *> PathViaMap;
  */
 class DistanceAnnotation : public Path {
 public:
+	typedef uint AnnotationValueType;
 
 	/**
 	 * Constructor.
@@ -42,7 +57,7 @@ public:
 	 * Comparator for std containers.
 	 */
 	struct Comparator {
-		bool operator()(const DistanceAnnotation *x, const DistanceAnnotation *y) const;
+		bool operator()(const AnnoSetItem<DistanceAnnotation> &x, const AnnoSetItem<DistanceAnnotation> &y) const;
 	};
 };
 
@@ -56,6 +71,7 @@ class CapacityAnnotation : public Path {
 	int cached_annotation;
 
 public:
+	typedef int AnnotationValueType;
 
 	/**
 	 * Constructor.
@@ -84,7 +100,7 @@ public:
 	 * Comparator for std containers.
 	 */
 	struct Comparator {
-		bool operator()(const CapacityAnnotation *x, const CapacityAnnotation *y) const;
+		bool operator()(const AnnoSetItem<CapacityAnnotation> &x, const AnnoSetItem<CapacityAnnotation> &y) const;
 	};
 };
 
@@ -247,6 +263,97 @@ bool CapacityAnnotation::IsBetter(const CapacityAnnotation *base, uint cap,
 	}
 }
 
+#ifdef CUSTOM_ALLOCATOR
+/**
+ * Storage for AnnoSetAllocator instances
+ */
+struct AnnoSetAllocatorStore {
+	std::vector<void *> used_blocks;
+	void *current_block;
+	size_t next_position;
+	void *last_freed;
+
+	AnnoSetAllocatorStore() : current_block(NULL), next_position(0), last_freed(NULL) {}
+
+	~AnnoSetAllocatorStore()
+	{
+		for (std::vector<void *>::iterator i = used_blocks.begin(); i != used_blocks.end(); ++i) {
+			free(*i);
+		}
+	}
+};
+#endif
+
+/**
+ * Custom allocator specifically for use with MultiCommodityFlow::Dijkstra::AnnoSet
+ * This allocates RB-set nodes in contiguous blocks, and frees all allocated nodes when destructed
+ * If a node is deallocated, it is returned in the next allocation, this is so that the same node
+ * can be re-used across a call to Path::Fork
+ */
+template<class Ttype>
+struct AnnoSetAllocator {
+	static const size_t block_size = 1024;
+
+	AnnoSetAllocatorStore &store;
+
+	void NewBlock()
+	{
+		store.current_block = MallocT<Ttype>(block_size);
+		store.next_position = 0;
+		store.used_blocks.push_back(store.current_block);
+	}
+
+	typedef Ttype value_type;
+
+	template<typename Tother>
+	struct rebind {
+		typedef AnnoSetAllocator<Tother> other;
+	};
+
+	AnnoSetAllocator(AnnoSetAllocatorStore &store) : store(store) {}
+
+	template<typename Tother>
+	AnnoSetAllocator(const AnnoSetAllocator<Tother> &other) : store(other.store) {}
+
+	Ttype* allocate(size_t n)
+	{
+		if (store.current_block == NULL) NewBlock();
+
+		assert(n == 1);
+		if (store.last_freed != NULL) {
+			Ttype* out = static_cast<Ttype*>(store.last_freed);
+			store.last_freed = NULL;
+			return out;
+		}
+
+		if (store.next_position == block_size) NewBlock();
+
+		Ttype* next = static_cast<Ttype*>(store.current_block) + store.next_position;
+		store.next_position++;
+		return next;
+	}
+
+	void deallocate(Ttype* p, size_t n)
+	{
+		store.last_freed = p;
+	}
+};
+
+/**
+ * Annotation wrapper class which also stores an iterator to the AnnoSet node which points to this annotation
+ * This is to enable erasing the AnnoSet node when calling Path::Fork without having to search the set
+ */
+template<class Tannotation>
+struct AnnosWrapper : public Tannotation {
+#ifdef CUSTOM_ALLOCATOR
+	typename std::set<AnnoSetItem<Tannotation>, typename Tannotation::Comparator, AnnoSetAllocator<AnnoSetItem<Tannotation> > >::iterator self_iter;
+#else
+	typename std::set<AnnoSetItem<Tannotation>, typename Tannotation::Comparator>::iterator self_iter;
+#endif
+
+	AnnosWrapper(NodeID n, bool source = false) : Tannotation(n, source) {}
+};
+
 /**
  * A slightly modified Dijkstra algorithm. Grades the paths not necessarily by
  * distance, but by the value Tannotation computes. It uses the max_saturation
@@ -259,24 +366,31 @@ bool CapacityAnnotation::IsBetter(const CapacityAnnotation *base, uint cap,
 template<class Tannotation, class Tedge_iterator>
 void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 {
-	typedef std::set<Tannotation *, typename Tannotation::Comparator> AnnoSet;
+#ifdef CUSTOM_ALLOCATOR
+	typedef std::set<AnnoSetItem<Tannotation>, typename Tannotation::Comparator, AnnoSetAllocator<AnnoSetItem<Tannotation> > > AnnoSet;
+	AnnoSetAllocatorStore annos_store;
+	AnnoSet annos = AnnoSet(typename Tannotation::Comparator(), AnnoSetAllocator<Tannotation *>(annos_store));
+#else
+	typedef std::set<AnnoSetItem<Tannotation>, typename Tannotation::Comparator> AnnoSet;
+	AnnoSet annos = AnnoSet(typename Tannotation::Comparator());
+#endif
 	Tedge_iterator iter(this->job);
 	uint size = this->job.Size();
-	AnnoSet annos;
 	paths.resize(size, NULL);
 	
-	this->job.path_allocator.SetParameters(sizeof(Tannotation), (8192 - 32) / sizeof(Tannotation));
+	this->job.path_allocator.SetParameters(sizeof(AnnosWrapper<Tannotation>), (8192 - 32) / sizeof(AnnosWrapper<Tannotation>));
 	
 	for (NodeID node = 0; node < size; ++node) {
 		Tannotation *anno = new (this->job.path_allocator.Allocate()) Tannotation(node, node == source_node);
 		anno->UpdateAnnotation();
-		annos.insert(anno);
+		anno->self_iter = annos.insert(AnnoSetItem<Tannotation>(anno)).first;
 		paths[node] = anno;
 	}
 	while (!annos.empty()) {
 		typename AnnoSet::iterator i = annos.begin();
-		Tannotation *source = *i;
+		AnnosWrapper<Tannotation> *source = static_cast<AnnosWrapper<Tannotation> *>(i->anno_ptr);
 		annos.erase(i);
+		source->self_iter = annos.end();
 		NodeID from = source->GetNode();
 		iter.SetNode(source_node, from);
 		for (NodeID to = iter.Next(); to != INVALID_NODE; to = iter.Next()) {
@@ -290,12 +404,12 @@ void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 			}
 			/* punish in-between stops a little */
 			uint distance = DistanceMaxPlusManhattan(this->job[from].XY(), this->job[to].XY()) + 1;
-			Tannotation *dest = static_cast<Tannotation *>(paths[to]);
+			AnnosWrapper<Tannotation> *dest = static_cast<AnnosWrapper<Tannotation> *>(paths[to]);
 			if (dest->IsBetter(source, capacity, capacity - edge.Flow(), distance)) {
-				annos.erase(dest);
+				if (dest->self_iter != annos.end()) annos.erase(dest->self_iter);
 				dest->Fork(source, capacity, capacity - edge.Flow(), distance);
 				dest->UpdateAnnotation();
-				annos.insert(dest);
+				dest->self_iter = annos.insert(AnnoSetItem<Tannotation>(dest)).first;
 			}
 		}
 	}
@@ -588,11 +702,11 @@ bool Greater(T x_anno, T y_anno, NodeID x, NodeID y)
  * @param y Second capacity annotation.
  * @return If x is better than y.
  */
-bool CapacityAnnotation::Comparator::operator()(const CapacityAnnotation *x,
-		const CapacityAnnotation *y) const
+bool CapacityAnnotation::Comparator::operator()(const AnnoSetItem<CapacityAnnotation> &x,
+	const AnnoSetItem<CapacityAnnotation> &y) const
 {
-	return x != y && Greater<int>(x->GetAnnotation(), y->GetAnnotation(),
-			x->GetNode(), y->GetNode());
+	return x.anno_ptr != y.anno_ptr && Greater<int>(x.cached_annotation, y.cached_annotation,
+		x.node_id, y.node_id);
 }
 
 /**
@@ -601,9 +715,9 @@ bool CapacityAnnotation::Comparator::operator()(const CapacityAnnotation *x,
  * @param y Second distance annotation.
  * @return If x is better than y.
  */
-bool DistanceAnnotation::Comparator::operator()(const DistanceAnnotation *x,
-		const DistanceAnnotation *y) const
+bool DistanceAnnotation::Comparator::operator()(const AnnoSetItem<DistanceAnnotation> &x,
+	const AnnoSetItem<DistanceAnnotation> &y) const
 {
-	return x != y && !Greater<uint>(x->GetAnnotation(), y->GetAnnotation(),
-			x->GetNode(), y->GetNode());
+	return x.anno_ptr != y.anno_ptr && !Greater<uint>(x.cached_annotation, y.cached_annotation,
+		x.node_id, y.node_id);
 }

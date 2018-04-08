@@ -31,6 +31,7 @@ static void Save_TUNN()
 	FOR_ALL_TUNNELS(tunnel) {
 		SlSetArrayIndex(tunnel->index);
 		SlObject(tunnel, _tunnel_desc);
+		tunnel->UpdateIndexes();
 	}
 }
 

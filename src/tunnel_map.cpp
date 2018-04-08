@@ -14,11 +14,15 @@
 
 #include "core/pool_func.hpp"
 
+#include <unordered_map>
+
 #include "safeguards.h"
  
 /** All tunnel portals tucked away in a pool. */
 TunnelPool _tunnel_pool("Tunnel");
 INSTANTIATE_POOL_METHODS(Tunnel)
+
+static std::unordered_map<TileIndex, TunnelID> tunnel_tile_index_map;
 
 /**
  * Clean up a tunnel tile
@@ -26,6 +30,37 @@ INSTANTIATE_POOL_METHODS(Tunnel)
 Tunnel::~Tunnel()
 {
 	if (CleaningPool()) return;
+
+	if (this->index >= TUNNEL_ID_MAP_LOOKUP) {
+		tunnel_tile_index_map.erase(this->tile_n);
+		tunnel_tile_index_map.erase(this->tile_s);
+	}
+}
+
+/**
+ * Update tunnel indexes
+ */
+void Tunnel::UpdateIndexes()
+{
+	if (this->index >= TUNNEL_ID_MAP_LOOKUP) {
+		tunnel_tile_index_map[this->tile_n] = this->index;
+		tunnel_tile_index_map[this->tile_s] = this->index;
+	}
+}
+
+/**
+ * Tunnel pool is about to be cleaned
+ */
+void Tunnel::PreCleanPool()
+{
+	tunnel_tile_index_map.clear();
+}
+
+TunnelID GetTunnelIndexByLookup(TileIndex t)
+{
+	auto iter = tunnel_tile_index_map.find(t);
+	assert_msg(iter != tunnel_tile_index_map.end(), "tile: 0x%X", t);
+	return iter->second;
 }
 
 

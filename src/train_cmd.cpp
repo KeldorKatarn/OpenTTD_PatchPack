@@ -1646,8 +1646,10 @@ static void SwapTrainFlags(uint16 *swap_flag1, uint16 *swap_flag2)
 	/* Clear the flags */
 	ClrBit(*swap_flag1, GVF_GOINGUP_BIT);
 	ClrBit(*swap_flag1, GVF_GOINGDOWN_BIT);
+	ClrBit(*swap_flag1, GVF_CHUNNEL_BIT);
 	ClrBit(*swap_flag2, GVF_GOINGUP_BIT);
 	ClrBit(*swap_flag2, GVF_GOINGDOWN_BIT);
+	ClrBit(*swap_flag2, GVF_CHUNNEL_BIT);
 
 	/* Reverse the rail-flags (if needed) */
 	if (HasBit(flag1, GVF_GOINGUP_BIT)) {
@@ -1655,10 +1657,19 @@ static void SwapTrainFlags(uint16 *swap_flag1, uint16 *swap_flag2)
 	} else if (HasBit(flag1, GVF_GOINGDOWN_BIT)) {
 		SetBit(*swap_flag2, GVF_GOINGUP_BIT);
 	}
+
 	if (HasBit(flag2, GVF_GOINGUP_BIT)) {
 		SetBit(*swap_flag1, GVF_GOINGDOWN_BIT);
 	} else if (HasBit(flag2, GVF_GOINGDOWN_BIT)) {
 		SetBit(*swap_flag1, GVF_GOINGUP_BIT);
+	}
+
+	if (HasBit(flag1, GVF_CHUNNEL_BIT)) {
+		SetBit(*swap_flag2, GVF_CHUNNEL_BIT);
+	}
+
+	if (HasBit(flag2, GVF_CHUNNEL_BIT)) {
+		SetBit(*swap_flag1, GVF_CHUNNEL_BIT);
 	}
 }
 

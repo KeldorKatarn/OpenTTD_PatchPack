@@ -408,6 +408,7 @@ train.h
 transparency.h
 transparency_gui.h
 transport_type.h
+tunnel_base.h
 tunnelbridge.h
 vehicle_base.h
 vehicle_func.h

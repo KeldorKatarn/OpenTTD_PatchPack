@@ -1233,6 +1233,9 @@
     <ClInclude Include="..\src\transport_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\tunnel_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\tunnelbridge.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1943,6 +1943,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\tunnel_base.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\tunnelbridge.h"
 				>
 			</File>

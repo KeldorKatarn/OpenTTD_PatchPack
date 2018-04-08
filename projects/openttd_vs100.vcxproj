@@ -679,6 +679,7 @@
     <ClInclude Include="..\src\transparency.h" />
     <ClInclude Include="..\src\transparency_gui.h" />
     <ClInclude Include="..\src\transport_type.h" />
+    <ClInclude Include="..\src\tunnel_base.h" />
     <ClInclude Include="..\src\tunnelbridge.h" />
     <ClInclude Include="..\src\vehicle_base.h" />
     <ClInclude Include="..\src\vehicle_func.h" />

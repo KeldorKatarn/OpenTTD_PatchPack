@@ -17,6 +17,7 @@
 #include "spritecache.h"
 #include "viewport_func.h"
 #include "command_func.h"
+#include "tunnelbridge_map.h"
 #include "landscape.h"
 #include "void_map.h"
 #include "tgp.h"
@@ -357,6 +358,8 @@ Slope GetFoundationSlope(TileIndex tile, int *z)
 
 bool HasFoundationNW(TileIndex tile, Slope slope_here, uint z_here)
 {
+	if (IsRoadCustomBridgeHeadTile(tile) && GetTunnelBridgeDirection(tile) == DIAGDIR_NW) return false;
+
 	int z;
 
 	int z_W_here = z_here;
@@ -374,6 +377,8 @@ bool HasFoundationNW(TileIndex tile, Slope slope_here, uint z_here)
 
 bool HasFoundationNE(TileIndex tile, Slope slope_here, uint z_here)
 {
+	if (IsRoadCustomBridgeHeadTile(tile) && GetTunnelBridgeDirection(tile) == DIAGDIR_NE) return false;
+
 	int z;
 
 	int z_E_here = z_here;

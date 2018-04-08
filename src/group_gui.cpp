@@ -150,6 +150,7 @@ private:
 	uint tiny_step_height; ///< Step height for the group list
 	Scrollbar *group_sb;
 
+	SmallVector<GroupID, 16> all_groups;          ///< List of all groups, including hidden ones
 	SmallVector<GroupID, 16> collapsed_groups;    ///< List of collapsed groups
 	SmallVector<GroupID, 16> collapsable_groups;  ///< List of collapsable groups
 	SmallVector<int, 16> indents; ///< Indentation levels
@@ -157,18 +158,21 @@ private:
 	Dimension column_size[VGC_END]; ///< Size of the columns in the group list.
 
 	/** return true if group has children */
-	bool AddParents(GUIGroupList *source, GroupID parent, int indent)
+	bool AddParents(GUIGroupList *source, GroupID parent, int indent, bool parent_collapsed)
 	{
 		bool is_collapsed = this->collapsed_groups.Contains(parent);
+		bool overall_collapsed = is_collapsed || parent_collapsed;
 		bool has_children = false;
 
 		for (const Group **g = source->Begin(); g != source->End(); g++) {
 			if ((*g)->parent == parent) {
 				has_children = true;
-				if (is_collapsed) return has_children;
-				*this->groups.Append() = *g;
-				*this->indents.Append() = indent;
-				bool child_has_children = AddParents(source, (*g)->index, indent + 1);
+				*this->all_groups.Append() = (*g)->index;
+				if (!overall_collapsed) {
+					*this->groups.Append() = *g;
+					*this->indents.Append() = indent;
+				}
+				bool child_has_children = AddParents(source, (*g)->index, indent + 1, overall_collapsed);
 				if (child_has_children) *this->collapsable_groups.Append() = (*g)->index;
 			}
 		}
@@ -180,7 +184,9 @@ private:
 	{
 		GroupID *item = this->collapsed_groups.Find(group);
 		if (item == this->collapsed_groups.End()) {
-			*(this->collapsed_groups.Append()) = group;
+			if (this->collapsable_groups.Find(group) != this->collapsable_groups.End()) {
+				*(this->collapsed_groups.Append()) = group;
+			}
 		} else {
 			this->collapsed_groups.Erase(item);
 		}
@@ -195,6 +201,7 @@ private:
 	{
 		if (!this->groups.NeedRebuild()) return;
 
+		this->all_groups.Clear();
 		this->groups.Clear();
 		this->indents.Clear();
 		this->collapsable_groups.Clear();
@@ -211,7 +218,7 @@ private:
 		list.ForceResort();
 		list.Sort(&GroupNameSorter);
 
-		AddParents(&list, INVALID_GROUP, 0);
+		AddParents(&list, INVALID_GROUP, 0, false);
 
 		this->groups.Compact();
 		this->groups.RebuildDone();
@@ -767,8 +774,8 @@ public:
 
 			case WID_GL_COLLAPSE_ALL_GROUPS: {
 				this->collapsed_groups.Clear();
-				for (const Group **group = this->groups.Begin(); group != this->groups.End(); ++group) {
-					GroupID id = (*group)->index;
+				for (const GroupID *gid = this->all_groups.Begin(); gid != this->all_groups.End(); ++gid) {
+					GroupID id = *gid;
 					if (id != ALL_GROUP && id != DEFAULT_GROUP && id != INVALID_GROUP && this->collapsable_groups.Contains(id)) {
 						*this->collapsed_groups.Append() = id;
 					}

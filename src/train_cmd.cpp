@@ -1694,6 +1694,7 @@ static void UpdateStatusAfterSwap(Train *v)
 	}
 
 	v->UpdatePosition();
+	if (v->track == TRACK_BIT_WORMHOLE) v->UpdateInclination(false, false, true);
 	v->UpdateViewport(true, true);
 }
 
@@ -3994,6 +3995,15 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 				v->x_pos = gp.x;
 				v->y_pos = gp.y;
 				v->UpdatePosition();
+				if (v->track == TRACK_BIT_WORMHOLE) {
+					/* update the Z position of the vehicle */
+					int old_z = v->UpdateInclination(false, false, true);
+
+					if (prev == NULL) {
+						/* This is the first vehicle in the train */
+						AffectSpeedByZChange(v, old_z);
+					}
+				}
 				if (v->IsDrawn()) v->Vehicle::UpdateViewport(true);
 				continue;
 			}
@@ -4010,7 +4020,7 @@ bool TrainController(Train *v, Vehicle *nomove, bool reverse)
 		}
 
 		/* update the Z position of the vehicle */
-		int old_z = v->UpdateInclination(gp.new_tile != gp.old_tile, false);
+		int old_z = v->UpdateInclination(gp.new_tile != gp.old_tile, false, v->track == TRACK_BIT_WORMHOLE);
 
 		if (prev == NULL) {
 			/* This is the first vehicle in the train */

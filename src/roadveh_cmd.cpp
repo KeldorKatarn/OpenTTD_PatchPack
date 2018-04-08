@@ -1209,6 +1209,7 @@ bool IndividualRoadVehicleController(RoadVehicle *v, const RoadVehicle *prev)
 			v->x_pos = gp.x;
 			v->y_pos = gp.y;
 			v->UpdatePosition();
+			RoadZPosAffectSpeed(v, v->UpdateInclination(false, false, true));
 			if (v->IsDrawn()) v->Vehicle::UpdateViewport(true);
 			return true;
 		}
@@ -1578,7 +1579,7 @@ again:
 	v->x_pos = x;
 	v->y_pos = y;
 	v->UpdatePosition();
-	RoadZPosAffectSpeed(v, v->UpdateInclination(false, true));
+	RoadZPosAffectSpeed(v, v->UpdateInclination(false, true, v->state == RVSB_WORMHOLE));
 	return true;
 }
 

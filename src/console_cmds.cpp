@@ -227,6 +227,26 @@ DEF_CONSOLE_CMD(ConResetEnginePool)
 
 	return true;
 }
+ 
+DEF_CONSOLE_CMD(ConCheckCaches)
+{
+	if (argc == 0) {
+		IConsoleHelp("Debug: Check caches");
+		return true;
+	}
+
+	if (argc > 2) return false;
+
+	bool broadcast = (argc == 2 && atoi(argv[1]) > 0 && (!_networking || _network_server));
+	if (broadcast) {
+		DoCommandP(0, 0, 0, CMD_DESYNC_CHECK);
+	} else {
+		extern void CheckCaches(bool force_check);
+		CheckCaches(true);
+	}
+
+	return true;
+}
 
 #ifdef _DEBUG
 /**
@@ -2065,6 +2085,7 @@ void IConsoleStdLibRegister()
 	IConsoleDebugLibRegister();
 #endif
 	IConsoleCmdRegister("dump_command_log", ConDumpCommandLog, nullptr);
+	IConsoleCmdRegister("check_caches", ConCheckCaches, nullptr);
 
 	/* NewGRF development stuff */
 	IConsoleCmdRegister("reload_newgrfs",  ConNewGRFReload, ConHookNewGRFDeveloperTool);

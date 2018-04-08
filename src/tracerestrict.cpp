@@ -399,6 +399,14 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 							out.flags |= TRPRF_LONG_RESERVE;
 						}
 						break;
+ 
+					case TRIT_WAIT_AT_PBS:
+						if (GetTraceRestrictValue(item)) {
+							out.flags &= ~TRPRF_WAIT_AT_PBS;
+						} else {
+							out.flags |= TRPRF_WAIT_AT_PBS;
+						}
+						break;
 
 					default:
 						NOT_REACHED();
@@ -506,6 +514,10 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 				case TRIT_LONG_RESERVE:
 					actions_used_flags |= TRPAUF_LONG_RESERVE;
 					break;
+ 
+				case TRIT_WAIT_AT_PBS:
+					actions_used_flags |= TRPAUF_WAIT_AT_PBS;
+					break;
 
 				default:
 					return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_UNKNOWN_INSTRUCTION);
@@ -560,6 +572,7 @@ void SetTraceRestrictValueDefault(TraceRestrictItem &item, TraceRestrictValueTyp
 		case TRVT_TILE_INDEX:
 		case TRVT_RESERVE_THROUGH:
 		case TRVT_LONG_RESERVE:
+		case TRVT_WAIT_AT_PBS:
 			SetTraceRestrictValue(item, 0);
 			SetTraceRestrictAuxField(item, 0);
 			break;

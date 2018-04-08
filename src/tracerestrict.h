@@ -100,6 +100,7 @@ enum TraceRestrictItemType {
 	TRIT_PF_PENALTY               = 2,    ///< Add to pathfinder penalty
 	TRIT_RESERVE_THROUGH          = 3,    ///< Reserve through PBS signal
 	TRIT_LONG_RESERVE             = 4,    ///< Long reserve PBS signal
+	TRIT_WAIT_AT_PBS              = 5,    ///< Wait at PBS signal
 
 	TRIT_COND_BEGIN               = 8,    ///< Start of conditional item types, note that this has the same value as TRIT_COND_ENDIF
 	TRIT_COND_ENDIF               = 8,    ///< This is an endif block or an else block
@@ -198,6 +199,7 @@ enum TraceRestrictProgramResultFlags {
 	TRPRF_DENY                    = 1 << 0,  ///< Pathfinder deny is set
 	TRPRF_RESERVE_THROUGH         = 1 << 1,  ///< Reserve through is set
 	TRPRF_LONG_RESERVE            = 1 << 2,  ///< Long reserve is set
+	TRPRF_WAIT_AT_PBS             = 1 << 3,  ///< Wait at PBS signal is set
 };
 DECLARE_ENUM_AS_BIT_SET(TraceRestrictProgramResultFlags)
 
@@ -208,6 +210,7 @@ enum TraceRestrictProgramActionsUsedFlags {
 	TRPAUF_PF                     = 1 << 0,  ///< Pathfinder deny or penalty are present
 	TRPAUF_RESERVE_THROUGH        = 1 << 1,  ///< Reserve through action is present
 	TRPAUF_LONG_RESERVE           = 1 << 2,  ///< Long reserve action is present
+	TRPAUF_WAIT_AT_PBS            = 1 << 3,  ///< Wait at PBS signal action is present
 };
 DECLARE_ENUM_AS_BIT_SET(TraceRestrictProgramActionsUsedFlags)
 
@@ -413,6 +416,7 @@ enum TraceRestrictValueType {
 	TRVT_RESERVE_THROUGH          = 10,///< takes a value 0 = reserve through, 1 = cancel previous reserve through
 	TRVT_LONG_RESERVE             = 11,///< takes a value 0 = long reserve, 1 = cancel previous long reserve
 	TRVT_GROUP_INDEX              = 12,///< takes a GroupID
+	TRVT_WAIT_AT_PBS              = 13,///< takes a value 0 = wait at PBS signal, 1 = cancel wait at PBS signal
 };
 
 /**
@@ -493,6 +497,8 @@ static inline TraceRestrictTypePropertySet GetTraceRestrictTypeProperties(TraceR
 			out.value_type = TRVT_RESERVE_THROUGH;
 		} else if (GetTraceRestrictType(item) == TRIT_LONG_RESERVE) {
 			out.value_type = TRVT_LONG_RESERVE;
+		} else if (GetTraceRestrictType(item) == TRIT_WAIT_AT_PBS) {
+			out.value_type = TRVT_WAIT_AT_PBS;
 		} else {
 			out.value_type = TRVT_NONE;
 		}

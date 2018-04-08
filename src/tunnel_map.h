@@ -83,7 +83,7 @@ static inline void MakeRoadTunnel(TileIndex t, Owner o, TunnelID id, DiagDirecti
  * @param d the direction facing out of the tunnel
  * @param r the rail type used in the tunnel
  */
-static inline void MakeRailTunnel(TileIndex t, Owner o, DiagDirection d, RailType r)
+static inline void MakeRailTunnel(TileIndex t, Owner o, TunnelID id, DiagDirection d, RailType r)
 {
 	SetTileType(t, MP_TUNNELBRIDGE);
 	SetTileOwner(t, o);

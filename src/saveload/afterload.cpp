@@ -1957,7 +1957,7 @@ bool AfterLoadGame()
 				DiagDirection dir = GetTunnelBridgeDirection(t);
 				if (dir == DIAGDIR_SE || dir == DIAGDIR_SW) {
 					TileIndex start_tile = t;
-					TileIndex end_tile = GetOtherTunnelBridgeEndOLd(start_tile);
+					TileIndex end_tile = GetOtherTunnelBridgeEndOld(start_tile);
 
 					if (!Tunnel::CanAllocateItem()) return false;
 

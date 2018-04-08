@@ -381,7 +381,7 @@ void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 	this->job.path_allocator.SetParameters(sizeof(AnnosWrapper<Tannotation>), (8192 - 32) / sizeof(AnnosWrapper<Tannotation>));
 	
 	for (NodeID node = 0; node < size; ++node) {
-		Tannotation *anno = new (this->job.path_allocator.Allocate()) Tannotation(node, node == source_node);
+		AnnosWrapper<Tannotation> *anno = new (this->job.path_allocator.Allocate()) AnnosWrapper<Tannotation>(node, node == source_node);
 		anno->UpdateAnnotation();
 		anno->self_iter = annos.insert(AnnoSetItem<Tannotation>(anno)).first;
 		paths[node] = anno;

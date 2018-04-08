@@ -58,6 +58,7 @@ bool IsTunnelInWay(TileIndex, int z, bool chunnel_allowed = false);
  * Makes a road tunnel entrance
  * @param t the entrance of the tunnel
  * @param o the owner of the entrance
+ * @param id the tunnel ID
  * @param d the direction facing out of the tunnel
  * @param r the road type used in the tunnel
  */
@@ -80,6 +81,7 @@ static inline void MakeRoadTunnel(TileIndex t, Owner o, TunnelID id, DiagDirecti
  * Makes a rail tunnel entrance
  * @param t the entrance of the tunnel
  * @param o the owner of the entrance
+ * @param id the tunnel ID
  * @param d the direction facing out of the tunnel
  * @param r the rail type used in the tunnel
  */

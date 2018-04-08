@@ -3024,7 +3024,15 @@ bool AfterLoadGame()
 			}
 		}
 	}
-
+ 
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_19) {
+		/* ensure that previously unused custom bridge-head bits are cleared */
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (IsBridgeTile(t) && GetTunnelBridgeTransportType(t) == TRANSPORT_ROAD) {
+				SB(_m[t].m2, 0, 8, 0);
+			}
+		}
+	}
 
 	/* Station acceptance is some kind of cache */
 	if (IsSavegameVersionBefore(127)) {

@@ -353,6 +353,12 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 						result = TestBinaryConditionCommon(item, GroupIsInGroup(v->group_id, GetTraceRestrictValue(item)));
 						break;
 					}
+ 
+					case TRIT_COND_SLOT: {
+						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
+						result = TestBinaryConditionCommon(item, slot != NULL && slot->IsOccupant(v->index));
+						break;
+					}
 
 					default:
 						NOT_REACHED();
@@ -525,6 +531,7 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 				case TRIT_COND_ENTRY_DIRECTION:
 				case TRIT_COND_PBS_ENTRY_SIGNAL:
 				case TRIT_COND_TRAIN_GROUP:
+				case TRIT_COND_SLOT:
 					break;
 
 				default:
@@ -1426,7 +1433,7 @@ void TraceRestrictRemoveSlotID(TraceRestrictSlotID index)
 	FOR_ALL_TRACE_RESTRICT_PROGRAMS(prog) {
 		for (size_t i = 0; i < prog->items.size(); i++) {
 			TraceRestrictItem &item = prog->items[i]; // note this is a reference,
-			if (GetTraceRestrictType(item) == TRIT_SLOT && GetTraceRestrictValue(item) == index) {
+			if ((GetTraceRestrictType(item) == TRIT_SLOT || GetTraceRestrictType(item) == TRIT_COND_SLOT) && GetTraceRestrictValue(item) == index) {
 				SetTraceRestrictValueDefault(item, TRVT_SLOT_INDEX); // this updates the instruction in-place
 			}
 			if (IsTraceRestrictDoubleItem(item)) i++;

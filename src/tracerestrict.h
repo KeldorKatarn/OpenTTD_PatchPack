@@ -131,6 +131,7 @@ enum TraceRestrictItemType {
 	TRIT_COND_ENTRY_DIRECTION     = 16,   ///< Test which side of signal/signal tile is being entered from
 	TRIT_COND_PBS_ENTRY_SIGNAL    = 17,   ///< Test tile and PBS-state of previous signal
 	TRIT_COND_TRAIN_GROUP         = 18,   ///< Test train group membership
+	TRIT_COND_SLOT                = 19,   ///< Test train slot membership
 	/* space up to 31 */
 };
 
@@ -521,6 +522,11 @@ static inline TraceRestrictTypePropertySet GetTraceRestrictTypeProperties(TraceR
 
 			case TRIT_COND_TRAIN_GROUP:
 				out.value_type = TRVT_GROUP_INDEX;
+				out.cond_type = TRCOT_BINARY;
+				break;
+ 
+			case TRIT_COND_SLOT:
+				out.value_type = TRVT_SLOT_INDEX;
 				out.cond_type = TRCOT_BINARY;
 				break;
 

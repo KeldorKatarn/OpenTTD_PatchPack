@@ -118,6 +118,8 @@ public:
 
 	static void SetErrorMessage(const char *message);
 	static void AfterCrashLogCleanup();
+
+	static const char *GetAbortCrashlogReason();
 };
 
 #endif /* CRASHLOG_H */

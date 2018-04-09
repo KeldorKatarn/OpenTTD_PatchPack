@@ -500,25 +500,14 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *ep)
 		ExitProcess(2);
 	}
 
-	if (GamelogTestEmergency()) {
-		static const TCHAR _emergency_crash[] =
-			_T("A serious fault condition occurred in the game. The game will shut down.\n")
-			_T("You loaded an emergency savegame.\n")
-			_T("Therefore the crash information might not be useful if the crash occured immediately after loading.\n")
-			_T("Should the crash information be generated anyway?\n");
-		if (IDYES != MessageBox(NULL, _emergency_crash, _T("Fatal Application Failure"), MB_ICONERROR | MB_YESNO)) {
-			ExitProcess(3);
-		}
-	}
-
-	if (SaveloadCrashWithMissingNewGRFs()) {
-		static const TCHAR _saveload_crash[] =
-			_T("A serious fault condition occurred in the game. The game will shut down.\n")
-			_T("As you loaded an savegame for which you do not have the required NewGRFs\n")
-			_T("no crash information will be generated.\n");
-		MessageBox(NULL, _saveload_crash, _T("Fatal Application Failure"), MB_ICONERROR);
-		ExitProcess(3);
-	}
+	const char *abort_reason = CrashLog::GetAbortCrashlogReason();
+	if (abort_reason != NULL) {
+		TCHAR _emergency_crash[512];
+		_sntprintf(_emergency_crash, lengthof(_emergency_crash),
+				_T("A serious fault condition occurred in the game. The game will shut down.\n"), OTTD2FS(abort_reason));
+ 		MessageBox(NULL, _emergency_crash, _T("Fatal Application Failure"), MB_ICONERROR);
+ 		ExitProcess(3);
+ 	}
 
 	CrashLogWindows *log = new CrashLogWindows(ep);
 	CrashLogWindows::current = log;

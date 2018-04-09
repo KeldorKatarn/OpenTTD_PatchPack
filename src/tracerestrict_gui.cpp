@@ -42,6 +42,8 @@
 #include "sortlist_type.h"
 #include "table/sprites.h"
 #include "core/geometry_func.hpp"
+ 
+#include "safeguards.h"
 
 extern uint ConvertSpeedToDisplaySpeed(uint speed);
 extern uint ConvertDisplaySpeedToSpeed(uint speed);

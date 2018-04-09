@@ -90,7 +90,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
+  </PropertyGroup> 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
     <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
@@ -169,7 +169,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    </Manifest> 
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -225,7 +225,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    </Manifest> 
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -293,7 +293,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    </Manifest> 
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -351,7 +351,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    </Manifest> 
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -702,6 +702,7 @@
     <ClInclude Include="..\src\strgen\strgen.h" />
     <ClInclude Include="..\src\string_base.h" />
     <ClInclude Include="..\src\string_func.h" />
+    <ClInclude Include="..\src\string_func_extra.h" />
     <ClInclude Include="..\src\string_type.h" />
     <ClInclude Include="..\src\stringfilter_type.h" />
     <ClInclude Include="..\src\strings_func.h" />

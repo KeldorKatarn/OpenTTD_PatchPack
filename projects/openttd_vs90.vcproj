@@ -1804,6 +1804,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\string_func_extra.h"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\string_type.h"
 				>
 			</File>

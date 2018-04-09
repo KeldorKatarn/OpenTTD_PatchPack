@@ -1131,6 +1131,9 @@
     <ClInclude Include="..\src\string_func.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\string_func_extra.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\string_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>

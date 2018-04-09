@@ -61,6 +61,7 @@ enum TraceRestrictWindowWidgets {
 	TR_WIDGET_SEL_TOP_MIDDLE,
 	TR_WIDGET_SEL_TOP_RIGHT,
 	TR_WIDGET_SEL_SHARE,
+	TR_WIDGET_SEL_COPY,
 
 	TR_WIDGET_UP_BTN,
 	TR_WIDGET_DOWN_BTN,
@@ -86,6 +87,7 @@ enum TraceRestrictWindowWidgets {
 	TR_WIDGET_REMOVE,
 	TR_WIDGET_RESET,
 	TR_WIDGET_COPY,
+	TR_WIDGET_COPY_APPEND,
 	TR_WIDGET_SHARE,
 	TR_WIDGET_UNSHARE,
 };
@@ -119,6 +121,10 @@ enum PanelWidgets {
 	// Share
 	DPS_SHARE = 0,
 	DPS_UNSHARE,
+
+	// Copy
+	DPC_COPY = 0,
+	DPC_APPEND,
 };
 
 /**
@@ -1264,6 +1270,7 @@ public:
 			}
 
 			case TR_WIDGET_COPY:
+			case TR_WIDGET_COPY_APPEND:
 			case TR_WIDGET_SHARE:
 				SetObjectToPlaceAction(widget, ANIMCURSOR_BUILDSIGNALS);
 				break;
@@ -1418,6 +1425,10 @@ public:
 			case TR_WIDGET_COPY:
 				OnPlaceObjectSignal(pt, tile, widget, STR_TRACE_RESTRICT_ERROR_CAN_T_COPY_PROGRAM);
 				break;
+ 
+			case TR_WIDGET_COPY_APPEND:
+				OnPlaceObjectSignal(pt, tile, widget, STR_TRACE_RESTRICT_ERROR_CAN_T_COPY_APPEND_PROGRAM);
+				break;
 
 			case TR_WIDGET_SHARE:
 				OnPlaceObjectSignal(pt, tile, widget, STR_TRACE_RESTRICT_ERROR_CAN_T_SHARE_PROGRAM);
@@ -1475,6 +1486,11 @@ public:
 			case TR_WIDGET_COPY:
 				TraceRestrictProgMgmtWithSourceDoCommandP(this->tile, this->track, TRDCT_PROG_COPY,
 						source_tile, source_track, STR_TRACE_RESTRICT_ERROR_CAN_T_COPY_PROGRAM);
+				break;
+ 
+			case TR_WIDGET_COPY_APPEND:
+				TraceRestrictProgMgmtWithSourceDoCommandP(this->tile, this->track, TRDCT_PROG_COPY_APPEND,
+						source_tile, source_track, STR_TRACE_RESTRICT_ERROR_CAN_T_COPY_APPEND_PROGRAM);
 				break;
 
 			case TR_WIDGET_SHARE:
@@ -1847,6 +1863,7 @@ private:
 		NWidgetStacked *middle_sel   = this->GetWidget<NWidgetStacked>(TR_WIDGET_SEL_TOP_MIDDLE);
 		NWidgetStacked *right_sel    = this->GetWidget<NWidgetStacked>(TR_WIDGET_SEL_TOP_RIGHT);
 		NWidgetStacked *share_sel    = this->GetWidget<NWidgetStacked>(TR_WIDGET_SEL_SHARE);
+		NWidgetStacked *copy_sel = this->GetWidget<NWidgetStacked>(TR_WIDGET_SEL_COPY);
 
 		this->DisableWidget(TR_WIDGET_TYPE_COND);
 		this->DisableWidget(TR_WIDGET_TYPE_NONCOND);
@@ -1874,12 +1891,15 @@ private:
 		this->DisableWidget(TR_WIDGET_UP_BTN);
 		this->DisableWidget(TR_WIDGET_DOWN_BTN);
 
+		this->EnableWidget(TR_WIDGET_COPY_APPEND);
+
 		left_2_sel->SetDisplayedPlane(DPL2_BLANK);
 		left_sel->SetDisplayedPlane(DPL_BLANK);
 		left_aux_sel->SetDisplayedPlane(SZSP_NONE);
 		middle_sel->SetDisplayedPlane(DPM_BLANK);
 		right_sel->SetDisplayedPlane(DPR_BLANK);
 		share_sel->SetDisplayedPlane(DPS_SHARE);
+		copy_sel->SetDisplayedPlane(_ctrl_pressed ? DPC_APPEND : DPC_COPY);
 
 		const TraceRestrictProgram *prog = this->GetProgram();
 
@@ -2309,9 +2329,13 @@ static const NWidgetPart _nested_program_widgets[] = {
 														SetDataTip(STR_TRACE_RESTRICT_REMOVE, STR_TRACE_RESTRICT_REMOVE_TOOLTIP), SetResize(1, 0),
 				NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_RESET), SetMinimalSize(124, 12), SetFill(1, 0),
 														SetDataTip(STR_TRACE_RESTRICT_RESET, STR_TRACE_RESTRICT_RESET_TOOLTIP), SetResize(1, 0),
-				NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_COPY), SetMinimalSize(124, 12), SetFill(1, 0),
-														SetDataTip(STR_TRACE_RESTRICT_COPY, STR_TRACE_RESTRICT_COPY_TOOLTIP), SetResize(1, 0),
-				NWidget(NWID_SELECTION, INVALID_COLOUR, TR_WIDGET_SEL_SHARE),
+				NWidget(NWID_SELECTION, INVALID_COLOUR, TR_WIDGET_SEL_COPY),
+					NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_COPY), SetMinimalSize(124, 12), SetFill(1, 0),
+ 														SetDataTip(STR_TRACE_RESTRICT_COPY, STR_TRACE_RESTRICT_COPY_TOOLTIP), SetResize(1, 0),
+				NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_COPY_APPEND), SetMinimalSize(124, 12), SetFill(1, 0),
+														SetDataTip(STR_TRACE_RESTRICT_APPEND, STR_TRACE_RESTRICT_COPY_TOOLTIP), SetResize(1, 0),
+				EndContainer(),
+ 				NWidget(NWID_SELECTION, INVALID_COLOUR, TR_WIDGET_SEL_SHARE),
 					NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_SHARE), SetMinimalSize(124, 12), SetFill(1, 0),
 														SetDataTip(STR_TRACE_RESTRICT_SHARE, STR_TRACE_RESTRICT_SHARE_TOOLTIP), SetResize(1, 0),
 					NWidget(WWT_TEXTBTN, COLOUR_GREY, TR_WIDGET_UNSHARE), SetMinimalSize(124, 12), SetFill(1, 0),

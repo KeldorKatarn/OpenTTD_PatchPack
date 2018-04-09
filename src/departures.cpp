@@ -51,7 +51,8 @@ static bool IsDeparture(const Order *order, StationID station) {
 			(StationID)order->GetDestination() == station &&
 			(order->GetLoadType() != OLFB_NO_LOAD ||
 			_settings_client.gui.departure_show_all_stops) &&
-			order->GetWaitTime() != 0);
+			(order->GetWaitTime() != 0 || order->IsWaitTimetabled()) &&
+			!(order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION));
 }
 
 static bool IsVia(const Order *order, StationID station) {
@@ -67,7 +68,8 @@ static bool IsArrival(const Order *order, StationID station) {
 			(StationID)order->GetDestination() == station &&
 			(order->GetUnloadType() != OUFB_NO_UNLOAD ||
 			_settings_client.gui.departure_show_all_stops) &&
-			order->GetWaitTime() != 0);
+			(order->GetWaitTime() != 0 || order->IsWaitTimetabled()) &&
+			!(order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION));
 }
 
 /**

@@ -33,6 +33,7 @@
 #include "tracerestrict.h"
 #include "logic_signals.h"
 #include "bridge_signal_map.h"
+#include "zoning.h"
 
 #include "safeguards.h"
 
@@ -85,6 +86,7 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	ClearBridgeSimulatedSignalMapping();
 	PoolBase::Clean(PT_NORMAL);
 
+	ClearZoningCaches();
 	ResetPersistentNewGRFData();
 
 	InitializeSound();

@@ -67,6 +67,7 @@
 #include "smallmap_gui.h"
 #include "viewport_func.h"
 #include "bridge_signal_map.h"
+#include "zoning.h"
 
 #include "linkgraph/linkgraphschedule.h"
 #include "tracerestrict.h"
@@ -329,6 +330,8 @@ static void ShutdownGame()
 	ClearBridgeSimulatedSignalMapping();
 	ClearTraceRestrictMapping();
 	PoolBase::Clean(PT_ALL);
+
+	ClearZoningCaches();
 
 	/* No NewGRFs were loaded when it was still bootstrapping. */
 	if (_game_mode != GM_BOOTSTRAP) ResetNewGRFData();

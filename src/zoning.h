@@ -28,6 +28,17 @@ enum ZoningEvaluationMode {
 	ZEM_IND_UNSER,     ///< Check for unserved industries
 	ZEM_TRACERESTRICT, ///< Check for restricted signals
 };
+ 
+/**
+ * Zoning evaluation modes
+ */
+enum ZoningModeMask {
+	ZMM_NOTHING = 0,   ///< No zoning mask
+	ZMM_INNER,         ///< Inner
+	ZMM_OUTER,         ///< Outer
+	ZMM_ALL = ZMM_INNER | ZMM_OUTER,
+};
+DECLARE_ENUM_AS_BIT_SET(ZoningModeMask)
 
 /**
  * Global Zoning state structure
@@ -47,7 +58,11 @@ void DrawTileZoning(const TileInfo *ti);
 
 void ShowZoningToolbar();
 
-void ZoningMarkDirtyStationCoverageArea(const Station *st);
+void ZoningMarkDirtyStationCoverageArea(const Station *st, ZoningModeMask mask = ZMM_ALL);
 inline void ZoningMarkDirtyStationCoverageArea(const Waypoint *st) { } // no-op
+
+void SetZoningMode(bool inner, ZoningEvaluationMode mode);
+
+void ClearZoningCaches();
 
 #endif /* ZONING_H */

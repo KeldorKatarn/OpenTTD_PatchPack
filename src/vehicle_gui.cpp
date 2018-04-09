@@ -169,6 +169,15 @@ Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bo
 
 	return d;
 }
+ 
+/**
+ * Whether the Action dropdown window should be shown/available.
+ * @return Whether available
+ */
+bool BaseVehicleListWindow::ShouldShowActionDropdownList() const
+{
+	return (this->vehicles.Length() != 0) || (this->vli.vtype == VEH_TRAIN);
+}
 
 /**
  * Display the Action dropdown window.
@@ -181,24 +190,25 @@ Dimension BaseVehicleListWindow::GetActionDropdownSize(bool show_autoreplace, bo
 DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autoreplace, bool show_group, bool show_template_replace, bool show_sell)
 {
 	DropDownList *list = new DropDownList();
+	bool disable = this->vehicles.Length() == 0;
 
-	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SET_ALL_ON_TIME, ADI_SET_ALL_ON_TIME, false);
+	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SET_ALL_ON_TIME, ADI_SET_ALL_ON_TIME, disable);
 
-	if (show_autoreplace) *list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_REPLACE_VEHICLES, ADI_REPLACE, false);
+	if (show_autoreplace) *list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_REPLACE_VEHICLES, ADI_REPLACE, disable);
 	if (show_autoreplace && show_template_replace) {
-		*list->Append() = new DropDownListStringItem(STR_TMPL_TEMPLATE_REPLACEMENT, ADI_TEMPLATE_REPLACE, false);
+		*list->Append() = new DropDownListStringItem(STR_TMPL_TEMPLATE_REPLACEMENT, ADI_TEMPLATE_REPLACE, disable);
 	}
 
-	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SEND_FOR_SERVICING, ADI_SERVICE, false);
-	*list->Append() = new DropDownListStringItem(this->vehicle_depot_name[this->vli.vtype], ADI_DEPOT, false);
+	*list->Append() = new DropDownListStringItem(STR_VEHICLE_LIST_SEND_FOR_SERVICING, ADI_SERVICE, disable);
+	*list->Append() = new DropDownListStringItem(this->vehicle_depot_name[this->vli.vtype], ADI_DEPOT, disable);
 
 	if (show_group) {
-		*list->Append() = new DropDownListStringItem(STR_GROUP_ADD_SHARED_VEHICLE, ADI_ADD_SHARED, false);
-		*list->Append() = new DropDownListStringItem(STR_GROUP_REMOVE_ALL_VEHICLES, ADI_REMOVE_ALL, false);
+		*list->Append() = new DropDownListStringItem(STR_GROUP_ADD_SHARED_VEHICLE, ADI_ADD_SHARED, disable);
+		*list->Append() = new DropDownListStringItem(STR_GROUP_REMOVE_ALL_VEHICLES, ADI_REMOVE_ALL, disable);
 	}
 
 	if (show_sell) {
-		*list->Append() = new DropDownListStringItem(STR_GROUP_SELL_ALL_VEHICLES, ADI_SELL_ALL, false);
+		*list->Append() = new DropDownListStringItem(STR_GROUP_SELL_ALL_VEHICLES, ADI_SELL_ALL, disable);
 	}
 
 	if (this->vli.vtype == VEH_TRAIN) {
@@ -1671,7 +1681,7 @@ public:
 		this->BuildVehicleList();
 		this->SortVehicleList();
 
-		if (this->vehicles.Length() == 0 && this->IsWidgetLowered(WID_VL_MANAGE_VEHICLES_DROPDOWN)) {
+		if (!this->ShouldShowActionDropdownList() && this->IsWidgetLowered(WID_VL_MANAGE_VEHICLES_DROPDOWN)) {
 			HideDropDownMenu(this);
 		}
 
@@ -1685,8 +1695,8 @@ public:
 		}
 		if (this->owner == _local_company) {
 			this->SetWidgetDisabledState(WID_VL_AVAILABLE_VEHICLES, this->vli.type != VL_STANDARD);
+			this->SetWidgetDisabledState(WID_VL_MANAGE_VEHICLES_DROPDOWN, !this->ShouldShowActionDropdownList());
 			this->SetWidgetsDisabledState(this->vehicles.Length() == 0,
-				WID_VL_MANAGE_VEHICLES_DROPDOWN,
 				WID_VL_STOP_ALL,
 				WID_VL_START_ALL,
 				WIDGET_LIST_END);
@@ -1727,7 +1737,7 @@ public:
 			case WID_VL_MANAGE_VEHICLES_DROPDOWN: {
 				DropDownList *list = this->BuildActionDropdownList(VehicleListIdentifier::UnPack(this->window_number).type == VL_STANDARD,
 					false, this->vli.vtype == VEH_TRAIN);
-				ShowDropDownList(this, list, 0, WID_VL_MANAGE_VEHICLES_DROPDOWN);
+				ShowDropDownList(this, list, -1, WID_VL_MANAGE_VEHICLES_DROPDOWN);
 				break;
 			}
 
@@ -1745,7 +1755,7 @@ public:
 				this->vehicles.SetSortType(index);
 				break;
 			case WID_VL_MANAGE_VEHICLES_DROPDOWN:
-				assert(this->vehicles.Length() != 0);
+				assert(this->ShouldShowActionDropdownList());
 
 				switch (index) {
 					case ADI_SET_ALL_ON_TIME: { // Reset all late timers

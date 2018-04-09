@@ -4611,7 +4611,7 @@ calc_heightdiff_single_direction:;
 			}
 			
 			SetDParam(index++, DistanceFromEdge(t1));
-			SetDParam(index++, GetTileMaxZ(t1) * TILE_HEIGHT_STEP;
+			SetDParam(index++, GetTileMaxZ(t1) * TILE_HEIGHT_STEP);
 			SetDParam(index++, heightdiff);
 			//Show always the measurement tooltip
 			GuiShowTooltips(_thd.GetCallbackWnd(),STR_MEASURE_DIST_HEIGHTDIFF);

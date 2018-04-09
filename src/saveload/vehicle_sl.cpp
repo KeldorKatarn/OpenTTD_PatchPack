@@ -755,6 +755,7 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		SLE_CONDNULL(2, 2, 59),
 
 		 SLE_CONDVAR(Train, wait_counter,        SLE_UINT16,                 136, SL_MAX_VERSION),
+		 SLE_CONDVAR(Train, tunnel_bridge_signal_num, SLE_UINT16, SL_PATCH_PACK_1_19, SL_MAX_VERSION),
 
 		SLE_CONDNULL(2, 2, 19),
 		 SLE_CONDVAR(Train, gv_flags,            SLE_UINT16,                 139, SL_MAX_VERSION),

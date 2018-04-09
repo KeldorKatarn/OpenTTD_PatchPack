@@ -150,6 +150,18 @@ void DrawCaption(const Rect &r, Colours colour, Owner owner, StringID str);
 extern Window *_z_front_window;
 extern Window *_z_back_window;
 extern Window *_focused_window;
+ 
+inline uint64 GetWindowUpdateNumber()
+{
+	extern uint64 _window_update_number;
+	return _window_update_number;
+}
+
+inline void IncrementWindowUpdateNumber()
+{
+	extern uint64 _window_update_number;
+	_window_update_number++;
+}
 
 
 /** How do we the window to be placed? */

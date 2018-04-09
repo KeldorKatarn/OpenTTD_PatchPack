@@ -564,7 +564,7 @@ public:
 	 * Gets the running cost of a vehicle  that can be sent into SetDParam for string processing.
 	 * @return the vehicle's running cost
 	 */
-	Money GetDisplayRunningCost() const { return (this->GetRunningCost() >> 8); }
+	Money GetDisplayRunningCost() const { return (this->GetRunningCost() >> 8) * _settings_game.economy.daylength; }
 
 	/**
 	 * Gets the profit vehicle had this year. It can be sent into SetDParam for string processing.

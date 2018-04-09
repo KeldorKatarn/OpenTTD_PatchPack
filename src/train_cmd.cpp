@@ -5049,6 +5049,8 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 
 	EngineID eid = tv->engine_type;
 
+	_new_vehicle_id = p1;
+
 	bool need_replacement = !TrainMatchesTemplate(incoming, tv);
 	bool need_refit = !TrainMatchesTemplateRefit(incoming, tv);
 	bool use_refit = tv->refit_as_template;
@@ -5218,6 +5220,8 @@ CommandCost CmdTemplateReplaceVehicle(TileIndex tile, DoCommandFlag flags, uint3
 
 	/* Redraw main gui for changed statistics */
 	SetWindowClassesDirty(WC_TEMPLATEGUI_MAIN);
+
+	_new_vehicle_id = new_chain->index;
 
 	return buy;
 }

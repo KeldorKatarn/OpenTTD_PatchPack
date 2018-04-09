@@ -750,8 +750,9 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		     SLE_VAR(Train, railtype,            SLE_UINT8),
 		     SLE_VAR(Train, track,               SLE_UINT8),
 
-		 SLE_CONDVAR(Train, flags,               SLE_FILE_U8  | SLE_VAR_U16,   2,  99),
-		 SLE_CONDVAR(Train, flags,               SLE_UINT16,                 100, SL_MAX_VERSION),
+		 SLE_CONDVAR(Train, flags,               SLE_FILE_U8  | SLE_VAR_U32,   2,  99),
+		 SLE_CONDVAR(Train, flags,               SLE_FILE_U16 | SLE_VAR_U32, 100, SL_PATCH_PACK_1_19-1),
+		 SLE_CONDVAR(Train, flags,               SLE_UINT32,  SL_PATCH_PACK_1_19, SL_MAX_VERSION),
 		SLE_CONDNULL(2, 2, 59),
 
 		 SLE_CONDVAR(Train, wait_counter,        SLE_UINT16,                 136, SL_MAX_VERSION),

@@ -93,9 +93,10 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 	/* Link between the two ends of a multiheaded engine */
 	Train *other_multiheaded_part;
 
+	uint32 flags;
+
 	uint16 crash_anim_pos; ///< Crash animation counter.
 
-	uint16 flags;
 	TrackBitsByte track;
 	TrainForceProceedingByte force_proceed;
 	RailTypeByte railtype;

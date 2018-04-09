@@ -1812,6 +1812,7 @@ static void ViewportMapDrawVehicleRoute(const ViewPort *vp)
 			// make sure we remove any leftover paths
 			MarkRoutePathsDirty(_vp_route_paths);
 			_vp_route_paths.clear();
+			_vp_route_paths_last_mark_dirty.clear();
 			DEBUG(misc, 1, "ViewportMapDrawVehicleRoute: redrawing dirty paths 0");
 		}
 		return;

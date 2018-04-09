@@ -46,7 +46,7 @@ void LinkGraphSchedule::SpawnNext()
 	if (this->schedule.empty()) return;
 
 	GraphList schedule_to_back;
-	uint total_cost = 0;
+	uint64 total_cost = 0;
 	for (auto iter = this->schedule.begin(); iter != this->schedule.end();) {
 		auto current = iter;
 		++iter;
@@ -62,17 +62,17 @@ void LinkGraphSchedule::SpawnNext()
 		total_cost += it->Graph().CalculateCostEstimate();
 	}
 	uint scaling = 1 + FindLastBit(total_cost);
-	uint cost_budget = total_cost / scaling;
-	uint used_budget = 0;
+	uint64 cost_budget = total_cost / scaling;
+	uint64 used_budget = 0;
 	std::vector<LinkGraphJobGroup::JobInfo> jobs_to_execute;
 	while (used_budget < cost_budget && !this->schedule.empty()) {
 		LinkGraph *lg = this->schedule.front();
 		assert(lg == LinkGraph::Get(lg->index));
 		this->schedule.pop_front();
-		uint cost = lg->CalculateCostEstimate();
+		uint64 cost = lg->CalculateCostEstimate();
 		used_budget += cost;
 		if (LinkGraphJob::CanAllocateItem()) {
-			uint duration_multiplier = CeilDiv(scaling * cost, total_cost);
+			uint duration_multiplier = CeilDivT<uint64_t>(scaling * cost, total_cost);
 			std::unique_ptr<LinkGraphJob> job(new LinkGraphJob(*lg, duration_multiplier));
 			jobs_to_execute.emplace_back(job.get(), cost);
 			if (this->running.empty() || job->JoinDate() >= this->running.back()->JoinDate()) {

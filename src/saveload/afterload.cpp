@@ -912,7 +912,7 @@ bool AfterLoadGame()
 		}
 	}
 
-	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_18)) {
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_18)) {
 		/* Dock type has changed. */
 		Station *st;
 		FOR_ALL_STATIONS(st) {

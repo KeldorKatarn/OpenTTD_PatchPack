@@ -40,6 +40,9 @@
 #include "tbtr_template_gui_main.h"
 #include "triphistory.h"
 #include "zoom_func.h"
+#include "tracerestrict.h"
+
+#include <vector>
 
 #include "safeguards.h"
 
@@ -196,6 +199,10 @@ DropDownList *BaseVehicleListWindow::BuildActionDropdownList(bool show_autorepla
 
 	if (show_sell) {
 		*list->Append() = new DropDownListStringItem(STR_GROUP_SELL_ALL_VEHICLES, ADI_SELL_ALL, false);
+	}
+
+	if (this->vli.vtype == VEH_TRAIN) {
+		*list->Append() = new DropDownListStringItem(STR_TRACE_RESTRICT_SLOT_MANAGE, ADI_TRACERESTRICT_SLOT_MGMT, false);
 	}
 
 	return list;
@@ -1763,6 +1770,12 @@ public:
 					case ADI_DEPOT: // Send to Depots
 						DoCommandP(0, DEPOT_MASS_SEND | (index == ADI_SERVICE ? DEPOT_SERVICE : (DepotCommand)0), this->window_number, GetCmdSendToDepot(this->vli.vtype));
 						break;
+ 
+					case ADI_TRACERESTRICT_SLOT_MGMT: {
+						extern void ShowTraceRestrictSlotWindow(CompanyID company);
+						ShowTraceRestrictSlotWindow(this->owner);
+						break;
+					}
 
 					default: NOT_REACHED();
 				}
@@ -1964,6 +1977,7 @@ static StringID _service_interval_dropdown[] = {
 struct VehicleDetailsWindow : Window {
 	TrainDetailsWindowTabs tab; ///< For train vehicles: which tab is displayed.
 	Scrollbar *vscroll;
+	bool vehicle_slots_line_shown;
 
 	/** Initialize a newly created vehicle details window */
 	VehicleDetailsWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc)
@@ -2037,6 +2051,12 @@ struct VehicleDetailsWindow : Window {
 		}
 		return desired_height;
 	}
+ 
+	bool ShouldShowSlotsLine(const Vehicle *v) const
+	{
+		if (v->type != VEH_TRAIN) return false;
+		return HasBit(Train::From(v)->flags, VRF_HAVE_SLOT);
+	}
 
 	virtual void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize)
 	{
@@ -2044,8 +2064,11 @@ struct VehicleDetailsWindow : Window {
 			case WID_VD_TOP_DETAILS: {
 				const Vehicle *v = Vehicle::Get(this->window_number);
 				Dimension dim = { 0, 0 };
+				this->vehicle_slots_line_shown = ShouldShowSlotsLine(v);
+				int lines = 5;
+				if (this->vehicle_slots_line_shown) lines++;
 
-				size->height = WD_FRAMERECT_TOP + 5 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
+				size->height = WD_FRAMERECT_TOP + lines * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
 
 				for (uint i = 0; i < 5; i++) SetDParamMaxValue(i, INT16_MAX);
 				static const StringID info_strings[] = {
@@ -2235,8 +2258,32 @@ struct VehicleDetailsWindow : Window {
 				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_RELIABILITY_BREAKDOWNS);
 				y += FONT_HEIGHT_NORMAL;
 
+				bool should_show_slots = this->ShouldShowSlotsLine(v);
+				if (should_show_slots) {
+					std::vector<TraceRestrictSlotID> slots;
+					TraceRestrictGetVehicleSlots(v->index, slots);
+
+					char text_buffer[512];
+					char *buffer = text_buffer;
+					const char * const last = lastof(text_buffer);
+					SetDParam(0, slots.size());
+					buffer = GetString(buffer, STR_TRACE_RESTRICT_SLOT_LIST_HEADER, last);
+
+					for (size_t i = 0; i < slots.size(); i++) {
+						if (i != 0) buffer = GetString(buffer, STR_TRACE_RESTRICT_SLOT_LIST_SEPARATOR, last);
+						buffer = strecpy(buffer, TraceRestrictSlot::Get(slots[i])->name.c_str(), last);
+					}
+					SetDParamStr(0, text_buffer);
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_JUST_RAW_STRING);
+					y += FONT_HEIGHT_NORMAL;
+				}
+
 				SetDParam(0, v->group_id);
 				DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_VEHICLE_INFO_GROUP);
+
+				if (this->vehicle_slots_line_shown != should_show_slots) {
+ 					const_cast<VehicleDetailsWindow *>(this)->ReInit();
+ 				}
 				break;
 			}
 

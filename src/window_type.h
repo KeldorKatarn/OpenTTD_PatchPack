@@ -720,6 +720,12 @@ enum WindowClass {
 	 *   - #TileIndex << 3 | #Track = #TraceRestrictWindow
 	 */
 	WC_TRACE_RESTRICT,
+ 
+	/**
+	 * Trace restrict slot window; %Window numbers:
+	 *   - Packed value = #SlotListWidgets / #VehicleListWidgets
+	 */
+	WC_TRACE_RESTRICT_SLOTS,
 
 	WC_TEMPLATEGUI_MAIN,
 	WC_TEMPLATEGUI_RPLALL,

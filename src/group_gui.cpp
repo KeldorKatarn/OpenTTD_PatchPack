@@ -981,22 +981,27 @@ public:
 
 						DoCommandP(0, this->vli.index, 0, CMD_REMOVE_ALL_VEHICLES_GROUP | CMD_MSG(STR_ERROR_GROUP_CAN_T_REMOVE_ALL_VEHICLES));
 						break;
-					case ADI_SELL_ALL: // Sell all stopped Vehicles from the selected group
-						{
-							/* Only open the confirmation window if there are anything to sell */
-							bool is_all_group = (this->vli.index == ALL_GROUP);
-							bool is_default_group = (this->vli.index == DEFAULT_GROUP);
-							if (is_all_group || is_default_group || Group::Get(this->vli.index)->statistics.num_vehicle != 0) {
-								SetDParam(0, this->vli.index);
-								ShowQuery(
-									STR_GROUP_NAME,
-									STR_GROUP_SELL_CONFIRMATION_TEXT,
-									this,
-									SellAllConfirmationCallback
-								);
-							}
+					case ADI_SELL_ALL: { // Sell all stopped Vehicles from the selected group
+						/* Only open the confirmation window if there are anything to sell */
+						bool is_all_group = (this->vli.index == ALL_GROUP);
+						bool is_default_group = (this->vli.index == DEFAULT_GROUP);
+						if (is_all_group || is_default_group || Group::Get(this->vli.index)->statistics.num_vehicle != 0) {
+							SetDParam(0, this->vli.index);
+							ShowQuery(
+								STR_GROUP_NAME,
+								STR_GROUP_SELL_CONFIRMATION_TEXT,
+								this,
+								SellAllConfirmationCallback
+							);
 						}
 						break;
+					}
+
+					case ADI_TRACERESTRICT_SLOT_MGMT: {
+						extern void ShowTraceRestrictSlotWindow(CompanyID company);
+						ShowTraceRestrictSlotWindow(this->owner);
+						break;
+					}
 					default: NOT_REACHED();
 				}
 				break;

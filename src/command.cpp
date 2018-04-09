@@ -232,6 +232,11 @@ CommandProc CmdRemovePlanLine;
 CommandProc CmdChangePlanVisibility;
 
 CommandProc CmdProgramSignalTraceRestrict;
+CommandProc CmdCreateTraceRestrictSlot;
+CommandProc CmdAlterTraceRestrictSlot;
+CommandProc CmdDeleteTraceRestrictSlot;
+CommandProc CmdAddVehicleTraceRestrictSlot;
+CommandProc CmdRemoveVehicleTraceRestrictSlot;
 
 CommandProc CmdProgramLogicSignal;
 
@@ -427,6 +432,12 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdChangePlanVisibility,                           0, CMDT_OTHER_MANAGEMENT      ), // CMD_CHANGE_PLAN_VISIBILITY
 
 	DEF_CMD(CmdProgramSignalTraceRestrict,                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_TRACERESTRICT_SIGNAL
+	DEF_CMD(CmdCreateTraceRestrictSlot,                        0, CMDT_OTHER_MANAGEMENT		 ), // CMD_CREATE_TRACERESTRICT_SLOT
+	DEF_CMD(CmdAlterTraceRestrictSlot,						   0, CMDT_OTHER_MANAGEMENT		 ), // CMD_ALTER_TRACERESTRICT_SLOT
+	DEF_CMD(CmdDeleteTraceRestrictSlot,						   0, CMDT_OTHER_MANAGEMENT		 ), // CMD_DELETE_TRACERESTRICT_SLOT
+	DEF_CMD(CmdAddVehicleTraceRestrictSlot,					   0, CMDT_OTHER_MANAGEMENT		 ), // CMD_ADD_VEHICLE_TRACERESTRICT_SLOT
+	DEF_CMD(CmdRemoveVehicleTraceRestrictSlot,				   0, CMDT_OTHER_MANAGEMENT		 ), // CMD_REMOVE_VEHICLE_TRACERESTRICT_SLOT
+
 	DEF_CMD(CmdProgramLogicSignal,                             0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_LOGIC_SIGNAL
 
 	DEF_CMD(CmdDesyncCheck,                           CMD_SERVER, CMDT_SERVER_SETTING        ), // CMD_DESYNC_CHECK

@@ -2377,6 +2377,7 @@ enum TraceRestrictSlotWindowWidgets {
 	WID_TRSL_SET_SLOT_MAX_OCCUPANCY,
 	WID_TRSL_SORT_BY_ORDER,
 	WID_TRSL_SORT_BY_DROPDOWN,
+	WID_TRSL_FILTER_BY_CARGO,
 	WID_TRSL_LIST_VEHICLE,
 	WID_TRSL_LIST_VEHICLE_SCROLLBAR,
 };
@@ -2417,6 +2418,7 @@ static const NWidgetPart _nested_slot_widgets[] = {
 			NWidget(NWID_HORIZONTAL),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_TRSL_SORT_BY_ORDER), SetMinimalSize(81, 12), SetDataTip(STR_BUTTON_SORT_BY, STR_TOOLTIP_SORT_ORDER),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_TRSL_SORT_BY_DROPDOWN), SetMinimalSize(167, 12), SetDataTip(0x0, STR_TOOLTIP_SORT_CRITERIA),
+				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_TRSL_FILTER_BY_CARGO), SetMinimalSize(167, 12), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_FILTER_CRITERIA),
 				NWidget(WWT_PANEL, COLOUR_GREY), SetMinimalSize(12, 12), SetResize(1, 0), EndContainer(),
 			EndContainer(),
 			NWidget(NWID_HORIZONTAL),
@@ -2442,7 +2444,6 @@ private:
 		VGC_END
 	};
 
-	VehicleID vehicle_sel; ///< Selected vehicle
 	TraceRestrictSlotID slot_sel;     ///< Selected slot (for drag/drop)
 	bool slot_set_max_occupancy;      ///< True if slot max occupancy is being changed, instead of renaming
 	TraceRestrictSlotID slot_rename;  ///< Slot being renamed or max occupancy changed, INVALID_TRACE_RESTRICT_SLOT_ID if none
@@ -2565,7 +2566,6 @@ public:
 		this->sorting = &_sorting.train;
 
 		this->vli.index = ALL_TRAINS_TRACE_RESTRICT_SLOT_ID;
-		this->vehicle_sel = INVALID_VEHICLE;
 		this->slot_sel = INVALID_TRACE_RESTRICT_SLOT_ID;
 		this->slot_rename = INVALID_TRACE_RESTRICT_SLOT_ID;
 		this->slot_set_max_occupancy = false;
@@ -2661,6 +2661,15 @@ public:
 		}
 		this->SetDirty();
 	}
+ 
+	virtual void SetStringParameters(int widget) const
+	{
+		switch (widget) {
+			case WID_TRSL_FILTER_BY_CARGO:
+				SetDParam(0, this->cargo_filter_texts[this->cargo_filter_criteria]);
+				break;
+		}
+	}
 
 	virtual void OnPaint()
 	{
@@ -2694,7 +2703,9 @@ public:
 		/* Set text of sort by dropdown */
 		this->GetWidget<NWidgetCore>(WID_TRSL_SORT_BY_DROPDOWN)->widget_data = this->vehicle_sorter_names[this->vehicles.SortType()];
 
-		this->DrawWidgets();
+		this->GetWidget<NWidgetCore>(WID_TRSL_FILTER_BY_CARGO)->widget_data = this->cargo_filter_texts[this->cargo_filter_criteria];
+
+ 		this->DrawWidgets();
 	}
 
 	virtual void DrawWidget(const Rect &r, int widget) const
@@ -2749,6 +2760,10 @@ public:
 			case WID_TRSL_SORT_BY_DROPDOWN: // Select sorting criteria dropdown menu
 				ShowDropDownMenu(this, this->vehicle_sorter_names, this->vehicles.SortType(),  WID_TRSL_SORT_BY_DROPDOWN, 0, 0);
 				return;
+ 
+			case WID_TRSL_FILTER_BY_CARGO: // Cargo filter dropdown
+				ShowDropDownMenu(this, this->cargo_filter_texts, this->cargo_filter_criteria, WID_TRSL_FILTER_BY_CARGO, 0, 0);
+				break;
 
 			case WID_TRSL_ALL_VEHICLES: // All vehicles button
 				if (this->vli.index != ALL_TRAINS_TRACE_RESTRICT_SLOT_ID) {
@@ -2886,6 +2901,10 @@ public:
 		switch (widget) {
 			case WID_TRSL_SORT_BY_DROPDOWN:
 				this->vehicles.SetSortType(index);
+				break;
+ 
+			case WID_TRSL_FILTER_BY_CARGO: // Select a cargo filter criteria
+				this->SetCargoFilterIndex(index);
 				break;
 
 			default: NOT_REACHED();

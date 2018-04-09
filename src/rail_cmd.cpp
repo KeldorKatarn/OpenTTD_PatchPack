@@ -3127,6 +3127,31 @@ static TrackStatus GetTileTrackStatus_Track(TileIndex tile, TransportType mode, 
 
 static bool ClickTile_Track(TileIndex tile)
 {
+	if (_ctrl_pressed && IsPlainRailTile(tile)) {
+		TrackBits trackbits = TrackStatusToTrackBits(GetTileTrackStatus(tile, TRANSPORT_RAIL, 0));
+
+		if (trackbits & TRACK_BIT_VERT) { // N-S direction
+			trackbits = (_tile_fract_coords.x <= _tile_fract_coords.y) ? TRACK_BIT_RIGHT : TRACK_BIT_LEFT;
+		}
+
+		if (trackbits & TRACK_BIT_HORZ) { // E-W direction
+			trackbits = (_tile_fract_coords.x + _tile_fract_coords.y <= 15) ? TRACK_BIT_UPPER : TRACK_BIT_LOWER;
+		}
+
+		Track track = FindFirstTrack(trackbits);
+		if (HasTrack(tile, track) && HasSignalOnTrack(tile, track)) {
+			if (GetSignalType(tile, track) == SIGTYPE_LOGIC) {
+				SignalProgram* program = FindSignalProgram(tile, track);
+				if (program != nullptr) {
+					ShowSignalProgramWindow(program);
+				}
+			} else  {
+				ShowTraceRestrictProgramWindow(tile, track);
+			}
+			return true;
+		}
+	}
+
 	if (!IsRailDepot(tile)) return false;
 
 	ShowDepotWindow(tile, VEH_TRAIN);

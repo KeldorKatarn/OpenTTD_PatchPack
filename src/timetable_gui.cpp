@@ -627,6 +627,8 @@ struct TimetableWindow : Window {
 	{
 		const Vehicle *v = this->vehicle;
 
+		this->DeleteChildWindows(WC_QUERY_STRING);
+
 		switch (widget) {
 			case WID_VT_ORDER_VIEW: // Order view button
 				ShowOrdersWindow(v);

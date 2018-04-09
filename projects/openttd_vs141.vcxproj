@@ -90,7 +90,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\objs\$(Platform)\$(Configuration)\</OutDir>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
-  </PropertyGroup> 
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
     <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
@@ -169,7 +169,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest> 
+    </Manifest>
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -225,7 +225,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest> 
+    </Manifest>
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -293,7 +293,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest> 
+    </Manifest>
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -351,7 +351,7 @@
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest> 
+    </Manifest>
     <PostBuildEvent>
       <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
     </PostBuildEvent>
@@ -1265,7 +1265,6 @@
     <ClInclude Include="..\src\blitter\8bpp_optimized.hpp" />
     <ClCompile Include="..\src\blitter\8bpp_simple.cpp" />
     <ClInclude Include="..\src\blitter\8bpp_simple.hpp" />
-    <ClCompile Include="..\src\blitter\base.cpp" />
     <ClInclude Include="..\src\blitter\base.hpp" />
     <ClInclude Include="..\src\blitter\factory.hpp" />
     <ClCompile Include="..\src\blitter\null.cpp" />

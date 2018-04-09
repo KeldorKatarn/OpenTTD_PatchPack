@@ -560,6 +560,28 @@ static Vehicle *FindShipOnTile(Vehicle *v, void *data)
 }
  
 /**
+ * Adjust speed while on aqueducts.
+ * @param search_tile  Tile that the requesting ship will check, one will be added to look in front of the bow.
+ * @param ramp         Ramp tile from aqueduct.
+ * @param v            Ship that does the request.
+ * @return Allways false.
+ */
+static bool HandleSpeedOnAqueduct(Ship *v, TileIndex tile, TileIndex ramp)
+{
+	ShipCollideChecker scc;
+	scc.search_tile = tile + TileOffsByDir(v->direction);
+	scc.v = v;
+	scc.track_bits = TRACK_BIT_NONE;
+
+	if (IsValidTile(scc.search_tile) &&
+			(HasVehicleOnPos(ramp, &scc, FindShipOnTile) ||
+			HasVehicleOnPos(GetOtherTunnelBridgeEnd(ramp), &scc, FindShipOnTile))) {
+		v->cur_speed /= 4;
+	}
+	return false;
+}
+ 
+/**
  * If there is imminent collision or worse, direction and speed will be adjusted.
  * @param tile        Tile that the ship is about to enter.
  * @param v           Ship that does the request.
@@ -588,12 +610,16 @@ static void CheckDistanceBetweenShips(TileIndex tile, Ship *v, TrackBits tracks,
 	bool found = HasVehicleOnPos(tile, &scc, FindShipOnTile);
 
 	if (!found) {
+		/* Bridge entrance */
+		if (IsBridgeTile(tile) && HandleSpeedOnAqueduct(v, tile, tile)) return;
+
 		scc.track_bits = v->state;
 		scc.search_tile = TileAddByDiagDir(tile, _ship_search_directions[track][diagdir]);
 		if (!IsValidTile(scc.search_tile)) return;
 
 		found = HasVehicleOnPos(scc.search_tile, &scc, FindShipOnTile);
 	}
+
 	if (!found) {
 		scc.track_bits = track_bits;
 		scc.search_tile = TileAddByDiagDir(scc.search_tile, diagdir);
@@ -748,12 +774,16 @@ static void ShipController(Ship *v)
 	} else {
 		/* On a bridge */
 		if (!IsTileType(gp.new_tile, MP_TUNNELBRIDGE) || !HasBit(VehicleEnterTile(v, gp.new_tile, gp.x, gp.y), VETS_ENTERED_WORMHOLE)) {
+			if (gp.new_tile != TileVirtXY(v->x_pos, v->y_pos)) HandleSpeedOnAqueduct(v, gp.new_tile, v->tile);
 			v->x_pos = gp.x;
 			v->y_pos = gp.y;
 			v->UpdatePosition();
 			if ((v->vehstatus & VS_HIDDEN) == 0) v->Vehicle::UpdateViewport(true);
 			return;
 		}
+
+		/* Bridge exit */
+		if (gp.new_tile != TileVirtXY(v->x_pos, v->y_pos)) HandleSpeedOnAqueduct(v, gp.new_tile, v->tile);
 	}
 
 	/* update image of ship, as well as delta XY */

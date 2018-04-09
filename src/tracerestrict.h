@@ -131,7 +131,8 @@ enum TraceRestrictItemType {
 	TRIT_COND_ENTRY_DIRECTION     = 16,   ///< Test which side of signal/signal tile is being entered from
 	TRIT_COND_PBS_ENTRY_SIGNAL    = 17,   ///< Test tile and PBS-state of previous signal
 	TRIT_COND_TRAIN_GROUP         = 18,   ///< Test train group membership
-	TRIT_COND_SLOT                = 19,   ///< Test train slot membership
+	TRIT_COND_TRAIN_IN_SLOT       = 19,   ///< Test train slot membership
+	TRIT_COND_SLOT_OCCUPANCY      = 20,   ///< Test train slot occupancy state
 	/* space up to 31 */
 };
 
@@ -208,6 +209,15 @@ enum TraceRestrictSlotCondOpField {
 	TRSCOF_RELEASE_BACK			  = 2,       ///< release a slot (back of train)
 	TRSCOF_RELEASE_FRONT		  = 3,       ///< release a slot (front of train)
 	/* space up to 8 */
+};
+ 
+/**
+ * TraceRestrictItem auxiliary type field, for TRIT_COND_SLOT_OCCUPANCY
+ */
+enum TraceRestrictSlotOccupancyCondAuxField {
+	TRSOCAF_OCCUPANTS             = 0,       ///< value field is the occupancy count of the slot
+	TRSOCAF_REMAINING             = 1,       ///< value field is the remaining occupancy of the slot
+	/* space up to 3 */
 };
 
 /**
@@ -429,7 +439,8 @@ static inline bool IsTraceRestrictConditional(TraceRestrictItem item)
 /** Is TraceRestrictItem a double-item type? */
 static inline bool IsTraceRestrictDoubleItem(TraceRestrictItem item)
 {
-	return GetTraceRestrictType(item) == TRIT_COND_PBS_ENTRY_SIGNAL;
+	const TraceRestrictItemType type = GetTraceRestrictType(item);
+	return type == TRIT_COND_PBS_ENTRY_SIGNAL || type == TRIT_COND_SLOT_OCCUPANCY;
 }
 
 /**
@@ -462,6 +473,7 @@ enum TraceRestrictValueType {
 	TRVT_GROUP_INDEX              = 12,	///< takes a GroupID
 	TRVT_WAIT_AT_PBS              = 13,	///< takes a value 0 = wait at PBS signal, 1 = cancel wait at PBS signal
 	TRVT_SLOT_INDEX               = 14,	///< takes a TraceRestrictSlotID
+	TRVT_SLOT_INDEX_INT           = 15, ///< takes a TraceRestrictSlotID, and an integer in the next item slot
 };
 
 /**
@@ -473,7 +485,7 @@ struct TraceRestrictTypePropertySet {
 };
 
 void SetTraceRestrictValueDefault(TraceRestrictItem &item, TraceRestrictValueType value_type);
-void SetTraceRestrictTypeAndNormalise(TraceRestrictItem &item, TraceRestrictItemType type);
+void SetTraceRestrictTypeAndNormalise(TraceRestrictItem &item, TraceRestrictItemType type, uint8 aux_data = 0);
 
 /**
  * Get TraceRestrictTypePropertySet for a given instruction, only looks at value field
@@ -528,9 +540,13 @@ static inline TraceRestrictTypePropertySet GetTraceRestrictTypeProperties(TraceR
 				out.cond_type = TRCOT_BINARY;
 				break;
  
-			case TRIT_COND_SLOT:
+			case TRIT_COND_TRAIN_IN_SLOT:
 				out.value_type = TRVT_SLOT_INDEX;
 				out.cond_type = TRCOT_BINARY;
+				break;
+
+			case TRIT_COND_SLOT_OCCUPANCY:
+				out.value_type = TRVT_SLOT_INDEX_INT;
 				break;
 
 			default:
@@ -557,6 +573,18 @@ static inline TraceRestrictTypePropertySet GetTraceRestrictTypeProperties(TraceR
 	}
 
 	return out;
+}
+
+/** Is the aux field for this TraceRestrictItemType used as a subtype which changes the type of the value field? */
+static inline bool IsTraceRestrictTypeAuxSubtype(TraceRestrictItemType type)
+{
+	switch (type) {
+	case TRIT_COND_SLOT_OCCUPANCY:
+		return true;
+
+	default:
+		return false;
+	}
 }
 
 /** Get mapping ref ID from tile and track */

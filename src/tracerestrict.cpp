@@ -147,7 +147,7 @@ static void HandleCondition(std::vector<TraceRestrictCondStackFlags> &condstack,
  * Integer condition testing
  * Test value op condvalue
  */
-static bool TestCondition(uint16 value, TraceRestrictCondOp condop, uint16 condvalue)
+static bool TestCondition(int value, TraceRestrictCondOp condop, int condvalue)
 {
 	switch (condop) {
 		case TRCO_IS:
@@ -357,9 +357,30 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 						break;
 					}
  
-					case TRIT_COND_SLOT: {
+					case TRIT_COND_TRAIN_IN_SLOT: {
 						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
 						result = TestBinaryConditionCommon(item, slot != NULL && slot->IsOccupant(v->index));
+						break;
+					}
+ 
+					case TRIT_COND_SLOT_OCCUPANCY: {
+						// TRIT_COND_SLOT_OCCUPANCY value type uses the next slot
+						i++;
+						uint32_t value = this->items[i];
+						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
+						switch (static_cast<TraceRestrictSlotOccupancyCondAuxField>(GetTraceRestrictAuxField(item))) {
+							case TRSOCAF_OCCUPANTS:
+								result = TestCondition(slot != NULL ? slot->occupants.size() : 0, condop, value);
+								break;
+
+							case TRSOCAF_REMAINING:
+								result = TestCondition(slot != NULL ? slot->max_occupancy - slot->occupants.size() : 0, condop, value);
+								break;
+
+							default:
+								NOT_REACHED();
+								break;
+						}
 						break;
 					}
 
@@ -538,7 +559,8 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 				case TRIT_COND_ENTRY_DIRECTION:
 				case TRIT_COND_PBS_ENTRY_SIGNAL:
 				case TRIT_COND_TRAIN_GROUP:
-				case TRIT_COND_SLOT:
+				case TRIT_COND_TRAIN_IN_SLOT:
+				case TRIT_COND_SLOT_OCCUPANCY:
 					break;
 
 				default:
@@ -642,7 +664,9 @@ void SetTraceRestrictValueDefault(TraceRestrictItem &item, TraceRestrictValueTyp
 		case TRVT_LONG_RESERVE:
 		case TRVT_WAIT_AT_PBS:
 			SetTraceRestrictValue(item, 0);
-			SetTraceRestrictAuxField(item, 0);
+			if (!IsTraceRestrictTypeAuxSubtype(GetTraceRestrictType(item))) {
+				SetTraceRestrictAuxField(item, 0);
+			}
 			break;
 
 		case TRVT_ORDER:
@@ -675,6 +699,10 @@ void SetTraceRestrictValueDefault(TraceRestrictItem &item, TraceRestrictValueTyp
 			SetTraceRestrictValue(item, INVALID_TRACE_RESTRICT_SLOT_ID);
 			SetTraceRestrictAuxField(item, 0);
 			break;
+ 
+		case TRVT_SLOT_INDEX_INT:
+			SetTraceRestrictValue(item, INVALID_TRACE_RESTRICT_SLOT_ID);
+			break;
 
 		default:
 			NOT_REACHED();
@@ -683,9 +711,9 @@ void SetTraceRestrictValueDefault(TraceRestrictItem &item, TraceRestrictValueTyp
 }
 
 /**
- * Set the type field of a TraceRestrictItem, and resets any other fields which are no longer valid/meaningful to sensible defaults
- */
-void SetTraceRestrictTypeAndNormalise(TraceRestrictItem &item, TraceRestrictItemType type)
+* Set the type field of a TraceRestrictItem, and resets any other fields which are no longer valid/meaningful to sensible defaults
+*/
+void SetTraceRestrictTypeAndNormalise(TraceRestrictItem &item, TraceRestrictItemType type, uint8 aux_data)
 {
 	if (item != 0) {
 		assert(GetTraceRestrictType(item) != TRIT_NULL);
@@ -695,12 +723,27 @@ void SetTraceRestrictTypeAndNormalise(TraceRestrictItem &item, TraceRestrictItem
 
 	TraceRestrictTypePropertySet old_properties = GetTraceRestrictTypeProperties(item);
 	SetTraceRestrictType(item, type);
+	bool set_aux_field = false;
+	if (IsTraceRestrictTypeAuxSubtype(type)) {
+		SetTraceRestrictAuxField(item, aux_data);
+		set_aux_field = true;
+	}
+	else {
+		assert(aux_data == 0);
+	}
 	TraceRestrictTypePropertySet new_properties = GetTraceRestrictTypeProperties(item);
 
 	if (old_properties.cond_type != new_properties.cond_type ||
-			old_properties.value_type != new_properties.value_type) {
+		old_properties.value_type != new_properties.value_type) {
 		SetTraceRestrictCondOp(item, TRCO_IS);
 		SetTraceRestrictValueDefault(item, new_properties.value_type);
+		if (set_aux_field) {
+			SetTraceRestrictAuxField(item, aux_data);
+		}
+	}
+	if (GetTraceRestrictType(item) == TRIT_COND_LAST_STATION && GetTraceRestrictAuxField(item) != TROCAF_STATION) {
+		// if changing type from another order type to last visited station, reset value if not currently a station
+		SetTraceRestrictValueDefault(item, TRVT_ORDER);
 	}
 }
 
@@ -870,6 +913,9 @@ static uint32 GetDualInstructionInitialValue(TraceRestrictItem item)
 	switch (GetTraceRestrictType(item)) {
 		case TRIT_COND_PBS_ENTRY_SIGNAL:
 			return INVALID_TILE;
+ 
+		case TRIT_COND_SLOT_OCCUPANCY:
+			return 0;
 
 		default:
 			NOT_REACHED();
@@ -1444,8 +1490,11 @@ void TraceRestrictRemoveSlotID(TraceRestrictSlotID index)
 	FOR_ALL_TRACE_RESTRICT_PROGRAMS(prog) {
 		for (size_t i = 0; i < prog->items.size(); i++) {
 			TraceRestrictItem &item = prog->items[i]; // note this is a reference,
-			if ((GetTraceRestrictType(item) == TRIT_SLOT || GetTraceRestrictType(item) == TRIT_COND_SLOT) && GetTraceRestrictValue(item) == index) {
+			if ((GetTraceRestrictType(item) == TRIT_SLOT || GetTraceRestrictType(item) == TRIT_COND_TRAIN_IN_SLOT) && GetTraceRestrictValue(item) == index) {
 				SetTraceRestrictValueDefault(item, TRVT_SLOT_INDEX); // this updates the instruction in-place
+			}
+			if ((GetTraceRestrictType(item) == TRIT_COND_SLOT_OCCUPANCY) && GetTraceRestrictValue(item) == index) {
+				SetTraceRestrictValueDefault(item, TRVT_SLOT_INDEX_INT); // this updates the instruction in-place
 			}
 			if (IsTraceRestrictDoubleItem(item)) i++;
 		}

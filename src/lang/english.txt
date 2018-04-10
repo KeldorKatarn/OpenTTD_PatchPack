@@ -3749,6 +3749,21 @@ STR_VEHICLE_LIST_AIRCRAFT_TOOLTIP                               :{BLACK}Aircraft
 
 STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR                     :{TINY_FONT}{BLACK}Profit this year: {CURRENCY_LONG} (last year: {CURRENCY_LONG})
 STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME            :{STRING2} (lifetime: {CURRENCY_LONG})
+STR_VEHICLE_LIST_AGE                                            :{TINY_FONT}{BLACK}Age: {COMMA} year{P "" s} ({COMMA})
+STR_VEHICLE_LIST_AGE_RED                                        :{TINY_FONT}{BLACK}Age: {RED}{COMMA} {BLACK}year{P "" s} ({COMMA})
+STR_VEHICLE_LIST_CARGO                                          :{TINY_FONT}{BLACK}{RAW_STRING}
+STR_VEHICLE_LIST_RELIABILITY                                    :{TINY_FONT}{BLACK}Reliability: {COMMA}%
+STR_VEHICLE_LIST_RELIABILITY_RED                                :{TINY_FONT}{BLACK}Reliability: {RED}{COMMA}%
+STR_VEHICLE_LIST_MAX_SPEED                                      :{TINY_FONT}{BLACK}Max. speed: {VELOCITY}
+STR_VEHICLE_LIST_ENGINE_BUILT                                   :{TINY_FONT}{BLACK}Model: {ENGINE}   Built: {NUM}
+STR_VEHICLE_LIST_VALUE                                          :{TINY_FONT}{BLACK}Value: {CURRENCY_LONG}
+STR_VEHICLE_LIST_LENGTH                                         :{TINY_FONT}{BLACK}Length: {DECIMAL} tile{P "" s}
+STR_VEHICLE_LIST_TIME_TO_LIVE                                   :{TINY_FONT}{BLACK}Lifetime: {COMMA} year{P "" s} remaining
+STR_VEHICLE_LIST_TIME_TO_LIVE_RED                               :{TINY_FONT}{BLACK}Lifetime: {RED}{COMMA} {BLACK}year{P "" s} remaining
+STR_VEHICLE_LIST_TIME_TO_LIVE_OVERDUE                           :{TINY_FONT}{BLACK}Lifetime: {RED}{COMMA} {BLACK}year{P "" s} overdue
+STR_VEHICLE_LIST_TIMETABLE_DELAY_LATE                           :{TINY_FONT}{BLACK}Timetable status: {RED}{COMMA} {BLACK}tick{P "" s} ({RED}{COMMA} {BLACK}minute{P "" s}) late
+STR_VEHICLE_LIST_TIMETABLE_DELAY_EARLY                          :{TINY_FONT}{BLACK}Timetable status: {COMMA} tick{P "" s} ({COMMA} minute{P "" s}) early
+STR_VEHICLE_LIST_TIMETABLE_DELAY_ON_TIME                        :{TINY_FONT}{BLACK}Timetable status: On time
 
 STR_VEHICLE_NAME_AND_CARGO										:{TINY_FONT}{BLACK}{STRING1}   [{CARGO_LIST}]
 

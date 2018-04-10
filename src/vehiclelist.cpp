@@ -122,7 +122,7 @@ bool GenerateVehicleSortList(VehicleList *list, const VehicleListIdentifier &vli
  
 	auto fill_all_vehicles = [&]() {
 		FOR_ALL_VEHICLES(v) {
-			if (v->type == vli.vtype && v->owner == vli.company && v->IsPrimaryVehicle()) {
+			if (!HasBit(v->subtype, GVSF_VIRTUAL) && v->type == vli.vtype && v->owner == vli.company && v->IsPrimaryVehicle()) {
 				*list->Append() = v;
 			}
 		}

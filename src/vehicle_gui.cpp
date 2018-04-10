@@ -64,6 +64,24 @@ static GUIVehicleList::SortFunction VehicleLengthSorter;
 static GUIVehicleList::SortFunction VehicleTimeToLiveSorter;
 static GUIVehicleList::SortFunction VehicleTimetableDelaySorter;
 
+enum VehicleSortType
+{
+	VST_NUMBER,
+	VST_NAME,
+	VST_AGE,
+	VST_PROFIT_THIS_YEAR,
+	VST_PROFIT_LAST_YEAR,
+	VST_PROFIT_LIFETIME,
+	VST_CARGO,
+	VST_RELIABILITY,
+	VST_MAX_SPEED,
+	VST_MODEL,
+	VST_VALUE,
+	VST_LENGTH,
+	VST_TIME_TO_LIVE,
+	VST_TIMETABLE_DELAY,
+};
+
 GUIVehicleList::SortFunction * const BaseVehicleListWindow::vehicle_sorter_funcs[] = {
 	&VehicleNumberSorter,
 	&VehicleNameSorter,
@@ -1582,15 +1600,121 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 	uint max = min(this->vscroll->GetPosition() + this->vscroll->GetCapacity(), this->vehicles.Length());
 	for (uint i = this->vscroll->GetPosition(); i < max; ++i) {
 		const Vehicle *v = this->vehicles[i];
-		StringID str;
 
-		SetDParam(0, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR);
-		SetDParam(1, v->GetDisplayProfitThisYear());
-		SetDParam(2, v->GetDisplayProfitLastYear());
-		SetDParam(3, v->GetDisplayProfitLifetime());
-		
 		DrawVehicleImage(v, image_left, image_right, y + FONT_HEIGHT_SMALL - 1, selected_vehicle, EIT_IN_LIST, 0);
-		DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
+		
+		switch (this->vehicles.SortType()) {		
+			case VST_AGE: {
+				SetDParam(0, v->age / DAYS_IN_LEAP_YEAR);
+				SetDParam(1, v->max_age / DAYS_IN_LEAP_YEAR);
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, (v->age + DAYS_IN_YEAR < v->max_age) ? STR_VEHICLE_LIST_AGE : STR_VEHICLE_LIST_AGE_RED);
+				break;
+			}
+
+			case VST_CARGO: {
+				CargoArray cargo_manifest;
+
+				for (auto temp_v = v; temp_v != NULL; temp_v = temp_v->Next()) {
+					const Engine* engine = temp_v->GetEngine();
+
+					assert(engine != nullptr);
+
+					if (!engine->CanCarryCargo()) continue;
+					if (temp_v->cargo_cap <= 0) continue;
+
+					cargo_manifest[temp_v->cargo_type] += temp_v->cargo_cap;
+				}
+
+				std::string cargo_manifest_string;
+				char buffer[1024];
+
+				for (CargoID cargo_type = 0; cargo_type < NUM_CARGO; cargo_type++)
+				{
+					if (cargo_manifest[cargo_type] <= 0) continue;
+
+					if (!cargo_manifest_string.empty()) {
+						cargo_manifest_string.append(", ");
+					}
+
+					SetDParam(0, cargo_type);
+					SetDParam(1, cargo_manifest[cargo_type]);
+
+					GetString(buffer, STR_JUST_CARGO, lastof(buffer));
+					cargo_manifest_string.append(buffer);
+				}
+
+				SetDParamStr(0, cargo_manifest_string.c_str());
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_CARGO);
+				break;
+			}
+
+			case VST_RELIABILITY: {
+				SetDParam(0, ToPercent16(v->reliability));
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, ToPercent16(v->reliability) >= 50 ? STR_VEHICLE_LIST_RELIABILITY : STR_VEHICLE_LIST_RELIABILITY_RED);
+				break;
+			}
+
+			case VST_MAX_SPEED: {
+				SetDParam(0, v->GetDisplayMaxSpeed());
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_MAX_SPEED);
+				break;
+			}
+
+			case VST_MODEL: {
+				SetDParam(0, v->engine_type);
+				SetDParam(1, v->build_year);
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_ENGINE_BUILT);
+				break;
+			}
+
+			case VST_VALUE: {
+				Money total_value = 0;
+				for (auto temp_v = v; temp_v != NULL; temp_v = temp_v->GetNextVehicle()) {
+					total_value += temp_v->value;
+				}
+
+				SetDParam(0, total_value);
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_VALUE);
+				break;
+			}
+
+			case VST_LENGTH: {
+				const GroundVehicleCache* gcache = v->GetGroundVehicleCache();
+				assert(gcache != nullptr);
+				SetDParam(0, CeilDiv(gcache->cached_total_length * 10, TILE_SIZE));
+				SetDParam(1, 1);
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_LENGTH);
+				break;
+			}
+
+			case VST_TIME_TO_LIVE: {
+				auto years_remaining = (v->max_age / DAYS_IN_LEAP_YEAR) - (v->age / DAYS_IN_LEAP_YEAR);
+				SetDParam(0, std::abs(years_remaining));
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, (years_remaining > 1) ? STR_VEHICLE_LIST_TIME_TO_LIVE : ((years_remaining < 0) ? STR_VEHICLE_LIST_TIME_TO_LIVE_OVERDUE : STR_VEHICLE_LIST_TIME_TO_LIVE_RED));
+				break;
+			}
+
+			case VST_TIMETABLE_DELAY: {
+				if (v->lateness_counter == 0) {
+					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_TIMETABLE_DELAY_ON_TIME);
+				} else {
+					SetDParam(0, std::abs(v->lateness_counter));
+					SetDParam(1, std::abs(v->lateness_counter) / TICKS_PER_MINUTE);
+					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, v->lateness_counter > 0 ? STR_VEHICLE_LIST_TIMETABLE_DELAY_LATE : STR_VEHICLE_LIST_TIMETABLE_DELAY_EARLY);
+				}
+				break;
+			}
+
+			default: {
+				SetDParam(0, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR);
+				SetDParam(1, v->GetDisplayProfitThisYear());
+				SetDParam(2, v->GetDisplayProfitLastYear());
+				SetDParam(3, v->GetDisplayProfitLifetime());
+
+				DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_PROFIT_THIS_YEAR_LAST_YEAR_LIFETIME);
+				break;
+			}
+		}
 
 		uint32 vehicle_cargoes = 0;
 		auto temp_v = v;
@@ -1616,6 +1740,8 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 		}
 
 		if (show_orderlist) DrawSmallOrderList(v, orderlist_left, orderlist_right, y, v->cur_real_order_index);
+
+		StringID str;
 
 		if (v->IsChainInDepot()) {
 			str = STR_BLUE_COMMA;

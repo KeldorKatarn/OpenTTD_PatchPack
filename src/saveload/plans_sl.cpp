@@ -21,6 +21,7 @@ static const SaveLoad _plan_desc[] = {
 	SLE_VAR(Plan, visible, SLE_BOOL),
 	SLE_VAR(Plan, visible_by_all, SLE_BOOL),
 	SLE_VAR(Plan, creation_date, SLE_INT32),
+	SLE_CONDSTDSTR(Plan, name, SLE_CHAR, SL_PATCH_PACK_1_20, SL_MAX_VERSION),
 	SLE_END()
 };
 

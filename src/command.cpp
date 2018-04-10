@@ -230,6 +230,7 @@ CommandProc CmdAddPlanLine;
 CommandProc CmdRemovePlan;
 CommandProc CmdRemovePlanLine;
 CommandProc CmdChangePlanVisibility;
+CommandProc CmdRenamePlan;
 
 CommandProc CmdProgramSignalTraceRestrict;
 CommandProc CmdCreateTraceRestrictSlot;
@@ -430,6 +431,7 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdRemovePlan,                                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_REMOVE_PLAN
 	DEF_CMD(CmdRemovePlanLine,                                 0, CMDT_OTHER_MANAGEMENT      ), // CMD_REMOVE_PLAN_LINE
 	DEF_CMD(CmdChangePlanVisibility,                           0, CMDT_OTHER_MANAGEMENT      ), // CMD_CHANGE_PLAN_VISIBILITY
+	DEF_CMD(CmdRenamePlan,                                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_RENAME_PLAN
 
 	DEF_CMD(CmdProgramSignalTraceRestrict,                     0, CMDT_OTHER_MANAGEMENT      ), // CMD_PROGRAM_TRACERESTRICT_SIGNAL
 	DEF_CMD(CmdCreateTraceRestrictSlot,                        0, CMDT_OTHER_MANAGEMENT		 ), // CMD_CREATE_TRACERESTRICT_SLOT

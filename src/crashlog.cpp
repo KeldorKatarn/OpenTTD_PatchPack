@@ -342,9 +342,7 @@ char *CrashLog::FillCrashLog(char *buffer, const char *last) const
 
 	buffer += seprintf(buffer, last, "Crash at: %s", asctime(gmtime(&cur_time)));
 
-	YearMonthDay ymd;
-	ConvertDateToYMD(_date, &ymd);
-	buffer += seprintf(buffer, last, "In game date: %i-%02i-%02i (%i)\n\n", ymd.year, ymd.month + 1, ymd.day, _date_fract);
+	buffer += seprintf(buffer, last, "In game date: %i-%02i-%02i (%i)\n\n", _cur_date_ymd.year, _cur_date_ymd.month + 1, _cur_date_ymd.day, _date_fract);
 
 	buffer = this->LogError(buffer, last, CrashLog::message);
 	buffer = this->LogOpenTTDVersion(buffer, last);

@@ -3488,10 +3488,10 @@ STR_STATION_VIEW_RENAME_TOOLTIP                                 :{BLACK}Change n
 STR_STATION_VIEW_COVERAGE                                       :{BLACK}Coverage
 STR_STATION_VIEW_COVERAGE_TIP                                   :{BLACK}Show station's area coverage
 
-STR_STATION_VIEW_SCHEDULED_TRAINS_TOOLTIP                       :{BLACK}Show all trains which have this station on their schedule
-STR_STATION_VIEW_SCHEDULED_ROAD_VEHICLES_TOOLTIP                :{BLACK}Show all road vehicles which have this station on their schedule
-STR_STATION_VIEW_SCHEDULED_AIRCRAFT_TOOLTIP                     :{BLACK}Show all aircraft which have this station on their schedule
-STR_STATION_VIEW_SCHEDULED_SHIPS_TOOLTIP                        :{BLACK}Show all ships which have this station on their schedule
+STR_STATION_VIEW_SCHEDULED_TRAINS_TOOLTIP                       :{BLACK}Show all trains which have this station on their schedule. Ctrl+Click to show exclusively.
+STR_STATION_VIEW_SCHEDULED_ROAD_VEHICLES_TOOLTIP                :{BLACK}Show all road vehicles which have this station on their schedule. Ctrl+Click to show exclusively.
+STR_STATION_VIEW_SCHEDULED_AIRCRAFT_TOOLTIP                     :{BLACK}Show all aircraft which have this station on their schedule. Ctrl+Click to show exclusively.
+STR_STATION_VIEW_SCHEDULED_SHIPS_TOOLTIP                        :{BLACK}Show all ships which have this station on their schedule. Ctrl+Click to show exclusively.
 
 STR_STATION_VIEW_RENAME_STATION_CAPTION                         :Rename station/loading area
 

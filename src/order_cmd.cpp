@@ -715,7 +715,7 @@ void OrderList::DebugCheckSanity() const
 
 	for (const Vehicle *v = this->first_shared; v != NULL; v = v->NextShared()) {
 		++check_num_vehicles;
-		assert(v->orders.list == this);
+		assert(v->HasSpecificOrderList(this));
 	}
 	assert(this->num_vehicles == check_num_vehicles);
 	DEBUG(misc, 6, "... detected %u orders (%u manual), %u vehicles, %i timetabled, %i total",
@@ -895,7 +895,7 @@ static inline bool OrderGoesToStation(const Vehicle *v, const Order *o)
  * another order gets added), but assume the company will notice the problems,
  * when (s)he's changing the orders.
  */
-static void DeleteOrderWarnings(const Vehicle *v)
+void DeleteOrderWarnings(const Vehicle *v)
 {
 	DeleteVehicleNews(v->index, STR_NEWS_VEHICLE_HAS_TOO_FEW_ORDERS);
 	DeleteVehicleNews(v->index, STR_NEWS_VEHICLE_HAS_VOID_ORDER);
@@ -945,7 +945,7 @@ uint GetOrderDistance(const Order *prev, const Order *cur, const Vehicle *v, int
 		conditional_depth++;
 
 		int dist1 = GetOrderDistance(prev, v->GetOrder(cur->GetConditionSkipToOrder()), v, conditional_depth);
-		int dist2 = GetOrderDistance(prev, cur->next == NULL ? v->orders.list->GetFirstOrder() : cur->next, v, conditional_depth);
+		int dist2 = GetOrderDistance(prev, cur->next == nullptr ? v->GetFirstOrder() : cur->next, v, conditional_depth);
 		return max(dist1, dist2);
 	}
 
@@ -1153,7 +1153,7 @@ CommandCost CmdInsertOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 	if (v->GetNumOrders() >= MAX_VEH_ORDER_ID) return_cmd_error(STR_ERROR_TOO_MANY_ORDERS);
 	if (!Order::CanAllocateItem()) return_cmd_error(STR_ERROR_NO_MORE_SPACE_FOR_ORDERS);
-	if (v->orders.list == NULL && !OrderList::CanAllocateItem()) return_cmd_error(STR_ERROR_NO_MORE_SPACE_FOR_ORDERS);
+	if (!v->HasOrdersList() && !OrderList::CanAllocateItem()) return_cmd_error(STR_ERROR_NO_MORE_SPACE_FOR_ORDERS);
 
 	if (v->type == VEH_SHIP && _settings_game.pf.pathfinder_for_ships != VPF_NPF) {
 		/* Make sure the new destination is not too far away from the previous */
@@ -1210,16 +1210,16 @@ CommandCost CmdInsertOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord)
 {
 	/* Create new order and link in list */
-	if (v->orders.list == NULL) {
-		v->orders.list = new OrderList(new_o, v);
+	if (!v->HasOrdersList()) {
+		v->SetOrdersList(new OrderList(new_o, v));
 	} else {
-		v->orders.list->InsertOrderAt(new_o, sel_ord);
+		v->InsertOrderAt(new_o, sel_ord);
 	}
 
 	Vehicle *u = v->FirstShared();
 	DeleteOrderWarnings(u);
 	for (; u != NULL; u = u->NextShared()) {
-		assert(v->orders.list == u->orders.list);
+		assert(v->IsSharingOrdersWith(u));
 
 		/* If there is added an order before the current one, we need
 		 * to update the selected order. We do not change implicit/real order indices though.
@@ -1278,7 +1278,7 @@ void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord)
 static CommandCost DecloneOrder(Vehicle *dst, DoCommandFlag flags)
 {
 	if (flags & DC_EXEC) {
-		DeleteVehicleOrders(dst);
+		dst->DeleteVehicleOrders();
 		InvalidateVehicleOrder(dst, VIWD_REMOVE_ALL_ORDERS);
 		InvalidateWindowClassesData(GetWindowClassForVehicleType(dst->type), 0);
 		CheckMarkDirtyFocusedRoutePaths(dst);
@@ -1337,7 +1337,7 @@ CommandCost CmdDeleteOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
  * Cancel the current loading order of the vehicle as the order was deleted.
  * @param v the vehicle
  */
-static void CancelLoadingDueToDeletedOrder(Vehicle *v)
+void CancelLoadingDueToDeletedOrder(Vehicle *v)
 {
 	assert(v->current_order.IsType(OT_LOADING));
 	/* NON-stop flag is misused to see if a train is in a station that is
@@ -1355,12 +1355,12 @@ static void CancelLoadingDueToDeletedOrder(Vehicle *v)
  */
 void DeleteOrder(Vehicle *v, VehicleOrderID sel_ord)
 {
-	v->orders.list->DeleteOrderAt(sel_ord);
+	v->DeleteOrderAt(sel_ord);
 
 	Vehicle *u = v->FirstShared();
 	DeleteOrderWarnings(u);
 	for (; u != NULL; u = u->NextShared()) {
-		assert(v->orders.list == u->orders.list);
+		assert(v->IsSharingOrdersWith(u));
 
 		if (sel_ord == u->cur_real_order_index && u->current_order.IsType(OT_LOADING)) {
 			CancelLoadingDueToDeletedOrder(u);
@@ -1482,7 +1482,7 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (moving_one == NULL) return CMD_ERROR;
 
 	if (flags & DC_EXEC) {
-		v->orders.list->MoveOrder(moving_order, target_order);
+		v->MoveOrder(moving_order, target_order);
 
 		/* Update shared list */
 		Vehicle *u = v->FirstShared();
@@ -1522,7 +1522,7 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				u->cur_implicit_order_index++;
 			}
 
-			assert(v->orders.list == u->orders.list);
+			assert(v->IsSharingOrdersWith(u));
 			/* Update any possible open window of the vehicle */
 			InvalidateVehicleOrder(u, moving_order | (target_order << 8));
 		}
@@ -1936,7 +1936,7 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 				return_cmd_error(STR_ERROR_AIRCRAFT_NOT_ENOUGH_RANGE);
 			}
 
-			if (src->orders.list == NULL && !OrderList::CanAllocateItem()) {
+			if (!src->HasOrdersList() && !OrderList::CanAllocateItem()) {
 				return_cmd_error(STR_ERROR_NO_MORE_SPACE_FOR_ORDERS);
 			}
 
@@ -1944,9 +1944,9 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 				/* If the destination vehicle had a OrderList, destroy it.
 				 * We only reset the order indices, if the new orders are obviously different.
 				 * (We mainly do this to keep the order indices valid and in range.) */
-				DeleteVehicleOrders(dst, false, dst->GetNumOrders() != src->GetNumOrders());
+				dst->DeleteVehicleOrders(false, dst->GetNumOrders() != src->GetNumOrders());
 
-				dst->orders.list = src->orders.list;
+				dst->ShareOrdersWith(src);
 
 				/* Link this vehicle in the shared-list */
 				dst->AddToShared(src);
@@ -2012,7 +2012,7 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 				/* If the destination vehicle had an order list, destroy the chain but keep the OrderList.
 				 * We only reset the order indices, if the new orders are obviously different.
 				 * (We mainly do this to keep the order indices valid and in range.) */
-				DeleteVehicleOrders(dst, true, dst->GetNumOrders() != src->GetNumOrders());
+				dst->DeleteVehicleOrders(true, dst->GetNumOrders() != src->GetNumOrders());
 
 				order_dst = &first;
 				FOR_VEHICLE_ORDERS(src, order) {
@@ -2020,14 +2020,12 @@ CommandCost CmdCloneOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 					(*order_dst)->AssignOrder(*order);
 					order_dst = &(*order_dst)->next;
 				}
-				if (dst->orders.list == NULL) {
-					dst->orders.list = new OrderList(first, dst);
+				if (!dst->HasOrdersList()) {
+					dst->SetOrdersList(new OrderList(first, dst));
 				} else {
-					assert(dst->orders.list->GetFirstOrder() == NULL);
-					assert(!dst->orders.list->IsShared());
-					delete dst->orders.list;
-					assert(OrderList::CanAllocateItem());
-					dst->orders.list = new OrderList(first, dst);
+					assert(dst->GetFirstOrder() == nullptr);
+					assert(!dst->HasSharedOrdersList());
+					dst->DeleteAndReplaceOrdersList(new OrderList(first, dst));
 				}
 
 				/* Set automation bit if target has it. */
@@ -2174,7 +2172,7 @@ void CheckOrders(const Vehicle *v)
 		if (v->GetNumOrders() > 1) {
 			const Order *last = v->GetLastOrder();
 
-			if (v->orders.list->GetFirstOrder()->Equals(*last)) {
+			if (v->GetFirstOrder()->Equals(*last)) {
 				message = STR_NEWS_VEHICLE_HAS_DUPLICATE_ENTRY;
 			}
 		}
@@ -2183,7 +2181,7 @@ void CheckOrders(const Vehicle *v)
 		if (n_st < 2 && message == INVALID_STRING_ID) message = STR_NEWS_VEHICLE_HAS_TOO_FEW_ORDERS;
 
 #ifndef NDEBUG
-		if (v->orders.list != NULL) v->orders.list->DebugCheckSanity();
+		v->DebugCheckSanity();
 #endif
 
 		/* We don't have a problem */
@@ -2239,9 +2237,9 @@ restart:
 				}
 
 				/* Clear wait time */
-				v->orders.list->UpdateTotalDuration(-order->GetWaitTime());
+				v->UpdateTotalDuration(-order->GetWaitTime());
 				if (order->IsWaitTimetabled()) {
-					v->orders.list->UpdateTimetableDuration(-order->GetTimetabledWait());
+					v->UpdateTimetableDuration(-order->GetTimetabledWait());
 					order->SetWaitTimetabled(false);
 				}
 				order->SetWaitTime(0);
@@ -2276,37 +2274,6 @@ bool Vehicle::HasDepotOrder() const
 	}
 
 	return false;
-}
-
-/**
- * Delete all orders from a vehicle
- * @param v                   Vehicle whose orders to reset
- * @param keep_orderlist      If true, do not free the order list, only empty it.
- * @param reset_order_indices If true, reset cur_implicit_order_index and cur_real_order_index
- *                            and cancel the current full load order (if the vehicle is loading).
- *                            If false, _you_ have to make sure the order indices are valid after
- *                            your messing with them!
- */
-void DeleteVehicleOrders(Vehicle *v, bool keep_orderlist, bool reset_order_indices)
-{
-	DeleteOrderWarnings(v);
-
-	if (v->IsOrderListShared()) {
-		/* Remove ourself from the shared order list. */
-		v->RemoveFromShared();
-		v->orders.list = NULL;
-	} else if (v->orders.list != NULL) {
-		/* Remove the orders */
-		v->orders.list->FreeChain(keep_orderlist);
-		if (!keep_orderlist) v->orders.list = NULL;
-	}
-
-	if (reset_order_indices) {
-		v->cur_implicit_order_index = v->cur_real_order_index = 0;
-		if (v->current_order.IsType(OT_LOADING)) {
-			CancelLoadingDueToDeletedOrder(v);
-		}
-	}
 }
 
 /**

@@ -221,6 +221,11 @@ private:
 	Vehicle *ahead_separation;          ///< (outdated. Only for backwards compatibility)
 	Vehicle *behind_separation;         ///< (outdated. Only for backwards compatibility)
 
+	union {
+		OrderList *list;				///< Pointer to the order list for this vehicle
+		Order     *old;					///< Only used during conversion of old save games
+	} orders;                           ///< The orders currently assigned to the vehicle.
+
 public:
 	friend const SaveLoad *GetVehicleDescription(VehicleType vt); ///< So we can use private/protected variables in the saveload code
 	friend void FixOldVehicles();
@@ -320,11 +325,6 @@ public:
 
 	byte vehstatus;                     ///< Status
 	Order current_order;                ///< The current order (+ status, like: loading)
-
-	union {
-		OrderList *list;            ///< Pointer to the order list for this vehicle
-		Order     *old;             ///< Only used during conversion of old save games
-	} orders;                           ///< The orders currently assigned to the vehicle.
 
 	uint16 load_unload_ticks;           ///< Ticks to wait before starting next cycle.
 	GroupID group_id;                   ///< Index of group Pool array
@@ -698,7 +698,7 @@ public:
 	 * Check if we share our orders with another vehicle.
 	 * @return true if there are other vehicles sharing the same order
 	 */
-	inline bool IsOrderListShared() const { return this->orders.list != NULL && this->orders.list->IsShared(); }
+	inline bool HasSharedOrdersList() const { return this->orders.list != NULL && this->orders.list->IsShared(); }
 
 	/**
 	 * Get the number of orders this vehicle has.
@@ -890,6 +890,278 @@ public:
 	inline Order *GetLastOrder() const
 	{
 		return (this->orders.list == NULL) ? NULL : this->orders.list->GetLastOrder();
+	}
+
+	/**
+	* Get a certain order of the order chain.
+	* @param index zero-based index of the order within the chain.
+	* @return the order at position index or null if there are no orders.
+	*/
+	Order* GetOrderAt(int index) const
+	{
+		return (this->orders.list == nullptr) ? nullptr : this->orders.list->GetOrderAt(index);
+	}
+
+	/**
+	* Get the order after the given one or the first one, if the given one is the
+	* last one.
+	* @param curr Order to find the next one for.
+	* @return Next order or nullptr if there are no orders.
+	*/
+	inline const Order *GetNextOrder(const Order *curr) const
+	{
+		return (this->orders.list == nullptr) ? nullptr : this->orders.list->GetNext(curr);
+	}
+
+	/**
+	* Gets the known duration of the vehicles orders, timetabled or not.
+	* @return  known order duration.
+	*/
+	inline Ticks GetTotalOrderListDuration() const
+	{
+		return (this->orders.list == nullptr) ? 0 : this->orders.list->GetTotalDuration();
+	}
+
+	/**
+	* Gets the known duration of the vehicles timetable even if the timetable is not complete.
+	* @return known timetable duration
+	*/
+	inline Ticks GetTimetableDurationIncomplete() const
+	{
+		return (this->orders.list == nullptr) ? 0 : this->orders.list->GetTimetableDurationIncomplete();
+	}
+
+	/**
+	* Gets the total duration of the vehicles timetable or INVALID_TICKS is the timetable is not complete.
+	* @return total timetable duration or INVALID_TICKS for incomplete timetables
+	*/
+	inline Ticks GetTimetableTotalDuration() const
+	{
+		return (this->orders.list == nullptr) ? INVALID_TICKS : this->orders.list->GetTimetableTotalDuration();
+	}
+
+	/**
+	* Checks whether all orders of the orders list have a filled timetable.
+	* @return whether all orders have a filled timetable.
+	*/
+	inline bool HasCompleteTimetable() const
+	{
+		return (this->orders.list != nullptr) && this->orders.list->IsCompleteTimetable();
+	}
+
+	/**
+	* Gets whether the timetable separation is currently valid or not.
+	* @return whether the timetable separation is currently valid or not.
+	*/
+	inline bool IsTimetableSeparationValid() const
+	{
+		return (this->orders.list != nullptr) && this->orders.list->IsSeparationValid();
+	}
+
+	/**
+	* Gets whether timetable separation is currently switched on or not.
+	* @return whether the timetable separation is currently switched on or not.
+	*/
+	inline bool IsTimetableSeparationOn() const
+	{
+		return (this->orders.list != nullptr) && this->orders.list->IsSeparationOn();
+	}
+
+	/**
+	* Must be called if an order's timetable is changed to update internal book keeping.
+	* @param delta By how many ticks has the timetable duration changed
+	*/
+	inline void UpdateTimetableDuration(Ticks delta)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->UpdateTimetableDuration(delta);
+	}
+
+	/**
+	* Must be called if an order's timetable is changed to update internal book keeping.
+	* @param delta By how many ticks has the total duration changed
+	*/
+	inline void UpdateTotalDuration(Ticks delta)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->UpdateTotalDuration(delta);
+	}
+
+		/**
+	* Delete all orders from this vehicle
+	* @param keep_orderlist      If true, do not free the order list, only empty it.
+	* @param reset_order_indices If true, reset cur_implicit_order_index and cur_real_order_index
+	*                            and cancel the current full load order (if the vehicle is loading).
+	*                            If false, _you_ have to make sure the order indices are valid after
+	*                            your messing with them!
+	*/
+	void DeleteVehicleOrders(bool keep_orderlist = false, bool reset_order_indices = true)
+	{
+		DeleteOrderWarnings(this);
+
+		if (this->HasSharedOrdersList()) {
+			/* Remove ourself from the shared order list. */
+			this->RemoveFromShared();
+			this->orders.list = nullptr;
+		}
+		else if (this->orders.list != nullptr) {
+			/* Remove the orders */
+			this->FreeOrderChain(keep_orderlist);
+			if (!keep_orderlist) this->orders.list = nullptr;
+		}
+
+		if (reset_order_indices) {
+			this->cur_implicit_order_index = this->cur_real_order_index = 0;
+			if (this->current_order.IsType(OT_LOADING)) {
+				CancelLoadingDueToDeletedOrder(this);
+			}
+		}
+	}
+
+	/**
+	* Free the complete order chain.
+	* @param keep_orderlist If this is true only delete the orders, otherwise also delete the OrderList.
+	*/
+	inline void FreeOrderChain(bool keep_orderlist = false)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->FreeChain(keep_orderlist);
+		this->orders.list = nullptr;
+	}
+
+	/**
+	* Sets the orders list to the specified value.
+	*/
+	inline void SetOrdersList(OrderList* orders_list)
+	{
+		this->orders.list = orders_list;
+	}
+
+	/**
+	* Sets the orders list to the specified value and deletes the old list.
+	*/
+	inline void DeleteAndReplaceOrdersList(OrderList* orders_list)
+	{
+		delete this->orders.list;
+
+		assert(OrderList::CanAllocateItem());
+		
+		this->orders.list = orders_list;
+	}
+
+	/**
+	* Checks for internal consistency of order list. Triggers assertion if something is wrong.
+	*/
+	inline void DebugCheckSanity() const
+	{
+		if (this->orders.list != nullptr) return;
+
+		this->orders.list->DebugCheckSanity();
+	}
+
+	/**
+	* Returns the current timetable separation settings.
+	* @return the current timetable separation settings or default settings if there are no orders.
+	*/
+	inline TTSepSettings GetTimetableSeparationSettings() const
+	{
+		return (this->orders.list == nullptr) ? TTSepSettings() : this->orders.list->GetSepSettings();
+	}
+
+	/**
+	* Prepares command to set new separation settings.
+	* @param s Contains the new settings to be used for separation.
+	*/
+	inline void SetTimetableSeparationSettings(TTSepSettings settings) const
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->SetSepSettings(settings);
+	}
+
+	/**
+	* Get the next order which will make the given vehicle stop at a station
+	* or refit at a depot or evaluate a non-trivial condition.
+	* @param next The order to start looking at.
+	* @param hops The number of orders we have already looked at.
+	* @param cargo_mask The bit set of cargoes that the we are looking at, this may be reduced to indicate the set of cargoes that the result is valid for.
+	* @return Either of
+	*         \li a station order
+	*         \li a refitting depot order
+	*         \li a non-trivial conditional order
+	*         \li NULL  if the vehicle won't stop anymore or there is no orders list.
+	*/
+	inline const Order* GetNextDecisionNode(const Order *next, uint hops, uint32 &cargo_mask) const
+	{
+		return (this->orders.list == nullptr) ? nullptr : this->orders.list->GetNextDecisionNode(next, hops, cargo_mask);
+	}
+
+	/**
+	* Checks whether the orders list is identical to the specified one. Only used for sanity checks.
+	* @return whether the orders list is identical to the specified one.
+	*/
+	inline bool HasSpecificOrderList(const OrderList* order_list) const
+	{
+		return this->orders.list == order_list;
+	}
+
+	/**
+	* Insert a new order into the order chain.
+	* @param new_order is the order to insert into the chain.
+	* @param index is the position where the order is supposed to be inserted.
+	*/
+	inline void InsertOrderAt(Order *new_order, int index)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->InsertOrderAt(new_order, index);
+	}
+
+	/**
+	* Remove an order from the order list and delete it.
+	* @param index is the position of the order which is to be deleted.
+	*/
+	inline void DeleteOrderAt(int index)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->DeleteOrderAt(index);
+	}
+
+	/**
+	* Move an order to another position within the order list.
+	* @param from is the zero-based position of the order to move.
+	* @param to is the zero-based position where the order is moved to.
+	*/
+	inline void MoveOrder(int from, int to)
+	{
+		assert(this->orders.list != nullptr);
+
+		this->orders.list->MoveOrder(from, to);
+	}
+
+	/**
+	* Shares the orders list of the specified vehicle
+	*/
+	inline void ShareOrdersWith(const Vehicle* vehicle)
+	{
+		assert(vehicle != nullptr);
+
+		this->orders.list = vehicle->orders.list;
+	}
+
+	/**
+	* Checks whether this vehicle has the same orders list as the specified one.
+	* @return whether this vehicle has the same orders list as the specified one.
+	*/
+	inline bool IsSharingOrdersWith(const Vehicle* vehicle) const
+	{
+		assert(vehicle != nullptr);
+
+		return this->orders.list == vehicle->orders.list;
 	}
 
 	bool IsEngineCountable() const;

@@ -284,7 +284,7 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 						if (v->GetNumOrders() == 0) break;
 
 						const Order *current_order = v->GetOrder(v->cur_real_order_index);
-						for (const Order *order = v->orders.list->GetNext(current_order); order != current_order; order = v->orders.list->GetNext(order)) {
+						for (const Order *order = v->GetNextOrder(current_order); order != current_order; order = v->GetNextOrder(order)) {
 							if (order->IsGotoOrder()) {
 								result = TestOrderCondition(order, item);
 								break;

@@ -29,14 +29,14 @@
 /* static */ void LinkRefresher::Run(Vehicle *v, bool allow_merge, bool is_full_loading, uint32 cargo_mask)
 {
 	/* If there are no orders we can't predict anything.*/
-	if (v->orders.list == NULL) return;
+	if (!v->HasOrdersList()) return;
 
 	uint32 have_cargo_mask = v->GetLastLoadingStationValidCargoMask();
 
 	/* Scan orders for cargo-specific load/unload, and run LinkRefresher separately for each set of cargoes where they differ. */
 	while (cargo_mask != 0) {
 		uint32 iter_cargo_mask = cargo_mask;
-		for (const Order *o = v->orders.list->GetFirstOrder(); o != NULL; o = o->next) {
+		for (const Order *o = v->GetFirstOrder(); o != NULL; o = o->next) {
 			if (o->IsType(OT_GOTO_STATION) || o->IsType(OT_IMPLICIT)) {
 				if (o->GetUnloadType() == OUFB_CARGO_TYPE_UNLOAD) {
 					CargoMaskValueFilter<uint>(iter_cargo_mask, [&](CargoID cargo) -> uint {
@@ -52,8 +52,8 @@
 		}
 
 		/* Make sure the first order is a useful order. */
-		const Order *first = v->orders.list->GetNextDecisionNode(v->GetOrder(v->cur_implicit_order_index), 0, iter_cargo_mask);
-		if (first != NULL) {
+		const Order *first = v->GetNextDecisionNode(v->GetOrder(v->cur_implicit_order_index), 0, iter_cargo_mask);
+		if (first != nullptr) {
 			HopSet seen_hops;
 			LinkRefresher refresher(v, &seen_hops, allow_merge, is_full_loading, iter_cargo_mask);
 
@@ -200,8 +200,8 @@ const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next
 
 		if (next->IsType(OT_CONDITIONAL)) {
 			uint32 this_cargo_mask = this->cargo_mask;
-			const Order *skip_to = this->vehicle->orders.list->GetNextDecisionNode(
-				this->vehicle->orders.list->GetOrderAt(next->GetConditionSkipToOrder()), num_hops, this_cargo_mask);
+			const Order *skip_to = this->vehicle->GetNextDecisionNode(
+				this->vehicle->GetOrderAt(next->GetConditionSkipToOrder()), num_hops, this_cargo_mask);
 			assert(this_cargo_mask == this->cargo_mask);
 			if (skip_to != NULL && num_hops < this->vehicle->GetNumOrders()) {
 				/* Make copies of capacity tracking lists. There is potential
@@ -216,8 +216,8 @@ const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next
 		/* Reassign next with the following stop. This can be a station or a
 		 * depot.*/
 		uint32 this_cargo_mask = this->cargo_mask;
-		next = this->vehicle->orders.list->GetNextDecisionNode(
-			this->vehicle->orders.list->GetNext(next), num_hops++, this_cargo_mask);
+		next = this->vehicle->GetNextDecisionNode(
+			this->vehicle->GetNextOrder(next), num_hops++, this_cargo_mask);
 		assert(this_cargo_mask == this->cargo_mask);
 	}
 	return next;
@@ -256,16 +256,16 @@ void LinkRefresher::RefreshStats(const Order *cur, const Order *next)
 			 * loading. Don't do that if the vehicle has been waiting for longer than the entire
 			 * order list is supposed to take, though. If that is the case the total duration is
 			 * probably far off and we'd greatly overestimate the capacity by increasing.*/
-			if (this->is_full_loading && this->vehicle->orders.list != NULL &&
+			if (this->is_full_loading && this->vehicle->HasOrdersList() &&
 					st->index == vehicle->last_station_visited &&
-					this->vehicle->orders.list->GetTotalDuration() >
+					this->vehicle->GetTotalOrderListDuration() >
 					(Ticks)this->vehicle->current_order_time) {
 				uint effective_capacity = cargo_quantity * this->vehicle->load_unload_ticks;
-				if (effective_capacity > (uint)this->vehicle->orders.list->GetTotalDuration()) {
+				if (effective_capacity > (uint)this->vehicle->GetTotalOrderListDuration()) {
 					IncreaseStats(st, c, next_station, effective_capacity /
-							this->vehicle->orders.list->GetTotalDuration(), 0,
+							this->vehicle->GetTotalOrderListDuration(), 0,
 							EUM_INCREASE | restricted_mode);
-				} else if (RandomRange(this->vehicle->orders.list->GetTotalDuration()) < effective_capacity) {
+				} else if (RandomRange(this->vehicle->GetTotalOrderListDuration()) < effective_capacity) {
 					IncreaseStats(st, c, next_station, 1, 0, EUM_INCREASE | restricted_mode);
 				} else {
 					IncreaseStats(st, c, next_station, cargo_quantity, 0, EUM_REFRESH | restricted_mode);

@@ -59,8 +59,8 @@ static void ChangeTimetable(Vehicle *v, VehicleOrderID order_number, uint16 val,
 		default:
 			NOT_REACHED();
 	}
-	v->orders.list->UpdateTotalDuration(total_delta);
-	v->orders.list->UpdateTimetableDuration(timetable_delta);
+	v->UpdateTotalDuration(total_delta);
+	v->UpdateTimetableDuration(timetable_delta);
 
 	for (v = v->FirstShared(); v != NULL; v = v->NextShared()) {
 		if (v->cur_real_order_index == order_number && v->current_order.Equals(*order)) {
@@ -247,7 +247,7 @@ CommandCost CmdSetVehicleOnTime(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 	VehicleID veh = GB(p1, 0, 20);
 
 	Vehicle *v = Vehicle::GetIfValid(veh);
-	if (v == NULL || !v->IsPrimaryVehicle() || v->orders.list == NULL) return CMD_ERROR;
+	if (v == NULL || !v->IsPrimaryVehicle() || !v->HasOrdersList()) return CMD_ERROR;
 
 	CommandCost ret = CheckOwnership(v->owner);
 	if (ret.Failed()) return ret;
@@ -316,7 +316,7 @@ CommandCost CmdSetTimetableStart(TileIndex tile, DoCommandFlag flags, uint32 p1,
 {
 	bool timetable_all = HasBit(p1, 20);
 	Vehicle *v = Vehicle::GetIfValid(GB(p1, 0, 20));
-	if (v == NULL || !v->IsPrimaryVehicle() || v->orders.list == NULL) return CMD_ERROR;
+	if (v == NULL || !v->IsPrimaryVehicle() || !v->HasOrdersList()) return CMD_ERROR;
 
 	CommandCost ret = CheckOwnership(v->owner);
 	if (ret.Failed()) return ret;
@@ -326,20 +326,20 @@ CommandCost CmdSetTimetableStart(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	if (start_date < 0 || start_date > MAX_DAY) return CMD_ERROR;
 	if (start_date - _date > 15 * DAYS_IN_LEAP_YEAR) return CMD_ERROR;
 	if (_date - start_date > DAYS_IN_LEAP_YEAR) return CMD_ERROR;
-	if (timetable_all && !v->orders.list->IsCompleteTimetable()) return CMD_ERROR;
+	if (timetable_all && !v->HasCompleteTimetable()) return CMD_ERROR;
 
 	if (flags & DC_EXEC) {
 		SmallVector<Vehicle *, 8> vehs;
 
 		if (timetable_all) {
-			for (Vehicle *w = v->orders.list->GetFirstSharedVehicle(); w != NULL; w = w->NextShared()) {
+			for (Vehicle *w = v->FirstShared(); w != NULL; w = w->NextShared()) {
 				*vehs.Append() = w;
 			}
 		} else {
 			*vehs.Append() = v;
 		}
 
-		int total_duration = v->orders.list->GetTimetableTotalDuration();
+		int total_duration = v->GetTimetableTotalDuration();
 		int num_vehs = vehs.Length();
 
 		if (num_vehs >= 2) {
@@ -436,7 +436,9 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 		int timetable_delta = 0;
 
 		for (int i = 0; i < num_orders; ++i) {
-			Order* order = v->orders.list->GetOrderAt(i);
+			Order* order = v->GetOrderAt(i);
+
+			assert(order != nullptr);
 
 			if (!order->IsType(OT_IMPLICIT)) {
 				if (order->GetWaitTime() != 0 && !order->IsWaitTimetabled()) {
@@ -451,7 +453,7 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 			}
 		}
 
-		v->orders.list->UpdateTimetableDuration(timetable_delta);
+		v->UpdateTimetableDuration(timetable_delta);
 
 		SetWindowDirty(WC_VEHICLE_TIMETABLE, v->index);
 	}
@@ -634,7 +636,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	 * length of a full cycle till lateness is less than the length of a timetable
 	 * cycle. When the timetable isn't fully filled the cycle will be INVALID_TICKS. */
 	if (v->lateness_counter > (int)timetabled) {
-		Ticks cycle = v->orders.list->GetTimetableTotalDuration();
+		Ticks cycle = v->GetTimetableTotalDuration();
 		if (cycle != INVALID_TICKS && v->lateness_counter > cycle) {
 			v->lateness_counter %= cycle;
 		}

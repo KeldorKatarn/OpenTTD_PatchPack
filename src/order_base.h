@@ -731,7 +731,7 @@ public:
 #define FOR_ALL_ORDERS(var) FOR_ALL_ORDERS_FROM(var, 0)
 
 
-#define FOR_VEHICLE_ORDERS(v, order) for (order = (v->orders.list == NULL) ? NULL : v->orders.list->GetFirstOrder(); order != NULL; order = order->next)
+#define FOR_VEHICLE_ORDERS(v, order) for (order = v->GetFirstOrder(); order != NULL; order = order->next)
 
 
 #define FOR_ALL_ORDER_LISTS_FROM(var, start) FOR_ALL_ITEMS_FROM(OrderList, orderlist_index, var, start)

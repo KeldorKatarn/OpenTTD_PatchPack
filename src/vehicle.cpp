@@ -933,7 +933,7 @@ void Vehicle::PreDestructor()
 	InvalidateWindowClassesData(GetWindowClassForVehicleType(this->type), 0);
 
 	this->cargo.Truncate();
-	DeleteVehicleOrders(this);
+	this->DeleteVehicleOrders();
 	DeleteDepotHighlightOfVehicle(this);
 
 	extern void StopGlobalFollowVehicle(const Vehicle *v);
@@ -990,10 +990,12 @@ void VehicleEnteredDepotThisTick(Vehicle *v)
 	 * stopped the vehicle, so autoreplace can start it again */
 
 
-	if (v->orders.list != NULL && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
+	if (v->HasOrdersList() && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
 		v->current_order.GetDepotOrderType() == ODTF_MANUAL)) {
 		for (int i = 0; i < v->GetNumOrders(); ++i) {
-			Order* order = v->orders.list->GetOrderAt(i);
+			Order* order = v->GetOrderAt(i);
+
+			assert(order != nullptr);
 
 			if (order->GetType() == OT_GOTO_DEPOT && order->GetDestination() == v->current_order.GetDestination()) {
 				v->cur_implicit_order_index = i;
@@ -1703,7 +1705,7 @@ void VehicleEnterDepot(Vehicle *v)
 			bool has_depot_in_orders = false;
 			
 			for (int i = 0; i < v->GetNumOrders(); ++i) {
-				Order* order = v->orders.list->GetOrderAt(i);
+				Order* order = v->GetOrderAt(i);
 
 				bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
 				bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
@@ -2411,7 +2413,7 @@ void Vehicle::HandleAutomaticTimetableSeparation()
 {
 	/* If all requirements for separation are met, we can initialize it. */
 	if (!_settings_game.order.automatic_timetable_separation) return;
-	if (!this->IsOrderListShared()) return;	
+	if (!this->HasSharedOrdersList()) return;
 	assert(this->orders.list != nullptr);	
 	if (!this->orders.list->IsCompleteTimetable()) return;
 

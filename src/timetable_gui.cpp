@@ -131,7 +131,7 @@ static void FillTimetableArrivalDepartureTable(const Vehicle *v, VehicleOrderID 
 		if (i >= v->GetNumOrders()) {
 			i = 0;
 			assert(order == NULL);
-			order = v->orders.list->GetFirstOrder();
+			order = v->GetFirstOrder();
 		}
 	} while (i != start);
 
@@ -163,7 +163,7 @@ struct TimetableWindow : Window {
 			vehicle(Vehicle::Get(window_number)),
 			show_expected(true)
 	{
-		this->new_sep_settings = (vehicle->orders.list != NULL) ? vehicle->orders.list->GetSepSettings() : TTSepSettings();
+		this->new_sep_settings = vehicle->GetTimetableSeparationSettings();
 		this->CreateNestedTree();
 		this->vscroll = this->GetScrollbar(WID_VT_SCROLLBAR);
 		this->UpdateSelectionStates();
@@ -237,7 +237,7 @@ struct TimetableWindow : Window {
 	 */
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
-		this->new_sep_settings = (vehicle->orders.list != NULL) ? vehicle->orders.list->GetSepSettings() : TTSepSettings();
+		this->new_sep_settings = vehicle->GetTimetableSeparationSettings();
 
 		switch (data) {
 			case VIWD_AUTOREPLACE:
@@ -322,11 +322,11 @@ struct TimetableWindow : Window {
 			this->SetWidgetDisabledState(WID_VT_CLEAR_TIME, disable);
 			this->SetWidgetDisabledState(WID_VT_CHANGE_SPEED, disable_speed);
 			this->SetWidgetDisabledState(WID_VT_CLEAR_SPEED, disable_speed);
-			this->SetWidgetDisabledState(WID_VT_SHARED_ORDER_LIST, !v->IsOrderListShared());
+			this->SetWidgetDisabledState(WID_VT_SHARED_ORDER_LIST, !v->HasSharedOrdersList());
 
-			this->SetWidgetDisabledState(WID_VT_CONFIRM_ALL, v->orders.list == NULL);
-			this->SetWidgetDisabledState(WID_VT_RESET_LATENESS, v->orders.list == NULL);
-			this->SetWidgetDisabledState(WID_VT_AUTOMATE, v->orders.list == NULL);
+			this->SetWidgetDisabledState(WID_VT_CONFIRM_ALL, !v->HasOrdersList());
+			this->SetWidgetDisabledState(WID_VT_RESET_LATENESS, !v->HasOrdersList());
+			this->SetWidgetDisabledState(WID_VT_AUTOMATE, !v->HasOrdersList());
 		} else {
 			this->DisableWidget(WID_VT_CONFIRM_ALL);
 			this->DisableWidget(WID_VT_CHANGE_TIME);
@@ -433,7 +433,7 @@ struct TimetableWindow : Window {
 				 * i.e. are only shown if we can calculate all times.
 				 * Excluding order lists with only one order makes some things easier.
 				 */
-				Ticks total_time = v->orders.list != NULL ? v->orders.list->GetTimetableDurationIncomplete() : 0;
+				Ticks total_time = v->GetTimetableDurationIncomplete();
 				if (total_time <= 0 || v->GetNumOrders() <= 1 || !HasBit(v->vehicle_flags, VF_TIMETABLE_STARTED)) break;
 
 				TimetableArrivalDeparture *arr_dep = AllocaM(TimetableArrivalDeparture, v->GetNumOrders());
@@ -484,10 +484,10 @@ struct TimetableWindow : Window {
 			case WID_VT_SUMMARY_PANEL: {
 				int y = r.top + WD_FRAMERECT_TOP;
 
-				Ticks total_time = v->orders.list != NULL ? v->orders.list->GetTimetableDurationIncomplete() : 0;
+				Ticks total_time = v->GetTimetableDurationIncomplete();
 				if (total_time != 0) {
 					SetTimetableParams(0, 1, total_time);
-					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, v->orders.list->IsCompleteTimetable() ? STR_TIMETABLE_TOTAL_TIME : STR_TIMETABLE_TOTAL_TIME_INCOMPLETE);
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, v->HasCompleteTimetable() ? STR_TIMETABLE_TOTAL_TIME : STR_TIMETABLE_TOTAL_TIME_INCOMPLETE);
 				}
 				y += FONT_HEIGHT_NORMAL;
 
@@ -519,7 +519,7 @@ struct TimetableWindow : Window {
 				const int right_border = r.right - WD_FRAMERECT_RIGHT; // Represents the right border of the separation display frame.
 
 				/* If separation is inactive, we can stop here. */
-				if (!_settings_game.order.automatic_timetable_separation || (this->vehicle->orders.list == NULL))
+				if (!_settings_game.order.automatic_timetable_separation || !this->vehicle->HasOrdersList())
 					break;
 
 				/* If the new mode is OFF... */
@@ -542,11 +542,11 @@ struct TimetableWindow : Window {
 						par = this->new_sep_settings.sep_ticks;
 					}
 					else {
-						par = this->vehicle->orders.list->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.num_veh);
+						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.num_veh);
 					}
 
 					if (this->new_sep_settings.mode == TTS_MODE_MAN_T || 
-						(this->vehicle->orders.list->IsCompleteTimetable() && this->vehicle->orders.list->IsSeparationValid())) {
+						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
 						
 						SetDParam(0, par);
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_TICKS, TC_BLACK);
@@ -565,11 +565,11 @@ struct TimetableWindow : Window {
 						par = this->new_sep_settings.num_veh;
 					}
 					else {
-						par = this->vehicle->orders.list->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.sep_ticks);
+						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.sep_ticks);
 					}
 
 					if (this->new_sep_settings.mode == TTS_MODE_MAN_N ||
-						(this->vehicle->orders.list->IsCompleteTimetable() && this->vehicle->orders.list->IsSeparationValid())) {
+						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
 						SetDParam(0, par);
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_NUM_DESC, TC_BLACK);
 					}
@@ -578,13 +578,13 @@ struct TimetableWindow : Window {
 				}
 
 				/* If separation is switched on at all... */				
-				if (this->vehicle->orders.list->IsSeparationOn()) {
-					if (!this->vehicle->orders.list->IsCompleteTimetable()) {
+				if (this->vehicle->IsTimetableSeparationOn()) {
+					if (!this->vehicle->HasCompleteTimetable()) {
 						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_TIMETABLE);
 					}
 					else {
 						/* ... set displayed status to either "Running" or "Initializing" */
-						SetDParam(0, (this->vehicle->orders.list->IsSeparationValid()) ? STR_TTSEPARATION_STATUS_RUNNING : STR_TTSEPARATION_STATUS_INIT);
+						SetDParam(0, (this->vehicle->IsTimetableSeparationValid()) ? STR_TTSEPARATION_STATUS_RUNNING : STR_TTSEPARATION_STATUS_INIT);
 					}
 				}
 				else {
@@ -754,9 +754,9 @@ struct TimetableWindow : Window {
 	{
 		assert(widget == WID_VT_TTSEP_MODE_DROPDOWN);
 
-		this->new_sep_settings = this->vehicle->orders.list->GetSepSettings();
+		this->new_sep_settings = this->vehicle->GetTimetableSeparationSettings();
 		this->new_sep_settings.mode = (TTSepMode)index;
-		this->vehicle->orders.list->SetSepSettings(this->new_sep_settings);
+		this->vehicle->SetTimetableSeparationSettings(this->new_sep_settings);
 		this->InvalidateData();
 	}
 
@@ -806,7 +806,7 @@ struct TimetableWindow : Window {
 				break;
 			}
 
-			this->vehicle->orders.list->SetSepSettings(this->new_sep_settings);
+			this->vehicle->SetTimetableSeparationSettings(this->new_sep_settings);
 			this->InvalidateData();
 			break;
 		}

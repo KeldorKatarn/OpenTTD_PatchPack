@@ -432,7 +432,10 @@
 	if (!IsValidVehicle(vehicle_id)) return false;
 
 	Vehicle *v = ::Vehicle::Get(vehicle_id);
-	return v->orders.list != NULL && v->orders.list->GetNumVehicles() > 1;
+
+	assert(v != nullptr);
+
+	return v->HasSharedOrdersList();
 }
 
 /* static */ int ScriptVehicle::GetReliability(VehicleID vehicle_id)

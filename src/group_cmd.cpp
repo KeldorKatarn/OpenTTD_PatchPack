@@ -569,7 +569,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		oid++;
 		order = order->next;
 		if (order == NULL) {
-			order = v->orders.list->GetFirstOrder();
+			order = v->GetFirstOrder();
 			oid = 0;
 		}
 	} while (oid != start);

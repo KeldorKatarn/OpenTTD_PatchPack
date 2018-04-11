@@ -1286,7 +1286,7 @@ private:
 	void OrderClick_StopSharing()
 	{
 		/* Don't try to stop sharing orders if 'End of Shared Orders' isn't selected. */
-		if (!this->vehicle->IsOrderListShared() || this->selected_order != this->vehicle->GetNumOrders()) return;
+		if (!this->vehicle->HasSharedOrdersList() || this->selected_order != this->vehicle->GetNumOrders()) return;
 		/* If Ctrl is pressed, delete the order list as if we clicked the 'Delete' button. */
 		if (_ctrl_pressed) {
 			this->OrderClick_Delete();
@@ -1490,7 +1490,7 @@ public:
 	{
 		if (this->vehicle->owner != _local_company) return; // No buttons are displayed with competitor order windows.
 
-		bool shared_orders = this->vehicle->IsOrderListShared();
+		bool shared_orders = this->vehicle->HasSharedOrdersList();
 		VehicleOrderID sel = this->OrderGetSel();
 		const Order *order = this->vehicle->GetOrder(sel);
 
@@ -1725,7 +1725,7 @@ public:
 		}
 
 		if (this->vscroll->IsVisible(i)) {
-			StringID str = this->vehicle->IsOrderListShared() ? STR_ORDERS_END_OF_SHARED_ORDERS : STR_ORDERS_END_OF_ORDERS;
+			StringID str = this->vehicle->HasSharedOrdersList() ? STR_ORDERS_END_OF_SHARED_ORDERS : STR_ORDERS_END_OF_ORDERS;
 			DrawString(rtl ? r.left + WD_FRAMETEXT_LEFT : middle, rtl ? middle : r.right - WD_FRAMETEXT_RIGHT, y, str, (i == this->selected_order) ? TC_WHITE : TC_BLACK);
 		}
 	}

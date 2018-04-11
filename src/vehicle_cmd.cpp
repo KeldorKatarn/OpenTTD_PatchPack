@@ -183,7 +183,7 @@ CommandCost CmdSellVehicle(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	/* Can we actually make the order backup, i.e. are there enough orders? */
 	if (p1 & MAKE_ORDER_BACKUP_FLAG &&
 			front->HasOrdersList() &&
-			!front->IsOrderListShared() &&
+			!front->HasSharedOrdersList() &&
 			!Order::CanAllocateItem(front->GetNumOrders())) {
 		/* Only happens in exceptional cases when there aren't enough orders anyhow.
 		 * Thus it should be safe to just drop the orders in that case. */

@@ -51,7 +51,7 @@ OrderBackup::OrderBackup(const Vehicle *v, uint32 user)
 	this->CopyConsistPropertiesFrom(v);
 
 	/* If we have shared orders, store the vehicle we share the order with. */
-	if (v->IsOrderListShared()) {
+	if (v->HasSharedOrdersList()) {
 		this->clone = (v->FirstShared() == v) ? v->NextShared() : v->FirstShared();
 	} else {
 		/* Else copy the orders */
@@ -78,7 +78,7 @@ void OrderBackup::DoRestore(Vehicle *v)
 	if (this->clone != NULL) {
 		DoCommand(0, v->index | CO_SHARE << 30, this->clone->index, DC_EXEC, CMD_CLONE_ORDER);
 	} else if (this->orders != NULL && OrderList::CanAllocateItem()) {
-		v->orders.list = new OrderList(this->orders, v);
+		v->SetOrdersList(new OrderList(this->orders, v));
 		this->orders = NULL;
 		/* Make sure buoys/oil rigs are updated in the station list. */
 		InvalidateWindowClassesData(WC_STATION_LIST, 0);

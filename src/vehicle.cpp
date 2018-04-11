@@ -992,7 +992,7 @@ void VehicleEnteredDepotThisTick(Vehicle *v)
 
 	if (v->orders.list != NULL && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
 		v->current_order.GetDepotOrderType() == ODTF_MANUAL)) {
-		for (int i = 0; i < v->orders.list->GetNumOrders(); ++i) {
+		for (int i = 0; i < v->GetNumOrders(); ++i) {
 			Order* order = v->orders.list->GetOrderAt(i);
 
 			if (order->GetType() == OT_GOTO_DEPOT && order->GetDestination() == v->current_order.GetDestination()) {
@@ -2331,7 +2331,7 @@ void Vehicle::BeginLoading()
 						break;
 					}
 					target_index++;
-					if (target_index >= this->orders.list->GetNumOrders()) {
+					if (target_index >= this->GetNumOrders()) {
 						if (this->GetNumManualOrders() == 0 &&
 								this->GetNumOrders() < IMPLICIT_ORDER_ONLY_CAP) {
 							break;
@@ -2369,8 +2369,8 @@ void Vehicle::BeginLoading()
 						}
 					}
 				} else if (!suppress_implicit_orders &&
-						((this->orders.list == NULL ? OrderList::CanAllocateItem() : this->orders.list->GetNumOrders() < MAX_VEH_ORDER_ID)) &&
-						Order::CanAllocateItem()) {
+						   (this->HasOrdersList() ? this->GetNumOrders() < MAX_VEH_ORDER_ID : OrderList::CanAllocateItem()) &&
+					       Order::CanAllocateItem()) {
 					/* Insert new implicit order */
 					Order *implicit_order = new Order();
 					implicit_order->MakeImplicit(this->last_station_visited);
@@ -2383,6 +2383,7 @@ void Vehicle::BeginLoading()
 					ClrBit(gv_flags, GVF_SUPPRESS_IMPLICIT_ORDERS);
 				}
 			}
+
 		}
 		this->current_order.MakeLoading(false);
 	}
@@ -2410,12 +2411,13 @@ void Vehicle::HandleAutomaticTimetableSeparation()
 {
 	/* If all requirements for separation are met, we can initialize it. */
 	if (!_settings_game.order.automatic_timetable_separation) return;
-
-	if (!this->IsOrderListShared() || !this->orders.list->IsCompleteTimetable()) return;
+	if (!this->IsOrderListShared()) return;	
+	assert(this->orders.list != nullptr);	
+	if (!this->orders.list->IsCompleteTimetable()) return;
 
 	int first_wait_index = -1;
 
-	for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
+	for (int i = 0; i < this->GetNumOrders(); ++i) {
 		Order* order = this->orders.list->GetOrderAt(i);
 
 		if (order->IsWaitTimetabled() && !order->IsType(OT_IMPLICIT)) {
@@ -2546,7 +2548,7 @@ void Vehicle::LeaveStation()
 	int last_loading_order_index = -1;
 
 	// Reverse iterate through the orders list and find the first (i.e. last) order that is of loading type.
-	for (int i = this->orders.list->GetNumOrders() - 1; i >= 0; --i) {
+	for (int i = this->GetNumOrders() - 1; i >= 0; --i) {
 		Order* order = this->orders.list->GetOrderAt(i);
 
 		bool can_load_or_unload = false;
@@ -2566,7 +2568,7 @@ void Vehicle::LeaveStation()
 		}
 	}
 
-	if (last_loading_order_index >= 0 && last_loading_order_index < this->orders.list->GetNumOrders()) {
+	if (last_loading_order_index >= 0 && last_loading_order_index < this->GetNumOrders()) {
 
 		Order* current_real_order = this->orders.list->GetOrderAt(this->cur_real_order_index);
 
@@ -2786,29 +2788,27 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 
 	// Check first if the vehicle has any depot in its order list. Prefer that over the closest one.
 
-	if (this->orders.list != NULL) {
-		for (int i = 0; i < this->orders.list->GetNumOrders(); ++i) {
-			Order* order = this->orders.list->GetOrderAt(i);
+	for (int i = 0; i < this->GetNumOrders(); ++i) {
+		Order* order = this->orders.list->GetOrderAt(i);
 
-			bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
-			bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
+		bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
+		bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;
 
-			if (isRegularOrder && isDepotOrder) {
-				destination = order->GetDestination();
-				if (this->type == VEH_AIRCRAFT) {
-					Station* st = Station::Get(destination);
-					if (st != NULL && st->airport.HasHangar() && CanVehicleUseStation(this, st)) {
-						location = st->xy;
-						foundDepotInOrders = true;
-						break;
-					}
-				}
-				else {
-					location = Depot::Get(destination)->xy;
-					reverse = false;
+		if (isRegularOrder && isDepotOrder) {
+			destination = order->GetDestination();
+			if (this->type == VEH_AIRCRAFT) {
+				Station* st = Station::Get(destination);
+				if (st != NULL && st->airport.HasHangar() && CanVehicleUseStation(this, st)) {
+					location = st->xy;
 					foundDepotInOrders = true;
 					break;
 				}
+			}
+			else {
+				location = Depot::Get(destination)->xy;
+				reverse = false;
+				foundDepotInOrders = true;
+				break;
 			}
 		}
 	}

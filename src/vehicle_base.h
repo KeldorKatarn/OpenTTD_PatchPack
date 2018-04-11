@@ -689,6 +689,12 @@ public:
 	inline Vehicle *FirstShared() const { return (this->orders.list == NULL) ? this->First() : this->orders.list->GetFirstSharedVehicle(); }
 
 	/**
+	* Check if we have an orders list.
+	* @return true if we have an orders list.
+	*/
+	inline bool HasOrdersList() const { return this->orders.list != NULL; }
+
+	/**
 	 * Check if we share our orders with another vehicle.
 	 * @return true if there are other vehicles sharing the same order
 	 */

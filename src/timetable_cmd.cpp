@@ -426,13 +426,13 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 	VehicleID veh = GB(p1, 0, 20);
 
 	Vehicle *v = Vehicle::GetIfValid(veh);
-	if (v == NULL || !v->IsPrimaryVehicle() || v->orders.list == NULL) return CMD_ERROR;
+	if (v == nullptr || !v->IsPrimaryVehicle() || !v->HasOrdersList()) return CMD_ERROR;
 
 	CommandCost ret = CheckOwnership(v->owner);
 	if (ret.Failed()) return ret;
 
 	if (flags & DC_EXEC) {
-		int num_orders = v->orders.list->GetNumOrders();
+		int num_orders = v->GetNumOrders();
 		int timetable_delta = 0;
 
 		for (int i = 0; i < num_orders; ++i) {

@@ -35,6 +35,7 @@
 #include "order_backup.h"
 #include "cheat_type.h"
 #include "viewport_func.h"
+#include "tracerestrict.h"
 
 #include "table/strings.h"
 
@@ -1112,10 +1113,16 @@ CommandCost CmdInsertOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			OrderConditionComparator occ = new_order.GetConditionComparator();
 			if (occ >= OCC_END) return CMD_ERROR;
 			switch (new_order.GetConditionVariable()) {
+				case OCV_SLOT_OCCUPANCY: {
+					if (!TraceRestrictSlot::IsValidID(new_order.GetConditionValue())) return CMD_ERROR;
+					if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) return CMD_ERROR;
+					break;
+				}
 				case OCV_CARGO_WAITING:
 				case OCV_CARGO_ACCEPTANCE:
 					if (!CargoSpec::Get(new_order.GetConditionValue())->IsValid()) return CMD_ERROR;
 					/* FALL THROUGH */
+
 				case OCV_REQUIRES_SERVICE:
 					if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) return CMD_ERROR;
 					break;
@@ -1298,6 +1305,21 @@ static CargoID GetFirstValidCargo()
 	assert(0);
 	/* Return something to avoid compiler warning */
 	return 0;
+}
+
+/**
+* Get the first valid TraceRestrictSlot. Or INVALID_TRACE_RESTRICT_SLOT_ID if no slots are defined.
+*/
+static TraceRestrictSlotID GetFirstValidTraceRestrictSlot()
+{
+	const TraceRestrictSlot* slot;
+	FOR_ALL_TRACE_RESTRICT_SLOTS(slot)
+	{
+		// Stupid way to get the first valid slot but there is no "GetFirstValidSlot()".
+		return slot->index;
+	}
+	
+	return INVALID_TRACE_RESTRICT_SLOT_ID;
 }
 
 /**
@@ -1664,6 +1686,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				case OCV_REQUIRES_SERVICE:
 				case OCV_CARGO_ACCEPTANCE:
 				case OCV_CARGO_WAITING:
+				case OCV_SLOT_OCCUPANCY:
 					if (data != OCC_IS_TRUE && data != OCC_IS_FALSE) return CMD_ERROR;
 					break;
 
@@ -1683,6 +1706,11 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				case OCV_RELIABILITY:
 				case OCV_PERCENT:
 					if (data > 100) return CMD_ERROR;
+					break;
+
+				case OCV_SLOT_OCCUPANCY:
+					// Can't encode more than 2047, even though there could be more slots.
+					if (data > 2047 || !TraceRestrictSlot::IsValidID(data)) return CMD_ERROR;
 					break;
  
 				case OCV_CARGO_ACCEPTANCE:
@@ -1765,6 +1793,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			case MOF_COND_VARIABLE: {
 				/* Check whether old conditional variable had a cargo as value */
 				bool old_var_was_cargo = (order->GetConditionVariable() == OCV_CARGO_ACCEPTANCE || order->GetConditionVariable() == OCV_CARGO_WAITING);
+				bool old_var_was_slot = (order->GetConditionVariable() == OCV_SLOT_OCCUPANCY);
 				order->SetConditionVariable((OrderConditionVariable)data);
 
 				OrderConditionComparator occ = order->GetConditionComparator();
@@ -1772,6 +1801,11 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 					case OCV_UNCONDITIONALLY:
 						order->SetConditionComparator(OCC_EQUALS);
 						order->SetConditionValue(0);
+						break;
+
+					case OCV_SLOT_OCCUPANCY:
+						if (!old_var_was_slot) order->SetConditionValue((uint16)GetFirstValidTraceRestrictSlot());
+						if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) order->SetConditionComparator(OCC_IS_TRUE);
 						break;
  
 					case OCV_CARGO_ACCEPTANCE:
@@ -1781,7 +1815,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 						break;
 
 					case OCV_REQUIRES_SERVICE:
-						if (old_var_was_cargo) order->SetConditionValue(0);
+						if (old_var_was_cargo || old_var_was_slot) order->SetConditionValue(0);
 						if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) order->SetConditionComparator(OCC_IS_TRUE);
 						order->SetConditionValue(0);
 						break;
@@ -1796,7 +1830,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 						FALLTHROUGH;
 
 					default:
-						if (old_var_was_cargo) order->SetConditionValue(0);
+						if (old_var_was_cargo || old_var_was_slot) order->SetConditionValue(0);
 						if (occ == OCC_IS_TRUE || occ == OCC_IS_FALSE) order->SetConditionComparator(OCC_EQUALS);
 						break;
 				}
@@ -2394,6 +2428,7 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 	uint16 value = order->GetConditionValue();
 	bool has_manual_depot_order = (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
 
+	// OrderConditionCompare ignores the last parameter for occ == OCC_IS_TRUE or occ == OCC_IS_FALSE.
 	switch (order->GetConditionVariable()) {
 		case OCV_LOAD_PERCENTAGE:    skip_order = OrderConditionCompare(occ, CalcPercentVehicleFilled(v, NULL),             value); break;
 		case OCV_RELIABILITY:        skip_order = OrderConditionCompare(occ, ToPercent16(v->reliability),                   value); break;
@@ -2409,6 +2444,11 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 		case OCV_CARGO_ACCEPTANCE: {
 			StationID next_station = GetNextRealStation(v, order);
 			if (Station::IsValidID(next_station)) skip_order = OrderConditionCompare(occ, HasBit(Station::Get(next_station)->goods[value].status, GoodsEntry::GES_ACCEPTANCE), value);
+			break;
+		}
+		case OCV_SLOT_OCCUPANCY: {
+			const TraceRestrictSlot* slot = TraceRestrictSlot::GetIfValid(value);
+			if (slot != nullptr) skip_order = OrderConditionCompare(occ, slot->occupants.size() >= slot->max_occupancy, value);
 			break;
 		}
 		case OCV_FREE_PLATFORMS: {

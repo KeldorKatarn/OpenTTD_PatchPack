@@ -473,20 +473,41 @@ NetworkRecvStatus ServerNetworkGameSocketHandler::SendError(NetworkErrorCode err
 /** Send the check for the NewGRFs. */
 NetworkRecvStatus ServerNetworkGameSocketHandler::SendNewGRFCheck()
 {
-	Packet *p = new Packet(PACKET_SERVER_CHECK_NEWGRFS);
-	const GRFConfig *c;
+	std::vector<std::list<GRFIdentifier>> grf_identifier_lists;
 	uint grf_count = 0;
 
-	for (c = _grfconfig; c != NULL; c = c->next) {
-		if (!HasBit(c->flags, GCF_STATIC)) grf_count++;
+	// Collect all the identifiers and split them up, so we can send them with multiple packets.
+	for (auto config = _grfconfig; config != nullptr; config = config->next) {
+		if (HasBit(config->flags, GCF_STATIC)) continue;
+
+		if ((grf_count % NETWORK_MAX_GRF_COUNT) == 0) {
+			grf_identifier_lists.push_back(std::list<GRFIdentifier>());
+		}
+
+		grf_identifier_lists.back().push_back(config->ident);
+
+		grf_count++;
 	}
 
-	p->Send_uint8 (grf_count);
-	for (c = _grfconfig; c != NULL; c = c->next) {
-		if (!HasBit(c->flags, GCF_STATIC)) this->SendGRFIdentifier(p, &c->ident);
+	// Send all the packets.
+	for (auto i = 0; i < grf_identifier_lists.size(); ++i) {
+		Packet *p = new Packet(PACKET_SERVER_CHECK_NEWGRFS);
+		auto grf_ident_list = grf_identifier_lists[i];
+
+		// The number of newGRF identifiers in the packet.
+		p->Send_uint8((uint8)grf_ident_list.size());
+		// Whether this is the final packet.
+		bool is_last_packet = (i == (grf_identifier_lists.size() - 1));
+		p->Send_bool(is_last_packet);
+
+		// The actual identifier list.
+		for (auto ident : grf_ident_list) {
+			this->SendGRFIdentifier(p, &ident);
+		}
+
+		this->SendPacket(p);
 	}
 
-	this->SendPacket(p);
 	return NETWORK_RECV_STATUS_OKAY;
 }
 

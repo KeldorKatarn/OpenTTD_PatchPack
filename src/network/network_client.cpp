@@ -685,6 +685,8 @@ NetworkRecvStatus ClientNetworkGameSocketHandler::Receive_SERVER_CHECK_NEWGRFS(P
 	if (this->status != STATUS_JOIN) return NETWORK_RECV_STATUS_MALFORMED_PACKET;
 
 	uint grf_count = p->Recv_uint8();
+	bool is_last_packet = p->Recv_bool();
+
 	NetworkRecvStatus ret = NETWORK_RECV_STATUS_OKAY;
 
 	/* Check all GRFs */
@@ -703,13 +705,16 @@ NetworkRecvStatus ClientNetworkGameSocketHandler::Receive_SERVER_CHECK_NEWGRFS(P
 		}
 	}
 
-	if (ret == NETWORK_RECV_STATUS_OKAY) {
+	if (ret == NETWORK_RECV_STATUS_OKAY && is_last_packet) {
 		/* Start receiving the map */
 		return SendNewGRFsOk();
 	}
 
-	/* NewGRF mismatch, bail out */
-	ShowErrorMessage(STR_NETWORK_ERROR_NEWGRF_MISMATCH, INVALID_STRING_ID, WL_CRITICAL);
+	if (ret != NETWORK_RECV_STATUS_OKAY) {
+		/* NewGRF mismatch, bail out */
+		ShowErrorMessage(STR_NETWORK_ERROR_NEWGRF_MISMATCH, INVALID_STRING_ID, WL_CRITICAL);
+	}
+
 	return ret;
 }
 

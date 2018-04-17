@@ -706,13 +706,6 @@ bool AfterLoadGame()
 		ResetSignalHandlers();
 		return false;
 	}
- 
-	if (_networking && CountSelectedGRFs(_grfconfig) > NETWORK_MAX_GRF_COUNT) {
-		SetSaveLoadError(STR_NEWGRF_ERROR_TOO_MANY_NEWGRFS_LOADED);
-		/* Restore the signals */
-		ResetSignalHandlers();
-		return false;
-	}
 
 	switch (gcf_res) {
 		case GLC_COMPATIBLE: ShowErrorMessage(STR_NEWGRF_COMPATIBLE_LOAD_WARNING, INVALID_STRING_ID, WL_CRITICAL); break;

@@ -32,6 +32,8 @@
 #include "../strings_func.h"
 #include "table/strings.h"
 
+#include <algorithm>
+
 #include "core/udp.h"
 
 #include "../safeguards.h"
@@ -198,6 +200,12 @@ void ServerNetworkUDPSocketHandler::Receive_CLIENT_FIND_SERVER(Packet *p, Networ
 
 	/* Let the client know that we are here */
 	this->SendPacket(&packet, client_addr);
+	
+	auto newgrf_info_packets = this->SendNetworkGameNewGrfInfo(PACKET_UDP_SERVER_NEWGRF_RESPONSE, &ngi);
+
+	for (auto newgrf_packet : newgrf_info_packets) {
+		this->SendPacket(newgrf_packet.get(), client_addr);
+	}
 
 	DEBUG(net, 2, "[udp] queried from %s", client_addr->GetHostname());
 }
@@ -327,12 +335,84 @@ void ServerNetworkUDPSocketHandler::Receive_CLIENT_GET_NEWGRFS(Packet *p, Networ
 class ClientNetworkUDPSocketHandler : public NetworkUDPSocketHandler {
 protected:
 	virtual void Receive_SERVER_RESPONSE(Packet *p, NetworkAddress *client_addr);
+	virtual void Receive_SERVER_NEWGRF_RESPONSE(Packet *p, NetworkAddress *client_addr);
 	virtual void Receive_MASTER_RESPONSE_LIST(Packet *p, NetworkAddress *client_addr);
 	virtual void Receive_SERVER_NEWGRFS(Packet *p, NetworkAddress *client_addr);
 	virtual void HandleIncomingNetworkGameInfoGRFConfig(GRFConfig *config);
 public:
 	virtual ~ClientNetworkUDPSocketHandler() {}
+private:
+	bool CheckItemCompleteness(NetworkGameList* item);
 };
+
+bool ClientNetworkUDPSocketHandler::CheckItemCompleteness(NetworkGameList* item)
+{
+	if (item->info.new_grf_packages_to_expect != item->info.received_grf_identifiers.size() ||
+		item->info.received_grf_identifiers.empty()) return false;
+
+	auto received_idents = item->info.received_grf_identifiers;
+
+	// Sort the received data by its ID so we have it all in the order it was sent in.
+	std::sort(received_idents.begin(), received_idents.end(), [](auto a, auto b) { return a.first < b.first; });
+
+	GRFConfig **dst = &item->info.grfconfig;
+
+	for (auto ident_pair : received_idents) {
+		for (auto ident : ident_pair.second) {
+			GRFConfig *c = new GRFConfig();
+
+			c->ident.grfid = ident.grfid;
+
+			for (auto j = 0; j < lengthof(c->ident.md5sum); j++) {
+				c->ident.md5sum[j] = ident.md5sum[j];
+			}
+
+			this->HandleIncomingNetworkGameInfoGRFConfig(c);
+
+			/* Append GRFConfig to the list */
+			*dst = c;
+			dst = &c->next;
+
+		}
+	}
+
+	// Clear the temporary data we no longer need, marking this as completely received.
+	item->info.new_grf_packages_to_expect = 0;
+	item->info.received_grf_identifiers.clear();
+
+	/* Checks whether there needs to be a request for names of GRFs and makes
+	* the request if necessary. GRFs that need to be requested are the GRFs
+	* that do not exist on the clients system and we do not have the name
+	* resolved of, i.e. the name is still UNKNOWN_GRF_NAME_PLACEHOLDER.
+	* The in_request array and in_request_count are used so there is no need
+	* to do a second loop over the GRF list, which can be relatively expensive
+	* due to the string comparisons. */
+	const GRFConfig *in_request[NETWORK_MAX_GRF_COUNT];
+	const GRFConfig *c;
+	uint in_request_count = 0;
+
+	for (c = item->info.grfconfig; c != NULL; c = c->next) {
+		if (c->status == GCS_NOT_FOUND) item->info.compatible = false;
+		if (c->status != GCS_NOT_FOUND || strcmp(c->GetName(), UNKNOWN_GRF_NAME_PLACEHOLDER) != 0) continue;
+		in_request[in_request_count] = c;
+		in_request_count++;
+	}
+
+	if (in_request_count > 0) {
+		/* There are 'unknown' GRFs, now send a request for them */
+		uint i;
+		Packet packet(PACKET_UDP_CLIENT_GET_NEWGRFS);
+
+		packet.Send_uint8(in_request_count);
+		for (i = 0; i < in_request_count; i++) {
+			this->SendGRFIdentifier(&packet, &in_request[i]->ident);
+		}
+
+		this->SendPacket(&packet, &item->address);
+	}
+
+	return true;
+}
 
 void ClientNetworkUDPSocketHandler::Receive_SERVER_RESPONSE(Packet *p, NetworkAddress *client_addr)
 {
@@ -350,38 +430,6 @@ void ClientNetworkUDPSocketHandler::Receive_SERVER_RESPONSE(Packet *p, NetworkAd
 	this->ReceiveNetworkGameInfo(p, &item->info);
 
 	item->info.compatible = true;
-	{
-		/* Checks whether there needs to be a request for names of GRFs and makes
-		 * the request if necessary. GRFs that need to be requested are the GRFs
-		 * that do not exist on the clients system and we do not have the name
-		 * resolved of, i.e. the name is still UNKNOWN_GRF_NAME_PLACEHOLDER.
-		 * The in_request array and in_request_count are used so there is no need
-		 * to do a second loop over the GRF list, which can be relatively expensive
-		 * due to the string comparisons. */
-		const GRFConfig *in_request[NETWORK_MAX_GRF_COUNT];
-		const GRFConfig *c;
-		uint in_request_count = 0;
-
-		for (c = item->info.grfconfig; c != NULL; c = c->next) {
-			if (c->status == GCS_NOT_FOUND) item->info.compatible = false;
-			if (c->status != GCS_NOT_FOUND || strcmp(c->GetName(), UNKNOWN_GRF_NAME_PLACEHOLDER) != 0) continue;
-			in_request[in_request_count] = c;
-			in_request_count++;
-		}
-
-		if (in_request_count > 0) {
-			/* There are 'unknown' GRFs, now send a request for them */
-			uint i;
-			Packet packet(PACKET_UDP_CLIENT_GET_NEWGRFS);
-
-			packet.Send_uint8(in_request_count);
-			for (i = 0; i < in_request_count; i++) {
-				this->SendGRFIdentifier(&packet, &in_request[i]->ident);
-			}
-
-			this->SendPacket(&packet, &item->address);
-		}
-	}
 
 	if (item->info.hostname[0] == '\0') {
 		seprintf(item->info.hostname, lastof(item->info.hostname), "%s", client_addr->GetHostname());
@@ -395,7 +443,43 @@ void ClientNetworkUDPSocketHandler::Receive_SERVER_RESPONSE(Packet *p, NetworkAd
 	item->info.version_compatible = IsNetworkCompatibleVersion(item->info.server_revision);
 	item->info.compatible &= item->info.version_compatible; // Already contains match for GRFs
 
-	item->online = true;
+	item->online = CheckItemCompleteness(item);
+
+	UpdateNetworkGameWindow();
+}
+
+/**
+* Return of server information to the client.
+* This packet has several legacy versions, so we list the version and size of each "field":
+*
+* Version: Bytes:  Description:
+*   all      1       the version of this packet's structure
+*
+*   1        1       ID of this packet to be able to put all of them in the right order (n)
+*   1        1       number of GRFs attached to this specific packet (n)
+*   1        n * 20  unique identifier for GRF files. Consists of:
+*                     - one 4 byte variable with the GRF ID
+*                     - 16 bytes (sent sequentially) for the MD5 checksum
+*                       of the GRF
+*
+* @param p           The received packet.
+* @param client_addr The origin of the packet.
+*/
+void ClientNetworkUDPSocketHandler::Receive_SERVER_NEWGRF_RESPONSE(Packet *p, NetworkAddress *client_addr)
+{
+	NetworkGameList *item;
+
+	/* Just a fail-safe.. should never happen */
+	if (_network_udp_server) return;
+
+	DEBUG(net, 4, "[udp] server newgrf response from %s", client_addr->GetAddressAsString());
+
+	/* Find next item */
+	item = NetworkGameListAddItem(*client_addr);
+
+	this->ReceiveNetworkGameNewGrfInfo(p, &item->info);
+
+	item->online = CheckItemCompleteness(item);
 
 	UpdateNetworkGameWindow();
 }

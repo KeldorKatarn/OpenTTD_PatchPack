@@ -19,6 +19,9 @@
 #include "../../newgrf_config.h"
 #include "../../date_type.h"
 
+#include <list>
+#include <vector>
+
 #ifdef ENABLE_NETWORK
 
 /**
@@ -35,6 +38,8 @@ struct NetworkServerGameInfo {
  */
 struct NetworkGameInfo : NetworkServerGameInfo {
 	GRFConfig *grfconfig;                           ///< List of NewGRF files used
+	uint8 new_grf_packages_to_expect;               ///< Number of NewGRF packages to expect from the server (0 if all have been received)
+	std::vector<std::pair<uint8, std::list<GRFIdentifier>>> received_grf_identifiers; ///< Temporary list of grf_identifiers we have already received network packets for.
 	Date start_date;                                ///< When the game started
 	Date game_date;                                 ///< Current date
 	uint16 map_width;                               ///< Map width

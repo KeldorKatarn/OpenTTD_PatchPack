@@ -1970,13 +1970,6 @@ bool AfterLoadGame()
 				}
 			}
 		}
-	} else {
-		// Update our hashes.
-		Tunnel* tunnel;
-		FOR_ALL_TUNNELS(tunnel) {
-			tunnel->UpdateIndexes();
-		}
-
 	}
 
 	/* Move the signal variant back up one bit for PBS. We don't convert the old PBS

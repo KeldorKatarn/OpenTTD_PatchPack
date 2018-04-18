@@ -16,6 +16,7 @@
 #include "table/sprites.h"
 #include "rail_map.h"
 #include "strings_func.h"
+#include "overlay_cmd.h"
 
 /**
  * Definition of widgets
@@ -51,6 +52,13 @@ struct SignalProgramWindow : Window
 		this->add_link_button = false;
 		this->InitNested(window_number);
 		this->OnInvalidateData();
+	}
+
+	~SignalProgramWindow()
+	{
+		if (_focused_window == this) {
+			Overlays::Instance()->ClearLogicSignalOverlay();
+		}
 	}
 
 	/**
@@ -138,6 +146,20 @@ struct SignalProgramWindow : Window
 		}
 
 		if (changed) DoCommandP(program->tile, p1, p2, CMD_PROGRAM_LOGIC_SIGNAL | CMD_MSG(STR_ERROR_PROGRAM_SIGNAL_HEADER));
+	}
+
+	virtual void OnFocus(Window *previously_focused_window) override
+	{
+		if (this != previously_focused_window) {
+			Overlays::Instance()->SetLogicSignalOverlay(this->program);
+		}
+	}
+
+	virtual void OnFocusLost(Window *newly_focused_window) override
+	{
+		if (newly_focused_window != nullptr && newly_focused_window->window_class != WC_SIGNAL_PROGRAM) {
+			Overlays::Instance()->ClearLogicSignalOverlay();
+		}
 	}
 
 	/**

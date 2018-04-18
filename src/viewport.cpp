@@ -4853,7 +4853,9 @@ Point GetViewportStationMiddle(const ViewPort *vp, const Station *st)
 
 void DrawOverlay(const TileInfo *ti, TileType tt) 
 {
-	if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
+	if (Overlays::Instance()->IsTileLogicSignalInput(ti)) {
+		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_RED);
+	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
 		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_BLUE);
 	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, ACCEPTANCE)) { 
 		DrawTileSelectionRect(ti, PAL_NONE);

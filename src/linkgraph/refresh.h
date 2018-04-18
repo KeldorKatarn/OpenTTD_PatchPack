@@ -1,11 +1,11 @@
-/* $Id: refresh.h 26283 2014-01-28 19:49:43Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file refresh.h Declaration of link refreshing utility. */
 
@@ -19,17 +19,17 @@
 #include <map>
 
 /**
- * Utility to refresh links a consist will visit.
- */
+* Utility to refresh links a consist will visit.
+*/
 class LinkRefresher {
 public:
 	static void Run(Vehicle *v, bool allow_merge = true, bool is_full_loading = false, uint32 cargo_mask = ~0);
 
 protected:
 	/**
-	 * Various flags about properties of the last examined link that might have
-	 * an influence on the next one.
-	 */
+	* Various flags about properties of the last examined link that might have
+	* an influence on the next one.
+	*/
 	enum RefreshFlags {
 		USE_NEXT,     ///< There was a conditional jump. Try to use the given next order when looking for a new one.
 		HAS_CARGO,    ///< Consist could leave the last stop where it could interact with cargo carrying cargo (i.e. not an "unload all" + "no loading" order).
@@ -39,42 +39,42 @@ protected:
 	};
 
 	/**
-	 * Simulated cargo type and capacity for prediction of future links.
-	 */
+	* Simulated cargo type and capacity for prediction of future links.
+	*/
 	struct RefitDesc {
 		CargoID cargo;    ///< Cargo type the vehicle will be carrying.
 		uint16 capacity;  ///< Capacity the vehicle will have.
 		uint16 remaining; ///< Capacity remaining from before the previous refit.
 		RefitDesc(CargoID cargo, uint16 capacity, uint16 remaining) :
-				cargo(cargo), capacity(capacity), remaining(remaining) {}
+			cargo(cargo), capacity(capacity), remaining(remaining) {}
 	};
 
 	/**
-	 * A hop the refresh algorithm might evaluate. If the same hop is seen again
-	 * the evaluation is stopped. This of course is a fairly simple heuristic.
-	 * Sequences of refit orders can produce vehicles with all kinds of
-	 * different cargoes and remembering only one can lead to early termination
-	 * of the algorithm. However, as the order language is Turing complete, we
-	 * are facing the halting problem here. At some point we have to draw the
-	 * line.
-	 */
+	* A hop the refresh algorithm might evaluate. If the same hop is seen again
+	* the evaluation is stopped. This of course is a fairly simple heuristic.
+	* Sequences of refit orders can produce vehicles with all kinds of
+	* different cargoes and remembering only one can lead to early termination
+	* of the algorithm. However, as the order language is Turing complete, we
+	* are facing the halting problem here. At some point we have to draw the
+	* line.
+	*/
 	struct Hop {
 		OrderID from;  ///< Last order where vehicle could interact with cargo or absolute first order.
 		OrderID to;    ///< Next order to be processed.
 		CargoID cargo; ///< Cargo the consist is probably carrying or CT_INVALID if unknown.
 
-		/**
-		 * Default constructor should not be called but has to be visible for
-		 * usage in btree::btree_set.
-		 */
+					   /**
+					   * Default constructor should not be called but has to be visible for
+					   * usage in std::set.
+					   */
 		Hop() {}
 
 		/**
-		 * Real constructor, only use this one.
-		 * @param from First order of the hop.
-		 * @param to Second order of the hop.
-		 * @param cargo Cargo the consist is probably carrying when passing the hop.
-		 */
+		* Real constructor, only use this one.
+		* @param from First order of the hop.
+		* @param to Second order of the hop.
+		* @param cargo Cargo the consist is probably carrying when passing the hop.
+		*/
 		Hop(OrderID from, OrderID to, CargoID cargo) : from(from), to(to), cargo(cargo) {}
 		bool operator<(const Hop &other) const;
 	};

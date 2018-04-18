@@ -1,11 +1,11 @@
-/* $Id: linkgraph_type.h 26331 2014-02-10 20:13:07Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file linkgraph_type.h Declaration of link graph types used for cargo distribution. */
 
@@ -34,28 +34,28 @@ enum DistributionType {
 };
 
 /* It needs to be 8bits, because we save and load it as such
- * Define basic enum properties
- */
+* Define basic enum properties
+*/
 template <> struct EnumPropsT<DistributionType> : MakeEnumPropsT<DistributionType, byte, DT_BEGIN, DT_END, DT_NUM> {};
 typedef TinyEnumT<DistributionType> DistributionTypeByte; // typedefing-enumification of DistributionType
 
-/**
- * Special modes for updating links. 'Restricted' means that vehicles with
- * 'no loading' orders are serving the link. If a link is only served by
- * such vehicles it's 'fully restricted'. This means the link can be used
- * by cargo arriving in such vehicles, but not by cargo generated or
- * transferring at the source station of the link. In order to find out
- * about this condition we keep two update timestamps in each link, one for
- * the restricted and one for the unrestricted part of it. If either one
- * times out while the other is still valid the link becomes fully
- * restricted or fully unrestricted, respectively.
- * Refreshing a link makes just sure a minimum capacity is kept. Increasing
- * actually adds the given capacity.
- */
+														  /**
+														  * Special modes for updating links. 'Restricted' means that vehicles with
+														  * 'no loading' orders are serving the link. If a link is only served by
+														  * such vehicles it's 'fully restricted'. This means the link can be used
+														  * by cargo arriving in such vehicles, but not by cargo generated or
+														  * transferring at the source station of the link. In order to find out
+														  * about this condition we keep two update timestamps in each link, one for
+														  * the restricted and one for the unrestricted part of it. If either one
+														  * times out while the other is still valid the link becomes fully
+														  * restricted or fully unrestricted, respectively.
+														  * Refreshing a link makes just sure a minimum capacity is kept. Increasing
+														  * actually adds the given capacity.
+														  */
 enum EdgeUpdateMode {
-	EUM_INCREASE     = 1,      ///< Increase capacity.
-	EUM_REFRESH      = 1 << 1, ///< Refresh capacity.
-	EUM_RESTRICTED   = 1 << 2, ///< Use restricted link.
+	EUM_INCREASE = 1,      ///< Increase capacity.
+	EUM_REFRESH = 1 << 1, ///< Refresh capacity.
+	EUM_RESTRICTED = 1 << 2, ///< Use restricted link.
 	EUM_UNRESTRICTED = 1 << 3, ///< Use unrestricted link.
 };
 

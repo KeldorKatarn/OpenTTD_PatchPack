@@ -1,11 +1,11 @@
-/* $Id: linkgraph.cpp 26411 2014-03-17 20:33:26Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file linkgraph.cpp Definition of link graph classes used for cargo distribution. */
 
@@ -20,11 +20,11 @@ LinkGraphPool _link_graph_pool("LinkGraph");
 INSTANTIATE_POOL_METHODS(LinkGraph)
 
 /**
- * Create a node or clear it.
- * @param xy Location of the associated station.
- * @param st ID of the associated station.
- * @param demand Demand for cargo at the station.
- */
+* Create a node or clear it.
+* @param xy Location of the associated station.
+* @param st ID of the associated station.
+* @param demand Demand for cargo at the station.
+*/
 inline void LinkGraph::BaseNode::Init(TileIndex xy, StationID st, uint demand)
 {
 	this->xy = xy;
@@ -35,8 +35,8 @@ inline void LinkGraph::BaseNode::Init(TileIndex xy, StationID st, uint demand)
 }
 
 /**
- * Create an edge.
- */
+* Create an edge.
+*/
 inline void LinkGraph::BaseEdge::Init()
 {
 	this->capacity = 0;
@@ -47,10 +47,10 @@ inline void LinkGraph::BaseEdge::Init()
 }
 
 /**
- * Shift all dates by given interval.
- * This is useful if the date has been modified with the cheat menu.
- * @param interval Number of days to be added or subtracted.
- */
+* Shift all dates by given interval.
+* This is useful if the date has been modified with the cheat menu.
+* @param interval Number of days to be added or subtracted.
+*/
 void LinkGraph::ShiftDates(int interval)
 {
 	this->last_compression += interval;
@@ -81,9 +81,9 @@ void LinkGraph::Compress()
 }
 
 /**
- * Merge a link graph with another one.
- * @param other LinkGraph to be merged into this one.
- */
+* Merge a link graph with another one.
+* @param other LinkGraph to be merged into this one.
+*/
 void LinkGraph::Merge(LinkGraph *other)
 {
 	Date age = _date - this->last_compression + 1;
@@ -115,9 +115,9 @@ void LinkGraph::Merge(LinkGraph *other)
 }
 
 /**
- * Remove a node from the link graph by overwriting it with the last node.
- * @param id ID of the node to be removed.
- */
+* Remove a node from the link graph by overwriting it with the last node.
+* @param id ID of the node to be removed.
+*/
 void LinkGraph::RemoveNode(NodeID id)
 {
 	assert(id < this->Size());
@@ -142,18 +142,18 @@ void LinkGraph::RemoveNode(NodeID id)
 	this->nodes.Erase(this->nodes.Get(id));
 	this->edges.EraseColumn(id);
 	/* Not doing EraseRow here, as having the extra invalid row doesn't hurt
-	 * and removing it would trigger a lot of memmove. The data has already
-	 * been copied around in the loop above. */
+	* and removing it would trigger a lot of memmove. The data has already
+	* been copied around in the loop above. */
 }
 
 /**
- * Add a node to the component and create empty edges associated with it. Set
- * the station's last_component to this component. Calculate the distances to all
- * other nodes. The distances to _all_ nodes are important as the demand
- * calculator relies on their availability.
- * @param st New node's station.
- * @return New node's ID.
- */
+* Add a node to the component and create empty edges associated with it. Set
+* the station's last_component to this component. Calculate the distances to all
+* other nodes. The distances to _all_ nodes are important as the demand
+* calculator relies on their availability.
+* @param st New node's station.
+* @return New node's ID.
+*/
 NodeID LinkGraph::AddNode(const Station *st)
 {
 	const GoodsEntry &good = st->goods[this->cargo];
@@ -161,12 +161,12 @@ NodeID LinkGraph::AddNode(const Station *st)
 	NodeID new_node = this->Size();
 	this->nodes.Append();
 	/* Avoid reducing the height of the matrix as that is expensive and we
-	 * most likely will increase it again later which is again expensive. */
+	* most likely will increase it again later which is again expensive. */
 	this->edges.Resize(new_node + 1U,
-			max(new_node + 1U, this->edges.Height()));
+		max(new_node + 1U, this->edges.Height()));
 
 	this->nodes[new_node].Init(st->xy, st->index,
-			HasBit(good.status, GoodsEntry::GES_ACCEPTANCE));
+		HasBit(good.status, GoodsEntry::GES_ACCEPTANCE));
 
 	BaseEdge *new_edges = this->edges[new_node];
 
@@ -181,13 +181,13 @@ NodeID LinkGraph::AddNode(const Station *st)
 }
 
 /**
- * Fill an edge with values from a link. Set the restricted or unrestricted
- * update timestamp according to the given update mode.
- * @param to Destination node of the link.
- * @param capacity Capacity of the link.
- * @param usage Usage to be added.
- * @param mode Update mode to be used.
- */
+* Fill an edge with values from a link. Set the restricted or unrestricted
+* update timestamp according to the given update mode.
+* @param to Destination node of the link.
+* @param capacity Capacity of the link.
+* @param usage Usage to be added.
+* @param mode Update mode to be used.
+*/
 void LinkGraph::Node::AddEdge(NodeID to, uint capacity, uint usage, EdgeUpdateMode mode)
 {
 	assert(this->index != to);
@@ -202,27 +202,28 @@ void LinkGraph::Node::AddEdge(NodeID to, uint capacity, uint usage, EdgeUpdateMo
 }
 
 /**
- * Creates an edge if none exists yet or updates an existing edge.
- * @param to Target node.
- * @param capacity Capacity of the link.
- * @param usage Usage to be added.
- * @param mode Update mode to be used.
- */
+* Creates an edge if none exists yet or updates an existing edge.
+* @param to Target node.
+* @param capacity Capacity of the link.
+* @param usage Usage to be added.
+* @param mode Update mode to be used.
+*/
 void LinkGraph::Node::UpdateEdge(NodeID to, uint capacity, uint usage, EdgeUpdateMode mode)
 {
 	assert(capacity > 0);
 	assert(usage <= capacity);
 	if (this->edges[to].capacity == 0) {
 		this->AddEdge(to, capacity, usage, mode);
-	} else {
+	}
+	else {
 		(*this)[to].Update(capacity, usage, mode);
 	}
 }
 
 /**
- * Remove an outgoing edge from this node.
- * @param to ID of destination node.
- */
+* Remove an outgoing edge from this node.
+* @param to ID of destination node.
+*/
 void LinkGraph::Node::RemoveEdge(NodeID to)
 {
 	if (this->index == to) return;
@@ -240,7 +241,8 @@ void LinkGraph::Node::RemoveEdge(NodeID to)
 			this->edges[prev].next_edge = edge.next_edge;
 			edge.next_edge = INVALID_NODE;
 			break;
-		} else {
+		}
+		else {
 			prev = next;
 			next = this->edges[next].next_edge;
 		}
@@ -248,16 +250,16 @@ void LinkGraph::Node::RemoveEdge(NodeID to)
 }
 
 /**
- * Update an edge. If mode contains UM_REFRESH refresh the edge to have at
- * least the given capacity and usage, otherwise add the capacity and usage.
- * In any case set the respective update timestamp(s), according to the given
- * mode.
- * @param from Start node of the edge.
- * @param to End node of the edge.
- * @param capacity Capacity to be added/updated.
- * @param usage Usage to be added.
- * @param mode Update mode to be applied.
- */
+* Update an edge. If mode contains UM_REFRESH refresh the edge to have at
+* least the given capacity and usage, otherwise add the capacity and usage.
+* In any case set the respective update timestamp(s), according to the given
+* mode.
+* @param from Start node of the edge.
+* @param to End node of the edge.
+* @param capacity Capacity to be added/updated.
+* @param usage Usage to be added.
+* @param mode Update mode to be applied.
+*/
 void LinkGraph::Edge::Update(uint capacity, uint usage, EdgeUpdateMode mode)
 {
 	assert(this->edge.capacity > 0);
@@ -266,7 +268,8 @@ void LinkGraph::Edge::Update(uint capacity, uint usage, EdgeUpdateMode mode)
 	if (mode & EUM_INCREASE) {
 		this->edge.capacity += capacity;
 		this->edge.usage += usage;
-	} else if (mode & EUM_REFRESH) {
+	}
+	else if (mode & EUM_REFRESH) {
 		this->edge.capacity = max(this->edge.capacity, capacity);
 		this->edge.usage = max(this->edge.usage, usage);
 	}
@@ -275,10 +278,10 @@ void LinkGraph::Edge::Update(uint capacity, uint usage, EdgeUpdateMode mode)
 }
 
 /**
- * Resize the component and fill it with empty nodes and edges. Used when
- * loading from save games. The component is expected to be empty before.
- * @param size New size of the component.
- */
+* Resize the component and fill it with empty nodes and edges. Used when
+* loading from save games. The component is expected to be empty before.
+* @param size New size of the component.
+*/
 void LinkGraph::Init(uint size)
 {
 	assert(this->Size() == 0);

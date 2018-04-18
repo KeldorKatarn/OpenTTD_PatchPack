@@ -1,11 +1,11 @@
-/* $Id: linkgraphschedule.h 26347 2014-02-16 18:42:59Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file linkgraphschedule.h Declaration of link graph schedule used for cargo distribution. */
 
@@ -19,21 +19,21 @@
 class LinkGraphJob;
 
 /**
- * A handler doing "something" on a link graph component. It must not keep any
- * state as it is called concurrently from different threads.
- */
+* A handler doing "something" on a link graph component. It must not keep any
+* state as it is called concurrently from different threads.
+*/
 class ComponentHandler {
 public:
 	/**
-	 * Destroy the handler. Must be given due to virtual Run.
-	 */
+	* Destroy the handler. Must be given due to virtual Run.
+	*/
 	virtual ~ComponentHandler() {}
 
 	/**
-	 * Run the handler. A link graph handler must not read or write any data
-	 * outside the given component as that would create a potential desync.
-	 * @param job Link graph component to run the handler on.
-	 */
+	* Run the handler. A link graph handler must not read or write any data
+	* outside the given component as that would create a potential desync.
+	* @param job Link graph component to run the handler on.
+	*/
 	virtual void Run(LinkGraphJob &job) const = 0;
 };
 
@@ -65,9 +65,9 @@ public:
 	void ShiftDates(int interval);
 
 	/**
-	 * Queue a link graph for execution.
-	 * @param lg Link graph to be queued.
-	 */
+	* Queue a link graph for execution.
+	* @param lg Link graph to be queued.
+	*/
 	void Queue(LinkGraph *lg)
 	{
 		assert(LinkGraph::Get(lg->index) == lg);
@@ -75,12 +75,12 @@ public:
 	}
 
 	/**
-	 * Remove a link graph from the execution queue.
-	 * @param lg Link graph to be removed.
-	 */
+	* Remove a link graph from the execution queue.
+	* @param lg Link graph to be removed.
+	*/
 	void Unqueue(LinkGraph *lg) { this->schedule.remove(lg); }
 };
- 
+
 class LinkGraphJobGroup : public std::enable_shared_from_this<LinkGraphJobGroup> {
 	friend LinkGraphJob;
 
@@ -104,7 +104,7 @@ public:
 
 		JobInfo(LinkGraphJob *job);
 		JobInfo(LinkGraphJob *job, uint cost_estimate) :
-				job(job), cost_estimate(cost_estimate) { }
+			job(job), cost_estimate(cost_estimate) { }
 	};
 
 	static void ExecuteJobSet(std::vector<JobInfo> jobs);

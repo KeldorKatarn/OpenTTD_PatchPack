@@ -1,11 +1,11 @@
-/* $Id: linkgraphschedule.cpp 26347 2014-02-16 18:42:59Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file linkgraphschedule.cpp Definition of link graph schedule used for cargo distribution. */
 
@@ -20,27 +20,27 @@
 
 #include "../safeguards.h"
 
- /**
- * Static instance of LinkGraphSchedule.
- * Note: This instance is created on task start.
- *       Lazy creation on first usage results in a data race between the CDist threads.
- */
+/**
+* Static instance of LinkGraphSchedule.
+* Note: This instance is created on task start.
+*       Lazy creation on first usage results in a data race between the CDist threads.
+*/
 /* static */ LinkGraphSchedule LinkGraphSchedule::instance;
 
 /**
- * Start the next job(s) in the schedule.
- *
- * The cost estimate of a link graph job is C ~ N^2 log N, where
- * N is the number of nodes in the job link graph.
- * The cost estimate is summed for all running and scheduled jobs to form the total cost estimate T = sum C.
- * The nominal cycle time (in recalc intervals) required to schedule all jobs is calculated as S = 1 + log_2 T.
- * Hence the nominal duration of an individual job (in recalc intervals) is D = ceil(S * C / T)
- * The cost budget for an individual call to this method is given by T / S.
- *
- * The purpose of this algorithm is so that overall responsiveness is not hindered by large numbers of small/cheap
- * jobs which would previously need to be cycled through individually, but equally large/slow jobs have an extended
- * duration in which to execute, to avoid unnecessary pauses.
- */
+* Start the next job(s) in the schedule.
+*
+* The cost estimate of a link graph job is C ~ N^2 log N, where
+* N is the number of nodes in the job link graph.
+* The cost estimate is summed for all running and scheduled jobs to form the total cost estimate T = sum C.
+* The nominal cycle time (in recalc intervals) required to schedule all jobs is calculated as S = 1 + log_2 T.
+* Hence the nominal duration of an individual job (in recalc intervals) is D = ceil(S * C / T)
+* The cost budget for an individual call to this method is given by T / S.
+*
+* The purpose of this algorithm is so that overall responsiveness is not hindered by large numbers of small/cheap
+* jobs which would previously need to be cycled through individually, but equally large/slow jobs have an extended
+* duration in which to execute, to avoid unnecessary pauses.
+*/
 void LinkGraphSchedule::SpawnNext()
 {
 	if (this->schedule.empty()) return;
@@ -54,7 +54,8 @@ void LinkGraphSchedule::SpawnNext()
 
 		if (lg->Size() < 2) {
 			schedule_to_back.splice(schedule_to_back.end(), this->schedule, current);
-		} else {
+		}
+		else {
 			total_cost += lg->CalculateCostEstimate();
 		}
 	}
@@ -75,16 +76,18 @@ void LinkGraphSchedule::SpawnNext()
 			uint duration_multiplier = CeilDivT<uint64_t>(scaling * cost, total_cost);
 			std::unique_ptr<LinkGraphJob> job(new LinkGraphJob(*lg, duration_multiplier));
 			jobs_to_execute.emplace_back(job.get(), cost);
-			if (this->running.empty() || job->JoinDate() >= this->running.back()->JoinDate()) {
+			if (this->running.empty() || job->JoinDateTicks() >= this->running.back()->JoinDateTicks()) {
 				this->running.push_back(std::move(job));
-			} else {
+			}
+			else {
 				// find right place to insert
-				auto iter = std::upper_bound(this->running.begin(), this->running.end(), job->JoinDate(), [](Date a, const std::unique_ptr<LinkGraphJob> &b) {
-					return a < b->JoinDate();
+				auto iter = std::upper_bound(this->running.begin(), this->running.end(), job->JoinDateTicks(), [](Ticks a, const std::unique_ptr<LinkGraphJob> &b) {
+					return a < b->JoinDateTicks();
 				});
 				this->running.insert(iter, std::move(job));
 			}
-		} else {
+		}
+		else {
 			NOT_REACHED();
 		}
 	}
@@ -93,14 +96,14 @@ void LinkGraphSchedule::SpawnNext()
 
 	LinkGraphJobGroup::ExecuteJobSet(std::move(jobs_to_execute));
 }
- 
+
 /**
- * Join the next finished job, if available.
- */
+* Join the next finished job, if available.
+*/
 bool LinkGraphSchedule::IsJoinWithUnfinishedJobDue() const
 {
 	for (JobList::const_iterator it = this->running.begin(); it != this->running.end(); ++it) {
-		if (!((*it)->IsFinished())) {
+		if (!((*it)->IsFinished(1))) {
 			/* job is not due to be joined yet */
 			return false;
 		}
@@ -113,8 +116,8 @@ bool LinkGraphSchedule::IsJoinWithUnfinishedJobDue() const
 }
 
 /**
- * Join the next finished job, if available.
- */
+* Join the next finished job, if available.
+*/
 void LinkGraphSchedule::JoinNext()
 {
 	while (!(this->running.empty())) {
@@ -134,10 +137,10 @@ void LinkGraphSchedule::JoinNext()
 }
 
 /**
- * Run all handlers for the given Job. This method is tailored to
- * ThreadObject::New.
- * @param j Pointer to a link graph job.
- */
+* Run all handlers for the given Job. This method is tailored to
+* ThreadObject::New.
+* @param j Pointer to a link graph job.
+*/
 /* static */ void LinkGraphSchedule::Run(void *j)
 {
 	LinkGraphJob *job = (LinkGraphJob *)j;
@@ -147,15 +150,15 @@ void LinkGraphSchedule::JoinNext()
 	}
 
 	/*
-	 * Note that this it not guaranteed to be an atomic write and there are no memory barriers or other protections.
-	 * Readers of this variable in another thread may see an out of date value.
-	 * However this is OK as this will only happen just as a job is completing, and the real synchronisation is provided
-	 * by the thread join operation. In the worst case the main thread will be paused for longer than strictly necessary before
-	 * joining.
-	 * This is just a hint variable to avoid performing the join excessively early and blocking the main thread.
-	 */
+	* Note that this it not guaranteed to be an atomic write and there are no memory barriers or other protections.
+	* Readers of this variable in another thread may see an out of date value.
+	* However this is OK as this will only happen just as a job is completing, and the real synchronisation is provided
+	* by the thread join operation. In the worst case the main thread will be paused for longer than strictly necessary before
+	* joining.
+	* This is just a hint variable to avoid performing the join excessively early and blocking the main thread.
+	*/
 
-#if defined(__GNUC__) && (__cplusplus >= 201103L || defined(__STDCXX_VERSION__) || defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__))
+#if defined(__GNUC__) || defined(__clang__)
 	__atomic_store_n(&(job->job_completed), true, __ATOMIC_RELAXED);
 #else
 	job->job_completed = true;
@@ -163,9 +166,9 @@ void LinkGraphSchedule::JoinNext()
 }
 
 /**
- * Start all threads in the running list. This is only useful for save/load.
- * Usually threads are started when the job is created.
- */
+* Start all threads in the running list. This is only useful for save/load.
+* Usually threads are started when the job is created.
+*/
 void LinkGraphSchedule::SpawnAll()
 {
 	std::vector<LinkGraphJobGroup::JobInfo> jobs_to_execute;
@@ -176,8 +179,8 @@ void LinkGraphSchedule::SpawnAll()
 }
 
 /**
- * Clear all link graphs and jobs from the schedule.
- */
+* Clear all link graphs and jobs from the schedule.
+*/
 /* static */ void LinkGraphSchedule::Clear()
 {
 	for (JobList::iterator i(instance.running.begin()); i != instance.running.end(); ++i) {
@@ -188,10 +191,10 @@ void LinkGraphSchedule::SpawnAll()
 }
 
 /**
- * Shift all dates (join dates and edge annotations) of link graphs and link
- * graph jobs by the number of days given.
- * @param interval Number of days to be added or subtracted.
- */
+* Shift all dates (join dates and edge annotations) of link graphs and link
+* graph jobs by the number of days given.
+* @param interval Number of days to be added or subtracted.
+*/
 void LinkGraphSchedule::ShiftDates(int interval)
 {
 	LinkGraph *lg;
@@ -201,8 +204,8 @@ void LinkGraphSchedule::ShiftDates(int interval)
 }
 
 /**
- * Create a link graph schedule and initialize its handlers.
- */
+* Create a link graph schedule and initialize its handlers.
+*/
 LinkGraphSchedule::LinkGraphSchedule()
 {
 	this->handlers[0].reset(new InitHandler);
@@ -214,13 +217,13 @@ LinkGraphSchedule::LinkGraphSchedule()
 }
 
 /**
- * Delete a link graph schedule and its handlers.
- */
+* Delete a link graph schedule and its handlers.
+*/
 LinkGraphSchedule::~LinkGraphSchedule()
 {
 	this->Clear();
 }
- 
+
 LinkGraphJobGroup::LinkGraphJobGroup(constructor_token token, std::vector<LinkGraphJob *> jobs) :
 	jobs(std::move(jobs)) { }
 
@@ -228,23 +231,24 @@ void LinkGraphJobGroup::SpawnThread() {
 	ThreadObject *t = nullptr;
 
 	/**
-	 * Spawn a thread if possible and run the link graph job in the thread. If
-	 * that's not possible run the job right now in the current thread.
-	 */
+	* Spawn a thread if possible and run the link graph job in the thread. If
+	* that's not possible run the job right now in the current thread.
+	*/
 	if (ThreadObject::New(&(LinkGraphJobGroup::Run), this, &t, "ottd:linkgraph")) {
 		this->thread.reset(t);
 		for (auto &it : this->jobs) {
 			it->SetJobGroup(this->shared_from_this());
 		}
-	} else {
+	}
+	else {
 		this->thread.reset();
 		/* Of course this will hang a bit.
-		 * On the other hand, if you want to play games which make this hang noticably
-		 * on a platform without threads then you'll probably get other problems first.
-		 * OK:
-		 * If someone comes and tells me that this hangs for him/her, I'll implement a
-		 * smaller grained "Step" method for all handlers and add some more ticks where
-		 * "Step" is called. No problem in principle. */
+		* On the other hand, if you want to play games which make this hang noticably
+		* on a platform without threads then you'll probably get other problems first.
+		* OK:
+		* If someone comes and tells me that this hangs for him/her, I'll implement a
+		* smaller grained "Step" method for all handlers and add some more ticks where
+		* "Step" is called. No problem in principle. */
 		LinkGraphJobGroup::Run(this);
 	}
 }
@@ -256,10 +260,10 @@ void LinkGraphJobGroup::JoinThread() {
 }
 
 /**
- * Run all jobs for the given LinkGraphJobGroup. This method is tailored to
- * ThreadObject::New.
- * @param j Pointer to a LinkGraphJobGroup.
- */
+* Run all jobs for the given LinkGraphJobGroup. This method is tailored to
+* ThreadObject::New.
+* @param j Pointer to a LinkGraphJobGroup.
+*/
 /* static */ void LinkGraphJobGroup::Run(void *group)
 {
 	LinkGraphJobGroup *job_group = (LinkGraphJobGroup *)group;
@@ -294,14 +298,13 @@ void LinkGraphJobGroup::JoinThread() {
 }
 
 LinkGraphJobGroup::JobInfo::JobInfo(LinkGraphJob *job) :
-		job(job), cost_estimate(job->Graph().CalculateCostEstimate()) { }
+	job(job), cost_estimate(job->Graph().CalculateCostEstimate()) { }
 
- 
 /**
- * Pause the game if on the next _date_fract tick, we would do a join with the next
- * link graph job, but it is still running.
- * If we previous paused, unpause if the job is now ready to be joined with
- */
+* Pause the game if on the next _date_fract tick, we would do a join with the next
+* link graph job, but it is still running.
+* If we previous paused, unpause if the job is now ready to be joined with
+*/
 void StateGameLoop_LinkGraphPauseControl()
 {
 	if (_pause_mode & PM_PAUSED_LINK_GRAPH) {
@@ -309,41 +312,47 @@ void StateGameLoop_LinkGraphPauseControl()
 		if (!LinkGraphSchedule::instance.IsJoinWithUnfinishedJobDue()) {
 			DoCommandP(0, PM_PAUSED_LINK_GRAPH, 0, CMD_PAUSE);
 		}
-	} else if (_pause_mode == PM_UNPAUSED && _date_fract == LinkGraphSchedule::SPAWN_JOIN_TICK - 1) {
-		if (_date % _settings_game.linkgraph.recalc_interval == _settings_game.linkgraph.recalc_interval / 2) {
-			/* perform check one _date_fract tick before we would join */
-			if (LinkGraphSchedule::instance.IsJoinWithUnfinishedJobDue()) {
-				DoCommandP(0, PM_PAUSED_LINK_GRAPH, 1, CMD_PAUSE);
-			}
+	}
+	else if (_pause_mode == PM_UNPAUSED) {
+		if (_settings_game.economy.daylength == 1) {
+			if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK - 1) return;
+			if (_date % _settings_game.linkgraph.recalc_interval != _settings_game.linkgraph.recalc_interval / 2) return;
+		}
+		else {
+			int date_ticks = ((_date * DAY_TICKS) + _date_fract - (LinkGraphSchedule::SPAWN_JOIN_TICK - 1));
+			int interval = max<int>(2, (_settings_game.linkgraph.recalc_interval * DAY_TICKS / _settings_game.economy.daylength));
+			if (date_ticks % interval != interval / 2) return;
+		}
+
+		/* perform check one _date_fract tick before we would join */
+		if (LinkGraphSchedule::instance.IsJoinWithUnfinishedJobDue()) {
+			DoCommandP(0, PM_PAUSED_LINK_GRAPH, 1, CMD_PAUSE);
 		}
 	}
 }
 
 /**
- * Spawn or join a link graph job or compress a link graph if any link graph is
- * due to do so.
- */
+* Spawn or join a link graph job or compress a link graph if any link graph is
+* due to do so.
+*/
 void OnTick_LinkGraph()
 {
-	if (_settings_game.economy.daylength == 1)
-	{
+	int offset;
+	int interval;
+	if (_settings_game.economy.daylength == 1) {
 		if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK) return;
-		Date offset = _date % _settings_game.linkgraph.recalc_interval;
-		if (offset == 0) {
-		LinkGraphSchedule::instance.SpawnNext();
-		} else if (offset == _settings_game.linkgraph.recalc_interval / 2) {
-		LinkGraphSchedule::instance.JoinNext();
-		}
+		interval = _settings_game.linkgraph.recalc_interval;
+		offset = _date % interval;
 	}
-	else
-	{
-		uint16 interval_in_ticks = max<int>(2, (_settings_game.linkgraph.recalc_interval * DEFAULT_DAY_TICKS));
-		Date offset = _date_fract % interval_in_ticks;
-
-		if (offset == 0) {
-			LinkGraphSchedule::instance.SpawnNext();
-		} else if (offset == interval_in_ticks / 2) {
-			LinkGraphSchedule::instance.JoinNext();
-		}
+	else {
+		interval = max<int>(2, (_settings_game.linkgraph.recalc_interval * DAY_TICKS / _settings_game.economy.daylength));
+		offset = ((_date * DAY_TICKS) + _date_fract - LinkGraphSchedule::SPAWN_JOIN_TICK) % interval;
+	}
+	if (offset == 0) {
+		LinkGraphSchedule::instance.SpawnNext();
+	}
+	else if (offset == interval / 2) {
+		LinkGraphSchedule::instance.JoinNext();
 	}
 }
+

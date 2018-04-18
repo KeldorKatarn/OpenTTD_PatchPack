@@ -2,7 +2,8 @@
 
 * * *
 
-### v1.20.0 (2018-04-17)
+### v1.20.0 (2018-04-18)
+* Show red overlay for inputs of the currently programmed logic signal.
 * Enable use of full 255 NewGRFs in multiplayer by changing network protocol.
 * Add routing restriction slot based conditional orders.
 * Show the most relevant information in the vehicle list window, based on what the list is sorted on.

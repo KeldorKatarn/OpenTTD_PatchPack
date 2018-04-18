@@ -12,6 +12,7 @@
 #include "viewport_func.h"
 #include "tile_cmd.h"
 #include "window_func.h"
+#include "overlay_cmd.h"
 
 /**
  * List of all signal programs.
@@ -235,8 +236,12 @@ void DeleteSignalProgram(TileIndex tile, Track track)
 
 	/* Remove the actual program and all links attached to it */
 	SignalProgram *program = FindSignalProgram(tile, track);
+
+	Overlays::Instance()->HandleSignalProgramDeletion(program);
+
 	_signal_program_list.erase(key);
 	program->ClearAllLinks();
+
 	delete program;
 }
 

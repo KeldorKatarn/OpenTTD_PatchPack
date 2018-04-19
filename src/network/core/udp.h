@@ -77,7 +77,7 @@ protected:
 	 * Version: Bytes:  Description:
 	 *   all      1       the version of this packet's structure
 	 *
-	 *   5        1       number of GRF info packets that will follow this packet (n)
+	 *   128      1       number of GRF info packets that will follow this packet (n)
 	 *
 	 *   4        1       number of GRFs attached (n)
 	 *   4        n * 20  unique identifier for GRF files. Consists of:
@@ -120,9 +120,9 @@ protected:
 	* Version: Bytes:  Description:
 	*   all      1       the version of this packet's structure
 	*
-	*   1        1       ID of this packet to be able to put all of them in the right order (n)
-	*   1        1       number of GRFs attached to this specific packet (n)
-	*   1        n * 20  unique identifier for GRF files. Consists of:
+	*   128      1       ID of this packet to be able to put all of them in the right order (n)
+	*   128      1       number of GRFs attached to this specific packet (n)
+	*   128      n * 20  unique identifier for GRF files. Consists of:
 	*                     - one 4 byte variable with the GRF ID
 	*                     - 16 bytes (sent sequentially) for the MD5 checksum
 	*                       of the GRF

@@ -223,7 +223,7 @@ void NetworkUDPSocketHandler::SendNetworkGameInfo(Packet *p, const NetworkGameIn
 	/* Update the documentation in udp.h on changes
 	 * to the NetworkGameInfo wire-protocol! */
 
-	/* NETWORK_GAME_INFO_VERSION = 5 */
+	/* NETWORK_GAME_INFO_VERSION = 128 */
 	{
 		/* Only send the GRF Identification (GRF_ID and MD5 checksum) of
 		 * the GRFs that are needed, i.e. the ones that the server has
@@ -247,7 +247,7 @@ void NetworkUDPSocketHandler::SendNetworkGameInfo(Packet *p, const NetworkGameIn
 
 	/* NETWORK_GAME_INFO_VERSION = 4 */
 	{
-		// This part is deprecated and is no longer sent. The version 5 part replaces it.
+		// This part is deprecated and is no longer sent. The version 128 part replaces it.
 	}
 
 	/* NETWORK_GAME_INFO_VERSION = 3 */
@@ -330,7 +330,7 @@ void NetworkUDPSocketHandler::ReceiveNetworkGameInfo(Packet *p, NetworkGameInfo 
 	 * to the NetworkGameInfo wire-protocol! */
 
 	switch (info->game_info_version) {
-		case 5: FALLTHROUGH;
+		case 128: FALLTHROUGH;
 		case 4: {
 			if (info->game_info_version == 4) {
 				GRFConfig **dst = &info->grfconfig;
@@ -349,8 +349,8 @@ void NetworkUDPSocketHandler::ReceiveNetworkGameInfo(Packet *p, NetworkGameInfo 
 					*dst = c;
 					dst = &c->next;
 				}
-			} else if (info->game_info_version == 5) {
-				// In version 5 the actual newGRF information is sent via a different package type.
+			} else if (info->game_info_version == 128) {
+				// In NETWORK_GAME_INFO_VERSION 128 the actual newGRF information is sent via a different package type.
 				// Check ReceiveNetworkGameNewGrfInfo().
 				info->new_grf_packages_to_expect = p->Recv_uint8();
 			}

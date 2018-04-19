@@ -1,11 +1,11 @@
-/* $Id: refresh.cpp 26283 2014-01-28 19:49:43Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file refresh.h Definition of link refreshing utility. */
 
@@ -20,12 +20,12 @@
 #include "../safeguards.h"
 
 /**
- * Refresh all links the given vehicle will visit.
- * @param v Vehicle to refresh links for.
- * @param allow_merge If the refresher is allowed to merge or extend link graphs.
- * @param is_full_loading If the vehicle is full loading.
- * @param cargo_mask Mask of cargoes to refresh
- */
+* Refresh all links the given vehicle will visit.
+* @param v Vehicle to refresh links for.
+* @param allow_merge If the refresher is allowed to merge or extend link graphs.
+* @param is_full_loading If the vehicle is full loading.
+* @param cargo_mask Mask of cargoes to refresh
+*/
 /* static */ void LinkRefresher::Run(Vehicle *v, bool allow_merge, bool is_full_loading, uint32 cargo_mask)
 {
 	/* If there are no orders we can't predict anything.*/
@@ -53,7 +53,7 @@
 
 		/* Make sure the first order is a useful order. */
 		const Order *first = v->GetNextDecisionNode(v->GetOrder(v->cur_implicit_order_index), 0, iter_cargo_mask);
-		if (first != nullptr) {
+		if (first != NULL) {
 			HopSet seen_hops;
 			LinkRefresher refresher(v, &seen_hops, allow_merge, is_full_loading, iter_cargo_mask);
 
@@ -65,33 +65,35 @@
 }
 
 /**
- * Comparison operator to allow hops to be used in a std::set.
- * @param other Other hop to be compared with.
- * @return If this hop is "smaller" than the other (defined by from, to and cargo in this order).
- */
+* Comparison operator to allow hops to be used in a std::set.
+* @param other Other hop to be compared with.
+* @return If this hop is "smaller" than the other (defined by from, to and cargo in this order).
+*/
 bool LinkRefresher::Hop::operator<(const Hop &other) const
 {
 	if (this->from < other.from) {
 		return true;
-	} else if (this->from > other.from) {
+	}
+	else if (this->from > other.from) {
 		return false;
 	}
 	if (this->to < other.to) {
 		return true;
-	} else if (this->to > other.to) {
+	}
+	else if (this->to > other.to) {
 		return false;
 	}
 	return this->cargo < other.cargo;
 }
 
 /**
- * Constructor for link refreshing algorithm.
- * @param vehicle Vehicle to refresh links for.
- * @param seen_hops Set of hops already seen. This is shared between this
- *                  refresher and all its children.
- * @param allow_merge If the refresher is allowed to merge or extend link graphs.
- * @param is_full_loading If the vehicle is full loading.
- */
+* Constructor for link refreshing algorithm.
+* @param vehicle Vehicle to refresh links for.
+* @param seen_hops Set of hops already seen. This is shared between this
+*                  refresher and all its children.
+* @param allow_merge If the refresher is allowed to merge or extend link graphs.
+* @param is_full_loading If the vehicle is full loading.
+*/
 LinkRefresher::LinkRefresher(Vehicle *vehicle, HopSet *seen_hops, bool allow_merge, bool is_full_loading, uint32 cargo_mask) :
 	vehicle(vehicle), seen_hops(seen_hops), cargo(CT_INVALID), allow_merge(allow_merge),
 	is_full_loading(is_full_loading), cargo_mask(cargo_mask)
@@ -109,10 +111,10 @@ LinkRefresher::LinkRefresher(Vehicle *vehicle, HopSet *seen_hops, bool allow_mer
 }
 
 /**
- * Handle refit orders by updating capacities and refit_capacities.
- * @param refit_cargo Cargo to refit to.
- * @return True if any vehicle was refit; false if none was.
- */
+* Handle refit orders by updating capacities and refit_capacities.
+* @param refit_cargo Cargo to refit to.
+* @return True if any vehicle was refit; false if none was.
+*/
 bool LinkRefresher::HandleRefit(CargoID refit_cargo)
 {
 	this->cargo = refit_cargo;
@@ -143,7 +145,8 @@ bool LinkRefresher::HandleRefit(CargoID refit_cargo)
 		if (this->cargo != refit_it->cargo && refit_it->remaining > 0) {
 			this->capacities[refit_it->cargo] -= refit_it->remaining;
 			refit_it->remaining = 0;
-		} else if (amount < refit_it->remaining) {
+		}
+		else if (amount < refit_it->remaining) {
 			this->capacities[refit_it->cargo] -= refit_it->remaining - amount;
 			refit_it->remaining = amount;
 		}
@@ -166,8 +169,8 @@ bool LinkRefresher::HandleRefit(CargoID refit_cargo)
 }
 
 /**
- * Restore capacities and refit_capacities as vehicle might have been able to load now.
- */
+* Restore capacities and refit_capacities as vehicle might have been able to load now.
+*/
 void LinkRefresher::ResetRefit()
 {
 	for (RefitList::iterator it(this->refit_capacities.begin()); it != this->refit_capacities.end(); ++it) {
@@ -178,24 +181,24 @@ void LinkRefresher::ResetRefit()
 }
 
 /**
- * Predict the next order the vehicle will execute and resolve conditionals by
- * recursion and return next non-conditional order in list.
- * @param cur Current order being evaluated.
- * @param next Next order to be evaluated.
- * @param flags RefreshFlags to give hints about the previous link and state carried over from that.
- * @param num_hops Number of hops already taken by recursive calls to this method.
- * @return new next Order.
- */
+* Predict the next order the vehicle will execute and resolve conditionals by
+* recursion and return next non-conditional order in list.
+* @param cur Current order being evaluated.
+* @param next Next order to be evaluated.
+* @param flags RefreshFlags to give hints about the previous link and state carried over from that.
+* @param num_hops Number of hops already taken by recursive calls to this method.
+* @return new next Order.
+*/
 const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next, uint8 flags, uint num_hops)
 {
 	/* next is good if it's either NULL (then the caller will stop the
-	 * evaluation) or if it's not conditional and the caller allows it to be
-	 * chosen (by setting USE_NEXT). */
+	* evaluation) or if it's not conditional and the caller allows it to be
+	* chosen (by setting USE_NEXT). */
 	while (next != NULL && (!HasBit(flags, USE_NEXT) || next->IsType(OT_CONDITIONAL))) {
 
 		/* After the first step any further non-conditional order is good,
-		 * regardless of previous USE_NEXT settings. The case of cur and next or
-		 * their respective stations being equal is handled elsewhere. */
+		* regardless of previous USE_NEXT settings. The case of cur and next or
+		* their respective stations being equal is handled elsewhere. */
 		SetBit(flags, USE_NEXT);
 
 		if (next->IsType(OT_CONDITIONAL)) {
@@ -205,16 +208,16 @@ const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next
 			assert(this_cargo_mask == this->cargo_mask);
 			if (skip_to != NULL && num_hops < this->vehicle->GetNumOrders()) {
 				/* Make copies of capacity tracking lists. There is potential
-				 * for optimization here: If the vehicle never refits we don't
-				 * need to copy anything. Also, if we've seen the branched link
-				 * before we don't need to branch at all. */
+				* for optimization here: If the vehicle never refits we don't
+				* need to copy anything. Also, if we've seen the branched link
+				* before we don't need to branch at all. */
 				LinkRefresher branch(*this);
 				branch.RefreshLinks(cur, skip_to, flags, num_hops + 1);
 			}
 		}
 
 		/* Reassign next with the following stop. This can be a station or a
-		 * depot.*/
+		* depot.*/
 		uint32 this_cargo_mask = this->cargo_mask;
 		next = this->vehicle->GetNextDecisionNode(
 			this->vehicle->GetNextOrder(next), num_hops++, this_cargo_mask);
@@ -224,10 +227,10 @@ const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next
 }
 
 /**
- * Refresh link stats for the given pair of orders.
- * @param cur Last stop where the consist could interact with cargo.
- * @param next Next order to be processed.
- */
+* Refresh link stats for the given pair of orders.
+* @param cur Last stop where the consist could interact with cargo.
+* @param next Next order to be processed.
+*/
 void LinkRefresher::RefreshStats(const Order *cur, const Order *next)
 {
 	StationID next_station = next->GetDestination();
@@ -242,35 +245,38 @@ void LinkRefresher::RefreshStats(const Order *cur, const Order *next)
 			if (cargo_quantity == 0) continue;
 
 			/* If not allowed to merge link graphs, make sure the stations are
-			 * already in the same link graph. */
+			* already in the same link graph. */
 			if (!this->allow_merge && st->goods[c].link_graph != Station::Get(next_station)->goods[c].link_graph) {
 				continue;
 			}
 
 			/* A link is at least partly restricted if a vehicle can't load at its source. */
 			EdgeUpdateMode restricted_mode = (cur->GetCargoLoadType(c) & OLFB_NO_LOAD) == 0 ?
-						EUM_UNRESTRICTED : EUM_RESTRICTED;
+				EUM_UNRESTRICTED : EUM_RESTRICTED;
 
 			/* If the vehicle is currently full loading, increase the capacities at the station
-			 * where it is loading by an estimate of what it would have transported if it wasn't
-			 * loading. Don't do that if the vehicle has been waiting for longer than the entire
-			 * order list is supposed to take, though. If that is the case the total duration is
-			 * probably far off and we'd greatly overestimate the capacity by increasing.*/
+			* where it is loading by an estimate of what it would have transported if it wasn't
+			* loading. Don't do that if the vehicle has been waiting for longer than the entire
+			* order list is supposed to take, though. If that is the case the total duration is
+			* probably far off and we'd greatly overestimate the capacity by increasing.*/
 			if (this->is_full_loading && this->vehicle->HasOrdersList() &&
-					st->index == vehicle->last_station_visited &&
-					this->vehicle->GetTotalOrderListDuration() >
-					(Ticks)this->vehicle->current_order_time) {
+				st->index == vehicle->last_station_visited &&
+				this->vehicle->GetTotalOrderListDuration() >
+				(Ticks)this->vehicle->current_order_time) {
 				uint effective_capacity = cargo_quantity * this->vehicle->load_unload_ticks;
 				if (effective_capacity > (uint)this->vehicle->GetTotalOrderListDuration()) {
 					IncreaseStats(st, c, next_station, effective_capacity /
-							this->vehicle->GetTotalOrderListDuration(), 0,
-							EUM_INCREASE | restricted_mode);
-				} else if (RandomRange(this->vehicle->GetTotalOrderListDuration()) < effective_capacity) {
+						this->vehicle->GetTotalOrderListDuration(), 0,
+						EUM_INCREASE | restricted_mode);
+				}
+				else if (RandomRange(this->vehicle->GetTotalOrderListDuration()) < effective_capacity) {
 					IncreaseStats(st, c, next_station, 1, 0, EUM_INCREASE | restricted_mode);
-				} else {
+				}
+				else {
 					IncreaseStats(st, c, next_station, cargo_quantity, 0, EUM_REFRESH | restricted_mode);
 				}
-			} else {
+			}
+			else {
 				IncreaseStats(st, c, next_station, cargo_quantity, 0, EUM_REFRESH | restricted_mode);
 			}
 		}
@@ -278,16 +284,16 @@ void LinkRefresher::RefreshStats(const Order *cur, const Order *next)
 }
 
 /**
- * Iterate over orders starting at \a cur and \a next and refresh links
- * associated with them. \a cur and \a next can be equal. If they're not they
- * must be "neigbours" in their order list, which means \a next must be directly
- * reachable from \a cur without passing any further OT_GOTO_STATION or
- * OT_IMPLICIT orders in between.
- * @param cur Current order being evaluated.
- * @param next Next order to be checked.
- * @param flags RefreshFlags to give hints about the previous link and state carried over from that.
- * @param num_hops Number of hops already taken by recursive calls to this method.
- */
+* Iterate over orders starting at \a cur and \a next and refresh links
+* associated with them. \a cur and \a next can be equal. If they're not they
+* must be "neigbours" in their order list, which means \a next must be directly
+* reachable from \a cur without passing any further OT_GOTO_STATION or
+* OT_IMPLICIT orders in between.
+* @param cur Current order being evaluated.
+* @param next Next order to be checked.
+* @param flags RefreshFlags to give hints about the previous link and state carried over from that.
+* @param num_hops Number of hops already taken by recursive calls to this method.
+*/
 void LinkRefresher::RefreshLinks(const Order *cur, const Order *next, uint8 flags, uint num_hops)
 {
 	while (next != NULL) {
@@ -296,7 +302,8 @@ void LinkRefresher::RefreshLinks(const Order *cur, const Order *next, uint8 flag
 			SetBit(flags, WAS_REFIT);
 			if (!next->IsAutoRefit()) {
 				this->HandleRefit(next->GetRefitCargo());
-			} else if (!HasBit(flags, IN_AUTOREFIT)) {
+			}
+			else if (!HasBit(flags, IN_AUTOREFIT)) {
 				SetBit(flags, IN_AUTOREFIT);
 				LinkRefresher backup(*this);
 				for (CargoID c = 0; c != NUM_CARGO; ++c) {
@@ -309,11 +316,12 @@ void LinkRefresher::RefreshLinks(const Order *cur, const Order *next, uint8 flag
 		}
 
 		/* Only reset the refit capacities if the "previous" next is a station,
-		 * meaning that either the vehicle was refit at the previous station or
-		 * it wasn't at all refit during the current hop. */
+		* meaning that either the vehicle was refit at the previous station or
+		* it wasn't at all refit during the current hop. */
 		if (HasBit(flags, WAS_REFIT) && (next->IsType(OT_GOTO_STATION) || next->IsType(OT_IMPLICIT))) {
 			SetBit(flags, RESET_REFIT);
-		} else {
+		}
+		else {
 			ClrBit(flags, RESET_REFIT);
 		}
 
@@ -322,7 +330,8 @@ void LinkRefresher::RefreshLinks(const Order *cur, const Order *next, uint8 flag
 		Hop hop(cur->index, next->index, this->cargo);
 		if (this->seen_hops->find(hop) != this->seen_hops->end()) {
 			break;
-		} else {
+		}
+		else {
 			this->seen_hops->insert(hop);
 		}
 
@@ -342,13 +351,14 @@ void LinkRefresher::RefreshLinks(const Order *cur, const Order *next, uint8 flag
 			if (cur->CanLeaveWithCargo(HasBit(flags, HAS_CARGO), FindFirstBit(this->cargo_mask))) {
 				SetBit(flags, HAS_CARGO);
 				this->RefreshStats(cur, next);
-			} else {
+			}
+			else {
 				ClrBit(flags, HAS_CARGO);
 			}
 		}
 
 		/* "cur" is only assigned here if the stop is a station so that
-		 * whenever stats are to be increased two stations can be found. */
+		* whenever stats are to be increased two stations can be found. */
 		cur = next;
 	}
 }

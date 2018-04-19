@@ -2,6 +2,10 @@
 
 * * *
 
+### v1.21.0 (2018-04-19)
+* Bugfix in vehicle route rendering
+* CargoDist code adjusted to match JGR Patch Pack
+
 ### v1.20.0 (2018-04-18)
 * Show red overlay for inputs of the currently programmed logic signal.
 * Enable use of full 255 NewGRFs in multiplayer by changing network protocol.

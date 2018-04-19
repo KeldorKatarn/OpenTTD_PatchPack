@@ -1,11 +1,11 @@
-/* $Id: linkgraph_gui.h 26266 2014-01-19 09:26:56Z fonsinchen $ */
+/* $Id$ */
 
 /*
- * This file is part of OpenTTD.
- * OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
- * OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of OpenTTD.
+* OpenTTD is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.
+* OpenTTD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /** @file linkgraph_gui.h Declaration of linkgraph overlay GUI. */
 
@@ -20,8 +20,8 @@
 #include <vector>
 
 /**
- * Properties of a link between two stations.
- */
+* Properties of a link between two stations.
+*/
 struct LinkProperties {
 	LinkProperties() : capacity(0), usage(0), planned(0), shared(false) {}
 
@@ -32,9 +32,9 @@ struct LinkProperties {
 };
 
 /**
- * Handles drawing of links into some window.
- * The window must either be a smallmap or have a valid viewport.
- */
+* Handles drawing of links into some window.
+* The window must either be a smallmap or have a valid viewport.
+*/
 class LinkGraphOverlay {
 public:
 	struct StationSupplyInfo {
@@ -57,15 +57,15 @@ public:
 	static const uint8 LINK_COLOURS[];
 
 	/**
-	 * Create a link graph overlay for the specified window.
-	 * @param w Window to be drawn into.
-	 * @param wid ID of the widget to draw into.
-	 * @param cargo_mask Bitmask of cargoes to be shown.
-	 * @param company_mask Bitmask of companies to be shown.
-	 * @param scale Desired thickness of lines and size of station dots.
-	 */
+	* Create a link graph overlay for the specified window.
+	* @param w Window to be drawn into.
+	* @param wid ID of the widget to draw into.
+	* @param cargo_mask Bitmask of cargoes to be shown.
+	* @param company_mask Bitmask of companies to be shown.
+	* @param scale Desired thickness of lines and size of station dots.
+	*/
 	LinkGraphOverlay(const Window *w, uint wid, uint32 cargo_mask, uint32 company_mask, uint scale) :
-			window(w), widget_id(wid), cargo_mask(cargo_mask), company_mask(company_mask), scale(scale)
+		window(w), widget_id(wid), cargo_mask(cargo_mask), company_mask(company_mask), scale(scale)
 	{}
 
 	void RebuildCache();
@@ -106,8 +106,8 @@ protected:
 void ShowLinkGraphLegend();
 
 /**
- * Menu window to select cargoes and companies to show in a link graph overlay.
- */
+* Menu window to select cargoes and companies to show in a link graph overlay.
+*/
 struct LinkGraphLegendWindow : Window {
 public:
 	LinkGraphLegendWindow(WindowDesc *desc, int window_number);
@@ -119,7 +119,7 @@ public:
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true);
 
 private:
-	LinkGraphOverlay *overlay;
+	LinkGraphOverlay * overlay;
 
 	void UpdateOverlayCompanies();
 	void UpdateOverlayCargoes();

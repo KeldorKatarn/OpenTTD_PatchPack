@@ -1772,13 +1772,26 @@ static inline TileIndex GetLastValidOrderLocation(const Vehicle *veh)
 
 static inline Order *GetFinalOrder(const Vehicle *veh, Order *order)
 {
-	auto original_order = order;
+	// Use Floyd's cycle-finding algorithm to prevent endless loop
+	// due to a cycle formed by confitional orders.
+	auto cycle_check = order;
 
 	while (order->IsType(OT_CONDITIONAL)) {
 		order = veh->GetOrder(order->GetConditionSkipToOrder());
 
-		if (original_order == order) return nullptr;
+		if (cycle_check->IsType(OT_CONDITIONAL)) {
+			cycle_check = veh->GetOrder(cycle_check->GetConditionSkipToOrder());
+
+			if (cycle_check->IsType(OT_CONDITIONAL)) {
+				cycle_check = veh->GetOrder(cycle_check->GetConditionSkipToOrder());
+			}
+		}
+
+		bool cycle_detected = (order->IsType(OT_CONDITIONAL) && (order == cycle_check));
+
+		if (cycle_detected) return nullptr;
 	}
+
 	return order;
 }
  
@@ -4853,7 +4866,9 @@ Point GetViewportStationMiddle(const ViewPort *vp, const Station *st)
 
 void DrawOverlay(const TileInfo *ti, TileType tt) 
 {
-	if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
+	if (Overlays::Instance()->IsTileLogicSignalInput(ti)) {
+		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_RED);
+	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
 		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_BLUE);
 	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, ACCEPTANCE)) { 
 		DrawTileSelectionRect(ti, PAL_NONE);

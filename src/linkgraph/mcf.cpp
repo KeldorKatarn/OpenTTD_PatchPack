@@ -9,15 +9,15 @@
 #include "../safeguards.h"
 
 typedef btree::btree_map<NodeID, Path *> PathViaMap;
- 
+
 /**
- * This is a wrapper around Tannotation* which also stores a cache of GetAnnotation() and GetNode()
- * to remove the need dereference the Tannotation* pointer when sorting/inseting/erasing in MultiCommodityFlow::Dijkstra::AnnoSet
- */
+* This is a wrapper around Tannotation* which also stores a cache of GetAnnotation() and GetNode()
+* to remove the need dereference the Tannotation* pointer when sorting/inseting/erasing in MultiCommodityFlow::Dijkstra::AnnoSet
+*/
 template<typename Tannotation>
 class AnnoSetItem {
 public:
-	Tannotation *anno_ptr;
+	Tannotation * anno_ptr;
 	typename Tannotation::AnnotationValueType cached_annotation;
 	NodeID node_id;
 
@@ -25,48 +25,48 @@ public:
 };
 
 /**
- * Distance-based annotation for use in the Dijkstra algorithm. This is close
- * to the original meaning of "annotation" in this context. Paths are rated
- * according to the sum of distances of their edges.
- */
+* Distance-based annotation for use in the Dijkstra algorithm. This is close
+* to the original meaning of "annotation" in this context. Paths are rated
+* according to the sum of distances of their edges.
+*/
 class DistanceAnnotation : public Path {
 public:
 	typedef uint AnnotationValueType;
 
 	/**
-	 * Constructor.
-	 * @param n ID of node to be annotated.
-	 * @param source If the node is the source of its path.
-	 */
+	* Constructor.
+	* @param n ID of node to be annotated.
+	* @param source If the node is the source of its path.
+	*/
 	DistanceAnnotation(NodeID n, bool source = false) : Path(n, source) {}
 
 	bool IsBetter(const DistanceAnnotation *base, uint cap, int free_cap, uint dist) const;
 
 	/**
-	 * Return the actual value of the annotation, in this case the distance.
-	 * @return Distance.
-	 */
+	* Return the actual value of the annotation, in this case the distance.
+	* @return Distance.
+	*/
 	inline uint GetAnnotation() const { return this->distance; }
 
 	/**
-	 * Update the cached annotation value
-	 */
+	* Update the cached annotation value
+	*/
 	inline void UpdateAnnotation() { }
 
 	/**
-	 * Comparator for std containers.
-	 */
+	* Comparator for std containers.
+	*/
 	struct Comparator {
 		bool operator()(const AnnoSetItem<DistanceAnnotation> &x, const AnnoSetItem<DistanceAnnotation> &y) const;
 	};
 };
 
 /**
- * Capacity-based annotation for use in the Dijkstra algorithm. This annotation
- * rates paths according to the maximum capacity of their edges. The Dijkstra
- * algorithm still gives meaningful results like this as the capacity of a path
- * can only decrease or stay the same if you add more edges.
- */
+* Capacity-based annotation for use in the Dijkstra algorithm. This annotation
+* rates paths according to the maximum capacity of their edges. The Dijkstra
+* algorithm still gives meaningful results like this as the capacity of a path
+* can only decrease or stay the same if you add more edges.
+*/
 class CapacityAnnotation : public Path {
 	int cached_annotation;
 
@@ -74,61 +74,61 @@ public:
 	typedef int AnnotationValueType;
 
 	/**
-	 * Constructor.
-	 * @param n ID of node to be annotated.
-	 * @param source If the node is the source of its path.
-	 */
+	* Constructor.
+	* @param n ID of node to be annotated.
+	* @param source If the node is the source of its path.
+	*/
 	CapacityAnnotation(NodeID n, bool source = false) : Path(n, source) {}
 
 	bool IsBetter(const CapacityAnnotation *base, uint cap, int free_cap, uint dist) const;
 
 	/**
-	 * Return the actual value of the annotation, in this case the capacity.
-	 * @return Capacity.
-	 */
+	* Return the actual value of the annotation, in this case the capacity.
+	* @return Capacity.
+	*/
 	inline int GetAnnotation() const { return this->cached_annotation; }
 
 	/**
-	 * Update the cached annotation value
-	 */
+	* Update the cached annotation value
+	*/
 	inline void UpdateAnnotation()
 	{
 		this->cached_annotation = this->GetCapacityRatio();
 	}
 
 	/**
-	 * Comparator for std containers.
-	 */
+	* Comparator for std containers.
+	*/
 	struct Comparator {
 		bool operator()(const AnnoSetItem<CapacityAnnotation> &x, const AnnoSetItem<CapacityAnnotation> &y) const;
 	};
 };
 
 /**
- * Iterator class for getting the edges in the order of their next_edge
- * members.
- */
+* Iterator class for getting the edges in the order of their next_edge
+* members.
+*/
 class GraphEdgeIterator {
 private:
-	LinkGraphJob &job; ///< Job being executed
+	LinkGraphJob & job; ///< Job being executed
 	EdgeIterator i;    ///< Iterator pointing to current edge.
 	EdgeIterator end;  ///< Iterator pointing beyond last edge.
 
 public:
 
 	/**
-	 * Construct a GraphEdgeIterator.
-	 * @param job Job to iterate on.
-	 */
+	* Construct a GraphEdgeIterator.
+	* @param job Job to iterate on.
+	*/
 	GraphEdgeIterator(LinkGraphJob &job) : job(job),
 		i(NULL, NULL, INVALID_NODE), end(NULL, NULL, INVALID_NODE)
 	{}
 
 	/**
-	 * Setup the node to start iterating at.
-	 * @param source Unused.
-	 * @param node Node to start iterating at.
-	 */
+	* Setup the node to start iterating at.
+	* @param source Unused.
+	* @param node Node to start iterating at.
+	*/
 	void SetNode(NodeID source, NodeID node)
 	{
 		this->i = this->job[node].Begin();
@@ -136,9 +136,9 @@ public:
 	}
 
 	/**
-	 * Retrieve the ID of the node the next edge points to.
-	 * @return Next edge's target node ID or INVALID_NODE.
-	 */
+	* Retrieve the ID of the node the next edge points to.
+	* @return Next edge's target node ID or INVALID_NODE.
+	*/
 	NodeID Next()
 	{
 		return this->i != this->end ? (this->i++)->first : INVALID_NODE;
@@ -146,13 +146,13 @@ public:
 };
 
 /**
- * Iterator class for getting edges from a FlowStatMap.
- */
+* Iterator class for getting edges from a FlowStatMap.
+*/
 class FlowEdgeIterator {
 private:
-	LinkGraphJob &job; ///< Link graph job we're working with.
+	LinkGraphJob & job; ///< Link graph job we're working with.
 
-	/** Lookup table for getting NodeIDs from StationIDs. */
+						/** Lookup table for getting NodeIDs from StationIDs. */
 	std::vector<NodeID> station_to_node;
 
 	/** Current iterator in the shares map. */
@@ -163,9 +163,9 @@ private:
 public:
 
 	/**
-	 * Constructor.
-	 * @param job Link graph job to work with.
-	 */
+	* Constructor.
+	* @param job Link graph job to work with.
+	*/
 	FlowEdgeIterator(LinkGraphJob &job) : job(job)
 	{
 		for (NodeID i = 0; i < job.Size(); ++i) {
@@ -178,10 +178,10 @@ public:
 	}
 
 	/**
-	 * Setup the node to retrieve edges from.
-	 * @param source Root of the current path tree.
-	 * @param node Current node to be checked for outgoing flows.
-	 */
+	* Setup the node to retrieve edges from.
+	* @param source Root of the current path tree.
+	* @param node Current node to be checked for outgoing flows.
+	*/
 	void SetNode(NodeID source, NodeID node)
 	{
 		const FlowStatMap &flows = this->job[node].Flows();
@@ -189,16 +189,17 @@ public:
 		if (it != flows.end()) {
 			this->it = it->second.GetShares()->begin();
 			this->end = it->second.GetShares()->end();
-		} else {
+		}
+		else {
 			this->it = FlowStat::empty_sharesmap.begin();
 			this->end = FlowStat::empty_sharesmap.end();
 		}
 	}
 
 	/**
-	 * Get the next node for which a flow exists.
-	 * @return ID of next node with flow.
-	 */
+	* Get the next node for which a flow exists.
+	* @return ID of next node with flow.
+	*/
 	NodeID Next()
 	{
 		if (this->it == this->end) return INVALID_NODE;
@@ -207,66 +208,69 @@ public:
 };
 
 /**
- * Determines if an extension to the given Path with the given parameters is
- * better than this path.
- * @param base Other path.
- * @param cap Capacity of the new edge to be added to base.
- * @param dist Distance of the new edge.
- * @return True if base + the new edge would be better than the path associated
- * with this annotation.
- */
+* Determines if an extension to the given Path with the given parameters is
+* better than this path.
+* @param base Other path.
+* @param cap Capacity of the new edge to be added to base.
+* @param dist Distance of the new edge.
+* @return True if base + the new edge would be better than the path associated
+* with this annotation.
+*/
 bool DistanceAnnotation::IsBetter(const DistanceAnnotation *base, uint cap,
-		int free_cap, uint dist) const
+	int free_cap, uint dist) const
 {
 	/* If any of the paths is disconnected, the other one is better. If both
-	 * are disconnected, this path is better.*/
+	* are disconnected, this path is better.*/
 	if (base->distance == UINT_MAX) {
 		return false;
-	} else if (this->distance == UINT_MAX) {
+	}
+	else if (this->distance == UINT_MAX) {
 		return true;
 	}
 
 	if (free_cap > 0 && base->free_capacity > 0) {
 		/* If both paths have capacity left, compare their distances.
-		 * If the other path has capacity left and this one hasn't, the
-		 * other one's better (thus, return true). */
+		* If the other path has capacity left and this one hasn't, the
+		* other one's better (thus, return true). */
 		return this->free_capacity > 0 ? (base->distance + dist < this->distance) : true;
-	} else {
+	}
+	else {
 		/* If the other path doesn't have capacity left, but this one has,
-		 * the other one is worse (thus, return false).
-		 * If both paths are out of capacity, do the regular distance
-		 * comparison. */
+		* the other one is worse (thus, return false).
+		* If both paths are out of capacity, do the regular distance
+		* comparison. */
 		return this->free_capacity > 0 ? false : (base->distance + dist < this->distance);
 	}
 }
 
 /**
- * Determines if an extension to the given Path with the given parameters is
- * better than this path.
- * @param base Other path.
- * @param cap Capacity of the new edge to be added to base.
- * @param dist Distance of the new edge.
- * @return True if base + the new edge would be better than the path associated
- * with this annotation.
- */
+* Determines if an extension to the given Path with the given parameters is
+* better than this path.
+* @param base Other path.
+* @param cap Capacity of the new edge to be added to base.
+* @param dist Distance of the new edge.
+* @return True if base + the new edge would be better than the path associated
+* with this annotation.
+*/
 bool CapacityAnnotation::IsBetter(const CapacityAnnotation *base, uint cap,
-		int free_cap, uint dist) const
+	int free_cap, uint dist) const
 {
 	int min_cap = Path::GetCapacityRatio(min(base->free_capacity, free_cap), min(base->capacity, cap));
 	int this_cap = this->GetAnnotation();
 	if (min_cap == this_cap) {
 		/* If the capacities are the same and the other path isn't disconnected
-		 * choose the shorter path. */
+		* choose the shorter path. */
 		return base->distance == UINT_MAX ? false : (base->distance + dist < this->distance);
-	} else {
+	}
+	else {
 		return min_cap > this_cap;
 	}
 }
 
 #ifdef CUSTOM_ALLOCATOR
 /**
- * Storage for AnnoSetAllocator instances
- */
+* Storage for AnnoSetAllocator instances
+*/
 struct AnnoSetAllocatorStore {
 	std::vector<void *> used_blocks;
 	void *current_block;
@@ -284,11 +288,11 @@ struct AnnoSetAllocatorStore {
 };
 
 /**
- * Custom allocator specifically for use with MultiCommodityFlow::Dijkstra::AnnoSet
- * This allocates RB-set nodes in contiguous blocks, and frees all allocated nodes when destructed
- * If a node is deallocated, it is returned in the next allocation, this is so that the same node
- * can be re-used across a call to Path::Fork
- */
+* Custom allocator specifically for use with MultiCommodityFlow::Dijkstra::AnnoSet
+* This allocates RB-set nodes in contiguous blocks, and frees all allocated nodes when destructed
+* If a node is deallocated, it is returned in the next allocation, this is so that the same node
+* can be re-used across a call to Path::Fork
+*/
 template<class Ttype>
 struct AnnoSetAllocator {
 	static const size_t block_size = 1024;
@@ -340,9 +344,9 @@ struct AnnoSetAllocator {
 #endif
 
 /**
- * Annotation wrapper class which also stores an iterator to the AnnoSet node which points to this annotation
- * This is to enable erasing the AnnoSet node when calling Path::Fork without having to search the set
- */
+* Annotation wrapper class which also stores an iterator to the AnnoSet node which points to this annotation
+* This is to enable erasing the AnnoSet node when calling Path::Fork without having to search the set
+*/
 template<class Tannotation>
 struct AnnosWrapper : public Tannotation {
 #ifdef CUSTOM_ALLOCATOR
@@ -351,18 +355,19 @@ struct AnnosWrapper : public Tannotation {
 	typename std::set<AnnoSetItem<Tannotation>, typename Tannotation::Comparator>::iterator self_iter;
 #endif
 
+
 	AnnosWrapper(NodeID n, bool source = false) : Tannotation(n, source) {}
 };
 
 /**
- * A slightly modified Dijkstra algorithm. Grades the paths not necessarily by
- * distance, but by the value Tannotation computes. It uses the max_saturation
- * setting to artificially decrease capacities.
- * @tparam Tannotation Annotation to be used.
- * @tparam Tedge_iterator Iterator to be used for getting outgoing edges.
- * @param source_node Node where the algorithm starts.
- * @param paths Container for the paths to be calculated.
- */
+* A slightly modified Dijkstra algorithm. Grades the paths not necessarily by
+* distance, but by the value Tannotation computes. It uses the max_saturation
+* setting to artificially decrease capacities.
+* @tparam Tannotation Annotation to be used.
+* @tparam Tedge_iterator Iterator to be used for getting outgoing edges.
+* @param source_node Node where the algorithm starts.
+* @param paths Container for the paths to be calculated.
+*/
 template<class Tannotation, class Tedge_iterator>
 void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 {
@@ -377,9 +382,9 @@ void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 	Tedge_iterator iter(this->job);
 	uint size = this->job.Size();
 	paths.resize(size, NULL);
-	
+
 	this->job.path_allocator.SetParameters(sizeof(AnnosWrapper<Tannotation>), (8192 - 32) / sizeof(AnnosWrapper<Tannotation>));
-	
+
 	for (NodeID node = 0; node < size; ++node) {
 		AnnosWrapper<Tannotation> *anno = new (this->job.path_allocator.Allocate()) AnnosWrapper<Tannotation>(node, node == source_node);
 		anno->UpdateAnnotation();
@@ -416,10 +421,10 @@ void MultiCommodityFlow::Dijkstra(NodeID source_node, PathVector &paths)
 }
 
 /**
- * Clean up paths that lead nowhere and the root path.
- * @param source_id ID of the root node.
- * @param paths Paths to be cleaned up.
- */
+* Clean up paths that lead nowhere and the root path.
+* @param source_id ID of the root node.
+* @param paths Paths to be cleaned up.
+*/
 void MultiCommodityFlow::CleanupPaths(NodeID source_id, PathVector &paths)
 {
 	Path *source = paths[source_id];
@@ -443,16 +448,16 @@ void MultiCommodityFlow::CleanupPaths(NodeID source_id, PathVector &paths)
 }
 
 /**
- * Push flow along a path and update the unsatisfied_demand of the associated
- * edge.
- * @param edge Edge whose ends the path connects.
- * @param path End of the path the flow should be pushed on.
- * @param accuracy Accuracy of the calculation.
- * @param max_saturation If < UINT_MAX only push flow up to the given
- *                       saturation, otherwise the path can be "overloaded".
- */
+* Push flow along a path and update the unsatisfied_demand of the associated
+* edge.
+* @param edge Edge whose ends the path connects.
+* @param path End of the path the flow should be pushed on.
+* @param accuracy Accuracy of the calculation.
+* @param max_saturation If < UINT_MAX only push flow up to the given
+*                       saturation, otherwise the path can be "overloaded".
+*/
 uint MultiCommodityFlow::PushFlow(Edge &edge, Path *path, uint accuracy,
-		uint max_saturation)
+	uint max_saturation)
 {
 	assert(edge.UnsatisfiedDemand() > 0);
 	uint flow = Clamp(edge.Demand() / accuracy, 1, edge.UnsatisfiedDemand());
@@ -462,11 +467,11 @@ uint MultiCommodityFlow::PushFlow(Edge &edge, Path *path, uint accuracy,
 }
 
 /**
- * Find the flow along a cycle including cycle_begin in path.
- * @param path Set of paths that form the cycle.
- * @param cycle_begin Path to start at.
- * @return Flow along the cycle.
- */
+* Find the flow along a cycle including cycle_begin in path.
+* @param path Set of paths that form the cycle.
+* @param cycle_begin Path to start at.
+* @return Flow along the cycle.
+*/
 uint MCF1stPass::FindCycleFlow(const PathVector &path, const Path *cycle_begin)
 {
 	uint flow = UINT_MAX;
@@ -479,11 +484,11 @@ uint MCF1stPass::FindCycleFlow(const PathVector &path, const Path *cycle_begin)
 }
 
 /**
- * Eliminate a cycle of the given flow in the given set of paths.
- * @param path Set of paths containing the cycle.
- * @param cycle_begin Part of the cycle to start at.
- * @param flow Flow along the cycle.
- */
+* Eliminate a cycle of the given flow in the given set of paths.
+* @param path Set of paths containing the cycle.
+* @param cycle_begin Part of the cycle to start at.
+* @param flow Flow along the cycle.
+*/
 void MCF1stPass::EliminateCycle(PathVector &path, Path *cycle_begin, uint flow)
 {
 	Path *cycle_end = cycle_begin;
@@ -506,14 +511,14 @@ void MCF1stPass::EliminateCycle(PathVector &path, Path *cycle_begin, uint flow)
 }
 
 /**
- * Eliminate cycles for origin_id in the graph. Start searching at next_id and
- * work recursively. Also "summarize" paths: Add up the flows along parallel
- * paths in one.
- * @param path Paths checked in parent calls to this method.
- * @param origin_id Origin of the paths to be checked.
- * @param next_id Next node to be checked.
- * @return If any cycles have been found and eliminated.
- */
+* Eliminate cycles for origin_id in the graph. Start searching at next_id and
+* work recursively. Also "summarize" paths: Add up the flows along parallel
+* paths in one.
+* @param path Paths checked in parent calls to this method.
+* @param origin_id Origin of the paths to be checked.
+* @param next_id Next node to be checked.
+* @return If any cycles have been found and eliminated.
+*/
 bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next_id)
 {
 	Path *at_next_pos = path[next_id];
@@ -523,7 +528,7 @@ bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next
 
 	if (at_next_pos == NULL) {
 		/* Summarize paths; add up the paths with the same source and next hop
-		 * in one path each. */
+		* in one path each. */
 		PathList &paths = this->job[next_id].Paths();
 		PathViaMap next_hops;
 		uint holes = 0;
@@ -536,7 +541,8 @@ bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next
 					PathViaMap::iterator via_it = next_hops.find(new_child->GetNode());
 					if (via_it == next_hops.end()) {
 						next_hops[new_child->GetNode()] = new_child;
-					} else {
+					}
+					else {
 						Path *child = via_it->second;
 						child->AddFlow(new_flow);
 						new_child->ReduceFlow(new_flow);
@@ -545,12 +551,12 @@ bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next
 						holes++;
 					}
 				}
-			} else {
+			}
+			else {
 				holes++;
 			}
 			++i;
 		}
-
 		if (holes >= paths.size() / 8) {
 			/* remove any holes */
 			paths.erase(std::remove(paths.begin(), paths.end(), nullptr), paths.end());
@@ -559,26 +565,26 @@ bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next
 		bool found = false;
 		/* Search the next hops for nodes we have already visited */
 		for (PathViaMap::iterator via_it = next_hops.begin();
-				via_it != next_hops.end(); ++via_it) {
+			via_it != next_hops.end(); ++via_it) {
 			Path *child = via_it->second;
 			if (child->GetFlow() > 0) {
 				/* Push one child into the path vector and search this child's
-				 * children. */
+				* children. */
 				path[next_id] = child;
 				found = this->EliminateCycles(path, origin_id, child->GetNode()) || found;
 			}
 		}
 		/* All paths departing from this node have been searched. Mark as
-		 * resolved if no cycles found. If cycles were found further cycles
-		 * could be found in this branch, thus it has to be searched again next
-		 * time we spot it.
-		 */
+		* resolved if no cycles found. If cycles were found further cycles
+		* could be found in this branch, thus it has to be searched again next
+		* time we spot it.
+		*/
 		path[next_id] = found ? NULL : Path::invalid_path;
 		return found;
 	}
 
 	/* This node has already been visited => we have a cycle.
-	 * Backtrack to find the exact flow. */
+	* Backtrack to find the exact flow. */
 	uint flow = this->FindCycleFlow(path, at_next_pos);
 	if (flow > 0) {
 		this->EliminateCycle(path, at_next_pos, flow);
@@ -589,10 +595,10 @@ bool MCF1stPass::EliminateCycles(PathVector &path, NodeID origin_id, NodeID next
 }
 
 /**
- * Eliminate all cycles in the graph. Check paths starting at each node for
- * potential cycles.
- * @return If any cycles have been found and eliminated.
- */
+* Eliminate all cycles in the graph. Check paths starting at each node for
+* potential cycles.
+* @return If any cycles have been found and eliminated.
+*/
 bool MCF1stPass::EliminateCycles()
 {
 	bool cycles_found = false;
@@ -600,7 +606,7 @@ bool MCF1stPass::EliminateCycles()
 	PathVector path(size, NULL);
 	for (NodeID node = 0; node < size; ++node) {
 		/* Starting at each node in the graph find all cycles involving this
-		 * node. */
+		* node. */
 		std::fill(path.begin(), path.end(), (Path *)NULL);
 		cycles_found |= this->EliminateCycles(path, node, node);
 	}
@@ -608,9 +614,9 @@ bool MCF1stPass::EliminateCycles()
 }
 
 /**
- * Run the first pass of the MCF calculation.
- * @param job Link graph job to calculate.
- */
+* Run the first pass of the MCF calculation.
+* @param job Link graph job to calculate.
+*/
 MCF1stPass::MCF1stPass(LinkGraphJob &job) : MultiCommodityFlow(job)
 {
 	PathVector paths;
@@ -630,15 +636,16 @@ MCF1stPass::MCF1stPass(LinkGraphJob &job) : MultiCommodityFlow(job)
 					Path *path = paths[dest];
 					assert(path != NULL);
 					/* Generally only allow paths that don't exceed the
-					 * available capacity. But if no demand has been assigned
-					 * yet, make an exception and allow any valid path *once*. */
+					* available capacity. But if no demand has been assigned
+					* yet, make an exception and allow any valid path *once*. */
 					if (path->GetFreeCapacity() > 0 && this->PushFlow(edge, path,
-							accuracy, this->max_saturation) > 0) {
+						accuracy, this->max_saturation) > 0) {
 						/* If a path has been found there is a chance we can
-						 * find more. */
+						* find more. */
 						more_loops = more_loops || (edge.UnsatisfiedDemand() > 0);
-					} else if (edge.UnsatisfiedDemand() == edge.Demand() &&
-							path->GetFreeCapacity() > INT_MIN) {
+					}
+					else if (edge.UnsatisfiedDemand() == edge.Demand() &&
+						path->GetFreeCapacity() > INT_MIN) {
 						this->PushFlow(edge, path, accuracy, UINT_MAX);
 					}
 				}
@@ -649,10 +656,10 @@ MCF1stPass::MCF1stPass(LinkGraphJob &job) : MultiCommodityFlow(job)
 }
 
 /**
- * Run the second pass of the MCF calculation which assigns all remaining
- * demands to existing paths.
- * @param job Link graph job to calculate.
- */
+* Run the second pass of the MCF calculation which assigns all remaining
+* demands to existing paths.
+* @param job Link graph job to calculate.
+*/
 MCF2ndPass::MCF2ndPass(LinkGraphJob &job) : MultiCommodityFlow(job)
 {
 	this->max_saturation = UINT_MAX; // disable artificial cap on saturation
@@ -678,16 +685,16 @@ MCF2ndPass::MCF2ndPass(LinkGraphJob &job) : MultiCommodityFlow(job)
 }
 
 /**
- * Relation that creates a weak order without duplicates.
- * Avoid accidentally deleting different paths of the same capacity/distance in
- * a set. When the annotation is the same node IDs are compared, so there are
- * no equal ranges.
- * @tparam T Type to be compared on.
- * @param x_anno First value.
- * @param y_anno Second value.
- * @param x Node id associated with the first value.
- * @param y Node id associated with the second value.
- */
+* Relation that creates a weak order without duplicates.
+* Avoid accidentally deleting different paths of the same capacity/distance in
+* a set. When the annotation is the same node IDs are compared, so there are
+* no equal ranges.
+* @tparam T Type to be compared on.
+* @param x_anno First value.
+* @param y_anno Second value.
+* @param x Node id associated with the first value.
+* @param y Node id associated with the second value.
+*/
 template <typename T>
 bool Greater(T x_anno, T y_anno, NodeID x, NodeID y)
 {
@@ -697,11 +704,11 @@ bool Greater(T x_anno, T y_anno, NodeID x, NodeID y)
 }
 
 /**
- * Compare two capacity annotations.
- * @param x First capacity annotation.
- * @param y Second capacity annotation.
- * @return If x is better than y.
- */
+* Compare two capacity annotations.
+* @param x First capacity annotation.
+* @param y Second capacity annotation.
+* @return If x is better than y.
+*/
 bool CapacityAnnotation::Comparator::operator()(const AnnoSetItem<CapacityAnnotation> &x,
 	const AnnoSetItem<CapacityAnnotation> &y) const
 {
@@ -710,11 +717,11 @@ bool CapacityAnnotation::Comparator::operator()(const AnnoSetItem<CapacityAnnota
 }
 
 /**
- * Compare two distance annotations.
- * @param x First distance annotation.
- * @param y Second distance annotation.
- * @return If x is better than y.
- */
+* Compare two distance annotations.
+* @param x First distance annotation.
+* @param y Second distance annotation.
+* @return If x is better than y.
+*/
 bool DistanceAnnotation::Comparator::operator()(const AnnoSetItem<DistanceAnnotation> &x,
 	const AnnoSetItem<DistanceAnnotation> &y) const
 {

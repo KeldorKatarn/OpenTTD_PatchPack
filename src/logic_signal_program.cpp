@@ -10,6 +10,8 @@
 #include "logic_signals.h"
 #include "rail_map.h"
 #include "viewport_func.h"
+#include "overlay_cmd.h"
+#include <algorithm>
 
 /**
  * Return the opposite of the given signal state.
@@ -69,6 +71,8 @@ void SignalProgram::AddLink(TileIndex tile, Track track, bool remove_first)
 		*(this->linked_signals.Append()) = source;
 		_signal_link_list[source] = GetSignalReference(this->tile, this->track);
 	}
+
+	Overlays::Instance()->RefreshLogicSignalOverlay();
 }
 
 /**
@@ -78,6 +82,9 @@ void SignalProgram::AddLink(TileIndex tile, Track track, bool remove_first)
  */
 void SignalProgram::RemoveLink(TileIndex tile, Track track)
 {
+	// Refresh BEFORE because we need to know what tiles to refresh before we remove the reference to them.
+	Overlays::Instance()->RefreshLogicSignalOverlay();
+
 	SignalReference key = GetSignalReference(tile, track);
 	SignalReference *value = this->linked_signals.Find(key);
 	assert(value != this->linked_signals.End());
@@ -89,12 +96,29 @@ void SignalProgram::RemoveLink(TileIndex tile, Track track)
  */
 void SignalProgram::ClearAllLinks()
 {
+	// Refresh BEFORE because we need to know what tiles to refresh before we remove the reference to them.
+	Overlays::Instance()->RefreshLogicSignalOverlay();
+
 	/* Delete all links from the global list too */
 	for (SignalReference *sref = this->linked_signals.Begin(); sref != this->linked_signals.End(); sref++) {
 		_signal_link_list.erase(*sref);
 	}
 
 	this->linked_signals.Clear();
+}
+/**
+* Return all signal input references.
+*/
+const std::list<SignalReference> SignalProgram::GetSignalReferences() const
+{
+	std::list<SignalReference> reference_list;
+
+	for (const SignalReference* ref = this->linked_signals.Begin(); ref != this->linked_signals.End(); ++ref) {
+		assert(ref != nullptr);
+		reference_list.push_back(*ref);
+	}
+
+	return reference_list;
 }
 
 /**

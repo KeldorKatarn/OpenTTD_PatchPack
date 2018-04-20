@@ -584,12 +584,6 @@ enum WindowClass {
 	WC_PAYMENT_RATES,
 
 	/**
-	* Station cargo graph; %Window numbers:
-	*   - #StationID = #StationCargoWidgets
-	*/
-	WC_STATION_CARGO,
-
-	/**
 	 * Performance detail window; %Window numbers:
 	 *   - 0 = #PerformanceRatingDetailsWidgets
 	 */
@@ -749,6 +743,12 @@ enum WindowClass {
      * Departure boards
      */
 	WC_DEPARTURES_BOARD,
+
+	/**
+	* Station cargo graph; %Window numbers:
+	*   - #StationID = #StationCargoWidgets
+	*/
+	WC_STATION_CARGO,
 
 	WC_INVALID = 0xFFFF, ///< Invalid window.
 };

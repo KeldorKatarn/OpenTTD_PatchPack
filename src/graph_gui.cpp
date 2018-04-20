@@ -1627,6 +1627,13 @@ struct StationCargoGraphWindow : BaseGraphWindow {
 		this->first_init = false;
 	}
 
+	virtual void SetStringParameters(int widget) const
+	{
+		if (widget == WID_SCG_CAPTION) {
+			SetDParam(0, this->station_id);
+		}
+	}
+
 	void UpdateExcludedData()
 	{
 		this->excluded_data = 0;
@@ -1767,11 +1774,27 @@ struct StationCargoGraphWindow : BaseGraphWindow {
 	}
 };
 
+/** Construct the row containing the digit keys. */
+static NWidgetBase *MakeStationCargoButtons(int *biggest_index)
+{
+	NWidgetVertical *ver = new NWidgetVertical;
+
+	for (int i = 0; i < _sorted_standard_cargo_specs_size; i++) {
+		NWidgetBackground *leaf = new NWidgetBackground(WWT_PANEL, COLOUR_ORANGE, WID_SCG_CARGO_FIRST + i, NULL);
+		leaf->tool_tip = STR_GRAPH_CARGO_PAYMENT_TOGGLE_CARGO;
+		leaf->SetFill(1, 0);
+		leaf->SetLowered(true);
+		ver->Add(leaf);
+	}
+	*biggest_index = WID_SCG_CARGO_FIRST + _sorted_standard_cargo_specs_size - 1;
+	return ver;
+}
+
 
 static const NWidgetPart _nested_station_cargo_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 	NWidget(WWT_CLOSEBOX, COLOUR_GREY),
-	NWidget(WWT_CAPTION, COLOUR_GREY), SetDataTip(STR_GRAPH_STATION_CARGO_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+	NWidget(WWT_CAPTION, COLOUR_GREY, WID_SCG_CAPTION), SetDataTip(STR_GRAPH_STATION_CARGO_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 	NWidget(WWT_SHADEBOX, COLOUR_GREY),
 	NWidget(WWT_DEFSIZEBOX, COLOUR_GREY),
 	NWidget(WWT_STICKYBOX, COLOUR_GREY),
@@ -1789,7 +1812,7 @@ static const NWidgetPart _nested_station_cargo_widgets[] = {
 	NWidget(WWT_PUSHTXTBTN, COLOUR_ORANGE, WID_SCG_ENABLE_CARGOES), SetDataTip(STR_GRAPH_CARGO_ENABLE_ALL, STR_GRAPH_CARGO_TOOLTIP_ENABLE_ALL), SetFill(1, 0),
 	NWidget(WWT_PUSHTXTBTN, COLOUR_ORANGE, WID_SCG_DISABLE_CARGOES), SetDataTip(STR_GRAPH_CARGO_DISABLE_ALL, STR_GRAPH_CARGO_TOOLTIP_DISABLE_ALL), SetFill(1, 0),
 	NWidget(NWID_SPACER), SetMinimalSize(0, 4),
-	NWidgetFunction(MakeCargoButtons),
+	NWidgetFunction(MakeStationCargoButtons),
 	NWidget(NWID_SPACER), SetMinimalSize(0, 24), SetFill(0, 1), SetResize(0, 1),
 	EndContainer(),
 	NWidget(NWID_SPACER), SetMinimalSize(5, 0), SetFill(0, 1), SetResize(0, 1),

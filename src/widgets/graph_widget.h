@@ -54,6 +54,7 @@ enum CargoPaymentRatesWidgets {
 
 /** Widget of the #StationCargoGraphWindow class. */
 enum StationCargoWidgets {
+	WID_SCG_CAPTION,         ///< Window title
 	WID_SCG_BACKGROUND,      ///< Background of the window.
 	WID_SCG_HEADER,          ///< Header.
 	WID_SCG_GRAPH,           ///< Graph itself.

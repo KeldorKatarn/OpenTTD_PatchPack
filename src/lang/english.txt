@@ -586,7 +586,7 @@ STR_GRAPH_COMPANY_PERFORMANCE_RATINGS_CAPTION                   :{WHITE}Company 
 STR_GRAPH_COMPANY_VALUES_CAPTION                                :{WHITE}Company values
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Cargo Payment Rates
-STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}Waiting Cargo History
+STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}{STATION} - Waiting Cargo History
 STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Average transit speed (km/h)
 STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Payment for delivering 1 unit (or 1,000 litres) of cargo a distance of 200 squares
 STR_GRAPH_STATION_CARGO_X_LABEL                                 :{TINY_FONT}{BLACK}Development over the last 48 days

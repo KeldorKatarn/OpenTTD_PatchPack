@@ -174,6 +174,7 @@ Ticks GetCurrentTickCount()
 extern void EnginesDailyLoop();
 extern void DisasterDailyLoop();
 extern void IndustryDailyLoop();
+extern void StationDailyLoop();
 
 extern void CompaniesMonthlyLoop();
 extern void EnginesMonthlyLoop();
@@ -272,6 +273,7 @@ static void OnNewDay()
 
 	DisasterDailyLoop();
 	IndustryDailyLoop();
+	StationDailyLoop();
 
 	SetWindowWidgetDirty(WC_STATUS_BAR, 0, 0);
 	EnginesDailyLoop();

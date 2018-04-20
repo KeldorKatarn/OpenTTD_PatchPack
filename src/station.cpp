@@ -53,6 +53,7 @@ BaseStation::~BaseStation()
 	DeleteWindowById(WC_SHIPS_LIST,    VehicleListIdentifier(VL_STATION_LIST, VEH_SHIP,     this->owner, this->index).Pack());
 	DeleteWindowById(WC_AIRCRAFT_LIST, VehicleListIdentifier(VL_STATION_LIST, VEH_AIRCRAFT, this->owner, this->index).Pack());
 	DeleteWindowById(WC_DEPARTURES_BOARD, this->index);
+	DeleteWindowById(WC_STATION_CARGO, this->index);
 
 	this->sign.MarkDirty();
 }
@@ -65,7 +66,8 @@ Station::Station(TileIndex tile) :
 	indtype(IT_INVALID),
 	time_since_load(255),
 	time_since_unload(255),
-	last_vehicle_type(VEH_INVALID)
+	last_vehicle_type(VEH_INVALID),
+	station_cargo_history{}
 {
 	/* this->random_bits is set in Station::AddFacility() */
 }

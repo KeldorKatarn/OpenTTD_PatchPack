@@ -139,19 +139,20 @@ void InitRailTypes()
 	for (RailType rt = RAILTYPE_BEGIN; rt != RAILTYPE_END; rt++) {
 		RailtypeInfo *rti = &_railtypes[rt];
 
+		assert(rti != nullptr);
+
 		for (RailType legacy_rt = RAILTYPE_RAIL; legacy_rt <= RAILTYPE_MAGLEV; legacy_rt++) {
+			RailtypeInfo *legacy_rti = &_railtypes[legacy_rt];
+
+			assert(legacy_rti != nullptr);
 
 			if (IsCompatibleRail(rt, legacy_rt)) {
-				RailtypeInfo *legacy_rti = &_railtypes[legacy_rt];
-
 				rti->compatible_railtypes |= legacy_rti->compatible_railtypes;
 			}
 
 			if (HasPowerOnRail(rt, legacy_rt)) {
 				// If this has power on a legacy railtype, then it has power on everything compatible with that legacy type.
 				// This ensures multiple track sets are fully compatible not just with legacy but also with eachother.
-				RailtypeInfo *legacy_rti = &_railtypes[legacy_rt];
-
 				rti->powered_railtypes |= legacy_rti->powered_railtypes;
 			}
 		}

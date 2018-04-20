@@ -130,21 +130,33 @@ void ResolveRailTypeGUISprites(RailtypeInfo *rti)
 }
 
 /**
- * Compare railtypes based on their sorting order.
- * @param first  The railtype to compare to.
- * @param second The railtype to compare.
- * @return True iff the first should be sorted before the second.
- */
-static int CDECL CompareRailTypes(const RailType *first, const RailType *second)
-{
-	return GetRailTypeInfo(*first)->sorting_order - GetRailTypeInfo(*second)->sorting_order;
-}
-
-/**
  * Resolve sprites of custom rail types
  */
 void InitRailTypes()
 {
+	// If this is compatible/has power on a legacy railtype, then it is compatible with everything compatible with that legacy type.
+	// This ensures multiple track sets are fully compatible not just with legacy but also with eachother.
+	for (RailType rt = RAILTYPE_BEGIN; rt != RAILTYPE_END; rt++) {
+		RailtypeInfo *rti = &_railtypes[rt];
+
+		for (RailType legacy_rt = RAILTYPE_RAIL; legacy_rt <= RAILTYPE_MAGLEV; legacy_rt++) {
+
+			if (IsCompatibleRail(rt, legacy_rt)) {
+				RailtypeInfo *legacy_rti = &_railtypes[legacy_rt];
+
+				rti->compatible_railtypes |= legacy_rti->compatible_railtypes;
+			}
+
+			if (HasPowerOnRail(rt, legacy_rt)) {
+				// If this has power on a legacy railtype, then it has power on everything compatible with that legacy type.
+				// This ensures multiple track sets are fully compatible not just with legacy but also with eachother.
+				RailtypeInfo *legacy_rti = &_railtypes[legacy_rt];
+
+				rti->powered_railtypes |= legacy_rti->powered_railtypes;
+			}
+		}
+	}
+
 	for (RailType rt = RAILTYPE_BEGIN; rt != RAILTYPE_END; rt++) {
 		RailtypeInfo *rti = &_railtypes[rt];
 		ResolveRailTypeGUISprites(rti);
@@ -156,7 +168,35 @@ void InitRailTypes()
 			_sorted_railtypes[_sorted_railtypes_size++] = rt;
 		}
 	}
-	QSortT(_sorted_railtypes, _sorted_railtypes_size, CompareRailTypes);
+
+	// Sort by compatibility and max speed.
+	std::sort(std::begin(_sorted_railtypes), std::begin(_sorted_railtypes) + _sorted_railtypes_size, [](RailType first, RailType second)
+	{
+		RailType rt[2] = { first, second };
+		uint sort_value[2];
+
+		for (int i = 0; i < 2; ++i) {
+			sort_value[i] = (GetRailTypeInfo(rt[i])->max_speed != 0) ? GetRailTypeInfo(rt[i])->max_speed : UINT16_MAX;
+
+			if (!HasPowerOnRail(rt[i], RAILTYPE_RAIL)) {
+				sort_value[i] += (1 << 16);
+
+				if (!HasPowerOnRail(rt[i], RAILTYPE_ELECTRIC)) {
+					sort_value[i] += (1 << 17);
+
+					if (!HasPowerOnRail(rt[i], RAILTYPE_MONO)) {
+						sort_value[i] += (1 << 18);
+
+						if (!HasPowerOnRail(rt[i], RAILTYPE_MAGLEV)) {
+							sort_value[i] += (1 << 19);
+						}
+					}
+				}
+			}
+		}
+
+		return sort_value[0] < sort_value[1];
+	});
 }
 
 /**

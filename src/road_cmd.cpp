@@ -218,7 +218,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				(_settings_game.construction.road_custom_bridge_heads || IsRoadCustomBridgeHead(tile));
 
 		/* If it's the last roadtype, just clear the whole tile */
-		if (rts == RoadTypeToRoadTypes(rt)) return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
+		if (!custom_bridge_head && rts == RoadTypeToRoadTypes(rt)) return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 
 		CommandCost cost(EXPENSES_CONSTRUCTION);
 		if (IsTileType(tile, MP_TUNNELBRIDGE)) {

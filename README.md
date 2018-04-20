@@ -41,6 +41,12 @@ See [joker-changelog.md](joker-changelog.md) for changelog.
 
 * Plan drawing on the map
 
+* Stations now keep a history of waiting cargo which can be displayed as a graph (last 48 days in 2 day increments)
+
+* Multiple rail-type sets should now be more compatible with eachother.
+
+* Rail types are sorted differently in the toolbar dropdown, first by compatibility, then by max speed.
+
 * Routing restriction signals
 
 * Logic signals

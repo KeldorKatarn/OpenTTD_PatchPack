@@ -153,13 +153,24 @@ static inline void MakeBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, D
  * @param bridgetype the type of bridge this bridge ramp belongs to
  * @param d          the direction this ramp must be facing
  * @param r          the road type of the bridge
+ * @param upgrade    whether the bridge is an upgrade instead of a totally new bridge
  */
-static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r)
+static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r, bool upgrade)
 {
+	// Backup custom bridgehead data.
+	auto m2_backup = _m[t].m2;
+
 	MakeBridgeRamp(t, o, bridgetype, d, TRANSPORT_ROAD, 0);
 	SetRoadOwner(t, ROADTYPE_ROAD, owner_road);
 	if (owner_tram != OWNER_TOWN) SetRoadOwner(t, ROADTYPE_TRAM, owner_tram);
 	SetRoadTypes(t, r);
+
+	// Restore custom bridgehead data if we're upgrading an existing bridge.
+	if (upgrade) {
+		for (int i = 0; i < 8; ++i) {
+			if (HasBit(m2_backup, i)) SetBit(_m[t].m2, i);
+		}
+	}
 }
 
 /**
@@ -169,10 +180,28 @@ static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Ow
  * @param bridgetype the type of bridge this bridge ramp belongs to
  * @param d          the direction this ramp must be facing
  * @param r          the rail type of the bridge
+ * @param upgrade    whether the bridge is an upgrade instead of a totally new bridge
  */
-static inline void MakeRailBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, DiagDirection d, RailType r)
+static inline void MakeRailBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, DiagDirection d, RailType r, bool upgrade)
 {
+	// Backup bridge signal data.
+	auto m2_backup = _m[t].m2;
+	auto m5_backup = _m[t].m5;
+	auto m6_backup = _me[t].m6;
+
 	MakeBridgeRamp(t, o, bridgetype, d, TRANSPORT_RAIL, r);
+
+	// Restore bridge signal data if we're upgrading an existing bridge.
+	if (upgrade) {
+		_m[t].m2 = m2_backup;
+
+		if (HasBit(m5_backup, 5)) SetBit(_m[t].m5, 5);
+		if (HasBit(m5_backup, 6)) SetBit(_m[t].m5, 6);
+
+		if (HasBit(m6_backup, 0)) SetBit(_me[t].m6, 0);
+		if (HasBit(m6_backup, 1)) SetBit(_me[t].m6, 1);
+		if (HasBit(m6_backup, 6)) SetBit(_me[t].m6, 6);
+	}
 }
 
 /**

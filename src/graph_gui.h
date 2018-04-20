@@ -12,6 +12,8 @@
 #ifndef GRAPH_GUI_H
 #define GRAPH_GUI_H
 
+#include "station_type.h"
+
 void ShowOperatingProfitGraph();
 void ShowIncomeGraph();
 void ShowDeliveredCargoGraph();
@@ -20,5 +22,6 @@ void ShowCompanyValueGraph();
 void ShowCargoPaymentRates();
 void ShowCompanyLeagueTable();
 void ShowPerformanceRatingDetail();
+void ShowStationCargo(StationID);
 
 #endif /* GRAPH_GUI_H */

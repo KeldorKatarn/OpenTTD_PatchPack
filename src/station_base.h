@@ -516,6 +516,8 @@ public:
 
 	StationCatchment catchment;
 
+	uint8 station_cargo_history[NUM_CARGO * MAX_STATION_CARGO_HISTORY_DAYS]; ///< Station history of waiting cargo.
+
 	Station(TileIndex tile = INVALID_TILE);
 	~Station();
 
@@ -524,6 +526,8 @@ public:
 	void MarkTilesDirty(bool cargo_change) const;
 
 	void UpdateVirtCoord();
+
+	void UpdateCargoHistory();
 
 	/* virtual */ uint GetPlatformLength(TileIndex tile, DiagDirection dir) const;
 	/* virtual */ uint GetPlatformLength(TileIndex tile) const;

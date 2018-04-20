@@ -1057,7 +1057,7 @@ public:
 	*/
 	inline void DebugCheckSanity() const
 	{
-		if (this->orders.list != nullptr) return;
+		if (this->orders.list == nullptr) return;
 
 		this->orders.list->DebugCheckSanity();
 	}

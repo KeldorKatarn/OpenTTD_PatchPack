@@ -2,6 +2,14 @@
 
 * * *
 
+### v1.22.0 (2018-04-20)
+* Bugfix regarding the clearing of reserved tile on and beyond signaled bridges and tunnels.
+* Bugfix custom road bridgeheads. The bridgehead now correctly allows removing certain road parts.
+* Bridges can now be upgraded without losing rail signals or custom road bridgehead properties.
+* Stations now keep a history of waiting cargo which can be displayed as a graph (last 48 days in 2 day increments)
+* Multiple rail-type sets should now be more compatible with eachother
+* Adjusted the way rail types are sorted in the toolbar dropdown.
+
 ### v1.21.0 (2018-04-19)
 * Bugfix in vehicle route rendering
 * CargoDist code adjusted to match JGR Patch Pack

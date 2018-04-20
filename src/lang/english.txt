@@ -586,8 +586,11 @@ STR_GRAPH_COMPANY_PERFORMANCE_RATINGS_CAPTION                   :{WHITE}Company 
 STR_GRAPH_COMPANY_VALUES_CAPTION                                :{WHITE}Company values
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Cargo Payment Rates
+STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}Waiting Cargo History
 STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Average transit speed (km/h)
 STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Payment for delivering 1 unit (or 1,000 litres) of cargo a distance of 200 squares
+STR_GRAPH_STATION_CARGO_X_LABEL                                 :{TINY_FONT}{BLACK}Development over the last 48 days
+STR_GRAPH_STATION_CARGO_TITLE                                   :{TINY_FONT}{BLACK}Units of cargo waiting at the station
 STR_GRAPH_CARGO_ENABLE_ALL                                      :{TINY_FONT}{BLACK}Enable all
 STR_GRAPH_CARGO_DISABLE_ALL                                     :{TINY_FONT}{BLACK}Disable all
 STR_GRAPH_CARGO_TOOLTIP_ENABLE_ALL                              :{BLACK}Display all cargoes on the cargo payment rates graph
@@ -3470,6 +3473,9 @@ STR_STATION_VIEW_GROUP_D_V_S                                    :Destination-Via
  
 STR_STATION_VIEW_DEPARTURES_BUTTON                              :{BLACK}Departures
 STR_STATION_VIEW_DEPARTURES_TOOLTIP                             :{BLACK}Show list of scheduled departures
+ 
+STR_STATION_VIEW_HISTORY_BUTTON                                 :{BLACK}History
+STR_STATION_VIEW_HISTORY_TOOLTIP                                :{BLACK}Show waiting cargo history
 
 ############ range for rating starts
 STR_CARGO_RATING_APPALLING                                      :Appalling

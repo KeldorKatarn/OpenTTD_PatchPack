@@ -460,6 +460,7 @@ static const SaveLoad _station_desc[] = {
 	      SLE_VAR(Station, had_vehicle_of_type,        SLE_UINT8),
 		  SLE_VEC(Station, loading_vehicles,           REF_VEHICLE),
 	  SLE_CONDVAR(Station, always_accepted,            SLE_UINT32, 127, SL_MAX_VERSION),
+	  SLE_CONDARR(Station, station_cargo_history,      SLE_UINT8, NUM_CARGO * MAX_STATION_CARGO_HISTORY_DAYS, SL_PATCH_PACK_1_22, SL_MAX_VERSION),
 
 	      SLE_END()
 };

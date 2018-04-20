@@ -358,6 +358,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	Owner owner;
 	bool is_new_owner;
+	bool is_upgrade = false;
 	if (IsBridgeTile(tile_start) && IsBridgeTile(tile_end) &&
 			GetOtherBridgeEnd(tile_start) == tile_end &&
 			GetTunnelBridgeTransportType(tile_start) == transport_type) {
@@ -412,6 +413,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 			default: break;
 		}
+
+		is_upgrade = true;
 	} else {
 		/* Build a new bridge. */
 
@@ -525,8 +528,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			case TRANSPORT_RAIL:
 				/* Add to company infrastructure count if required. */
 				if (is_new_owner && c != NULL) c->infrastructure.rail[railtype] += (bridge_len + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
-				MakeRailBridgeRamp(tile_start, owner, bridge_type, dir,                 railtype);
-				MakeRailBridgeRamp(tile_end,   owner, bridge_type, ReverseDiagDir(dir), railtype);
+				MakeRailBridgeRamp(tile_start, owner, bridge_type, dir,                 railtype, is_upgrade);
+				MakeRailBridgeRamp(tile_end,   owner, bridge_type, ReverseDiagDir(dir), railtype, is_upgrade);
 				SetTunnelBridgeReservation(tile_start, pbs_reservation);
 				SetTunnelBridgeReservation(tile_end,   pbs_reservation);
 				break;
@@ -548,8 +551,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				}
 				Owner owner_road = HasBit(prev_roadtypes, ROADTYPE_ROAD) ? GetRoadOwner(tile_start, ROADTYPE_ROAD) : company;
 				Owner owner_tram = HasBit(prev_roadtypes, ROADTYPE_TRAM) ? GetRoadOwner(tile_start, ROADTYPE_TRAM) : company;
-				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir,                 roadtypes);
-				MakeRoadBridgeRamp(tile_end,   owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), roadtypes);
+				MakeRoadBridgeRamp(tile_start, owner, owner_road, owner_tram, bridge_type, dir,                 roadtypes, is_upgrade);
+				MakeRoadBridgeRamp(tile_end,   owner, owner_road, owner_tram, bridge_type, ReverseDiagDir(dir), roadtypes, is_upgrade);
 				break;
 			}
 

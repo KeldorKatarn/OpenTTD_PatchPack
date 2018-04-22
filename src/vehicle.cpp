@@ -2446,6 +2446,8 @@ void Vehicle::HandleAutomaticTimetableSeparation()
 			SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
 		}
 	}
+
+	SetBit(this->vehicle_flags, VF_SEPARATION_IN_PROGRESS);
 }
 
 /**

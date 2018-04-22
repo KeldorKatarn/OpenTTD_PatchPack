@@ -499,6 +499,9 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	uint time_taken = v->current_order_time;
 	uint time_loading = v->current_loading_time;
 
+	// We are on our way so vehicle separation has finished.
+	if (travelling) ClrBit(v->vehicle_flags, VF_SEPARATION_IN_PROGRESS);
+
 	v->current_order_time = 0;
 	v->current_loading_time = 0;
 

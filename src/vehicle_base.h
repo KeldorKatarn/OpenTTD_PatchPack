@@ -59,6 +59,7 @@ enum VehicleFlags {
 	VF_SHOULD_SERVICE_AT_DEPOT, ///< Vehicle was manually ordered to service at a depot on its orders list.
 
 	VF_LAST_LOAD_ST_SEP = 13,   ///< Each vehicle of this chain has its last_loading_station field set separately
+	VF_SEPARATION_IN_PROGRESS,  ///< The late counter should be ignored since it was set by the vehicle separation
 };
 
 /** Bit numbers used to indicate which of the #NewGRFCache values are valid. */

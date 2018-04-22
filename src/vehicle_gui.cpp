@@ -1408,7 +1408,10 @@ static int CDECL VehicleTimeToLiveSorter(const Vehicle * const *a, const Vehicle
 /** Sort vehicles by the timetable delay */
 static int CDECL VehicleTimetableDelaySorter(const Vehicle * const *a, const Vehicle * const *b)
 {
-	int r = (*a)->lateness_counter - (*b)->lateness_counter;
+	auto a_lateness_counter = HasBit((*a)->vehicle_flags, VF_SEPARATION_IN_PROGRESS) ? 0 : (*a)->lateness_counter;
+	auto b_lateness_counter = HasBit((*b)->vehicle_flags, VF_SEPARATION_IN_PROGRESS) ? 0 : (*b)->lateness_counter;
+
+	int r = a_lateness_counter - b_lateness_counter;
 	return (r != 0) ? r : VehicleNumberSorter(a, b);
 }
 
@@ -1695,12 +1698,14 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 			}
 
 			case VST_TIMETABLE_DELAY: {
-				if (v->lateness_counter == 0) {
+				auto lateness_counter = HasBit(v->vehicle_flags, VF_SEPARATION_IN_PROGRESS) ? 0 : v->lateness_counter;
+
+				if (lateness_counter == 0) {
 					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_TIMETABLE_DELAY_ON_TIME);
 				} else {
-					SetDParam(0, std::abs(v->lateness_counter));
-					SetDParam(1, std::abs(v->lateness_counter) / TICKS_PER_MINUTE);
-					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, v->lateness_counter > 0 ? STR_VEHICLE_LIST_TIMETABLE_DELAY_LATE : STR_VEHICLE_LIST_TIMETABLE_DELAY_EARLY);
+					SetDParam(0, std::abs(lateness_counter));
+					SetDParam(1, std::abs(lateness_counter) / TICKS_PER_MINUTE);
+					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, lateness_counter > 0 ? STR_VEHICLE_LIST_TIMETABLE_DELAY_LATE : STR_VEHICLE_LIST_TIMETABLE_DELAY_EARLY);
 				}
 				break;
 			}

@@ -407,7 +407,7 @@ static char *FormatBytes(char *buff, int64 number, const char *last)
  
 static char *FormatTimeString(char *buff, Ticks ticks, const char *last, uint case_index)
 {
-	auto minutes = ticks / TICKS_PER_MINUTE;
+	auto minutes = ticks / _settings_client.gui.ticks_per_minute;
 	char hour[3], minute[3];
 	seprintf(hour,   lastof(hour),   "%02i", ((minutes / 60) % 24));
 	seprintf(minute, lastof(minute), "%02i", (minutes % 60));
@@ -416,6 +416,35 @@ static char *FormatTimeString(char *buff, Ticks ticks, const char *last, uint ca
 	StringParameters tmp_params(args);
 
 	return FormatString(buff, GetStringPtr(STR_FORMAT_TIME), &tmp_params, last, case_index);
+}
+
+static char *FormatTimeDurationString(char *buff, bool color_red, Ticks ticks, const char *last, uint case_index)
+{
+	auto total_minutes = ticks / _settings_client.gui.ticks_per_minute;
+
+	auto minutes = total_minutes % 60;
+	auto hours = total_minutes / 60;
+
+	if (hours == 0) {
+		int64 args[1] = { (int64)minutes };
+		StringParameters tmp_params(args);
+
+		return FormatString(buff, GetStringPtr(color_red ? STR_FORMAT_TIME_MINUTES_RED : STR_FORMAT_TIME_MINUTES), &tmp_params, last, case_index);
+	}
+	else {
+		int64 args[2] = { (int64)hours, (int64)minutes };
+		StringParameters tmp_params(args);
+
+		return FormatString(buff, GetStringPtr(color_red ? STR_FORMAT_TIME_HOURS_MINUTES_RED : STR_FORMAT_TIME_HOURS_MINUTES), &tmp_params, last, case_index);
+	}
+}
+
+static char *FormatTicksString(char *buff, bool color_red, Ticks ticks, const char *last, uint case_index)
+{
+	int64 args[1] = { (int64)ticks };
+	StringParameters tmp_params(args);
+
+	return FormatString(buff, GetStringPtr(color_red ? STR_FORMAT_TIME_TICKS_RED : STR_FORMAT_TIME_TICKS), &tmp_params, last, case_index);
 }
 
 static char *FormatYmdString(char *buff, Date date, const char *last, uint case_index)
@@ -1238,11 +1267,21 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 				break;
  
 			case SCC_TIME: // {TIME}
-				buff = FormatTimeString(buff, args->GetInt64(SCC_TIME), last, next_substr_case_index);
+				buff = FormatTimeString(buff, args->GetInt32(), last, next_substr_case_index);
 				break;
 
 			case SCC_TIME_TINY: // {TIME_TINY}
-				buff = FormatTimeString(buff, args->GetInt64(SCC_TIME_TINY), last, next_substr_case_index);
+				buff = FormatTimeString(buff, args->GetInt32(), last, next_substr_case_index);
+				break;
+
+			case SCC_TIME_DURATION: // {TIME_DURATION}
+			case SCC_TIME_DURATION_RED: // {TIME_DURATION_RED}
+				buff = FormatTimeDurationString(buff, b == SCC_TIME_DURATION_RED, args->GetInt32(), last, next_substr_case_index);
+				break;
+
+			case SCC_TICKS: // {TICKS}
+			case SCC_TICKS_RED: // {TICKS_RED}
+				buff = FormatTicksString(buff, b == SCC_TICKS_RED, args->GetInt32(), last, next_substr_case_index);
 				break;
 
 			case SCC_FORCE: { // {FORCE}

@@ -69,6 +69,10 @@ enum StringControlCode {
 	SCC_DATE_ISO,
 	SCC_TIME_TINY,
 	SCC_TIME,
+	SCC_TIME_DURATION,
+	SCC_TIME_DURATION_RED,
+	SCC_TICKS,
+	SCC_TICKS_RED,
 
 	/* Must be consecutive */
 	SCC_STRING1,

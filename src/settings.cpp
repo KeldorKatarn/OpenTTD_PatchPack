@@ -64,6 +64,7 @@
 #include "roadveh.h"
 #include "fios.h"
 #include "strings_func.h"
+#include "statusbar_gui.h"
 
 #include "void_map.h"
 #include "station_base.h"
@@ -1061,6 +1062,19 @@ static bool TownFoundingChanged(int32 p1)
 static bool InvalidateVehTimetableWindow(int32 p1)
 {
 	InvalidateWindowClassesData(WC_VEHICLE_TIMETABLE, VIWD_MODIFY_ORDERS);
+	return true;
+}
+
+static bool InvalidateTicksPerMinute(int32 p1)
+{
+	InvalidateWindowClassesData(WC_VEHICLE_TIMETABLE, VIWD_MODIFY_ORDERS);
+	InvalidateWindowClassesData(WC_TRAINS_LIST);
+	InvalidateWindowClassesData(WC_ROADVEH_LIST);
+	InvalidateWindowClassesData(WC_SHIPS_LIST);
+	InvalidateWindowClassesData(WC_AIRCRAFT_LIST);
+	InvalidateWindowClassesData(WC_DEPARTURES_BOARD);
+	InvalidateWindowClassesData(WC_STATUS_BAR, SBI_TICKS_PER_MINUTE);
+
 	return true;
 }
 

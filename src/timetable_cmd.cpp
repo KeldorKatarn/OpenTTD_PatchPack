@@ -583,10 +583,10 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 	if (timetabled != 0 && HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE) && (travelling || !HasBit(v->vehicle_flags, VF_AUTOMATE_PRES_WAIT_TIME))) {
 		int32 new_time;
 		if (travelling) {
-			new_time = time_taken;
+			new_time = time_taken + _settings_game.order.timetable_auto_travel_buffer;
 		}
 		else {
-			new_time = time_loading;
+			new_time = time_loading + _settings_game.order.timetable_auto_load_buffer;
 		}
 
 		if (new_time > (int32)timetabled * 4 && travelling) {
@@ -599,7 +599,7 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 			}
 			return;
 		}
-		else if (new_time >= (int32)timetabled / 2) {
+		else if (!travelling || (new_time >= (int32)timetabled / 2)) {
 			/* Compute running average, with sign conversion to avoid negative overflow. */
 			if (new_time < (int32)timetabled) {
 				new_time = ((int32)timetabled * 3 + new_time * 2 + 2) / 5;

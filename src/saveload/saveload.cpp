@@ -301,8 +301,9 @@
  *  280   SL_PATCH_PACK_1_21
  *  281   SL_PATCH_PACK_1_22
  *  282   SL_PATCH_PACK_1_23
+ *  283   SL_PATCH_PACK_1_24
  */
-extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_23; ///< Current savegame version of OpenTTD.
+extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_24; ///< Current savegame version of OpenTTD.
 
 SavegameType _savegame_type; ///< type of savegame we are loading
 FileToSaveLoad _file_to_saveload; ///< File to save or load in the openttd loop.

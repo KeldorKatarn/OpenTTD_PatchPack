@@ -399,7 +399,8 @@ void DeparturesWindow::RecomputeDateWidth()
 	cached_status_width = max((GetStringBoundingBox(STR_DEPARTURES_DELAYED)).width, cached_status_width);
 	cached_status_width = max((GetStringBoundingBox(STR_DEPARTURES_CANCELLED)).width, cached_status_width);
 
-	uint interval = TICKS_PER_MINUTE;
+	uint interval = _settings_client.gui.ticks_per_minute;
+
 	uint count = 24*60;
 
 	for (uint i = 0; i < count; ++i) {
@@ -775,7 +776,7 @@ void DeparturesWindow::DrawDeparturesListItems(const Rect &r) const
 				/* The vehicle has been cancelled. */
 				DrawString(status_left, status_right, y + 1, STR_DEPARTURES_CANCELLED);
 			} else{
-				if (d->lateness <= TICKS_PER_MINUTE && d->scheduled_date > GetCurrentTickCount()) {
+				if (d->lateness <= _settings_client.gui.ticks_per_minute && d->scheduled_date > GetCurrentTickCount()) {
 					/* We have no evidence that the vehicle is late, so assume it is on time. */
 					DrawString(status_left, status_right, y + 1, STR_DEPARTURES_ON_TIME);
 				} else {

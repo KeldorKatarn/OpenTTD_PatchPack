@@ -1833,6 +1833,22 @@ static inline bool CheckLevelCrossing(TileIndex tile)
 static void UpdateLevelCrossingTile(TileIndex tile, bool sound, bool is_forced, bool forced_state)
 {
 	assert(IsLevelCrossingTile(tile));
+
+	// Ignore level crossings for types where it doesn't matter.
+	RailTypeLabel railTypeLabel = GetRailTypeInfo(GetTileRailType(tile))->label;
+	
+	if (railTypeLabel == _planning_tracks_label ||
+		railTypeLabel == _pipeline_tracks_label ||
+		railTypeLabel == _wires_tracks_label) {
+
+		if (IsCrossingBarred(tile)) {
+			MarkTileDirtyByTile(tile, ZOOM_LVL_DRAW_MAP);
+		}
+
+		SetCrossingBarred(tile, false);
+		return;
+	}
+
 	bool new_state;
 
 	if (is_forced) {
@@ -1843,12 +1859,8 @@ static void UpdateLevelCrossingTile(TileIndex tile, bool sound, bool is_forced, 
 
 	if (new_state != IsCrossingBarred(tile)) {
 		if (new_state && sound) {
-			RailTypeLabel railTypeLabel = GetRailTypeInfo(GetTileRailType(tile))->label;
 
-			if (railTypeLabel != _planning_tracks_label &&
-				railTypeLabel != _pipeline_tracks_label &&
-				railTypeLabel != _wires_tracks_label &&
-				_settings_client.sound.ambient) {
+			if (_settings_client.sound.ambient) {
 				SndPlayTileFx(SND_0E_LEVEL_CROSSING, tile);
 			}
 		}

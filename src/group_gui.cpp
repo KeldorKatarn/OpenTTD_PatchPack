@@ -82,6 +82,7 @@ static const NWidgetPart _nested_group_widgets[] = {
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_GL_SORT_BY_ORDER), SetMinimalSize(81, 12), SetDataTip(STR_BUTTON_SORT_BY, STR_TOOLTIP_SORT_ORDER),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_GL_SORT_BY_DROPDOWN), SetMinimalSize(167, 12), SetDataTip(0x0, STR_TOOLTIP_SORT_CRITERIA),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_GL_FILTER_BY_CARGO), SetMinimalSize(167, 12), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_FILTER_CRITERIA),
+				NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_GL_REFRESH_SORTING), SetMinimalSize(167, 12), SetFill(0, 1), SetDataTip(STR_BUTTON_REFRESH_SORTING, STR_TOOLTIP_REFRESH_SORTING),
 				NWidget(WWT_PANEL, COLOUR_GREY), SetMinimalSize(12, 12), SetResize(1, 0), EndContainer(),
 			EndContainer(),
 			NWidget(NWID_HORIZONTAL),
@@ -158,6 +159,8 @@ private:
 	SmallVector<int, 16> indents; ///< Indentation levels
 
 	Dimension column_size[VGC_END]; ///< Size of the columns in the group list.
+
+	bool live_refresh_sorting; ///< Refresh the sorting regularly
 
 	/** return true if group has children */
 	bool AddParents(GUIGroupList *source, GroupID parent, int indent, bool parent_collapsed)
@@ -597,6 +600,8 @@ public:
 		this->SetWidgetDisabledState(WID_GL_EXPAND_ALL_GROUPS, this->collapsed_groups.Length() == 0);
 		this->SetWidgetDisabledState(WID_GL_COLLAPSE_ALL_GROUPS, this->collapsable_groups.Length() == 0 || this->collapsed_groups.Length() == this->collapsable_groups.Length());
 
+		this->SetWidgetLoweredState(WID_GL_REFRESH_SORTING, this->live_refresh_sorting);
+
 		this->DrawWidgets();
 	}
 
@@ -698,6 +703,7 @@ public:
 		switch (widget) {
 			case WID_GL_SORT_BY_ORDER: // Flip sorting method ascending/descending
 				this->vehicles.ToggleSortOrder();
+				this->vehicles.ForceResort();
 				this->SetDirty();
 				break;
 
@@ -832,6 +838,12 @@ public:
 				if (g != NULL) {
 					DoCommandP(0, this->vli.index, (g->replace_protection ? 0 : 1) | (_ctrl_pressed << 1), CMD_SET_GROUP_REPLACE_PROTECTION);
 				}
+				break;
+			}
+
+			case WID_GL_REFRESH_SORTING: {
+				this->live_refresh_sorting = !this->live_refresh_sorting;
+				this->SetWidgetDirty(WID_GL_REFRESH_SORTING);
 				break;
 			}
 		}
@@ -1029,6 +1041,11 @@ public:
 	virtual void OnTick()
 	{
 		if (_pause_mode != PM_UNPAUSED) return;
+
+		if (live_refresh_sorting) {
+			this->vehicles.ForceResort();
+		}
+
 		if (this->groups.NeedResort() || this->vehicles.NeedResort()) {
 			this->SetDirty();
 		}

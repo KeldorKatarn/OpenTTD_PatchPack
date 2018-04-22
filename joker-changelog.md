@@ -2,6 +2,13 @@
 
 * * *
 
+### v1.23.0 (2018-04-22)
+* Add a button to force a resort every 74 ticks (every standard non-scaled day). This is especially useful for very frequently changing properties like timetable delay. reliability or profit-this-year.
+* The sorting order toggle button in vehicle and group lists now forces a complete resort.
+* The user interface no longer displays vehicles as early when the vehicle is waiting due to timetable separation. They are shown as on-time instead and are also sorted as such.
+* Level crossings on the WIRE or PIPELINE track types no longer force vehicles to wait (and obviously don't cause crashes either).
+* Bugfix: Time table automation now correctly records loading times.
+
 ### v1.22.0 (2018-04-20)
 * Bugfix regarding the clearing of reserved tile on and beyond signaled bridges and tunnels.
 * Bugfix custom road bridgeheads. The bridgehead now correctly allows removing certain road parts.

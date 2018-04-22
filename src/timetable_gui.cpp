@@ -446,6 +446,10 @@ struct TimetableWindow : Window {
 				bool show_late = this->show_expected && v->lateness_counter > TICKS_PER_MINUTE;
 				Ticks offset = show_late ? 0 : -v->lateness_counter;
 
+				if (HasBit(v->vehicle_flags, VF_SEPARATION_IN_PROGRESS)) {
+					show_late = false;
+				}
+
 				bool rtl = _current_text_dir == TD_RTL;
 				int abbr_left = rtl ? r.right - WD_FRAMERECT_RIGHT - this->deparr_abbr_width : r.left + WD_FRAMERECT_LEFT;
 				int abbr_right = rtl ? r.right - WD_FRAMERECT_RIGHT : r.left + WD_FRAMERECT_LEFT + this->deparr_abbr_width;
@@ -491,6 +495,8 @@ struct TimetableWindow : Window {
 				}
 				y += FONT_HEIGHT_NORMAL;
 
+				auto lateness_counter = HasBit(v->vehicle_flags, VF_SEPARATION_IN_PROGRESS) ? 0 : v->lateness_counter;
+
 				if (v->timetable_start != 0) {
 					/* We are running towards the first station so we can start the
 					 * timetable at the given time. */
@@ -503,12 +509,12 @@ struct TimetableWindow : Window {
 					 * when we aren't even "on service"/"on duty"? */
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_NOT_STARTED);
 				}
-				else if (v->lateness_counter == 0) {
+				else if (lateness_counter == 0) {
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_ON_TIME);
 				}
 				else {
-					SetTimetableParams(0, 1, abs(v->lateness_counter));
-					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, v->lateness_counter < 0 ? STR_TIMETABLE_STATUS_EARLY : STR_TIMETABLE_STATUS_LATE);
+					SetTimetableParams(0, 1, abs(lateness_counter));
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, lateness_counter < 0 ? STR_TIMETABLE_STATUS_EARLY : STR_TIMETABLE_STATUS_LATE);
 				}
 				break;
 			}

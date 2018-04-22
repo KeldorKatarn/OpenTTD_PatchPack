@@ -28,6 +28,24 @@ enum VehicleListType {
 	VLT_END
 };
 
+enum VehicleSortType
+{
+	VST_NUMBER,
+	VST_NAME,
+	VST_AGE,
+	VST_PROFIT_THIS_YEAR,
+	VST_PROFIT_LAST_YEAR,
+	VST_PROFIT_LIFETIME,
+	VST_CARGO,
+	VST_RELIABILITY,
+	VST_MAX_SPEED,
+	VST_MODEL,
+	VST_VALUE,
+	VST_LENGTH,
+	VST_TIME_TO_LIVE,
+	VST_TIMETABLE_DELAY,
+};
+
 /** The information about a vehicle list. */
 struct VehicleListIdentifier {
 	VehicleListType type; ///< The type of vehicle list.

@@ -2446,6 +2446,8 @@ void Vehicle::HandleAutomaticTimetableSeparation()
 			SetWindowDirty(WC_VEHICLE_TIMETABLE, this->index);
 		}
 	}
+
+	SetBit(this->vehicle_flags, VF_SEPARATION_IN_PROGRESS);
 }
 
 /**
@@ -2653,7 +2655,12 @@ void Vehicle::HandleLoading(bool mode)
 
 	switch (current_order_type) {
 		case OT_LOADING: {
-			uint wait_time = max(this->current_order.GetTimetabledWait() - this->lateness_counter, 0);			
+			uint wait_time = max(this->current_order.GetTimetabledWait() - this->lateness_counter, 0);
+
+			/* Save time just loading took since that is what goes into the timetable */
+			if (!HasBit(this->vehicle_flags, VF_LOADING_FINISHED)) {
+				this->current_loading_time = this->current_order_time;
+			}
 
 			bool has_manual_depot_order = (HasBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT));
 

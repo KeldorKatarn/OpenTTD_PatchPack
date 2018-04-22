@@ -713,6 +713,7 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 
 		 SLE_CONDVAR(Vehicle, current_order_time,    SLE_UINT32,                  67, SL_MAX_VERSION),
 		 SLE_CONDVAR(Vehicle, current_loading_time,  SLE_UINT32,       SL_PATCH_PACK, SL_PATCH_PACK_1_5),
+	     SLE_CONDVAR(Vehicle, current_loading_time,  SLE_UINT32,  SL_PATCH_PACK_1_23, SL_MAX_VERSION),
 		 SLE_CONDVAR(Vehicle, lateness_counter,      SLE_INT32,                   67, SL_MAX_VERSION),
 
 		SLE_CONDNULL(10,                                                           2, 143), // old reserved space

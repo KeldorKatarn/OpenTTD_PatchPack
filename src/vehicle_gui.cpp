@@ -64,24 +64,6 @@ static GUIVehicleList::SortFunction VehicleLengthSorter;
 static GUIVehicleList::SortFunction VehicleTimeToLiveSorter;
 static GUIVehicleList::SortFunction VehicleTimetableDelaySorter;
 
-enum VehicleSortType
-{
-	VST_NUMBER,
-	VST_NAME,
-	VST_AGE,
-	VST_PROFIT_THIS_YEAR,
-	VST_PROFIT_LAST_YEAR,
-	VST_PROFIT_LIFETIME,
-	VST_CARGO,
-	VST_RELIABILITY,
-	VST_MAX_SPEED,
-	VST_MODEL,
-	VST_VALUE,
-	VST_LENGTH,
-	VST_TIME_TO_LIVE,
-	VST_TIMETABLE_DELAY,
-};
-
 GUIVehicleList::SortFunction * const BaseVehicleListWindow::vehicle_sorter_funcs[] = {
 	&VehicleNumberSorter,
 	&VehicleNameSorter,
@@ -1473,6 +1455,7 @@ static const NWidgetPart _nested_vehicle_list[] = {
 		NWidget(NWID_SELECTION, INVALID_COLOUR, WID_VL_FILTER_BY_CARGO_SEL),
 			NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_VL_FILTER_BY_CARGO), SetMinimalSize(167, 12), SetFill(0, 1), SetDataTip(STR_JUST_STRING, STR_TOOLTIP_FILTER_CRITERIA),
 		EndContainer(),
+		NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_VL_REFRESH_SORTING), SetMinimalSize(167, 12), SetFill(0, 1), SetDataTip(STR_BUTTON_REFRESH_SORTING, STR_TOOLTIP_REFRESH_SORTING),
 		NWidget(WWT_PANEL, COLOUR_GREY), SetMinimalSize(12, 12), SetFill(1, 1), SetResize(1, 0),
 		EndContainer(),
 	EndContainer(),
@@ -1780,6 +1763,8 @@ private:
 		BP_HIDE_BUTTONS, ///< Show the empty panel.
 	};
 
+	bool live_refresh_sorting;
+
 public:
 	VehicleListWindow(WindowDesc *desc, WindowNumber window_number) : BaseVehicleListWindow(desc, window_number)
 	{
@@ -1953,6 +1938,8 @@ public:
 
 		this->GetWidget<NWidgetCore>(WID_VL_FILTER_BY_CARGO)->widget_data = this->cargo_filter_texts[this->cargo_filter_criteria];
 
+		this->SetWidgetLoweredState(WID_VL_REFRESH_SORTING, this->live_refresh_sorting);
+
  		this->DrawWidgets();
 	}
 
@@ -1961,6 +1948,7 @@ public:
 		switch (widget) {
 			case WID_VL_SORT_ORDER: // Flip sorting method ascending/descending
 				this->vehicles.ToggleSortOrder();
+				this->vehicles.ForceResort();
 				this->SetDirty();
 				break;
 
@@ -1997,6 +1985,12 @@ public:
 			case WID_VL_START_ALL:
 				DoCommandP(0, (1 << 1) | (widget == WID_VL_START_ALL ? (1 << 0) : 0), this->window_number, CMD_MASS_START_STOP);
 				break;
+
+			case WID_VL_REFRESH_SORTING: {
+				this->live_refresh_sorting = !this->live_refresh_sorting;
+				this->SetWidgetDirty(WID_VL_REFRESH_SORTING);
+				break;
+			}
 		}
 	}
 
@@ -2055,6 +2049,11 @@ public:
 	virtual void OnTick()
 	{
 		if (_pause_mode != PM_UNPAUSED) return;
+
+		if (live_refresh_sorting) {
+			this->vehicles.ForceResort();
+		}
+
 		if (this->vehicles.NeedResort()) {
 			StationID station = (this->vli.type == VL_STATION_LIST) ? this->vli.index : INVALID_STATION;
 

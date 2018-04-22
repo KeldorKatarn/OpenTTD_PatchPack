@@ -559,19 +559,17 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 
 	/* Before modifying waiting times, check whether we want to preserve bigger ones. */
 	if (!real_current_order->IsType(OT_CONDITIONAL) &&
-			(travelling || time_taken > real_current_order->GetWaitTime() || remeasure_wait_time)) {
+			(travelling || time_loading > real_current_order->GetWaitTime() || remeasure_wait_time)) {
 		/* For trains/aircraft multiple movement cycles are done in one
 		 * tick. This makes it possible to leave the station and process
 		 * e.g. a depot order in the same tick, causing it to not fill
 		 * the timetable entry like is done for road vehicles/ships.
 		 * Thus always make sure at least one tick is used between the
 		 * processing of different orders when filling the timetable. */
-		uint time_to_set = max(time_taken, 1U);
-
 		if (travelling && !real_current_order->IsTravelTimetabled()) {
-			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_TRAVEL_TIME, false);
+			ChangeTimetable(v, v->cur_real_order_index, max(time_taken, 1U), MTF_TRAVEL_TIME, false);
 		} else if (!travelling && !real_current_order->IsWaitTimetabled()) {
-			ChangeTimetable(v, v->cur_real_order_index, time_to_set, MTF_WAIT_TIME, false);
+			ChangeTimetable(v, v->cur_real_order_index, max(time_loading, 1U), MTF_WAIT_TIME, false);
 		}
 	}
 

@@ -314,13 +314,14 @@ void StateGameLoop_LinkGraphPauseControl()
 		}
 	}
 	else if (_pause_mode == PM_UNPAUSED) {
-		if (_settings_game.economy.daylength == 1) {
+		// Check for zero also if we're in the main menu and haven't loaded the setting yet.
+		if (_settings_game.economy.daylength <= 1) {
 			if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK - 1) return;
 			if (_date % _settings_game.linkgraph.recalc_interval != _settings_game.linkgraph.recalc_interval / 2) return;
 		}
 		else {
 			int date_ticks = ((_date * DAY_TICKS) + _date_fract - (LinkGraphSchedule::SPAWN_JOIN_TICK - 1));
-			int interval = max<int>(2, (_settings_game.linkgraph.recalc_interval * DAY_TICKS / _settings_game.economy.daylength));
+			int interval = max<int>(2, ((_settings_game.linkgraph.recalc_interval * DAY_TICKS) / _settings_game.economy.daylength));
 			if (date_ticks % interval != interval / 2) return;
 		}
 
@@ -339,7 +340,8 @@ void OnTick_LinkGraph()
 {
 	int offset;
 	int interval;
-	if (_settings_game.economy.daylength == 1) {
+	// Check for zero daylength if settings are not loaded yet.
+	if (_settings_game.economy.daylength <= 1) {
 		if (_date_fract != LinkGraphSchedule::SPAWN_JOIN_TICK) return;
 		interval = _settings_game.linkgraph.recalc_interval;
 		offset = _date % interval;

@@ -3887,7 +3887,7 @@ void DeleteStaleLinks(Station *from)
 			assert(to->goods[c].node == it->first);
 			++it; // Do that before removing the edge. Anything else may crash.
 			assert(_date >= edge.LastUpdate());
-			uint timeout = max<uint>((LinkGraph::MIN_TIMEOUT_DISTANCE + (DistanceManhattan(from->xy, to->xy) >> 3)) / _settings_game.economy.daylength, 1);
+			uint timeout = max<uint>((LinkGraph::MIN_TIMEOUT_DISTANCE + (DistanceManhattan(from->xy, to->xy) >> 3)) / std::max<uint8>(_settings_game.economy.daylength, 1), 1);
 			if ((uint)(_date - edge.LastUpdate()) > timeout) {
 				bool updated = false;
 
@@ -3950,7 +3950,7 @@ void DeleteStaleLinks(Station *from)
 			}
 		}
 		assert(_date >= lg->LastCompression());
-		if ((uint)(_date - lg->LastCompression()) > max<uint>(LinkGraph::COMPRESSION_INTERVAL / _settings_game.economy.daylength, 1)) {
+		if ((uint)(_date - lg->LastCompression()) > max<uint>(LinkGraph::COMPRESSION_INTERVAL / std::max<uint>(_settings_game.economy.daylength, 1), 1)) {
 			lg->Compress();
 		}
 	}

@@ -718,7 +718,7 @@ bool AfterLoadGame()
 
 	if (IsSavegameVersionBefore(SL_PATCH_PACK_DAYLENGTH))
 	{
-		if (!IsSavegameVersionBefore(SL_PATCH_PACK))
+		if (!IsPatchPackSavegameVersionBefore(SL_PATCH_PACK))
 			_settings_game.economy.daylength = 4;
 		else
 			_settings_game.economy.daylength = 1;

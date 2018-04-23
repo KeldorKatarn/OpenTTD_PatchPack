@@ -1473,12 +1473,18 @@ STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE             :Show arrival an
 STR_CONFIG_SETTING_TIMETABLE_SHOW_ARRIVAL_DEPARTURE_HELPTEXT    :Display anticipated arrival and departure times in timetables
 STR_CONFIG_SETTING_TIMETABLE_ENABLE_SEPARATION                  :Enable automatic timetable separation: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_ENABLE_SEPARATION_HELPTEXT         :When this is activated, vehicles can be automatically spread out evenly along their route based on configurable parameters.
-STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_BUFFER           :Timetable automation travel time buffer: {STRING2}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_BUFFER           :Timetable automation - Travel time buffer: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_BUFFER_VALUE     :{TICKS}
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_BUFFER_HELPTEXT  :When timetable automation is active, traveling times will be padded by this value.
-STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_BUFFER             :Timetable automation loading time buffer: {STRING2}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_BUFFER             :Timetable automation - Loading time buffer: {STRING2}
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_BUFFER_VALUE       :{TICKS}
 STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_BUFFER_HELPTEXT    :When timetable automation is active, loading times will be padded by this value.
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_ROUND            :Timetable automation - Round travel time to nearest: {STRING2}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_ROUND_VALUE      :{TICKS}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_TRAVEL_ROUND_HELPTEXT   :When timetable automation is active, traveling times will be rounded up to the nearest number divisible by this value.
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_ROUND              :Timetable automation - Round loading to nearest: {STRING2}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_ROUND_VALUE        :{TICKS}
+STR_CONFIG_SETTING_TIMETABLE_AUTOMATION_LOAD_ROUND_HELPTEXT     :When timetable automation is active, loading times will be rounded up to the nearest number divisible by this value.
 STR_CONFIG_SETTING_QUICKGOTO                                    :Quick creation of vehicle orders: {STRING2}
 STR_CONFIG_SETTING_QUICKGOTO_HELPTEXT                           :Pre-select the 'goto cursor' when opening the orders window
 STR_CONFIG_SETTING_DEFAULT_RAIL_TYPE                            :Default rail type (after new game/game load): {STRING2}

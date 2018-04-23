@@ -487,6 +487,8 @@ struct OrderSettings {
 	bool   serviceathelipad;                 ///< service helicopters at helipads automatically (no need to send to depot)
 	uint8  timetable_auto_travel_buffer;     ///< When timetable automation is active, traveling times will be padded by this value.
 	uint8  timetable_auto_load_buffer;       ///< When timetable automation is active, loading times will be padded by this value.
+	uint8  timetable_auto_travel_rounding;   ///< When timetable automation is active, traveling times will be rounded up to the nearest number divisible by this value.
+	uint8  timetable_auto_load_rounding;     ///< When timetable automation is active, loading times will be rounded up to the nearest number divisible by this value.
 };
 
 /** Settings related to vehicles. */

@@ -1672,6 +1672,8 @@ static SettingsContainer &GetSettingsTree()
 			vehicles->Add(new SettingEntry("order.automatic_timetable_separation"));
 			vehicles->Add(new SettingEntry("order.timetable_auto_travel_buffer"));
 			vehicles->Add(new SettingEntry("order.timetable_auto_load_buffer"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_travel_rounding"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_load_rounding"));
 		}
 
 		SettingsPage *limitations = main->Add(new SettingsPage(STR_CONFIG_SETTING_LIMITATIONS));

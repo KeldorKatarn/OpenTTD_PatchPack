@@ -584,9 +584,25 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 		int32 new_time;
 		if (travelling) {
 			new_time = time_taken + _settings_game.order.timetable_auto_travel_buffer;
+
+			assert(_settings_game.order.timetable_auto_travel_rounding != 0);
+
+			if (new_time % _settings_game.order.timetable_auto_travel_rounding != 0) {
+				new_time /= _settings_game.order.timetable_auto_travel_rounding;
+				new_time += 1;
+				new_time *= _settings_game.order.timetable_auto_travel_rounding;
+			}
 		}
 		else {
 			new_time = time_loading + _settings_game.order.timetable_auto_load_buffer;
+
+			assert(_settings_game.order.timetable_auto_load_rounding != 0);
+
+			if (new_time % _settings_game.order.timetable_auto_load_rounding != 0) {
+				new_time /= _settings_game.order.timetable_auto_load_rounding;
+				new_time += 1;
+				new_time *= _settings_game.order.timetable_auto_load_rounding;
+			}
 		}
 
 		if (new_time > (int32)timetabled * 4 && travelling) {

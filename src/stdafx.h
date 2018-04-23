@@ -12,6 +12,15 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
+#include <algorithm>
+#include <cmath>
+#include <deque>
+#include <list>
+#include <numeric>
+#include <queue>
+#include <string>
+#include <vector>
+
 #if defined(__APPLE__)
 	#include "os/macosx/osx_stdafx.h"
 #endif /* __APPLE__ */
@@ -572,6 +581,6 @@ static inline void free(const void *ptr)
 #else
 #define likely(x)       (x)
 #define unlikely(x)     (x)
-#endif
+#endif 
 
 #endif /* STDAFX_H */

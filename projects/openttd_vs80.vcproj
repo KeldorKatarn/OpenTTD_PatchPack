@@ -435,50 +435,6 @@
 			Name="Source Files"
 			>
 			<File
-				RelativePath=".\..\src\tbtr_template_gui_main.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_gui_create.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_vehicle.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_vehicle_func.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_gui_main.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_gui_create.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_vehicle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\tbtr_template_vehicle_func.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\overlay.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\overlay_cmd.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\overlay_cmd.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\airport.cpp"
 				>
 			</File>
@@ -715,38 +671,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\network\network.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_admin.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_client.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_command.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_content.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_gamelist.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_server.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_udp.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\openttd.cpp"
 				>
 			</File>
@@ -840,6 +764,14 @@
 			</File>
 			<File
 				RelativePath=".\..\src\subsidy.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle_func.cpp"
 				>
 			</File>
 			<File
@@ -1371,58 +1303,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\network\network.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_admin.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_base.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_client.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_content.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_content_gui.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_func.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_gamelist.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_gui.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_internal.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_server.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_type.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\network\network_udp.h"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\newgrf.h"
 				>
 			</File>
@@ -1563,10 +1443,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\triphistory_gui.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\object_base.h"
 				>
 			</File>
@@ -1592,6 +1468,14 @@
 			</File>
 			<File
 				RelativePath=".\..\src\order_type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay_cmd.h"
 				>
 			</File>
 			<File
@@ -1840,6 +1724,22 @@
 			</File>
 			<File
 				RelativePath=".\..\src\tar_type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_create.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_main.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_vehicle_func.h"
 				>
 			</File>
 			<File
@@ -2371,6 +2271,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\tbtr_template_gui_create.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\tbtr_template_gui_main.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\terraform_gui.cpp"
 				>
 			</File>
@@ -2404,6 +2312,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\tree_gui.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\triphistory_gui.cpp"
 				>
 			</File>
 			<File
@@ -2708,6 +2620,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\order_cmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\overlay_cmd.cpp"
 				>
 			</File>
 			<File
@@ -4492,6 +4408,94 @@
 			</File>
 			<File
 				RelativePath=".\..\src\network\core\udp.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Network"
+			>
+			<File
+				RelativePath=".\..\src\network\network.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_admin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_client.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_content.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_content_gui.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_func.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_gamelist.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_gui.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_internal.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_server.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_udp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_admin.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_client.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_command.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_content.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_gamelist.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_server.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\network\network_udp.cpp"
 				>
 			</File>
 		</Filter>

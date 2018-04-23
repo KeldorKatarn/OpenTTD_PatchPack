@@ -83,7 +83,7 @@ static const NWidgetPart _nested_normal_news_widgets[] = {
 			NWidget(WWT_CLOSEBOX, COLOUR_WHITE, WID_N_CLOSEBOX), SetPadding(0, 0, 0, 1),
 			NWidget(NWID_SPACER), SetFill(1, 0),
 			NWidget(NWID_VERTICAL),
-				NWidget(WWT_LABEL, COLOUR_WHITE, WID_N_DATE), SetDataTip(STR_DATE_LONG_SMALL, STR_NULL),
+				NWidget(WWT_LABEL, COLOUR_WHITE, WID_N_DATE), SetDataTip(STR_TINY_BLACK_DATE_LONG, STR_NULL),
 				NWidget(NWID_SPACER), SetFill(0, 1),
 			EndContainer(),
 		EndContainer(),
@@ -160,7 +160,7 @@ static const NWidgetPart _nested_thin_news_widgets[] = {
 			NWidget(WWT_CLOSEBOX, COLOUR_WHITE, WID_N_CLOSEBOX), SetPadding(0, 0, 0, 1),
 			NWidget(NWID_SPACER), SetFill(1, 0),
 			NWidget(NWID_VERTICAL),
-				NWidget(WWT_LABEL, COLOUR_WHITE, WID_N_DATE), SetDataTip(STR_DATE_LONG_SMALL, STR_NULL),
+				NWidget(WWT_LABEL, COLOUR_WHITE, WID_N_DATE), SetDataTip(STR_TINY_BLACK_DATE_LONG, STR_NULL),
 				NWidget(NWID_SPACER), SetFill(0, 1),
 			EndContainer(),
 		EndContainer(),
@@ -1025,7 +1025,7 @@ struct MessageHistoryWindow : Window {
 			/* Months are off-by-one, so it's actually 8. Not using
 			 * month 12 because the 1 is usually less wide. */
 			SetDParam(0, ConvertYMDToDate(ORIGINAL_MAX_YEAR, 7, 30));
-			this->date_width = GetStringBoundingBox(STR_SHORT_DATE).width;
+			this->date_width = GetStringBoundingBox(STR_WHITE_DATE).width;
 
 			size->height = 4 * resize->height + this->top_spacing + this->bottom_spacing; // At least 4 lines are visible.
 			size->width = max(200u, size->width); // At least 200 pixels wide.
@@ -1058,7 +1058,7 @@ struct MessageHistoryWindow : Window {
 		uint news_right = rtl ? r.right - WD_FRAMERECT_RIGHT - this->date_width - WD_FRAMERECT_RIGHT : r.right - WD_FRAMERECT_RIGHT;
 		for (int n = this->vscroll->GetCapacity(); n > 0; n--) {
 			SetDParam(0, ni->date);
-			DrawString(date_left, date_right, y, STR_SHORT_DATE);
+			DrawString(date_left, date_right, y, STR_WHITE_DATE);
 
 			DrawNewsString(news_left, news_right, y, TC_WHITE, ni);
 			y += this->line_height;

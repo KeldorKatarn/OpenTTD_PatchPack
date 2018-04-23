@@ -88,11 +88,10 @@ static const CmdStruct _cmd_structs[] = {
 	{"P",                 EmitPlural,     0,                      0, -1, C_DONTCOUNT}, // plural specifier
 	{"G",                 EmitGender,     0,                      0, -1, C_DONTCOUNT}, // gender specifier
 
-	{"DATE_TINY",         EmitSingleChar, SCC_DATE_TINY,          1, -1, C_NONE},
+	{"DATE",              EmitSingleChar, SCC_DATE,               1, -1, C_NONE},
 	{"DATE_SHORT",        EmitSingleChar, SCC_DATE_SHORT,         1, -1, C_CASE},
 	{"DATE_LONG",         EmitSingleChar, SCC_DATE_LONG,          1, -1, C_CASE},
 	{"DATE_ISO",          EmitSingleChar, SCC_DATE_ISO,           1, -1, C_NONE},
-	{"TIME_TINY",         EmitSingleChar, SCC_TIME_TINY,          1, -1, C_NONE},
 	{"TIME",              EmitSingleChar, SCC_TIME,               1, -1, C_NONE},
     {"TIME_DURATION",     EmitSingleChar, SCC_TIME_DURATION,      1, -1, C_NONE},
     {"TIME_DURATION_RED", EmitSingleChar, SCC_TIME_DURATION_RED,  1, -1, C_NONE},

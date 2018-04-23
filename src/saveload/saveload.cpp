@@ -3079,7 +3079,7 @@ void GenerateDefaultSaveName(char *buf, const char *last)
 	/* Insert current date */
 	switch (_settings_client.gui.date_format_in_default_names) {
 		case 0: SetDParam(1, STR_JUST_DATE_LONG); break;
-		case 1: SetDParam(1, STR_JUST_DATE_TINY); break;
+		case 1: SetDParam(1, STR_JUST_DATE); break;
 		case 2: SetDParam(1, STR_JUST_DATE_ISO); break;
 		default: NOT_REACHED();
 	}

@@ -203,9 +203,9 @@ struct TimetableWindow : Window {
 		switch (widget) {
 			case WID_VT_ARRIVAL_DEPARTURE_PANEL:
 				SetDParamMaxValue(0, MAX_YEAR * DAYS_IN_YEAR, 0, FS_SMALL);
-				this->deparr_time_width = GetStringBoundingBox(STR_JUST_DATE_TINY).width;
+				this->deparr_time_width = GetStringBoundingBox(STR_JUST_TIME).width;
 				this->deparr_abbr_width = max(GetStringBoundingBox(STR_TIMETABLE_ARRIVAL_ABBREVIATION).width, GetStringBoundingBox(STR_TIMETABLE_DEPARTURE_ABBREVIATION).width);
-				size->width = WD_FRAMERECT_LEFT + this->deparr_abbr_width + 10 + this->deparr_time_width + WD_FRAMERECT_RIGHT;
+				size->width = WD_FRAMERECT_LEFT + this->deparr_abbr_width + 10 + this->deparr_time_width + 10 + WD_FRAMERECT_RIGHT;
 				FALLTHROUGH;
 
 			case WID_VT_ARRIVAL_DEPARTURE_SELECTION:
@@ -454,8 +454,8 @@ struct TimetableWindow : Window {
 				bool rtl = _current_text_dir == TD_RTL;
 				int abbr_left = rtl ? r.right - WD_FRAMERECT_RIGHT - this->deparr_abbr_width : r.left + WD_FRAMERECT_LEFT;
 				int abbr_right = rtl ? r.right - WD_FRAMERECT_RIGHT : r.left + WD_FRAMERECT_LEFT + this->deparr_abbr_width;
-				int time_left = rtl ? r.left + WD_FRAMERECT_LEFT : r.right - WD_FRAMERECT_RIGHT - this->deparr_time_width;
-				int time_right = rtl ? r.left + WD_FRAMERECT_LEFT + this->deparr_time_width : r.right - WD_FRAMERECT_RIGHT;
+				int time_left = rtl ? r.right - WD_FRAMERECT_RIGHT - r.left - WD_FRAMERECT_RIGHT - this->deparr_abbr_width - 10 - this->deparr_time_width : r.left + WD_FRAMERECT_RIGHT + this->deparr_abbr_width + 10;
+				int time_right = rtl ? r.right - WD_FRAMERECT_RIGHT - this->deparr_abbr_width - 10 : r.left + WD_FRAMERECT_RIGHT + r.left + WD_FRAMERECT_RIGHT + this->deparr_abbr_width + 10 + this->deparr_time_width;
 
 				for (int i = this->vscroll->GetPosition(); i / 2 < v->GetNumOrders(); ++i) { // note: i is also incremented in the loop
 					/* Don't draw anything if it extends past the end of the window. */
@@ -466,10 +466,10 @@ struct TimetableWindow : Window {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_ARRIVAL_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
 							if (this->show_expected && i / 2 == earlyID) {
 								SetDParam(0, arr_dep[i / 2].arrival);
-								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, TC_GREEN);
+								DrawString(time_left, time_right, y, STR_JUST_TIME, TC_GREEN);
 							} else {
 								SetDParam(0, arr_dep[i / 2].arrival + offset);
-								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
+								DrawString(time_left, time_right, y, STR_JUST_TIME, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 							}
 						}
 					}
@@ -477,7 +477,7 @@ struct TimetableWindow : Window {
 						if (arr_dep[i / 2].departure != INVALID_TICKS) {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_DEPARTURE_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
 							SetDParam(0, arr_dep[i / 2].departure + offset);
-							DrawString(time_left, time_right, y, STR_JUST_TIME_TINY,
+							DrawString(time_left, time_right, y, STR_JUST_TIME,
 								show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 						}
 					}
@@ -501,7 +501,7 @@ struct TimetableWindow : Window {
 				if (v->timetable_start != 0) {
 					/* We are running towards the first station so we can start the
 					 * timetable at the given time. */
-					SetDParam(0, STR_JUST_DATE_TINY);
+					SetDParam(0, STR_JUST_DATE);
 					SetDParam(1, v->timetable_start);
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_START_AT);
 				}
@@ -532,7 +532,7 @@ struct TimetableWindow : Window {
 				/* If the new mode is OFF... */
 				if (this->new_sep_settings.mode == TTS_MODE_OFF) {
 					/* ... skip description lines. */
-					int offset = GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
+					int offset = GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
 
 					y = y + GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height + offset;
 
@@ -557,12 +557,14 @@ struct TimetableWindow : Window {
 						
 						SetDParam(0, par);
 						SetDParam(1, par);
-						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_TICKS, TC_BLACK);
+						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC, TC_BLACK);
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
 
-						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
+						DrawString(left_border, right_border, y, STR_TTSEPARATION_BETWEEN, TC_BLACK);
+						y += GetStringBoundingBox(STR_TTSEPARATION_BETWEEN).height;
 					}
 					else {
-						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
 					}
 
 					// Print either the chosen amount of vehicles (when in MAN_N mode) or the calculated result...
@@ -599,6 +601,8 @@ struct TimetableWindow : Window {
 					/* If separation is switched off, show this instead. */
 					SetDParam(0, STR_TTSEPARATION_STATUS_OFF);
 				}
+
+				y += FONT_HEIGHT_NORMAL;
 
 				/* Print status description. */
 				DrawStringMultiLine(left_border, right_border, y, r.bottom - WD_FRAMERECT_BOTTOM, STR_TTSEPARATION_STATUS_DESC);
@@ -873,14 +877,14 @@ static const NWidgetPart _nested_timetable_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TIMETABLE_PANEL), SetMinimalSize(388, 82), SetResize(1, 10), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		NWidget(NWID_SELECTION, INVALID_COLOUR, WID_VT_ARRIVAL_DEPARTURE_SELECTION),
-			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(25, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
+			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(85, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		EndContainer(),
 		NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_VT_SCROLLBAR),
 		NWidget(WWT_PANEL, COLOUR_GREY),
 			NWidget(WWT_FRAME, COLOUR_GREY), SetDataTip(STR_TTSEPARATION_SETTINGS_DESC, STR_NULL), SetPadding(3),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_VT_TTSEP_MODE_DROPDOWN), SetDataTip(STR_JUST_STRING, STR_TIMETABLE_TOOLTIP),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_TTSEP_SET_PARAMETER), SetFill(1, 0), SetDataTip(STR_TTSEPARATION_SET_XX, STR_TIMETABLE_TOOLTIP),
-				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(250, 44), EndContainer(),
+				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(225, 44), EndContainer(),
 			EndContainer(),
 		EndContainer(),
 	EndContainer(),

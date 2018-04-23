@@ -467,7 +467,7 @@ static char *FormatMonthAndYear(char *buff, Date date, const char *last, uint ca
 	return FormatString(buff, GetStringPtr(STR_FORMAT_DATE_SHORT), &tmp_params, last, case_index);
 }
 
-static char *FormatTinyOrISODate(char *buff, Date date, StringID str, const char *last)
+static char *FormatNormalOrISODate(char *buff, Date date, StringID str, const char *last)
 {
 	YearMonthDay ymd;
 	ConvertDateToYMD(date, &ymd);
@@ -1248,8 +1248,8 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 				buff = FormatGenericCurrency(buff, _currency, args->GetInt64(SCC_CURRENCY_LONG), false, last);
 				break;
 
-			case SCC_DATE_TINY: // {DATE_TINY}
-				buff = FormatTinyOrISODate(buff, args->GetInt32(SCC_DATE_TINY), STR_FORMAT_DATE_TINY, last);
+			case SCC_DATE: // {DATE}
+				buff = FormatNormalOrISODate(buff, args->GetInt32(SCC_DATE), STR_FORMAT_DATE, last);
 				break;
 
 			case SCC_DATE_SHORT: // {DATE_SHORT}
@@ -1263,14 +1263,10 @@ static char *FormatString(char *buff, const char *str_arg, StringParameters *arg
 				break;
 
 			case SCC_DATE_ISO: // {DATE_ISO}
-				buff = FormatTinyOrISODate(buff, args->GetInt32(), STR_FORMAT_DATE_ISO, last);
+				buff = FormatNormalOrISODate(buff, args->GetInt32(), STR_FORMAT_DATE_ISO, last);
 				break;
  
 			case SCC_TIME: // {TIME}
-				buff = FormatTimeString(buff, args->GetInt32(), last, next_substr_case_index);
-				break;
-
-			case SCC_TIME_TINY: // {TIME_TINY}
 				buff = FormatTimeString(buff, args->GetInt32(), last, next_substr_case_index);
 				break;
 

@@ -490,7 +490,7 @@ NetworkRecvStatus ServerNetworkGameSocketHandler::SendNewGRFCheck()
 	}
 
 	// Send all the packets.
-	for (auto i = 0; i < grf_identifier_lists.size(); ++i) {
+	for (size_t i = 0; i < grf_identifier_lists.size(); ++i) {
 		Packet *p = new Packet(PACKET_SERVER_CHECK_NEWGRFS);
 		auto grf_ident_list = grf_identifier_lists[i];
 

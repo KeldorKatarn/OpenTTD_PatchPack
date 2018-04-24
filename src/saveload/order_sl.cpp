@@ -202,6 +202,7 @@ const SaveLoad *GetOrderExtraInfoDescription()
 	static const SaveLoad _order_extra_info_desc[] = {
 		    SLE_ARR(OrderExtraInfo, cargo_type_flags, SLE_UINT8, NUM_CARGO),
 		SLE_CONDVAR(OrderExtraInfo, xflags,           SLE_UINT8, SL_PATCH_PACK_1_24, SL_MAX_VERSION),
+		SLE_CONDVAR(OrderExtraInfo, xdata,           SLE_UINT32, SL_PATCH_PACK_1_24, SL_MAX_VERSION),
 		    SLE_END()
 	};
 

@@ -17,6 +17,6 @@
 
 void ShowTimetableWindow(const Vehicle *v);
 void UpdateVehicleTimetable(Vehicle *v, bool travelling);
-void SetTimetableParams(int param1, int param2, Ticks ticks);
+void SetTimetableParams(Ticks ticks, int param1 = 0);
 
 #endif /* TIMETABLE_H */

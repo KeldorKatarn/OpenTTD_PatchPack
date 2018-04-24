@@ -35,7 +35,8 @@ static const uint16 NETWORK_DEFAULT_DEBUGLOG_PORT = 3982;         ///< The defau
 static const uint16 SEND_MTU                      = 1460;         ///< Number of bytes we can pack in a single packet
 
 static const byte NETWORK_GAME_ADMIN_VERSION      =    1;         ///< What version of the admin network do we use?
-static const byte NETWORK_GAME_INFO_VERSION       =    4;         ///< What version of game-info do we use?
+static const byte NETWORK_GAME_INFO_VERSION       =  128;         ///< What version of game-info do we use? (The value is high to avoid conflicts with vanilla protocol
+static const byte NETWORK_NEWGRF_INFO_VERSION     =  128;         ///< What version of game-info do we use?
 static const byte NETWORK_COMPANY_INFO_VERSION    =    6;         ///< What version of company info is this?
 static const byte NETWORK_MASTER_SERVER_VERSION   =    2;         ///< What version of master-server-protocol do we use?
 
@@ -54,8 +55,8 @@ static const uint NETWORK_CHAT_LENGTH             =  900;         ///< The maxim
 static const uint NETWORK_GRF_NAME_LENGTH         =   80;         ///< Maximum length of the name of a GRF
 
 /**
- * Maximum number of GRFs that can be sent.
- * This limit is reached when PACKET_UDP_SERVER_RESPONSE reaches the maximum size of SEND_MTU bytes.
+ * Maximum number of GRFs that can be sent in one packet.
+ * This limit is reached when PACKET_UDP_SERVER_NEWGRF_RESPONSE reaches the maximum size of SEND_MTU bytes.
  */
 static const uint NETWORK_MAX_GRF_COUNT           =   62;
 

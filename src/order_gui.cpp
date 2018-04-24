@@ -719,7 +719,6 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 	DrawString(left, rtl ? right - 2 * sprite_size.width - 3 : middle, y, STR_ORDER_INDEX, colour, SA_RIGHT | SA_FORCE);
 
 	SetDParam(5, STR_EMPTY);
-	SetDParam(8, STR_EMPTY);
 
 	/* Check range for aircraft. */
 	if (v->type == VEH_AIRCRAFT && Aircraft::From(v)->GetRange() > 0 && order->IsGotoOrder()) {
@@ -752,8 +751,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 				SetDParam(3, STR_EMPTY);
 
 				if (order->GetWaitTime() > 0) {
-					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR : STR_TIMETABLE_STAY_FOR_ESTIMATED);
-					SetTimetableParams(6, 7, order->GetWaitTime());
+					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR_MINUTES : STR_TIMETABLE_STAY_FOR_MINUTES_ESTIMATED);
+					SetTimetableParams(order->GetWaitTime(), 6);
 				}
 			} else {
 				SetDParam(3, (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION) ? STR_EMPTY : _station_load_types[order->IsRefit()][unload][load]);
@@ -800,8 +799,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 
 			if (timetable) {
 				if (order->GetWaitTime() > 0) {
-					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR : STR_TIMETABLE_STAY_FOR_ESTIMATED);
-					SetTimetableParams(6, 7, order->GetWaitTime());
+					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR_MINUTES : STR_TIMETABLE_STAY_FOR_MINUTES_ESTIMATED);
+					SetTimetableParams(order->GetWaitTime(), 6);
 				}
 			} 
 			break;
@@ -871,8 +870,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 			}
 
 			if (timetable && order->GetWaitTime() > 0) {
-				SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_AND_TRAVEL_FOR : STR_TIMETABLE_AND_TRAVEL_FOR_ESTIMATED);
-				SetTimetableParams(6, 7, order->GetWaitTime());
+				SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_AND_TRAVEL_FOR_MINUTES : STR_TIMETABLE_AND_TRAVEL_FOR_MINUTES_ESTIMATED);
+				SetTimetableParams(order->GetWaitTime(), 6);
 			}
 			else {
 				SetDParam(5, STR_EMPTY);
@@ -883,7 +882,7 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 		default: NOT_REACHED();
 	}
 
-	DrawString(rtl ? left : middle, rtl ? middle : right, y, STR_ORDER_TEXT, colour);
+	DrawString(rtl ? left : middle, rtl ? middle : right, y, STR_ORDER_TEXT_MINUTES, colour);
 }
 
 /**

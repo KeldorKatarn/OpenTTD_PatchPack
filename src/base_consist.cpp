@@ -33,6 +33,7 @@ void BaseConsist::CopyConsistPropertiesFrom(const BaseConsist *src)
 	this->name = src->name != NULL ? stredup(src->name) : NULL;
 
 	this->current_order_time = src->current_order_time;
+	this->current_loading_time = src->current_loading_time;
 	this->lateness_counter = src->lateness_counter;
 	this->timetable_start = src->timetable_start;
 
@@ -40,6 +41,7 @@ void BaseConsist::CopyConsistPropertiesFrom(const BaseConsist *src)
 
 	this->cur_real_order_index = src->cur_real_order_index;
 	this->cur_implicit_order_index = src->cur_implicit_order_index;
+	this->cur_timetable_order_index = src->cur_timetable_order_index;
 
 	if (HasBit(src->vehicle_flags, VF_TIMETABLE_STARTED)) SetBit(this->vehicle_flags, VF_TIMETABLE_STARTED);
 	if (HasBit(src->vehicle_flags, VF_AUTOMATE_TIMETABLE)) SetBit(this->vehicle_flags, VF_AUTOMATE_TIMETABLE);

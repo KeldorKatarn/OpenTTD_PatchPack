@@ -32,7 +32,6 @@ static void Save_TUNN()
 	FOR_ALL_TUNNELS(tunnel) {
 		SlSetArrayIndex(tunnel->index);
 		SlObject(tunnel, _tunnel_desc);
-		tunnel->UpdateIndexes();
 	}
 }
 
@@ -43,6 +42,7 @@ static void Load_TUNN()
 	while ((index = SlIterateArray()) != -1) {
 		Tunnel *tunnel = new (index) Tunnel();
 		SlObject(tunnel, _tunnel_desc);
+		tunnel->UpdateIndexes();
 	}
 }
 

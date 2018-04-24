@@ -76,68 +76,38 @@
     <Filter Include="Network Core">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000024}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pathfinder">
+    <Filter Include="Network">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000025}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NPF">
+    <Filter Include="Pathfinder">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000026}</UniqueIdentifier>
     </Filter>
-    <Filter Include="YAPF">
+    <Filter Include="NPF">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000027}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Video">
+    <Filter Include="YAPF">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000028}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Music">
+    <Filter Include="Video">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000029}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sound">
+    <Filter Include="Music">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000030}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Windows files">
+    <Filter Include="Sound">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000031}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Threading">
+    <Filter Include="Windows files">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000032}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Btree containers">
+    <Filter Include="Threading">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000033}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Btree containers">
+      <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000034}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="..\src\tbtr_template_gui_main.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_gui_create.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\overlay.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\overlay_cmd.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClCompile Include="..\src\overlay_cmd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\airport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -315,30 +285,6 @@
     <ClCompile Include="..\src\music.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\network\network.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_admin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_content.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_gamelist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\network\network_udp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\openttd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -409,6 +355,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\subsidy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\textbuf.cpp">
@@ -804,45 +756,6 @@
     <ClInclude Include="..\src\triphistory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\network\network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_admin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_content.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_content_gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_func.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_gamelist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\network\network_udp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\newgrf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -948,9 +861,6 @@
     <ClInclude Include="..\src\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="..\src\triphistory_gui.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClInclude Include="..\src\object_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -970,6 +880,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\order_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\overlay_cmd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pbs.h">
@@ -1156,6 +1072,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\tar_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_gui_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\terraform_gui.h">
@@ -1548,6 +1476,12 @@
     <ClCompile Include="..\src\subsidy_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\terraform_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
@@ -1573,6 +1507,9 @@
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tree_gui.cpp">
+      <Filter>GUI Source Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\triphistory_gui.cpp">
       <Filter>GUI Source Code</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vehicle_gui.cpp">
@@ -1795,6 +1732,9 @@
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\order_cmd.cpp">
+      <Filter>Command handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\overlay_cmd.cpp">
       <Filter>Command handlers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\plans_cmd.cpp">
@@ -3078,6 +3018,69 @@
     <ClInclude Include="..\src\network\core\udp.h">
       <Filter>Network Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\network\network.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_admin.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_base.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_client.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_content.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_content_gui.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_func.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_gamelist.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_gui.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_internal.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_server.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_type.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\network_udp.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClCompile Include="..\src\network\network.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_admin.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_client.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_command.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_content.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_gamelist.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_server.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\network_udp.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
     <ClInclude Include="..\src\pathfinder\follow_track.hpp">
       <Filter>Pathfinder</Filter>
     </ClInclude>

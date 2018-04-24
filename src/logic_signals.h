@@ -15,6 +15,7 @@
 #include "tile_type.h"
 #include "track_type.h"
 #include "signal_type.h"
+#include <list>
 #include <map>
 
 /**
@@ -66,6 +67,7 @@ public:
 	void AddLink(TileIndex tile, Track track, bool remove_first);
 	void RemoveLink(TileIndex tile, Track track);
 	void ClearAllLinks();
+	const std::list<SignalReference> GetSignalReferences() const;
 	uint LinkCount();
 	void InputChanged(int depth);
 	SignalState Evaluate();

@@ -454,6 +454,20 @@ void Station::GetTileArea(TileArea *ta, StationType type) const
 	ta->h = 1;
 }
 
+void Station::UpdateCargoHistory()
+{
+	CargoSpec* cs;
+	FOR_ALL_CARGOSPECS(cs) {
+		auto amount = this->goods[cs->Index()].cargo.AvailableCount();
+
+		std::rotate(std::begin(this->station_cargo_history) + cs->Index() * MAX_STATION_CARGO_HISTORY_DAYS,
+					std::begin(this->station_cargo_history) + cs->Index() * MAX_STATION_CARGO_HISTORY_DAYS + 1,
+					std::begin(this->station_cargo_history) + (cs->Index() + 1) * MAX_STATION_CARGO_HISTORY_DAYS);
+
+		this->station_cargo_history[(cs->Index() + 1) * MAX_STATION_CARGO_HISTORY_DAYS - 1] = std::clamp(amount / STATION_CARGO_HISTORY_FACTOR, (uint)0, (uint)UINT8_MAX);
+	}
+}
+
 /**
  * Update the virtual coords needed to draw the station sign.
  */
@@ -3873,7 +3887,7 @@ void DeleteStaleLinks(Station *from)
 			assert(to->goods[c].node == it->first);
 			++it; // Do that before removing the edge. Anything else may crash.
 			assert(_date >= edge.LastUpdate());
-			uint timeout = max<uint>((LinkGraph::MIN_TIMEOUT_DISTANCE + (DistanceManhattan(from->xy, to->xy) >> 3)) / _settings_game.economy.daylength, 1);
+			uint timeout = max<uint>((LinkGraph::MIN_TIMEOUT_DISTANCE + (DistanceManhattan(from->xy, to->xy) >> 3)) / std::max<uint8>(_settings_game.economy.daylength, 1), 1);
 			if ((uint)(_date - edge.LastUpdate()) > timeout) {
 				bool updated = false;
 
@@ -3936,7 +3950,7 @@ void DeleteStaleLinks(Station *from)
 			}
 		}
 		assert(_date >= lg->LastCompression());
-		if ((uint)(_date - lg->LastCompression()) > max<uint>(LinkGraph::COMPRESSION_INTERVAL / _settings_game.economy.daylength, 1)) {
+		if ((uint)(_date - lg->LastCompression()) > max<uint>(LinkGraph::COMPRESSION_INTERVAL / std::max<uint>(_settings_game.economy.daylength, 1), 1)) {
 			lg->Compress();
 		}
 	}
@@ -4030,6 +4044,19 @@ void OnTick_Station()
 			if (!StationHandleBigTick(st)) continue;
 			TriggerStationAnimation(st, st->xy, SAT_250_TICKS);
 			if (Station::IsExpected(st)) AirportAnimationTrigger(Station::From(st), AAT_STATION_250_TICKS);
+		}
+	}
+}
+
+/** Daily loop for stations. */
+void StationDailyLoop()
+{
+	// Only record cargo history every second day.
+	if (_date % 2 != 0) {
+		Station *st;
+
+		FOR_ALL_STATIONS(st) {
+			st->UpdateCargoHistory();
 		}
 	}
 }

@@ -364,8 +364,10 @@ void OrderList::Initialize(Order *chain, Vehicle *v)
 	for (Order *o = this->first; o != NULL; o = o->next) {
 		++this->num_orders;
 		if (!o->IsType(OT_IMPLICIT)) ++this->num_manual_orders;
-		this->timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
-		this->total_duration += o->GetWaitTime() + o->GetTravelTime();
+		if (!o->IsType(OT_CONDITIONAL)) {
+			this->timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
+			this->total_duration += o->GetWaitTime() + o->GetTravelTime();
+		}
 	}
 
 	for (Vehicle *u = this->first_shared->PreviousShared(); u != NULL; u = u->PreviousShared()) {
@@ -414,6 +416,24 @@ Order *OrderList::GetOrderAt(int index) const
 		order = order->next;
 	}
 	return order;
+}
+
+/**
+ * Get the index of an order of the order chain, or INVALID_VEH_ORDER_ID.
+ * @param order order to get the index of.
+ * @return the position index of the given order, or INVALID_VEH_ORDER_ID.
+ */
+VehicleOrderID OrderList::GetIndexOfOrder(const Order *order) const
+{
+	VehicleOrderID index = 0;
+	const Order *o = this->first;
+	while (o != nullptr) {
+		if (o == order) return index;
+		index++;
+		o = o->next;
+	}
+
+	return INVALID_VEH_ORDER_ID;
 }
 
 /**
@@ -570,8 +590,10 @@ void OrderList::InsertOrderAt(Order *new_order, int index)
 	}
 	++this->num_orders;
 	if (!new_order->IsType(OT_IMPLICIT)) ++this->num_manual_orders;
-	this->timetable_duration += new_order->GetTimetabledWait() + new_order->GetTimetabledTravel();
-	this->total_duration += new_order->GetWaitTime() + new_order->GetTravelTime();
+	if (!new_order->IsType(OT_CONDITIONAL)) {
+		this->timetable_duration += new_order->GetTimetabledWait() + new_order->GetTimetabledTravel();
+		this->total_duration += new_order->GetWaitTime() + new_order->GetTravelTime();
+	}
 
 	/* We can visit oil rigs and buoys that are not our own. They will be shown in
 	 * the list of stations. So, we need to invalidate that window if needed. */
@@ -603,8 +625,10 @@ void OrderList::DeleteOrderAt(int index)
 	}
 	--this->num_orders;
 	if (!to_remove->IsType(OT_IMPLICIT)) --this->num_manual_orders;
-	this->timetable_duration -= (to_remove->GetTimetabledWait() + to_remove->GetTimetabledTravel());
-	this->total_duration -= (to_remove->GetWaitTime() + to_remove->GetTravelTime());
+	if (!to_remove->IsType(OT_CONDITIONAL)) {
+		this->timetable_duration -= (to_remove->GetTimetabledWait() + to_remove->GetTimetabledTravel());
+		this->total_duration -= (to_remove->GetWaitTime() + to_remove->GetTravelTime());
+	}
 	delete to_remove;
 }
 
@@ -706,8 +730,10 @@ void OrderList::DebugCheckSanity() const
 	for (const Order *o = this->first; o != NULL; o = o->next) {
 		++check_num_orders;
 		if (!o->IsType(OT_IMPLICIT)) ++check_num_manual_orders;
-		check_timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
-		check_total_duration += o->GetWaitTime() + o->GetTravelTime();
+		if (!o->IsType(OT_CONDITIONAL)) {
+			check_timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
+			check_total_duration += o->GetWaitTime() + o->GetTravelTime();
+		}
 	}
 	assert(this->num_orders == check_num_orders);
 	assert(this->num_manual_orders == check_num_manual_orders);
@@ -1253,6 +1279,13 @@ void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord)
 				u->cur_implicit_order_index = cur;
 			}
 		}
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID && sel_ord <= u->cur_timetable_order_index) {
+			uint cur = u->cur_timetable_order_index + 1;
+			/* Check if we don't go out of bound */
+			if (cur < u->GetNumOrders()) {
+				u->cur_timetable_order_index = cur;
+			}
+		}
 		/* Update any possible open window of the vehicle */
 		InvalidateVehicleOrder(u, INVALID_VEH_ORDER_ID | (sel_ord << 8));
 	}
@@ -1407,6 +1440,14 @@ void DeleteOrder(Vehicle *v, VehicleOrderID sel_ord)
 			}
 		}
 
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID) {
+			if (sel_ord < u->cur_timetable_order_index) {
+				u->cur_timetable_order_index--;
+			} else if (sel_ord == u->cur_timetable_order_index) {
+				u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+			}
+		}
+
 		/* Update any possible open window of the vehicle */
 		InvalidateVehicleOrder(u, sel_ord | (INVALID_VEH_ORDER_ID << 8));
 	}
@@ -1459,6 +1500,7 @@ CommandCost CmdSkipToOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		v->cur_implicit_order_index = v->cur_real_order_index = sel_ord;
 		v->UpdateRealOrderIndex();
+		v->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 
 		InvalidateVehicleOrder(v, VIWD_MODIFY_ORDERS);
 	}
@@ -1544,7 +1586,10 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				u->cur_implicit_order_index++;
 			}
 
+			u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+
 			assert(v->IsSharingOrdersWith(u));
+
 			/* Update any possible open window of the vehicle */
 			InvalidateVehicleOrder(u, moving_order | (target_order << 8));
 		}
@@ -2552,7 +2597,7 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
 				UpdateVehicleTimetable(v, false);
 				v->cur_implicit_order_index = v->cur_real_order_index = next_order;
 				v->UpdateRealOrderIndex();
-				v->current_order_time += v->GetOrder(v->cur_real_order_index)->GetTimetabledTravel();
+				v->cur_timetable_order_index = v->GetIndexOfOrder(order);
 
 				/* Disable creation of implicit orders.
 				 * When inserting them we do not know that we would have to make the conditional orders point to them. */
@@ -2561,6 +2606,7 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
 					SetBit(gv_flags, GVF_SUPPRESS_IMPLICIT_ORDERS);
 				}
 			} else {
+				v->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 				UpdateVehicleTimetable(v, true);
 				v->IncrementRealOrderIndex();
 			}

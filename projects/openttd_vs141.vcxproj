@@ -118,7 +118,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WIN32_ENABLE_DIRECTMUSIC_SUPPORT;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU_SORT;WITH_ICU_LAYOUT;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -245,7 +245,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>..\objs\langs;..\objs\settings;..\src\3rdparty\squirrel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;WITH_SSE;WITH_ZLIB;WITH_LZO;WITH_LZMA;LZMA_API_STATIC;WITH_PNG;WITH_FREETYPE;WITH_ICU_SORT;WITH_ICU_LAYOUT;U_STATIC_IMPLEMENTATION;ENABLE_NETWORK;WITH_PERSONAL_DIR;PERSONAL_DIR="OpenTTD";_SQ64;WITH_ASSERT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -360,17 +360,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
-    <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
-    <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
-    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
-    <ClInclude Include="..\src\tbtr_template_gui_main.h" />
-    <ClInclude Include="..\src\tbtr_template_gui_create.h" />
-    <ClInclude Include="..\src\tbtr_template_vehicle.h" />
-    <ClInclude Include="..\src\tbtr_template_vehicle_func.h" />
-    <ClInclude Include="..\src\overlay.h" />
-    <ClInclude Include="..\src\overlay_cmd.h" />
-    <ClCompile Include="..\src\overlay_cmd.cpp" />
     <ClCompile Include="..\src\airport.cpp" />
     <ClCompile Include="..\src\animated_tile.cpp" />
     <ClCompile Include="..\src\articulated_vehicles.cpp" />
@@ -430,14 +419,6 @@
     <ClCompile Include="..\src\misc.cpp" />
     <ClCompile Include="..\src\mixer.cpp" />
     <ClCompile Include="..\src\music.cpp" />
-    <ClCompile Include="..\src\network\network.cpp" />
-    <ClCompile Include="..\src\network\network_admin.cpp" />
-    <ClCompile Include="..\src\network\network_client.cpp" />
-    <ClCompile Include="..\src\network\network_command.cpp" />
-    <ClCompile Include="..\src\network\network_content.cpp" />
-    <ClCompile Include="..\src\network\network_gamelist.cpp" />
-    <ClCompile Include="..\src\network\network_server.cpp" />
-    <ClCompile Include="..\src\network\network_udp.cpp" />
     <ClCompile Include="..\src\openttd.cpp" />
     <ClCompile Include="..\src\order_backup.cpp" />
     <ClCompile Include="..\src\pbs.cpp" />
@@ -462,6 +443,8 @@
     <ClCompile Include="..\src\strings.cpp" />
     <ClCompile Include="..\src\story.cpp" />
     <ClCompile Include="..\src\subsidy.cpp" />
+    <ClCompile Include="..\src\tbtr_template_vehicle.cpp" />
+    <ClCompile Include="..\src\tbtr_template_vehicle_func.cpp" />
     <ClCompile Include="..\src\textbuf.cpp" />
     <ClCompile Include="..\src\texteff.cpp" />
     <ClCompile Include="..\src\tgp.cpp" />
@@ -593,19 +576,6 @@
     <ClInclude Include="..\src\map_type.h" />
     <ClInclude Include="..\src\mixer.h" />
     <ClInclude Include="..\src\triphistory.h" />
-    <ClInclude Include="..\src\network\network.h" />
-    <ClInclude Include="..\src\network\network_admin.h" />
-    <ClInclude Include="..\src\network\network_base.h" />
-    <ClInclude Include="..\src\network\network_client.h" />
-    <ClInclude Include="..\src\network\network_content.h" />
-    <ClInclude Include="..\src\network\network_content_gui.h" />
-    <ClInclude Include="..\src\network\network_func.h" />
-    <ClInclude Include="..\src\network\network_gamelist.h" />
-    <ClInclude Include="..\src\network\network_gui.h" />
-    <ClInclude Include="..\src\network\network_internal.h" />
-    <ClInclude Include="..\src\network\network_server.h" />
-    <ClInclude Include="..\src\network\network_type.h" />
-    <ClInclude Include="..\src\network\network_udp.h" />
     <ClInclude Include="..\src\newgrf.h" />
     <ClInclude Include="..\src\newgrf_airport.h" />
     <ClInclude Include="..\src\newgrf_airporttiles.h" />
@@ -641,7 +611,6 @@
     <ClInclude Include="..\src\sound\null_s.h" />
     <ClInclude Include="..\src\video\null_v.h" />
     <ClInclude Include="..\src\object.h" />
-    <ClCompile Include="..\src\triphistory_gui.cpp" />
     <ClInclude Include="..\src\object_base.h" />
     <ClInclude Include="..\src\object_type.h" />
     <ClInclude Include="..\src\openttd.h" />
@@ -649,6 +618,8 @@
     <ClInclude Include="..\src\order_base.h" />
     <ClInclude Include="..\src\order_func.h" />
     <ClInclude Include="..\src\order_type.h" />
+    <ClInclude Include="..\src\overlay.h" />
+    <ClInclude Include="..\src\overlay_cmd.h" />
     <ClInclude Include="..\src\pbs.h" />
     <ClInclude Include="..\src\plans_base.h" />
     <ClInclude Include="..\src\plans_func.h" />
@@ -711,6 +682,10 @@
     <ClInclude Include="..\src\subsidy_func.h" />
     <ClInclude Include="..\src\subsidy_type.h" />
     <ClInclude Include="..\src\tar_type.h" />
+    <ClInclude Include="..\src\tbtr_template_gui_create.h" />
+    <ClInclude Include="..\src\tbtr_template_gui_main.h" />
+    <ClInclude Include="..\src\tbtr_template_vehicle.h" />
+    <ClInclude Include="..\src\tbtr_template_vehicle_func.h" />
     <ClInclude Include="..\src\terraform_gui.h" />
     <ClInclude Include="..\src\textbuf_gui.h" />
     <ClInclude Include="..\src\textbuf_type.h" />
@@ -841,6 +816,8 @@
     <ClCompile Include="..\src\statusbar_gui.cpp" />
     <ClCompile Include="..\src\story_gui.cpp" />
     <ClCompile Include="..\src\subsidy_gui.cpp" />
+    <ClCompile Include="..\src\tbtr_template_gui_create.cpp" />
+    <ClCompile Include="..\src\tbtr_template_gui_main.cpp" />
     <ClCompile Include="..\src\terraform_gui.cpp" />
     <ClCompile Include="..\src\textfile_gui.cpp" />
     <ClCompile Include="..\src\timetable_gui.cpp" />
@@ -850,6 +827,7 @@
     <ClCompile Include="..\src\train_gui.cpp" />
     <ClCompile Include="..\src\transparency_gui.cpp" />
     <ClCompile Include="..\src\tree_gui.cpp" />
+    <ClCompile Include="..\src\triphistory_gui.cpp" />
     <ClCompile Include="..\src\vehicle_gui.cpp" />
     <ClCompile Include="..\src\viewport_gui.cpp" />
     <ClCompile Include="..\src\waypoint_gui.cpp" />
@@ -924,6 +902,7 @@
     <ClCompile Include="..\src\misc_cmd.cpp" />
     <ClCompile Include="..\src\object_cmd.cpp" />
     <ClCompile Include="..\src\order_cmd.cpp" />
+    <ClCompile Include="..\src\overlay_cmd.cpp" />
     <ClCompile Include="..\src\plans_cmd.cpp" />
     <ClCompile Include="..\src\rail_cmd.cpp" />
     <ClCompile Include="..\src\road_cmd.cpp" />
@@ -1351,6 +1330,27 @@
     <ClInclude Include="..\src\network\core\tcp_listen.h" />
     <ClCompile Include="..\src\network\core\udp.cpp" />
     <ClInclude Include="..\src\network\core\udp.h" />
+    <ClInclude Include="..\src\network\network.h" />
+    <ClInclude Include="..\src\network\network_admin.h" />
+    <ClInclude Include="..\src\network\network_base.h" />
+    <ClInclude Include="..\src\network\network_client.h" />
+    <ClInclude Include="..\src\network\network_content.h" />
+    <ClInclude Include="..\src\network\network_content_gui.h" />
+    <ClInclude Include="..\src\network\network_func.h" />
+    <ClInclude Include="..\src\network\network_gamelist.h" />
+    <ClInclude Include="..\src\network\network_gui.h" />
+    <ClInclude Include="..\src\network\network_internal.h" />
+    <ClInclude Include="..\src\network\network_server.h" />
+    <ClInclude Include="..\src\network\network_type.h" />
+    <ClInclude Include="..\src\network\network_udp.h" />
+    <ClCompile Include="..\src\network\network.cpp" />
+    <ClCompile Include="..\src\network\network_admin.cpp" />
+    <ClCompile Include="..\src\network\network_client.cpp" />
+    <ClCompile Include="..\src\network\network_command.cpp" />
+    <ClCompile Include="..\src\network\network_content.cpp" />
+    <ClCompile Include="..\src\network\network_gamelist.cpp" />
+    <ClCompile Include="..\src\network\network_server.cpp" />
+    <ClCompile Include="..\src\network\network_udp.cpp" />
     <ClInclude Include="..\src\pathfinder\follow_track.hpp" />
     <ClCompile Include="..\src\pathfinder\opf\opf_ship.cpp" />
     <ClInclude Include="..\src\pathfinder\opf\opf_ship.h" />

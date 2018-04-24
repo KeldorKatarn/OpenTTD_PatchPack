@@ -16,6 +16,7 @@
 #include "../../stdafx.h"
 #include "../../date_func.h"
 #include "../../debug.h"
+
 #include "udp.h"
 
 #include "../../safeguards.h"
@@ -152,6 +153,58 @@ void NetworkUDPSocketHandler::ReceivePackets()
 	}
 }
 
+/**
+ * Serializes the NewGRF information of the NetworkGameInfo struct to several packets
+ * @param p    the packet type to write the data to
+ * @param info the NetworkGameInfo struct to serialize
+ * @return The ready to send packets.
+ */
+std::list<std::shared_ptr<Packet>> NetworkUDPSocketHandler::SendNetworkGameNewGrfInfo(PacketType packet_type, const NetworkGameInfo *info)
+{
+	/* Only send the GRF Identification (GRF_ID and MD5 checksum) of
+	* the GRFs that are needed, i.e. the ones that the server has
+	* selected in the NewGRF GUI and not the ones that are used due
+	* to the fact that they are in [newgrf-static] in openttd.cfg */
+	uint count = 0;
+	uint packet_id = 0;
+	std::shared_ptr<Packet> packet = std::make_shared<Packet>(PACKET_UDP_SERVER_NEWGRF_RESPONSE);
+	std::list<std::shared_ptr<Packet>> packets_to_send;
+	std::list<std::pair<std::shared_ptr<Packet>, std::list<GRFIdentifier>>> packet_content_pairs;
+
+	/* Collect GRF Identifications and split them into several packages */
+	for (auto config = info->grfconfig; config != nullptr; config = config->next) {
+		if (HasBit(config->flags, GCF_STATIC)) continue;
+
+		if ((count % NETWORK_MAX_GRF_COUNT) == 0) {
+			auto new_pair = std::make_pair(std::make_shared<Packet>(PACKET_UDP_SERVER_NEWGRF_RESPONSE), std::list<GRFIdentifier>());
+			packet_content_pairs.push_back(new_pair);
+		}
+		
+		assert(!packet_content_pairs.empty());
+
+		packet_content_pairs.back().second.push_back(config->ident);
+
+		++count;
+	}
+
+	/* Send actual GRF Identifications */
+	for (auto pair : packet_content_pairs) {
+		auto packet = pair.first;
+
+		packet->Send_uint8(NETWORK_NEWGRF_INFO_VERSION);
+		packet->Send_uint8(packet_id++); // The id of this packet
+		packet->Send_uint8(pair.second.size()); // Number of NewGRFs in this packet
+
+		for (auto grf_ident : pair.second) {
+			this->SendGRFIdentifier(packet.get(), &grf_ident);
+		}
+
+		packets_to_send.push_back(packet);
+	}
+
+	return packets_to_send;
+}
+
 
 /**
  * Serializes the NetworkGameInfo struct to the packet
@@ -170,25 +223,31 @@ void NetworkUDPSocketHandler::SendNetworkGameInfo(Packet *p, const NetworkGameIn
 	/* Update the documentation in udp.h on changes
 	 * to the NetworkGameInfo wire-protocol! */
 
-	/* NETWORK_GAME_INFO_VERSION = 4 */
+	/* NETWORK_GAME_INFO_VERSION = 128 */
 	{
 		/* Only send the GRF Identification (GRF_ID and MD5 checksum) of
 		 * the GRFs that are needed, i.e. the ones that the server has
 		 * selected in the NewGRF GUI and not the ones that are used due
 		 * to the fact that they are in [newgrf-static] in openttd.cfg */
-		const GRFConfig *c;
 		uint count = 0;
 
 		/* Count number of GRFs to send information about */
-		for (c = info->grfconfig; c != NULL; c = c->next) {
-			if (!HasBit(c->flags, GCF_STATIC)) count++;
+		for (auto config = info->grfconfig; config != nullptr; config = config->next) {
+			if (!HasBit(config->flags, GCF_STATIC)) ++count;
 		}
-		p->Send_uint8 (count); // Send number of GRFs
 
-		/* Send actual GRF Identifications */
-		for (c = info->grfconfig; c != NULL; c = c->next) {
-			if (!HasBit(c->flags, GCF_STATIC)) this->SendGRFIdentifier(p, &c->ident);
-		}
+		uint8 num_grf_packets_to_expect = std::ceil((float)count / NETWORK_MAX_GRF_COUNT);
+
+		// Send number of GRF info packets that will be sent
+		p->Send_uint8(num_grf_packets_to_expect);
+
+		// Actual GRF Identifications will be send in multiple PACKET_UDP_SERVER_NEWGRF_RESPONSE packages.
+		// This package has not enough storage to send all that data depending on how many NewGRFs are active.
+	}
+
+	/* NETWORK_GAME_INFO_VERSION = 4 */
+	{
+		// This part is deprecated and is no longer sent. The version 128 part replaces it.
 	}
 
 	/* NETWORK_GAME_INFO_VERSION = 3 */
@@ -216,7 +275,43 @@ void NetworkUDPSocketHandler::SendNetworkGameInfo(Packet *p, const NetworkGameIn
 }
 
 /**
- * Deserializes the NetworkGameInfo struct from the packet
+ * Deserializes the NewGRF information of the NetworkGameInfo struct from one out of several sent packets
+ * @param p    the packet to read the data from
+ * @param info the NetworkGameInfo to deserialize into
+ */
+void NetworkUDPSocketHandler::ReceiveNetworkGameNewGrfInfo(Packet *p, NetworkGameInfo *info)
+{
+	auto new_grf_info_packet_version =  p->Recv_uint8();
+
+	// For now we only handle this specific version.
+	if (new_grf_info_packet_version != NETWORK_NEWGRF_INFO_VERSION) return;
+
+	auto packet_id = p->Recv_uint8();
+
+	// Check if we already received this one. Bail if so. No need to process it again.
+	if (std::any_of(info->received_grf_identifiers.begin(), info->received_grf_identifiers.end(), [&](auto item) {
+		return item.first == packet_id;
+	})) return;
+
+	auto num_grfs = p->Recv_uint8();
+
+	/* Broken/bad data. It cannot have that many NewGRFs. */
+	if (num_grfs > NETWORK_MAX_GRF_COUNT) return;
+
+	auto received_pair = std::make_pair(packet_id, std::list<GRFIdentifier>());
+
+	for (auto i = 0; i < num_grfs; ++i) {
+		GRFIdentifier ident;
+		this->ReceiveGRFIdentifier(p, &ident);
+
+		received_pair.second.push_back(ident);
+	}
+
+	info->received_grf_identifiers.push_back(received_pair);
+}
+
+/**
+ * Deserializes the NetworkGameInfo struct minus NewGRF information from the packet
  * @param p    the packet to read the data from
  * @param info the NetworkGameInfo to deserialize into
  */
@@ -235,22 +330,29 @@ void NetworkUDPSocketHandler::ReceiveNetworkGameInfo(Packet *p, NetworkGameInfo 
 	 * to the NetworkGameInfo wire-protocol! */
 
 	switch (info->game_info_version) {
+		case 128: FALLTHROUGH;
 		case 4: {
-			GRFConfig **dst = &info->grfconfig;
-			uint i;
-			uint num_grfs = p->Recv_uint8();
+			if (info->game_info_version == 4) {
+				GRFConfig **dst = &info->grfconfig;
+				uint i;
+				uint num_grfs = p->Recv_uint8();
 
-			/* Broken/bad data. It cannot have that many NewGRFs. */
-			if (num_grfs > NETWORK_MAX_GRF_COUNT) return;
+				/* Broken/bad data. It cannot have that many NewGRFs. */
+				if (num_grfs > NETWORK_MAX_GRF_COUNT) return;
 
-			for (i = 0; i < num_grfs; i++) {
-				GRFConfig *c = new GRFConfig();
-				this->ReceiveGRFIdentifier(p, &c->ident);
-				this->HandleIncomingNetworkGameInfoGRFConfig(c);
+				for (i = 0; i < num_grfs; i++) {
+					GRFConfig *c = new GRFConfig();
+					this->ReceiveGRFIdentifier(p, &c->ident);
+					this->HandleIncomingNetworkGameInfoGRFConfig(c);
 
-				/* Append GRFConfig to the list */
-				*dst = c;
-				dst = &c->next;
+					/* Append GRFConfig to the list */
+					*dst = c;
+					dst = &c->next;
+				}
+			} else if (info->game_info_version == 128) {
+				// In NETWORK_GAME_INFO_VERSION 128 the actual newGRF information is sent via a different package type.
+				// Check ReceiveNetworkGameNewGrfInfo().
+				info->new_grf_packages_to_expect = p->Recv_uint8();
 			}
 		}
 		FALLTHROUGH;
@@ -304,18 +406,19 @@ void NetworkUDPSocketHandler::HandleUDPPacket(Packet *p, NetworkAddress *client_
 	type = (PacketUDPType)p->Recv_uint8();
 
 	switch (this->HasClientQuit() ? PACKET_UDP_END : type) {
-		case PACKET_UDP_CLIENT_FIND_SERVER:   this->Receive_CLIENT_FIND_SERVER(p, client_addr);   break;
-		case PACKET_UDP_SERVER_RESPONSE:      this->Receive_SERVER_RESPONSE(p, client_addr);      break;
-		case PACKET_UDP_CLIENT_DETAIL_INFO:   this->Receive_CLIENT_DETAIL_INFO(p, client_addr);   break;
-		case PACKET_UDP_SERVER_DETAIL_INFO:   this->Receive_SERVER_DETAIL_INFO(p, client_addr);   break;
-		case PACKET_UDP_SERVER_REGISTER:      this->Receive_SERVER_REGISTER(p, client_addr);      break;
-		case PACKET_UDP_MASTER_ACK_REGISTER:  this->Receive_MASTER_ACK_REGISTER(p, client_addr);  break;
-		case PACKET_UDP_CLIENT_GET_LIST:      this->Receive_CLIENT_GET_LIST(p, client_addr);      break;
-		case PACKET_UDP_MASTER_RESPONSE_LIST: this->Receive_MASTER_RESPONSE_LIST(p, client_addr); break;
-		case PACKET_UDP_SERVER_UNREGISTER:    this->Receive_SERVER_UNREGISTER(p, client_addr);    break;
-		case PACKET_UDP_CLIENT_GET_NEWGRFS:   this->Receive_CLIENT_GET_NEWGRFS(p, client_addr);   break;
-		case PACKET_UDP_SERVER_NEWGRFS:       this->Receive_SERVER_NEWGRFS(p, client_addr);       break;
-		case PACKET_UDP_MASTER_SESSION_KEY:   this->Receive_MASTER_SESSION_KEY(p, client_addr);   break;
+		case PACKET_UDP_CLIENT_FIND_SERVER:		this->Receive_CLIENT_FIND_SERVER(p, client_addr);		break;
+		case PACKET_UDP_SERVER_RESPONSE:		this->Receive_SERVER_RESPONSE(p, client_addr);			break;
+		case PACKET_UDP_SERVER_NEWGRF_RESPONSE: this->Receive_SERVER_NEWGRF_RESPONSE(p, client_addr);	break;
+		case PACKET_UDP_CLIENT_DETAIL_INFO:		this->Receive_CLIENT_DETAIL_INFO(p, client_addr);		break;
+		case PACKET_UDP_SERVER_DETAIL_INFO:		this->Receive_SERVER_DETAIL_INFO(p, client_addr);		break;
+		case PACKET_UDP_SERVER_REGISTER:		this->Receive_SERVER_REGISTER(p, client_addr);			break;
+		case PACKET_UDP_MASTER_ACK_REGISTER:	this->Receive_MASTER_ACK_REGISTER(p, client_addr);		break;
+		case PACKET_UDP_CLIENT_GET_LIST:		this->Receive_CLIENT_GET_LIST(p, client_addr);			break;
+		case PACKET_UDP_MASTER_RESPONSE_LIST:	this->Receive_MASTER_RESPONSE_LIST(p, client_addr);		break;
+		case PACKET_UDP_SERVER_UNREGISTER:		this->Receive_SERVER_UNREGISTER(p, client_addr);		break;
+		case PACKET_UDP_CLIENT_GET_NEWGRFS:		this->Receive_CLIENT_GET_NEWGRFS(p, client_addr);		break;
+		case PACKET_UDP_SERVER_NEWGRFS:			this->Receive_SERVER_NEWGRFS(p, client_addr);			break;
+		case PACKET_UDP_MASTER_SESSION_KEY:		this->Receive_MASTER_SESSION_KEY(p, client_addr);		break;
 
 		default:
 			if (this->HasClientQuit()) {
@@ -339,6 +442,7 @@ void NetworkUDPSocketHandler::ReceiveInvalidPacket(PacketUDPType type, NetworkAd
 
 void NetworkUDPSocketHandler::Receive_CLIENT_FIND_SERVER(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_CLIENT_FIND_SERVER, client_addr); }
 void NetworkUDPSocketHandler::Receive_SERVER_RESPONSE(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_SERVER_RESPONSE, client_addr); }
+void NetworkUDPSocketHandler::Receive_SERVER_NEWGRF_RESPONSE(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_SERVER_NEWGRF_RESPONSE, client_addr); }
 void NetworkUDPSocketHandler::Receive_CLIENT_DETAIL_INFO(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_CLIENT_DETAIL_INFO, client_addr); }
 void NetworkUDPSocketHandler::Receive_SERVER_DETAIL_INFO(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_SERVER_DETAIL_INFO, client_addr); }
 void NetworkUDPSocketHandler::Receive_SERVER_REGISTER(Packet *p, NetworkAddress *client_addr) { this->ReceiveInvalidPacket(PACKET_UDP_SERVER_REGISTER, client_addr); }

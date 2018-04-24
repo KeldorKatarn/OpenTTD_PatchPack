@@ -21,7 +21,7 @@ struct BaseConsist {
 
 	/* Used for timetabling. */
 	uint32 current_order_time;          ///< How many ticks have passed since this order started.
-	uint32 current_loading_time;        ///< (outdated. Only for backwards compatibility)
+	uint32 current_loading_time;        ///< Used for timetabling
 	int32 lateness_counter;             ///< How many ticks late (or early if negative) this vehicle is.
 	Date timetable_start;               ///< When the vehicle is supposed to start the timetable.
 
@@ -29,6 +29,7 @@ struct BaseConsist {
 
 	VehicleOrderID cur_real_order_index;///< The index to the current real (non-implicit) order
 	VehicleOrderID cur_implicit_order_index;///< The index to the current implicit order
+	VehicleOrderID cur_timetable_order_index;///< The index to the current real (non-implicit) order used for timetable updates
 
 	uint16 vehicle_flags;               ///< Used for gradual loading and other miscellaneous things (@see VehicleFlags enum)
 

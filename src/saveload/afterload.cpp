@@ -706,13 +706,6 @@ bool AfterLoadGame()
 		ResetSignalHandlers();
 		return false;
 	}
- 
-	if (_networking && CountSelectedGRFs(_grfconfig) > NETWORK_MAX_GRF_COUNT) {
-		SetSaveLoadError(STR_NEWGRF_ERROR_TOO_MANY_NEWGRFS_LOADED);
-		/* Restore the signals */
-		ResetSignalHandlers();
-		return false;
-	}
 
 	switch (gcf_res) {
 		case GLC_COMPATIBLE: ShowErrorMessage(STR_NEWGRF_COMPATIBLE_LOAD_WARNING, INVALID_STRING_ID, WL_CRITICAL); break;
@@ -725,7 +718,7 @@ bool AfterLoadGame()
 
 	if (IsSavegameVersionBefore(SL_PATCH_PACK_DAYLENGTH))
 	{
-		if (!IsSavegameVersionBefore(SL_PATCH_PACK))
+		if (!IsPatchPackSavegameVersionBefore(SL_PATCH_PACK))
 			_settings_game.economy.daylength = 4;
 		else
 			_settings_game.economy.daylength = 1;
@@ -813,6 +806,9 @@ bool AfterLoadGame()
 
 	/* Update all vehicles */
 	AfterLoadVehicles(true);
+
+	/* Update old version of trip history */
+	AfterLoadTripHistory();
 
 	/* Update template vehicles */
 	AfterLoadTemplateVehicles();
@@ -3126,6 +3122,30 @@ bool AfterLoadGame()
 		Vehicle *v;
 		FOR_ALL_VEHICLES(v) {
 			v->profit_lifetime = v->profit_last_year;
+		}
+	}
+
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+		Vehicle *v;
+		FOR_ALL_VEHICLES(v) {
+			v->cur_timetable_order_index = v->GetNumManualOrders() > 0 ? v->cur_real_order_index : INVALID_VEH_ORDER_ID;
+		}
+		OrderBackup *bckup;
+		FOR_ALL_ORDER_BACKUPS(bckup) {
+			bckup->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+		}
+		Order *order;
+		FOR_ALL_ORDERS(order) {
+			if (order->IsType(OT_CONDITIONAL)) {
+				if (order->GetTravelTime() != 0) {
+					DEBUG(sl, 1, "Fixing: order->GetTravelTime() != 0, %u", order->GetTravelTime());
+					order->SetTravelTime(0);
+				}
+			}
+		}
+		OrderList *order_list;
+		FOR_ALL_ORDER_LISTS(order_list) {
+			order_list->DebugCheckSanity();
 		}
 	}
 

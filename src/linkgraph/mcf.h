@@ -9,16 +9,16 @@
 typedef std::vector<Path *> PathVector;
 
 /**
- * Multi-commodity flow calculating base class.
- */
+* Multi-commodity flow calculating base class.
+*/
 class MultiCommodityFlow {
 protected:
 	/**
-	 * Constructor.
-	 * @param job Link graph job being executed.
-	 */
+	* Constructor.
+	* @param job Link graph job being executed.
+	*/
 	MultiCommodityFlow(LinkGraphJob &job) : job(job),
-			max_saturation(job.Settings().short_path_saturation)
+		max_saturation(job.Settings().short_path_saturation)
 	{}
 
 	template<class Tannotation, class Tedge_iterator>
@@ -33,20 +33,20 @@ protected:
 };
 
 /**
- * First pass of the MCF calculation. Saturates shortest paths first, creates
- * new paths if needed, eliminates cycles. This calculation is of exponential
- * complexity in the number of nodes but the constant factors are sufficiently
- * small to make it usable for most real-life link graph components. You can
- * deal with performance problems that might occur here in multiple ways:
- * - The overall accuracy is used here to determine how much flow is assigned
- *   in each loop. The lower the accuracy, the more flow is assigned, the less
- *   loops it takes to assign all flow.
- * - The short_path_saturation setting determines when this pass stops. The
- *   lower you set it, the less flow will be assigned in this pass, the less
- *   time it will take.
- * - You can increase the recalculation interval to allow for longer running
- *   times without creating lags.
- */
+* First pass of the MCF calculation. Saturates shortest paths first, creates
+* new paths if needed, eliminates cycles. This calculation is of exponential
+* complexity in the number of nodes but the constant factors are sufficiently
+* small to make it usable for most real-life link graph components. You can
+* deal with performance problems that might occur here in multiple ways:
+* - The overall accuracy is used here to determine how much flow is assigned
+*   in each loop. The lower the accuracy, the more flow is assigned, the less
+*   loops it takes to assign all flow.
+* - The short_path_saturation setting determines when this pass stops. The
+*   lower you set it, the less flow will be assigned in this pass, the less
+*   time it will take.
+* - You can increase the recalculation interval to allow for longer running
+*   times without creating lags.
+*/
 class MCF1stPass : public MultiCommodityFlow {
 private:
 	bool EliminateCycles();
@@ -58,34 +58,34 @@ public:
 };
 
 /**
- * Second pass of the MCF calculation. Saturates paths with most capacity left
- * first and doesn't create any paths along edges that haven't been visited in
- * the first pass. This is why it doesn't have to do any cycle detection and
- * elimination. As cycle detection is the most intense problem in the first
- * pass this pass is cheaper. The accuracy is used here, too.
- */
+* Second pass of the MCF calculation. Saturates paths with most capacity left
+* first and doesn't create any paths along edges that haven't been visited in
+* the first pass. This is why it doesn't have to do any cycle detection and
+* elimination. As cycle detection is the most intense problem in the first
+* pass this pass is cheaper. The accuracy is used here, too.
+*/
 class MCF2ndPass : public MultiCommodityFlow {
 public:
 	MCF2ndPass(LinkGraphJob &job);
 };
 
 /**
- * Link graph handler for MCF. Creates MultiCommodityFlow instance according to
- * the template parameter.
- */
+* Link graph handler for MCF. Creates MultiCommodityFlow instance according to
+* the template parameter.
+*/
 template<class Tpass>
 class MCFHandler : public ComponentHandler {
 public:
 
 	/**
-	 * Run the calculation.
-	 * @param graph Component to be calculated.
-	 */
+	* Run the calculation.
+	* @param graph Component to be calculated.
+	*/
 	virtual void Run(LinkGraphJob &job) const { Tpass pass(job); }
 
 	/**
-	 * Destructor. Has to be given because of virtual Run().
-	 */
+	* Destructor. Has to be given because of virtual Run().
+	*/
 	virtual ~MCFHandler() {}
 };
 

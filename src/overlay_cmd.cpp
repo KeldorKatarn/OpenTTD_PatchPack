@@ -38,9 +38,60 @@ void Overlays::ToggleStation(const Station* st)
 	}
 };
 
+void Overlays::HandleSignalProgramDeletion(const SignalProgram* program)
+{
+	if (this->logic_signal_program == program) {
+		RefreshLogicSignalOverlay();
+		this->logic_signal_program = nullptr;
+	}
+};
+
+void Overlays::SetLogicSignalOverlay(const SignalProgram* program)
+{
+	// Old program input tiles
+	RefreshLogicSignalOverlay();
+
+	this->logic_signal_program = program;
+
+	// New program input tiles
+	RefreshLogicSignalOverlay();
+};
+
+void Overlays::ClearLogicSignalOverlay()
+{
+	SetLogicSignalOverlay(nullptr);
+};
+
+void Overlays::RefreshLogicSignalOverlay() const
+{
+	if (this->logic_signal_program != nullptr) {
+		auto signal_references = this->logic_signal_program->GetSignalReferences();
+
+		for (auto reference : signal_references) {
+			MarkTileDirtyByTile(GetTileFromSignalReference(reference));
+		}
+	}
+}
+
 void Overlays::Clear() 
 {
 	this->catchmentOverlay.clear();
+
+	// Old program input tiles
+	RefreshLogicSignalOverlay();
+
+	this->logic_signal_program = nullptr;
+};
+
+bool Overlays::IsTileLogicSignalInput(const TileInfo* ti)
+{
+	if (this->logic_signal_program == nullptr) return false;
+
+	auto signal_references = this->logic_signal_program->GetSignalReferences();
+
+	return std::any_of(signal_references.begin(), signal_references.end(), [&](auto signal_reference) {
+		return GetTileFromSignalReference(signal_reference) == ti->tile;
+	});
 };
 
 bool Overlays::IsTileInCatchmentArea(const TileInfo* ti, CatchmentType type) 

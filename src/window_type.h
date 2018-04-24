@@ -744,6 +744,12 @@ enum WindowClass {
      */
 	WC_DEPARTURES_BOARD,
 
+	/**
+	* Station cargo graph; %Window numbers:
+	*   - #StationID = #StationCargoWidgets
+	*/
+	WC_STATION_CARGO,
+
 	WC_INVALID = 0xFFFF, ///< Invalid window.
 };
 

@@ -1756,6 +1756,13 @@ bool AfterLoadGame()
 				v->current_order.SetLoadType(OLFB_NO_LOAD);
 			}
 		}
+	} else if (IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+		Order* order;
+		FOR_ALL_ORDERS(order) {
+			if (order->IsType(OT_CONDITIONAL) && order->GetConditionVariable() == OCV_SLOT_OCCUPANCY) {
+				order->GetXDataRef() = order->GetConditionValue();
+			}
+		}
 	}
 
 	if (IsSavegameVersionBefore(84)) {

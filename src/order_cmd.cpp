@@ -1140,7 +1140,8 @@ CommandCost CmdInsertOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			if (occ >= OCC_END) return CMD_ERROR;
 			switch (new_order.GetConditionVariable()) {
 				case OCV_SLOT_OCCUPANCY: {
-					if (!TraceRestrictSlot::IsValidID(new_order.GetConditionValue())) return CMD_ERROR;
+					TraceRestrictSlotID slot = new_order.GetXData();
+					if (slot != INVALID_TRACE_RESTRICT_SLOT_ID && !TraceRestrictSlot::IsValidID(slot)) return CMD_ERROR;
 					if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) return CMD_ERROR;
 					break;
 				}
@@ -1627,9 +1628,9 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
  *                        the order will be inserted before that one
  *                        the maximum vehicle order id is 254.
  * @param p2 various bitstuffed elements
- *  - p2 = (bit 0 -  3) - what data to modify (@see ModifyOrderFlags)
- *  - p2 = (bit 4 - 15) - the data to modify
- *  - p2 = (bit 16 - 23) - a CargoID for cargo type orders (MOF_CARGO_TYPE_UNLOAD or MOF_CARGO_TYPE_LOAD)
+ *  - p2 = (bit  0 -  3) - what data to modify (@see ModifyOrderFlags)
+ *  - p2 = (bit  4 - 19) - the data to modify
+ *  - p2 = (bit 20 - 27) - a CargoID for cargo type orders (MOF_CARGO_TYPE_UNLOAD or MOF_CARGO_TYPE_LOAD)
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -1638,8 +1639,8 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	VehicleOrderID sel_ord = GB(p1, 20,  8);
 	VehicleID veh          = GB(p1,  0, 20);
 	ModifyOrderFlags mof   = Extract<ModifyOrderFlags, 0, 4>(p2);
-	uint16 data            = GB(p2,  4, 11);
-	CargoID cargo_id = (mof == MOF_CARGO_TYPE_UNLOAD || mof == MOF_CARGO_TYPE_LOAD) ? (CargoID)GB(p2, 16, 8) : (CargoID)CT_INVALID;
+	uint16 data            = GB(p2,  4, 16);
+	CargoID cargo_id = (mof == MOF_CARGO_TYPE_UNLOAD || mof == MOF_CARGO_TYPE_LOAD) ? (CargoID)GB(p2, 20, 8) : (CargoID)CT_INVALID;
 
 	if (mof >= MOF_END) return CMD_ERROR;
 
@@ -1754,8 +1755,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 					break;
 
 				case OCV_SLOT_OCCUPANCY:
-					// Can't encode more than 2047, even though there could be more slots.
-					if (data > 2047 || !TraceRestrictSlot::IsValidID(data)) return CMD_ERROR;
+					if (data != INVALID_TRACE_RESTRICT_SLOT_ID && !TraceRestrictSlot::IsValidID(data)) return CMD_ERROR;
 					break;
  
 				case OCV_CARGO_ACCEPTANCE:
@@ -1849,7 +1849,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 						break;
 
 					case OCV_SLOT_OCCUPANCY:
-						if (!old_var_was_slot) order->SetConditionValue((uint16)GetFirstValidTraceRestrictSlot());
+						if (!old_var_was_slot) order->GetXDataRef() = INVALID_TRACE_RESTRICT_SLOT_ID;
 						if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) order->SetConditionComparator(OCC_IS_TRUE);
 						break;
  
@@ -1887,7 +1887,15 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				break;
 
 			case MOF_COND_VALUE:
-				order->SetConditionValue(data);
+				switch (order->GetConditionVariable()) {
+					case OCV_SLOT_OCCUPANCY:
+						order->GetXDataRef() = data;
+						break;
+
+					default:
+						order->SetConditionValue(data);
+						break;
+				}
 				break;
 
 			case MOF_COND_DESTINATION:
@@ -2492,7 +2500,7 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 			break;
 		}
 		case OCV_SLOT_OCCUPANCY: {
-			const TraceRestrictSlot* slot = TraceRestrictSlot::GetIfValid(value);
+			const TraceRestrictSlot* slot = TraceRestrictSlot::GetIfValid(order->GetXData());
 			if (slot != nullptr) skip_order = OrderConditionCompare(occ, slot->occupants.size() >= slot->max_occupancy, value);
 			break;
 		}

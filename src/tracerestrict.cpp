@@ -1519,11 +1519,10 @@ void TraceRestrictRemoveSlotID(TraceRestrictSlotID index)
 	}
  
 	bool changed_order = false;
-
-	Order *o;
-	FOR_ALL_ORDERS(o) {
-		if (o->IsType(OT_CONDITIONAL) && o->GetConditionVariable() == OCV_SLOT_OCCUPANCY && o->GetConditionValue() == index) {
-			o->SetConditionValue(INVALID_TRACE_RESTRICT_SLOT_ID);
+	Order* order;
+	FOR_ALL_ORDERS(order) {
+		if (order->IsType(OT_CONDITIONAL) && order->GetConditionVariable() == OCV_SLOT_OCCUPANCY && order->GetXData() == index) {
+			order->GetXDataRef() = INVALID_TRACE_RESTRICT_SLOT_ID;
 			changed_order = true;
 		}
 	}

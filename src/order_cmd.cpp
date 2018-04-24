@@ -1279,7 +1279,7 @@ void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord)
 				u->cur_implicit_order_index = cur;
 			}
 		}
-		if (sel_ord <= u->cur_timetable_order_index) {
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID && sel_ord <= u->cur_timetable_order_index) {
 			uint cur = u->cur_timetable_order_index + 1;
 			/* Check if we don't go out of bound */
 			if (cur < u->GetNumOrders()) {
@@ -1440,10 +1440,12 @@ void DeleteOrder(Vehicle *v, VehicleOrderID sel_ord)
 			}
 		}
 
-		if (sel_ord < u->cur_timetable_order_index) {
-			u->cur_timetable_order_index--;
-		} else if (sel_ord == u->cur_timetable_order_index) {
-			u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID) {
+			if (sel_ord < u->cur_timetable_order_index) {
+				u->cur_timetable_order_index--;
+			} else if (sel_ord == u->cur_timetable_order_index) {
+				u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+			}
 		}
 
 		/* Update any possible open window of the vehicle */

@@ -371,12 +371,11 @@ struct TimetableWindow : Window {
 
 	void DrawWarnings(const Rect& r, int& y, const Vehicle* v) const
 	{
-		bool have_missing_wait = false;
-		bool have_missing_travel = false;
+		bool have_missing_times = !v->HasCompleteTimetable();
 		bool have_conditional = false;
 		bool have_bad_full_load = false;
 
-		const bool assume_timetabled = HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+		const bool is_automated_timetable = HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE);
 
 		for (int n = 0; n < v->GetNumOrders(); ++n) {
 			const Order *order = v->GetOrder(n);
@@ -384,16 +383,8 @@ struct TimetableWindow : Window {
 			if (order->IsType(OT_CONDITIONAL)) {
 				have_conditional = true;
 			}
-			else {
-				if (order->GetWaitTime() == 0 && order->IsType(OT_GOTO_STATION)) {
-					have_missing_wait = true;
-				}
-				if (order->GetTravelTime() == 0 && !order->IsTravelTimetabled()) {
-					have_missing_travel = true;
-				}
-			}
 
-			if (!have_bad_full_load && (assume_timetabled || order->IsWaitTimetabled())) {
+			if (!have_bad_full_load && (is_automated_timetable || order->IsWaitTimetabled())) {
 				if (order->GetLoadType() & OLFB_FULL_LOAD) {
 					have_bad_full_load = true;
 				}
@@ -437,25 +428,24 @@ struct TimetableWindow : Window {
 		};
 
 		if (this->new_sep_settings.mode != TTS_MODE_OFF) {
-			if (have_conditional) draw_info(STR_TIMETABLE_WARNING_AUTOSEP_CONDITIONAL, true);
-
-			if (have_missing_wait || have_missing_travel) {
-				if (assume_timetabled) {
+			if (v->GetNumOrders() == 0) {
+				draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+			}
+			else if (have_missing_times) {
+				if (is_automated_timetable) {
 					draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
 				}
 				else {
 					draw_info(STR_TIMETABLE_WARNING_AUTOSEP_MISSING_TIMINGS, true);
 				}
 			}
-			else if (v->GetNumOrders() == 0) {
-				draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+			else {
+				draw_info(v->HasSharedOrdersList() ? STR_TIMETABLE_AUTOSEP_OK : STR_TIMETABLE_AUTOSEP_SINGLE_VEH, !v->HasSharedOrdersList());
 			}
-			else if (!have_conditional) {
-				draw_info(v->HasSharedOrdersList() ? STR_TIMETABLE_AUTOSEP_OK : STR_TIMETABLE_AUTOSEP_SINGLE_VEH, false);
-			}
-		}
 
-		if (have_bad_full_load) draw_info(STR_TIMETABLE_WARNING_FULL_LOAD, true);
+			if (have_conditional) draw_info(STR_TIMETABLE_WARNING_AUTOSEP_CONDITIONAL, true);
+			if (have_bad_full_load) draw_info(STR_TIMETABLE_WARNING_FULL_LOAD, true);
+		}
 
 		if (warning_count != this->summary_warnings) {
 			TimetableWindow* mutable_this = const_cast<TimetableWindow*>(this);

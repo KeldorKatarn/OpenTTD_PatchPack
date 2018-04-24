@@ -807,6 +807,9 @@ bool AfterLoadGame()
 	/* Update all vehicles */
 	AfterLoadVehicles(true);
 
+	/* Update old version of trip history */
+	AfterLoadTripHistory();
+
 	/* Update template vehicles */
 	AfterLoadTemplateVehicles();
 

@@ -3,98 +3,81 @@
 #include "stdafx.h"
 #include "triphistory.h"
 #include "table/strings.h"
+#include <numeric>
 
-void
-TripHistory::AddValue( Money mvalue, Date dvalue ) {
-	if ( 0 < dvalue ) {
-		t[ 0 ].profit += mvalue;
-		t[ 0 ].date = dvalue;
+void TripHistory::AddValue(Money profit, Ticks ticks)
+{
+	if (ticks > 0) {
+		this->entries[0].profit += profit;
+		this->entries[0].ticks = ticks;
 	}
 }
 
-void
-TripHistory::NewRound( ) {
-	//move down
-	for ( int i = TRIP_LENGTH - 1; i > 0; i-- ) {
-		this->t[ i ] = this->t[ i - 1 ];
-		//this->trip_history_date_array[ i ] = this->trip_history_date_array[ i - 1 ];
+void TripHistory::NewRound()
+{
+	if (this->entries[1].ticks != 0) {
+		this->entries[0].time_between_trips = this->entries[0].ticks - this->entries[1].ticks;
 	}
 
-	this->t[ 0 ].profit = 0;
-	this->t[ 0 ].date = this->t[ 1 ].date;
+	if (this->entries[1].profit != 0) {
+		this->entries[0].profit_change = FindPercentChange(this->entries[0].profit, this->entries[1].profit);
+	}
 
-	//t.push_front( TripHistoryEntry( ) );
+	if (this->entries[1].time_between_trips != 0) {
+		this->entries[0].time_between_trips_change =
+			FindPercentChange(this->entries[0].time_between_trips, this->entries[1].time_between_trips);
+	}
+
+	std::rotate(std::begin(this->entries), std::end(this->entries) - 1, std::end(this->entries));
+
+	this->entries[0].profit = 0;
+	this->entries[0].ticks = this->entries[1].ticks;
 }
 
-size_t
-TripHistory::UpdateCalculated( ) {
+/**
+* Update info for GUI
+*
+* @return Number of valid rows
+*/
+int32 TripHistory::UpdateCalculated(bool update_entries)
+{
+	if (update_entries) {
+		for (auto i = 0; i < lengthof(this->entries) - 1; ++i) {
+			if (this->entries[i + 1].ticks != 0) {
+				this->entries[i].time_between_trips = this->entries[i].ticks - this->entries[i + 1].ticks;
+			}
 
-	this->total_profit = 0;
-	this->total_change = 0;
-	this->avg_daylength = 0;
-	this->profit_per_day = 0;
-	uint i = 0;
+			if (this->entries[i + 1].profit != 0) {
+				this->entries[i].profit_change = FindPercentChange(this->entries[i].profit, this->entries[i + 1].profit);
+			}
 
-	//
-	while ( i < TRIP_LENGTH && t [ i ].date ) {
-		
-		if ( i > 0 ) {
-			t[ i - 1 ].profit_change =
-				FindPercentChange( t [ i - 1 ].profit, t[ i ].profit );
-			t[ i - 1 ].TBT = t[ i - 1 ].date - t[ i ].date;
-
-			if ( i > 1 ) t[ i - 2 ].TBT_change = t[ i - 2 ].TBT - t[ i - 1 ].TBT;//bad line i don't like it
-
-			//omit first -100% row
-			if ( i > 1 || t [ 0 ].profit_change != -100 )
-				this->total_change += t[ i - 1 ].profit_change;
-			this->avg_daylength += t[ i - 1 ].TBT;
+			if (this->entries[i + 1].time_between_trips != 0) {
+				this->entries[i].time_between_trips_change =
+					FindPercentChange(this->entries[i].time_between_trips, this->entries[i + 1].time_between_trips);
+			}
 		}
-
-		// prepare summary
-		
-
-		this->total_profit += t[ i ].profit;
-		i++;
 	}
 
-	if ( i == 0 ) return 0 ;
-	
-	this->avg_daylength /= --i + 1;
+	// We ignore the first entry since it's still ongoing and would mess up the averages.
+	this->total_profit = std::accumulate(std::begin(this->entries) + 1, std::end(this->entries), 0,
+		[](auto sum, auto entry) { return sum + entry.profit; });
 
-	if ( t[ 0 ].date != t[ i ].date ) {
-		this->profit_per_day = total_profit / ( t[ 0 ].date - t[ i ].date );
-	}
+	auto total_time_between_trips = std::accumulate(std::begin(this->entries) + 1, std::end(this->entries), 0,
+		[](auto sum, auto entry) { return sum + entry.time_between_trips; });
 
-	return i;
-	/*
-	Trips::reverse_iterator i = t.rbegin( );
-	while ( i < t.rend( ) ) {
+	auto valid_entries = std::count_if(std::begin(this->entries), std::end(this->entries),
+		[](TripHistoryEntry entry) { return entry.ticks != 0; });
 
-		if ( i + 1 != t.rend( ) ) {
-			(*( i + 1 )).profit_change =
-				FindPercentChange( ( *i ).profit, ( *( i + 1 ) ).profit ); // reverse_itenrator
+	auto valid_tbt_entries = std::count_if(std::begin(this->entries) + 1, std::end(this->entries),
+		[](TripHistoryEntry entry) { return entry.time_between_trips != 0; });
 
-			( *( i + 1 ) ).TBT = ( *i ).date - ( *( i + 1 ) ).date;
+	this->avg_profit = (valid_entries > 1) ? (total_profit / (Money)(valid_entries - 1)) : 0;
+	this->avg_time_between_trips = (valid_tbt_entries > 0) ? (total_time_between_trips / valid_tbt_entries) : 0;
 
-			if ( ( *i ).TBT ) ( *( i + 1 ) ).TBT_change = ( *i ).TBT - ( *( i + 1 ) ).TBT;
+	return valid_entries;
+}
 
-			//omit first -100% row
-			this->total_change += ( *i ).profit_change;
-		}
-
-		// prepare summary
-		this->total_profit += ( *i ).profit;
-		this->avg_daylength += ( *i ).TBT;
-
-		i++;
-	}
-
-	this->avg_daylength /= t.size( );
-
-	if ( t.front( ).date != t.back( ).date ) {
-		this->profit_per_day = total_profit / ( t.front( ).date - t.back( ).date );
-	}
-
-	return t.size( );*/
+int32 TripHistory::FindPercentChange(float current_value, float previous_value)
+{
+	return std::round(((current_value - previous_value) * 100.0f) / (float)previous_value);
 }

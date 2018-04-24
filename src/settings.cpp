@@ -1074,6 +1074,7 @@ static bool InvalidateTicksPerMinute(int32 p1)
 	InvalidateWindowClassesData(WC_AIRCRAFT_LIST);
 	InvalidateWindowClassesData(WC_DEPARTURES_BOARD);
 	InvalidateWindowClassesData(WC_STATUS_BAR, SBI_TICKS_PER_MINUTE);
+	InvalidateWindowClassesData(WC_VEHICLE_TRIP_HISTORY);
 
 	return true;
 }

@@ -3,73 +3,42 @@
 #ifndef TRIPHISTORY_H
 #define TRIPHISTORY_H
 
-#include <deque>
-#include "window_gui.h"
-#include "strings_type.h"
 #include "economy_type.h"
 #include "date_type.h"
+#include <cmath>
 
 // entries to save
-#define TRIP_LENGTH 10
-
-static inline int TripHistoryRound(float x)
-{
-	return int(x > 0.0 ? x + 0.5 : x - 0.5);
-}
+static const int NUM_TRIP_HISTORY_ENTRIES = 10;
 
 struct TripHistoryEntry {
 	Money profit; // Saved
-	Date date; // Saved
+	Ticks ticks; // Saved
 	int32 profit_change; // Calculated
-	Date TBT; // Calculated
-	int32 TBT_change; // Calculated
+	Ticks time_between_trips; // Calculated
+	int32 time_between_trips_change; // Calculated
 
-	TripHistoryEntry() : profit(0), date(0), profit_change(0), TBT(0), TBT_change(0) { };
+	TripHistoryEntry() : profit(0), ticks(0), profit_change(0), time_between_trips(0), time_between_trips_change(0) { };
 };
 
 /** Structure to hold data for each vehicle */
 struct TripHistory {
 	// a lot of saveload stuff for std::deque. So...
-	TripHistoryEntry t[TRIP_LENGTH];
+	TripHistoryEntry entries[NUM_TRIP_HISTORY_ENTRIES];
 
 	Money total_profit;
-	int32 avg_daylength;
-	int32 total_change;
-	Money profit_per_day;
+	Money avg_profit;
+	Ticks avg_time_between_trips;
 
 	TripHistory() :
 		total_profit(0),
-		avg_daylength(0),
-		total_change(0),
-		profit_per_day(0) { }
+		avg_time_between_trips(0),
+		avg_profit(0) { }
 
+
+	void AddValue(Money profit, Ticks ticks);
+	int32 FindPercentChange(float current_value, float previous_value);
 	void NewRound();
-
-	void AddValue(Money mvalue, Date dvalue);
-
-
-	/**
-	 * Init info for GUI
-	 *
-	 * @return size_t number of valid rows
-	 */
-	size_t UpdateCalculated();
-
-	int32 FindPercentChange(Money v1, Money v2) {
-		float temp;
-
-		if (v1 > v2) {
-			temp = v1 - v2;
-			return TripHistoryRound((float)temp * 100 / (float)v1);
-		}
-
-		if (v2 > v1) {
-			temp = v1 - v2;
-			return TripHistoryRound((float)temp * 100 / (float)v2);
-		}
-
-		return 0;
-	}
+	int32 UpdateCalculated(bool update_entries = false);
 };
 
 #endif /* TRIPHISTORY_H */

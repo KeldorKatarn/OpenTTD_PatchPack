@@ -24,6 +24,7 @@
 #include "transport_type.h"
 #include "group_type.h"
 #include "base_consist.h"
+#include "settings_type.h"
 #include "network/network.h"
 #include <vector>
 #include <list>

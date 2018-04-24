@@ -471,6 +471,23 @@ void AfterLoadVehicles(bool part_of_load)
 	}
 }
 
+void AfterLoadTripHistory()
+{
+	Vehicle *v;
+
+	FOR_ALL_VEHICLES(v) {
+		// We used to only story the date. Now we store the ticks, so multiply by DAY_TICKS.
+		// Old values will be less accurate because of this, but they're constantly overwritten anyway.
+		if (IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+			for (int i = 0; i < NUM_TRIP_HISTORY_ENTRIES; ++i) {
+				v->trip_history.entries[i].ticks *= DAY_TICKS;
+			}
+		}
+
+		v->trip_history.UpdateCalculated(true);
+	}
+}
+
 bool TrainController(Train *v, Vehicle *nomove, bool reverse = true); // From train_cmd.cpp
 void ReverseTrainDirection(Train *v);
 void ReverseTrainSwapVeh(Train *v, int l, int r);
@@ -719,26 +736,26 @@ const SaveLoad *GetVehicleDescription(VehicleType vt)
 		SLE_CONDNULL(10,                                                           2, 143), // old reserved space
 
 		 // Trip History Arrays
-		 SLE_CONDVAR(Vehicle, trip_history.t[0].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[1].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[2].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[3].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[4].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[5].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[6].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[7].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[8].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[9].profit,     SLE_INT64,     SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[0].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[1].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[2].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[3].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[4].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[5].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[6].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[7].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[8].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
-		 SLE_CONDVAR(Vehicle, trip_history.t[9].date, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[0].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[1].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[2].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[3].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[4].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[5].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[6].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[7].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[8].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[9].profit,                 SLE_INT64, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[0].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[1].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[2].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[3].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[4].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[5].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[6].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[7].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[8].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
+		 SLE_CONDVAR(Vehicle, trip_history.entries[9].ticks, SLE_FILE_I64 | SLE_VAR_I32, SL_PATCH_PACK, SL_MAX_VERSION),
 		     
 			 SLE_END()
 	};

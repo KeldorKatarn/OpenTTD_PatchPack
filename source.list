@@ -1,16 +1,4 @@
 # Source Files
-tbtr_template_gui_main.cpp
-tbtr_template_gui_create.cpp
-tbtr_template_vehicle.cpp
-tbtr_template_vehicle_func.cpp
-tbtr_template_gui_main.h
-tbtr_template_gui_create.h
-tbtr_template_vehicle.h
-tbtr_template_vehicle_func.h
-
-overlay.h
-overlay_cmd.h
-overlay_cmd.cpp
 
 airport.cpp
 animated_tile.cpp
@@ -71,14 +59,6 @@ map.cpp
 misc.cpp
 mixer.cpp
 music.cpp
-network/network.cpp
-network/network_admin.cpp
-network/network_client.cpp
-network/network_command.cpp
-network/network_content.cpp
-network/network_gamelist.cpp
-network/network_server.cpp
-network/network_udp.cpp
 openttd.cpp
 order_backup.cpp
 pbs.cpp
@@ -105,6 +85,8 @@ stringfilter.cpp
 strings.cpp
 story.cpp
 subsidy.cpp
+tbtr_template_vehicle.cpp
+tbtr_template_vehicle_func.cpp
 textbuf.cpp
 texteff.cpp
 tgp.cpp
@@ -265,19 +247,6 @@ map_func.h
 map_type.h
 mixer.h
 triphistory.h
-network/network.h
-network/network_admin.h
-network/network_base.h
-network/network_client.h
-network/network_content.h
-network/network_content_gui.h
-network/network_func.h
-network/network_gamelist.h
-network/network_gui.h
-network/network_internal.h
-network/network_server.h
-network/network_type.h
-network/network_udp.h
 newgrf.h
 newgrf_airport.h
 newgrf_airporttiles.h
@@ -313,7 +282,6 @@ music/null_m.h
 sound/null_s.h
 video/null_v.h
 object.h
-triphistory_gui.cpp
 object_base.h
 object_type.h
 openttd.h
@@ -321,6 +289,8 @@ order_backup.h
 order_base.h
 order_func.h
 order_type.h
+overlay.h
+overlay_cmd.h
 pbs.h
 plans_base.h
 plans_func.h
@@ -383,6 +353,10 @@ subsidy_base.h
 subsidy_func.h
 subsidy_type.h
 tar_type.h
+tbtr_template_gui_create.h
+tbtr_template_gui_main.h
+tbtr_template_vehicle.h
+tbtr_template_vehicle_func.h
 terraform_gui.h
 textbuf_gui.h
 textbuf_type.h
@@ -532,6 +506,8 @@ station_gui.cpp
 statusbar_gui.cpp
 story_gui.cpp
 subsidy_gui.cpp
+tbtr_template_gui_create.cpp
+tbtr_template_gui_main.cpp
 terraform_gui.cpp
 textfile_gui.cpp
 timetable_gui.cpp
@@ -541,6 +517,7 @@ tracerestrict_gui.cpp
 train_gui.cpp
 transparency_gui.cpp
 tree_gui.cpp
+triphistory_gui.cpp
 vehicle_gui.cpp
 viewport_gui.cpp
 waypoint_gui.cpp
@@ -619,6 +596,7 @@ logic_signals_cmd.cpp
 misc_cmd.cpp
 object_cmd.cpp
 order_cmd.cpp
+overlay_cmd.cpp
 plans_cmd.cpp
 rail_cmd.cpp
 road_cmd.cpp
@@ -1091,6 +1069,29 @@ network/core/tcp_http.h
 network/core/tcp_listen.h
 network/core/udp.cpp
 network/core/udp.h
+
+# Network
+network/network.h
+network/network_admin.h
+network/network_base.h
+network/network_client.h
+network/network_content.h
+network/network_content_gui.h
+network/network_func.h
+network/network_gamelist.h
+network/network_gui.h
+network/network_internal.h
+network/network_server.h
+network/network_type.h
+network/network_udp.h
+network/network.cpp
+network/network_admin.cpp
+network/network_client.cpp
+network/network_command.cpp
+network/network_content.cpp
+network/network_gamelist.cpp
+network/network_server.cpp
+network/network_udp.cpp
 
 # Pathfinder
 pathfinder/follow_track.hpp

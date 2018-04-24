@@ -149,7 +149,7 @@ static void RealSave_TRRS(TraceRestrictSlot *slot)
 {
 	SlObject(slot, _trace_restrict_slot_desc);
 	TraceRestrictSlotStub stub;
-	stub.length = slot->occupants.size();
+	stub.length = (uint32)slot->occupants.size();
 	SlObject(&stub, _trace_restrict_slot_stub_desc);
 	if (stub.length) SlArray(&(slot->occupants[0]), stub.length, SLE_UINT32);
 }

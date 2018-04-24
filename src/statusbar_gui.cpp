@@ -207,6 +207,7 @@ struct StatusBarWindow : Window {
 				this->ticker_scroll    =   TICKER_STOP; // reset ticker ...
 				this->reminder_timeout = REMINDER_STOP; // ... and reminder
 				break;
+			case SBI_TICKS_PER_MINUTE: this->SetWidgetDirty(WID_S_LEFT); break;
 		}
 	}
 

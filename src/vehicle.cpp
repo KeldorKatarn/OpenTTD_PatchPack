@@ -2786,6 +2786,11 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 			this->current_order.MakeDummy();
 			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
 		}
+
+		// Prevent any attempt to update timetable for current order, as actual travel time
+		// will be incorrect due to depot command.
+		this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+
 		return CommandCost();
 	}
 

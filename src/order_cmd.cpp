@@ -364,8 +364,10 @@ void OrderList::Initialize(Order *chain, Vehicle *v)
 	for (Order *o = this->first; o != NULL; o = o->next) {
 		++this->num_orders;
 		if (!o->IsType(OT_IMPLICIT)) ++this->num_manual_orders;
-		this->timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
-		this->total_duration += o->GetWaitTime() + o->GetTravelTime();
+		if (!o->IsType(OT_CONDITIONAL)) {
+			this->timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
+			this->total_duration += o->GetWaitTime() + o->GetTravelTime();
+		}
 	}
 
 	for (Vehicle *u = this->first_shared->PreviousShared(); u != NULL; u = u->PreviousShared()) {
@@ -414,6 +416,24 @@ Order *OrderList::GetOrderAt(int index) const
 		order = order->next;
 	}
 	return order;
+}
+
+/**
+ * Get the index of an order of the order chain, or INVALID_VEH_ORDER_ID.
+ * @param order order to get the index of.
+ * @return the position index of the given order, or INVALID_VEH_ORDER_ID.
+ */
+VehicleOrderID OrderList::GetIndexOfOrder(const Order *order) const
+{
+	VehicleOrderID index = 0;
+	const Order *o = this->first;
+	while (o != nullptr) {
+		if (o == order) return index;
+		index++;
+		o = o->next;
+	}
+
+	return INVALID_VEH_ORDER_ID;
 }
 
 /**
@@ -570,8 +590,10 @@ void OrderList::InsertOrderAt(Order *new_order, int index)
 	}
 	++this->num_orders;
 	if (!new_order->IsType(OT_IMPLICIT)) ++this->num_manual_orders;
-	this->timetable_duration += new_order->GetTimetabledWait() + new_order->GetTimetabledTravel();
-	this->total_duration += new_order->GetWaitTime() + new_order->GetTravelTime();
+	if (!new_order->IsType(OT_CONDITIONAL)) {
+		this->timetable_duration += new_order->GetTimetabledWait() + new_order->GetTimetabledTravel();
+		this->total_duration += new_order->GetWaitTime() + new_order->GetTravelTime();
+	}
 
 	/* We can visit oil rigs and buoys that are not our own. They will be shown in
 	 * the list of stations. So, we need to invalidate that window if needed. */
@@ -603,8 +625,10 @@ void OrderList::DeleteOrderAt(int index)
 	}
 	--this->num_orders;
 	if (!to_remove->IsType(OT_IMPLICIT)) --this->num_manual_orders;
-	this->timetable_duration -= (to_remove->GetTimetabledWait() + to_remove->GetTimetabledTravel());
-	this->total_duration -= (to_remove->GetWaitTime() + to_remove->GetTravelTime());
+	if (!to_remove->IsType(OT_CONDITIONAL)) {
+		this->timetable_duration -= (to_remove->GetTimetabledWait() + to_remove->GetTimetabledTravel());
+		this->total_duration -= (to_remove->GetWaitTime() + to_remove->GetTravelTime());
+	}
 	delete to_remove;
 }
 
@@ -706,8 +730,10 @@ void OrderList::DebugCheckSanity() const
 	for (const Order *o = this->first; o != NULL; o = o->next) {
 		++check_num_orders;
 		if (!o->IsType(OT_IMPLICIT)) ++check_num_manual_orders;
-		check_timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
-		check_total_duration += o->GetWaitTime() + o->GetTravelTime();
+		if (!o->IsType(OT_CONDITIONAL)) {
+			check_timetable_duration += o->GetTimetabledWait() + o->GetTimetabledTravel();
+			check_total_duration += o->GetWaitTime() + o->GetTravelTime();
+		}
 	}
 	assert(this->num_orders == check_num_orders);
 	assert(this->num_manual_orders == check_num_manual_orders);
@@ -1114,7 +1140,8 @@ CommandCost CmdInsertOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 			if (occ >= OCC_END) return CMD_ERROR;
 			switch (new_order.GetConditionVariable()) {
 				case OCV_SLOT_OCCUPANCY: {
-					if (!TraceRestrictSlot::IsValidID(new_order.GetConditionValue())) return CMD_ERROR;
+					TraceRestrictSlotID slot = new_order.GetXData();
+					if (slot != INVALID_TRACE_RESTRICT_SLOT_ID && !TraceRestrictSlot::IsValidID(slot)) return CMD_ERROR;
 					if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) return CMD_ERROR;
 					break;
 				}
@@ -1251,6 +1278,13 @@ void InsertOrder(Vehicle *v, Order *new_o, VehicleOrderID sel_ord)
 			/* Check if we don't go out of bound */
 			if (cur < u->GetNumOrders()) {
 				u->cur_implicit_order_index = cur;
+			}
+		}
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID && sel_ord <= u->cur_timetable_order_index) {
+			uint cur = u->cur_timetable_order_index + 1;
+			/* Check if we don't go out of bound */
+			if (cur < u->GetNumOrders()) {
+				u->cur_timetable_order_index = cur;
 			}
 		}
 		/* Update any possible open window of the vehicle */
@@ -1407,6 +1441,14 @@ void DeleteOrder(Vehicle *v, VehicleOrderID sel_ord)
 			}
 		}
 
+		if (u->cur_timetable_order_index != INVALID_VEH_ORDER_ID) {
+			if (sel_ord < u->cur_timetable_order_index) {
+				u->cur_timetable_order_index--;
+			} else if (sel_ord == u->cur_timetable_order_index) {
+				u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+			}
+		}
+
 		/* Update any possible open window of the vehicle */
 		InvalidateVehicleOrder(u, sel_ord | (INVALID_VEH_ORDER_ID << 8));
 	}
@@ -1459,6 +1501,7 @@ CommandCost CmdSkipToOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		v->cur_implicit_order_index = v->cur_real_order_index = sel_ord;
 		v->UpdateRealOrderIndex();
+		v->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 
 		InvalidateVehicleOrder(v, VIWD_MODIFY_ORDERS);
 	}
@@ -1544,7 +1587,10 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				u->cur_implicit_order_index++;
 			}
 
+			u->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+
 			assert(v->IsSharingOrdersWith(u));
+
 			/* Update any possible open window of the vehicle */
 			InvalidateVehicleOrder(u, moving_order | (target_order << 8));
 		}
@@ -1582,9 +1628,9 @@ CommandCost CmdMoveOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
  *                        the order will be inserted before that one
  *                        the maximum vehicle order id is 254.
  * @param p2 various bitstuffed elements
- *  - p2 = (bit 0 -  3) - what data to modify (@see ModifyOrderFlags)
- *  - p2 = (bit 4 - 15) - the data to modify
- *  - p2 = (bit 16 - 23) - a CargoID for cargo type orders (MOF_CARGO_TYPE_UNLOAD or MOF_CARGO_TYPE_LOAD)
+ *  - p2 = (bit  0 -  3) - what data to modify (@see ModifyOrderFlags)
+ *  - p2 = (bit  4 - 19) - the data to modify
+ *  - p2 = (bit 20 - 27) - a CargoID for cargo type orders (MOF_CARGO_TYPE_UNLOAD or MOF_CARGO_TYPE_LOAD)
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -1593,8 +1639,8 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	VehicleOrderID sel_ord = GB(p1, 20,  8);
 	VehicleID veh          = GB(p1,  0, 20);
 	ModifyOrderFlags mof   = Extract<ModifyOrderFlags, 0, 4>(p2);
-	uint16 data            = GB(p2,  4, 11);
-	CargoID cargo_id = (mof == MOF_CARGO_TYPE_UNLOAD || mof == MOF_CARGO_TYPE_LOAD) ? (CargoID)GB(p2, 16, 8) : (CargoID)CT_INVALID;
+	uint16 data            = GB(p2,  4, 16);
+	CargoID cargo_id = (mof == MOF_CARGO_TYPE_UNLOAD || mof == MOF_CARGO_TYPE_LOAD) ? (CargoID)GB(p2, 20, 8) : (CargoID)CT_INVALID;
 
 	if (mof >= MOF_END) return CMD_ERROR;
 
@@ -1709,8 +1755,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 					break;
 
 				case OCV_SLOT_OCCUPANCY:
-					// Can't encode more than 2047, even though there could be more slots.
-					if (data > 2047 || !TraceRestrictSlot::IsValidID(data)) return CMD_ERROR;
+					if (data != INVALID_TRACE_RESTRICT_SLOT_ID && !TraceRestrictSlot::IsValidID(data)) return CMD_ERROR;
 					break;
  
 				case OCV_CARGO_ACCEPTANCE:
@@ -1804,7 +1849,7 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 						break;
 
 					case OCV_SLOT_OCCUPANCY:
-						if (!old_var_was_slot) order->SetConditionValue((uint16)GetFirstValidTraceRestrictSlot());
+						if (!old_var_was_slot) order->GetXDataRef() = INVALID_TRACE_RESTRICT_SLOT_ID;
 						if (occ != OCC_IS_TRUE && occ != OCC_IS_FALSE) order->SetConditionComparator(OCC_IS_TRUE);
 						break;
  
@@ -1842,7 +1887,15 @@ CommandCost CmdModifyOrder(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				break;
 
 			case MOF_COND_VALUE:
-				order->SetConditionValue(data);
+				switch (order->GetConditionVariable()) {
+					case OCV_SLOT_OCCUPANCY:
+						order->GetXDataRef() = data;
+						break;
+
+					default:
+						order->SetConditionValue(data);
+						break;
+				}
 				break;
 
 			case MOF_COND_DESTINATION:
@@ -2447,7 +2500,7 @@ VehicleOrderID ProcessConditionalOrder(const Order *order, const Vehicle *v)
 			break;
 		}
 		case OCV_SLOT_OCCUPANCY: {
-			const TraceRestrictSlot* slot = TraceRestrictSlot::GetIfValid(value);
+			const TraceRestrictSlot* slot = TraceRestrictSlot::GetIfValid(order->GetXData());
 			if (slot != nullptr) skip_order = OrderConditionCompare(occ, slot->occupants.size() >= slot->max_occupancy, value);
 			break;
 		}
@@ -2552,7 +2605,7 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
 				UpdateVehicleTimetable(v, false);
 				v->cur_implicit_order_index = v->cur_real_order_index = next_order;
 				v->UpdateRealOrderIndex();
-				v->current_order_time += v->GetOrder(v->cur_real_order_index)->GetTimetabledTravel();
+				v->cur_timetable_order_index = v->GetIndexOfOrder(order);
 
 				/* Disable creation of implicit orders.
 				 * When inserting them we do not know that we would have to make the conditional orders point to them. */
@@ -2561,6 +2614,7 @@ bool UpdateOrderDest(Vehicle *v, const Order *order, int conditional_depth, bool
 					SetBit(gv_flags, GVF_SUPPRESS_IMPLICIT_ORDERS);
 				}
 			} else {
+				v->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 				UpdateVehicleTimetable(v, true);
 				v->IncrementRealOrderIndex();
 			}

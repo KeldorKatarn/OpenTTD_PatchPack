@@ -809,7 +809,7 @@ static void TileLoop_Trees(TileIndex tile)
 		/* Nature randomness */
 		uint8 grow_slowing_values[3] = { 5, 20, 120 }; // slow, very slow, extremely slow
 		uint16 prob = 0x10000 / grow_slowing_values[_settings_game.construction.tree_growth_rate - 1];
-		if (GB(Random(), 0, 16) >= (prob / 15)) {
+		if (GB(Random(), 0, 16) >= (prob / 15u)) {
 			return;
 		}
 	}

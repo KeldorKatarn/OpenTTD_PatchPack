@@ -329,7 +329,7 @@ static TileIndex BuildBridge(PathNode *current, TileIndex end_tile = INVALID_TIL
 	assert(!build_bridge || !available_bridge_types.empty());
 	if (available_bridge_types.empty()) return INVALID_TILE;
 
-	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
+	auto bridge_type = available_bridge_types[build_bridge ? RandomRange((uint32)available_bridge_types.size()) : 0];
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 	auto build_bridge_cmd = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15));
@@ -386,7 +386,7 @@ static TileIndex BuildRiverBridge(PathNode *current, DiagDirection road_directio
 		}
 	}
 
-	auto bridge_type = available_bridge_types[build_bridge ? RandomRange(available_bridge_types.size()) : 0];
+	auto bridge_type = available_bridge_types[build_bridge ? RandomRange((uint32)available_bridge_types.size()) : 0];
 
 	Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 	auto build_bridge_cmd = CmdBuildBridge(end_tile, build_bridge ? DC_EXEC : DC_NONE, start_tile, bridge_type | (ROADTYPES_ROAD << 8) | (TRANSPORT_ROAD << 15));
@@ -650,7 +650,7 @@ void GeneratePublicRoads()
 		}
 	}
 	
-	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, towns.size());
+	SetGeneratingWorldProgress(GWP_PUBLIC_ROADS, (uint)towns.size());
 
 	// Create a list of networks which also contain a value indicating how many times we failed to connect to them.
 	vector<pair<uint, shared_ptr<vector<TileIndex>>>> town_networks;
@@ -732,7 +732,7 @@ void GeneratePublicRoads()
 
 				// We basically failed to connect to this many towns.
 				int towns_already_in_networks = std::accumulate(town_networks.begin(), town_networks.end(), 0, [&](int accumulator, auto network_pair) {
-					return accumulator + network_pair.second->size();
+					return accumulator + (int)network_pair.second->size();
 				});
 
 				town_networks.push_back(make_pair(towns_already_in_networks, new_network));

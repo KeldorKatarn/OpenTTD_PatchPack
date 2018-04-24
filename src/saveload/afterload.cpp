@@ -718,7 +718,7 @@ bool AfterLoadGame()
 
 	if (IsSavegameVersionBefore(SL_PATCH_PACK_DAYLENGTH))
 	{
-		if (!IsSavegameVersionBefore(SL_PATCH_PACK))
+		if (!IsPatchPackSavegameVersionBefore(SL_PATCH_PACK))
 			_settings_game.economy.daylength = 4;
 		else
 			_settings_game.economy.daylength = 1;
@@ -806,6 +806,9 @@ bool AfterLoadGame()
 
 	/* Update all vehicles */
 	AfterLoadVehicles(true);
+
+	/* Update old version of trip history */
+	AfterLoadTripHistory();
 
 	/* Update template vehicles */
 	AfterLoadTemplateVehicles();
@@ -1751,6 +1754,13 @@ bool AfterLoadGame()
 			if ((v->current_order.GetUnloadType() & (OUFB_UNLOAD | OUFB_TRANSFER)) == (OUFB_UNLOAD | OUFB_TRANSFER)) {
 				v->current_order.SetUnloadType(OUFB_TRANSFER);
 				v->current_order.SetLoadType(OLFB_NO_LOAD);
+			}
+		}
+	} else if (IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+		Order* order;
+		FOR_ALL_ORDERS(order) {
+			if (order->IsType(OT_CONDITIONAL) && order->GetConditionVariable() == OCV_SLOT_OCCUPANCY) {
+				order->GetXDataRef() = order->GetConditionValue();
 			}
 		}
 	}
@@ -3119,6 +3129,30 @@ bool AfterLoadGame()
 		Vehicle *v;
 		FOR_ALL_VEHICLES(v) {
 			v->profit_lifetime = v->profit_last_year;
+		}
+	}
+
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+		Vehicle *v;
+		FOR_ALL_VEHICLES(v) {
+			v->cur_timetable_order_index = v->GetNumManualOrders() > 0 ? v->cur_real_order_index : INVALID_VEH_ORDER_ID;
+		}
+		OrderBackup *bckup;
+		FOR_ALL_ORDER_BACKUPS(bckup) {
+			bckup->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+		}
+		Order *order;
+		FOR_ALL_ORDERS(order) {
+			if (order->IsType(OT_CONDITIONAL)) {
+				if (order->GetTravelTime() != 0) {
+					DEBUG(sl, 1, "Fixing: order->GetTravelTime() != 0, %u", order->GetTravelTime());
+					order->SetTravelTime(0);
+				}
+			}
+		}
+		OrderList *order_list;
+		FOR_ALL_ORDER_LISTS(order_list) {
+			order_list->DebugCheckSanity();
 		}
 	}
 

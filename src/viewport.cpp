@@ -1889,7 +1889,7 @@ static void ViewportMapDrawVehicleRoute(const ViewPort *vp)
 static inline void DrawRouteStep(const ViewPort * const vp, const TileIndex tile, const RankOrderTypeList list)
 {
 	if (tile == INVALID_TILE) return;
-	const uint step_count = list.size() > max_rank_order_type_count ? 1 : list.size();
+	const uint step_count = list.size() > max_rank_order_type_count ? 1 : (uint)list.size();
 	const Point pt = RemapCoords2(TileX(tile) * TILE_SIZE + TILE_SIZE / 2, TileY(tile) * TILE_SIZE + TILE_SIZE / 2);
 	const int x = UnScaleByZoomLower(pt.x - _vd.dpi.left, _vd.dpi.zoom) - (_vp_route_step_width / 2);
 	const int char_height = GetCharacterHeight(FS_SMALL) + 1;
@@ -2957,7 +2957,7 @@ void MarkAllViewportsDirty(int left, int top, int right, int bottom, const ZoomL
  
 static void MarkRouteStepDirty(RouteStepsMap::const_iterator cit)
 {
-	const uint size = cit->second.size() > max_rank_order_type_count ? 1 : cit->second.size();
+	const uint size = cit->second.size() > max_rank_order_type_count ? 1 : (uint)cit->second.size();
 	MarkRouteStepDirty(cit->first, size);
 }
 

@@ -420,7 +420,7 @@ static DropDownList *GetGroupDropDownList(Owner owner, GroupID group_id, int &se
 	if (group_id == DEFAULT_GROUP) selected = DEFAULT_GROUP;
 	*dlist->Append() = new DropDownListStringItem(STR_GROUP_DEFAULT_TRAINS, DEFAULT_GROUP, false);
 
-	for (size_t i = 0; i < list.Length(); ++i) {
+	for (uint i = 0; i < list.Length(); ++i) {
 		const Group *g = list[i];
 		if (group_id == g->index) selected = group_id;
 		DropDownListParamStringItem *item = new DropDownListParamStringItem(STR_GROUP_NAME, g->index, false);
@@ -461,7 +461,7 @@ DropDownList *GetSlotDropDownList(Owner owner, TraceRestrictSlotID slot_id, int 
 	DropDownList *dlist = new DropDownList();
 	selected = -1;
 
-	for (size_t i = 0; i < list.Length(); ++i) {
+	for (uint i = 0; i < list.Length(); ++i) {
 		const TraceRestrictSlot *s = list[i];
 		if (slot_id == s->index) selected = slot_id;
 		DropDownListParamStringItem *item = new DropDownListParamStringItem(STR_TRACE_RESTRICT_SLOT_NAME, s->index, false);

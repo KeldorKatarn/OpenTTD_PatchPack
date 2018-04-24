@@ -245,7 +245,7 @@ public:
 			if (action_type == order_action_type) return;
 
 			ModifyOrderFlags mof = (this->variant == CTOWV_LOAD) ? MOF_CARGO_TYPE_LOAD : MOF_CARGO_TYPE_UNLOAD;
-			DoCommandP(this->vehicle->tile, this->vehicle->index + (this->order_id << 20), mof | (action_type << 4) | (cargo_id << 16), CMD_MODIFY_ORDER | CMD_MSG(STR_ERROR_CAN_T_MODIFY_THIS_ORDER));
+			DoCommandP(this->vehicle->tile, this->vehicle->index + (this->order_id << 20), mof | (action_type << 4) | (cargo_id << 20), CMD_MODIFY_ORDER | CMD_MSG(STR_ERROR_CAN_T_MODIFY_THIS_ORDER));
 
 			this->GetWidget<NWidgetCore>(widget)->SetDataTip(this->cargo_type_order_dropdown[this->GetOrderActionTypeForCargo(cargo_id)], STR_CARGO_TYPE_LOAD_ORDERS_DROP_TOOLTIP + this->variant);
 			this->SetWidgetDirty(widget);
@@ -719,7 +719,6 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 	DrawString(left, rtl ? right - 2 * sprite_size.width - 3 : middle, y, STR_ORDER_INDEX, colour, SA_RIGHT | SA_FORCE);
 
 	SetDParam(5, STR_EMPTY);
-	SetDParam(8, STR_EMPTY);
 
 	/* Check range for aircraft. */
 	if (v->type == VEH_AIRCRAFT && Aircraft::From(v)->GetRange() > 0 && order->IsGotoOrder()) {
@@ -752,8 +751,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 				SetDParam(3, STR_EMPTY);
 
 				if (order->GetWaitTime() > 0) {
-					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR : STR_TIMETABLE_STAY_FOR_ESTIMATED);
-					SetTimetableParams(6, 7, order->GetWaitTime());
+					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR_MINUTES : STR_TIMETABLE_STAY_FOR_MINUTES_ESTIMATED);
+					SetTimetableParams(order->GetWaitTime(), 6);
 				}
 			} else {
 				SetDParam(3, (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION) ? STR_EMPTY : _station_load_types[order->IsRefit()][unload][load]);
@@ -800,8 +799,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 
 			if (timetable) {
 				if (order->GetWaitTime() > 0) {
-					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR : STR_TIMETABLE_STAY_FOR_ESTIMATED);
-					SetTimetableParams(6, 7, order->GetWaitTime());
+					SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_STAY_FOR_MINUTES : STR_TIMETABLE_STAY_FOR_MINUTES_ESTIMATED);
+					SetTimetableParams(order->GetWaitTime(), 6);
 				}
 			} 
 			break;
@@ -831,12 +830,10 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 				SetDParam(3, order->GetConditionValue());
 			}
 			else if (ocv == OCV_SLOT_OCCUPANCY) {
-				if (TraceRestrictSlot::IsValidID(order->GetConditionValue()))
-				{
+				if (TraceRestrictSlot::IsValidID(order->GetXData())) {
 					SetDParam(0, STR_ORDER_CONDITIONAL_SLOT);
-					SetDParam(2, order->GetConditionValue());
-				}
-				else {
+					SetDParam(2, order->GetXData());
+				} else {
 					SetDParam(0, STR_ORDER_CONDITIONAL_INVALID_SLOT);
 					SetDParam(2, STR_TRACE_RESTRICT_VARIABLE_UNDEFINED);
 				}
@@ -871,8 +868,8 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 			}
 
 			if (timetable && order->GetWaitTime() > 0) {
-				SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_AND_TRAVEL_FOR : STR_TIMETABLE_AND_TRAVEL_FOR_ESTIMATED);
-				SetTimetableParams(6, 7, order->GetWaitTime());
+				SetDParam(5, order->IsWaitTimetabled() ? STR_TIMETABLE_AND_TRAVEL_FOR_MINUTES : STR_TIMETABLE_AND_TRAVEL_FOR_MINUTES_ESTIMATED);
+				SetTimetableParams(order->GetWaitTime(), 6);
 			}
 			else {
 				SetDParam(5, STR_EMPTY);
@@ -883,7 +880,7 @@ void DrawOrderString(const Vehicle *v, const Order *order, int order_index, int 
 		default: NOT_REACHED();
 	}
 
-	DrawString(rtl ? left : middle, rtl ? middle : right, y, STR_ORDER_TEXT, colour);
+	DrawString(rtl ? left : middle, rtl ? middle : right, y, STR_ORDER_TEXT_MINUTES, colour);
 }
 
 /**
@@ -1659,9 +1656,9 @@ public:
 						this->GetWidget<NWidgetStacked>(WID_O_SEL_COND_VALUE)->SetDisplayedPlane(DP_COND_VALUE_CARGO);
 					}
 					else if (is_slot_occupancy) {
-						TraceRestrictSlotID slot_id = (order != nullptr && TraceRestrictSlot::IsValidID(order->GetConditionValue()) ? order->GetConditionValue() : INVALID_TRACE_RESTRICT_SLOT_ID);
+						TraceRestrictSlotID slot_id = (order != nullptr && TraceRestrictSlot::IsValidID(order->GetXData()) ? order->GetXData() : INVALID_TRACE_RESTRICT_SLOT_ID);
 
-						this->GetWidget<NWidgetCore>(WID_O_COND_SLOT)->widget_data = slot_id != INVALID_TRACE_RESTRICT_SLOT_ID ? STR_TRACE_RESTRICT_SLOT_NAME : STR_TRACE_RESTRICT_VARIABLE_UNDEFINED;
+						this->GetWidget<NWidgetCore>(WID_O_COND_SLOT)->widget_data = (slot_id != INVALID_TRACE_RESTRICT_SLOT_ID) ? STR_TRACE_RESTRICT_SLOT_NAME : STR_TRACE_RESTRICT_VARIABLE_UNDEFINED;
 						this->GetWidget<NWidgetStacked>(WID_O_SEL_COND_VALUE)->SetDisplayedPlane(DP_COND_VALUE_SLOT);
 					}
 					else {
@@ -1787,7 +1784,7 @@ public:
 				const Order *order = this->vehicle->GetOrder(sel);
 
 				if (order != nullptr && order->IsType(OT_CONDITIONAL)) {
-					TraceRestrictSlotID value = order->GetConditionValue();
+					TraceRestrictSlotID value = order->GetXData();
 					SetDParam(0, value);
 				}
 				break;
@@ -1964,7 +1961,7 @@ public:
 
 			case WID_O_COND_SLOT: {
 				int selected;
-				TraceRestrictSlotID value = this->vehicle->GetOrder(this->OrderGetSel())->GetConditionValue();
+				TraceRestrictSlotID value = this->vehicle->GetOrder(this->OrderGetSel())->GetXData();
 				DropDownList *list = GetSlotDropDownList(this->vehicle->owner, value, selected);
 				if (list != nullptr) ShowDropDownList(this, list, selected, WID_O_COND_SLOT, 0, true);
 				break;
@@ -2001,7 +1998,7 @@ public:
 					(cond_var == OCV_REQUIRES_SERVICE ||
 					 cond_var == OCV_CARGO_ACCEPTANCE ||
 					 cond_var == OCV_CARGO_WAITING ||
-					 cond_var == OCV_SLOT_OCCUPANCY) ? 0x3F : 0xC0);
+					 cond_var == OCV_SLOT_OCCUPANCY) ? 0x3F : 0xC0, DDSF_LOST_FOCUS);
 				break;
 			}
 

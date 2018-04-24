@@ -1582,6 +1582,7 @@ static SettingsContainer &GetSettingsTree()
 			interface->Add(new SettingEntry("gui.advanced_vehicle_list"));
 			interface->Add(new SettingEntry("gui.advanced_train_purchase_window"));
 			interface->Add(new SettingEntry("gui.timetable_arrival_departure"));
+			interface->Add(new SettingEntry("gui.ticks_per_minute"));
 			interface->Add(new SettingEntry("gui.expenses_layout"));
 		}
 
@@ -1669,6 +1670,10 @@ static SettingsContainer &GetSettingsTree()
 			vehicles->Add(new SettingEntry("order.no_servicing_if_no_breakdowns"));
 			vehicles->Add(new SettingEntry("order.serviceathelipad"));
 			vehicles->Add(new SettingEntry("order.automatic_timetable_separation"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_travel_buffer"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_load_buffer"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_travel_rounding"));
+			vehicles->Add(new SettingEntry("order.timetable_auto_load_rounding"));
 		}
 
 		SettingsPage *limitations = main->Add(new SettingsPage(STR_CONFIG_SETTING_LIMITATIONS));

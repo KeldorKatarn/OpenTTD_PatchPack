@@ -301,8 +301,9 @@
  *  280   SL_PATCH_PACK_1_21
  *  281   SL_PATCH_PACK_1_22
  *  282   SL_PATCH_PACK_1_23
+ *  283   SL_PATCH_PACK_1_24
  */
-extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_23; ///< Current savegame version of OpenTTD.
+extern const uint16 SAVEGAME_VERSION = SL_PATCH_PACK_1_24; ///< Current savegame version of OpenTTD.
 
 SavegameType _savegame_type; ///< type of savegame we are loading
 FileToSaveLoad _file_to_saveload; ///< File to save or load in the openttd loop.
@@ -3078,7 +3079,7 @@ void GenerateDefaultSaveName(char *buf, const char *last)
 	/* Insert current date */
 	switch (_settings_client.gui.date_format_in_default_names) {
 		case 0: SetDParam(1, STR_JUST_DATE_LONG); break;
-		case 1: SetDParam(1, STR_JUST_DATE_TINY); break;
+		case 1: SetDParam(1, STR_JUST_DATE); break;
 		case 2: SetDParam(1, STR_JUST_DATE_ISO); break;
 		default: NOT_REACHED();
 	}

@@ -24,6 +24,7 @@
 #include "transport_type.h"
 #include "group_type.h"
 #include "base_consist.h"
+#include "settings_type.h"
 #include "network/network.h"
 #include <vector>
 #include <list>
@@ -808,8 +809,10 @@ private:
 				this->cur_real_order_index++;
 				if (this->cur_real_order_index >= this->GetNumOrders()) this->cur_real_order_index = 0;
 			} while (this->GetOrder(this->cur_real_order_index)->IsType(OT_IMPLICIT));
+			this->cur_timetable_order_index = this->cur_real_order_index;
 		} else {
 			this->cur_real_order_index = 0;
+			this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 		}
 	}
 
@@ -882,6 +885,16 @@ public:
 	inline Order *GetOrder(int index) const
 	{
 		return (this->orders.list == NULL) ? NULL : this->orders.list->GetOrderAt(index);
+	}
+
+	/**
+	 * Get the index of an order of the order chain, or INVALID_VEH_ORDER_ID.
+	 * @param order order to get the index of.
+	 * @return the position index of the given order, or INVALID_VEH_ORDER_ID.
+	 */
+	inline VehicleOrderID GetIndexOfOrder(const Order *order) const
+	{
+		return (this->orders.list == nullptr) ? INVALID_VEH_ORDER_ID : this->orders.list->GetIndexOfOrder(order);
 	}
 
 	/**
@@ -1015,6 +1028,7 @@ public:
 
 		if (reset_order_indices) {
 			this->cur_implicit_order_index = this->cur_real_order_index = 0;
+			this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 			if (this->current_order.IsType(OT_LOADING)) {
 				CancelLoadingDueToDeletedOrder(this);
 			}

@@ -145,6 +145,7 @@ struct GUISettings {
 	bool   enable_signal_gui;                ///< show the signal GUI when the signal button is pressed
 	Year   coloured_news_year;               ///< when does newspaper become coloured?
 	bool   timetable_in_ticks;               ///< whether to show the timetable in ticks rather than days
+	uint8  ticks_per_minute;                 ///< How long a minute is in tricks (Purely for UI. Not used for actual timetabling)
 	bool   quick_goto;                       ///< Allow quick access to 'goto button' in vehicle orders window
 	bool   auto_euro;                        ///< automatically switch to euro in 2002
 	byte   drag_signals_density;             ///< many signals density
@@ -484,6 +485,10 @@ struct OrderSettings {
 	bool   timetable_separation;             ///< (outdated. Only for backwards compatibility)
 	bool   automatic_timetable_separation;   ///< Enable automatic separation of vehicles in the timetable.
 	bool   serviceathelipad;                 ///< service helicopters at helipads automatically (no need to send to depot)
+	uint8  timetable_auto_travel_buffer;     ///< When timetable automation is active, traveling times will be padded by this value.
+	uint8  timetable_auto_load_buffer;       ///< When timetable automation is active, loading times will be padded by this value.
+	uint8  timetable_auto_travel_rounding;   ///< When timetable automation is active, traveling times will be rounded up to the nearest number divisible by this value.
+	uint8  timetable_auto_load_rounding;     ///< When timetable automation is active, loading times will be rounded up to the nearest number divisible by this value.
 };
 
 /** Settings related to vehicles. */

@@ -1358,60 +1358,6 @@ static void DrawTunnelBridgeRampSignal(const TileInfo *ti)
 	AddSortableSpriteToDraw(sprite, PAL_NONE, x, y, 1, 1, TILE_HEIGHT, z, false, 0, 0, BB_Z_SEPARATOR);
 }
 
-/* Draws a signal on tunnel / bridge entrance tile. */
-static void DrawBrigeSignalOnMiddlePart(const TileInfo *ti, TileIndex bridge_start_tile, uint z)
-{
-
-	uint bridge_signal_position = 0;
-	int m2_position = 0;
-
-	uint bridge_section = GetTunnelBridgeLength(ti->tile, bridge_start_tile) + 1;
-
-	while (bridge_signal_position <= bridge_section) {
-		bridge_signal_position += _settings_game.construction.simulated_wormhole_signals;
-		if (bridge_signal_position == bridge_section) {
-			bool side = (_settings_game.vehicle.road_side != 0) && _settings_game.construction.train_signal_side;
-
-			static const Point SignalPositions[2][4] = {
-				{   /*  X         X         Y         Y     Signals on the left side */
-					{11,  3}, { 4, 13}, { 3,  4}, {11, 13}
-				}, {/*  X         X         Y         Y     Signals on the right side */
-					{11, 13}, { 4,  3}, {13,  4}, { 3, 11}
-				}
-			};
-
-			uint position;
-
-			switch (GetTunnelBridgeDirection(bridge_start_tile)) {
-				default: NOT_REACHED();
-				case DIAGDIR_NE: position = 0; break;
-				case DIAGDIR_SE: position = 2; break;
-				case DIAGDIR_SW: position = 1; break;
-				case DIAGDIR_NW: position = 3; break;
-			}
-
-			uint x = TileX(ti->tile) * TILE_SIZE + SignalPositions[side][position].x;
-			uint y = TileY(ti->tile) * TILE_SIZE + SignalPositions[side][position].y;
-			z += 5;
-
-			SignalVariant variant = IsTunnelBridgeSemaphore(bridge_start_tile) ? SIG_SEMAPHORE : SIG_ELECTRIC;
-
-			SpriteID sprite = (GetBridgeEntranceSimulatedSignalState(bridge_start_tile, m2_position) == SIGNAL_STATE_GREEN);
-
-			if (variant == SIG_ELECTRIC) {
-				/* Normal electric signals are picked from original sprites. */
-				sprite += SPR_ORIGINAL_SIGNALS_BASE + (position << 1);
-			} else {
-				/* All other signals are picked from add on sprites. */
-				sprite += SPR_SIGNALS_BASE + (SIGTYPE_NORMAL - 1) * 16 + variant * 64 + (position << 1);
-			}
-
-			AddSortableSpriteToDraw(sprite, PAL_NONE, x, y, 1, 1, TILE_HEIGHT, z, false, 0, 0, BB_Z_SEPARATOR);
-		}
-		m2_position++;
-	}
-}
-
 /**
  * Draws a tunnel of bridge tile.
  * For tunnels, this is rather simple, as you only need to draw the entrance.

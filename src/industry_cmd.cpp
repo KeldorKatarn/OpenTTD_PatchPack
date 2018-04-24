@@ -2058,7 +2058,7 @@ static uint GetNumberOfIndustries()
  */
 static Industry *PlaceIndustry(IndustryType type, IndustryAvailabilityCallType creation_type, bool try_hard)
 {
-	uint tries = try_hard ? 25000u : 10000u;
+	uint tries = try_hard ? 10000u : 2000u;
 	for (; tries > 0; tries--) {
 		Industry *ind = CreateNewIndustry(RandomTile(), type, creation_type);
 		if (ind != NULL) return ind;

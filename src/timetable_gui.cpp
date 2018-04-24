@@ -25,6 +25,7 @@
 #include "vehicle_gui.h"
 #include "settings_type.h"
 #include "viewport_func.h"
+#include "timetable.h"
 
 #include "widgets/timetable_widget.h"
 
@@ -52,15 +53,15 @@ struct TimetableArrivalDeparture {
 };
 
 /**
- * Set the timetable parameters in the format as described by the setting.
- * @param param1 the first DParam to fill
- * @param param2 the second DParam to fill
+ * Set the timetable parameters in the ticks (minutes) format. 
+ * @param param1 the first of three successive DParam to fill
  * @param ticks  the number of ticks to 'draw'
  */
-void SetTimetableParams(int param1, int param2, Ticks ticks)
+void SetTimetableParams(Ticks ticks, int param1)
 {
-	SetDParam(param1, STR_TIMETABLE_TICKS);
-	SetDParam(param2, ticks);
+	SetDParam(param1, STR_TIMETABLE_TICKS_MINUTES);
+	SetDParam(param1 + 1, ticks);
+	SetDParam(param1 + 2, ticks);
 }
 
 /**
@@ -156,6 +157,7 @@ struct TimetableWindow : Window {
 	bool query_is_bulk_query;             ///< The currently open query window applies to all relevant orders.
 	TTSepSettings new_sep_settings;       ///< Contains new separation settings.
 	VehicleTimetableWidgets query_widget; ///< Required to determinate source of input query
+	int summary_warnings = 0;             ///< Number of summary warnings shown
 
 	TimetableWindow(WindowDesc *desc, WindowNumber window_number) :
 			Window(desc),
@@ -191,6 +193,13 @@ struct TimetableWindow : Window {
 
 		bool travelling = (!(v->current_order.IsType(OT_LOADING) || v->current_order.IsType(OT_WAITING)) || v->current_order.GetNonStopType() == ONSF_STOP_EVERYWHERE);
 		Ticks start_time = GetCurrentTickCount() - v->current_order_time;
+		if (v->cur_timetable_order_index != INVALID_VEH_ORDER_ID && v->cur_timetable_order_index != v->cur_real_order_index) {
+			// Vehicle is taking a conditional order branch, adjust start time to compensate.
+			const Order* real_current_order = v->GetOrder(v->cur_real_order_index);
+			const Order* real_timetable_order = v->GetOrder(v->cur_timetable_order_index);
+			assert(real_timetable_order->IsType(OT_CONDITIONAL));
+			start_time += (real_timetable_order->GetWaitTime() - real_current_order->GetTravelTime());
+		}
 
 		FillTimetableArrivalDepartureTable(v, v->cur_real_order_index % v->GetNumOrders(), travelling, table, start_time);
 
@@ -202,9 +211,9 @@ struct TimetableWindow : Window {
 		switch (widget) {
 			case WID_VT_ARRIVAL_DEPARTURE_PANEL:
 				SetDParamMaxValue(0, MAX_YEAR * DAYS_IN_YEAR, 0, FS_SMALL);
-				this->deparr_time_width = GetStringBoundingBox(STR_JUST_DATE_TINY).width;
+				this->deparr_time_width = GetStringBoundingBox(STR_JUST_TIME).width;
 				this->deparr_abbr_width = max(GetStringBoundingBox(STR_TIMETABLE_ARRIVAL_ABBREVIATION).width, GetStringBoundingBox(STR_TIMETABLE_DEPARTURE_ABBREVIATION).width);
-				size->width = WD_FRAMERECT_LEFT + this->deparr_abbr_width + 10 + this->deparr_time_width + WD_FRAMERECT_RIGHT;
+				size->width = WD_FRAMERECT_LEFT + this->deparr_abbr_width + 10 + this->deparr_time_width + 10 + WD_FRAMERECT_RIGHT;
 				FALLTHROUGH;
 
 			case WID_VT_ARRIVAL_DEPARTURE_SELECTION:
@@ -213,9 +222,11 @@ struct TimetableWindow : Window {
 				size->height = WD_FRAMERECT_TOP + 8 * resize->height + WD_FRAMERECT_BOTTOM;
 				break;
 
-			case WID_VT_SUMMARY_PANEL:
-				size->height = WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
+			case WID_VT_SUMMARY_PANEL: {
+				Dimension d = GetSpriteSize(SPR_WARNING_SIGN);
+				size->height = WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + this->summary_warnings * max<int>(d.height, FONT_HEIGHT_NORMAL) + WD_FRAMERECT_BOTTOM;
 				break;
+			}
 		}
 	}
 
@@ -358,6 +369,91 @@ struct TimetableWindow : Window {
 		}
 	}
 
+	void DrawWarnings(const Rect& r, int& y, const Vehicle* v) const
+	{
+		bool have_missing_times = !v->HasCompleteTimetable();
+		bool have_conditional = false;
+		bool have_bad_full_load = false;
+
+		const bool is_automated_timetable = HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+
+		for (int n = 0; n < v->GetNumOrders(); ++n) {
+			const Order *order = v->GetOrder(n);
+
+			if (order->IsType(OT_CONDITIONAL)) {
+				have_conditional = true;
+			}
+
+			if (!have_bad_full_load && (is_automated_timetable || order->IsWaitTimetabled())) {
+				if (order->GetLoadType() & OLFB_FULL_LOAD) {
+					have_bad_full_load = true;
+				}
+				else if (order->GetLoadType() == OLFB_CARGO_TYPE_LOAD) {
+					for (CargoID c = 0; c < NUM_CARGO; c++) {
+						if (order->GetCargoLoadTypeRaw(c) & OLFB_FULL_LOAD) {
+							have_bad_full_load = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		const Dimension warning_dimensions = GetSpriteSize(SPR_WARNING_SIGN);
+		const int step_height = max<int>(warning_dimensions.height, FONT_HEIGHT_NORMAL);
+		const int text_offset_y = (step_height - FONT_HEIGHT_NORMAL) / 2;
+		const int warning_offset_y = (step_height - warning_dimensions.height) / 2;
+		const bool rtl = _current_text_dir == TD_RTL;
+
+		int warning_count = 0;
+
+		auto draw_info = [&](StringID text, bool warning) {
+			int left = r.left + WD_FRAMERECT_LEFT;
+			int right = r.right - WD_FRAMERECT_RIGHT;
+
+			if (warning) {
+				DrawSprite(SPR_WARNING_SIGN, 0, rtl ? right - warning_dimensions.width - 5 : left + 5, y + warning_offset_y);
+				if (rtl) {
+					right -= (warning_dimensions.width + 10);
+				}
+				else {
+					left += (warning_dimensions.width + 10);
+				}
+			}
+
+			DrawString(left, right, y + text_offset_y, text);
+
+			y += step_height;
+			warning_count++;
+		};
+
+		if (this->new_sep_settings.mode != TTS_MODE_OFF) {
+			if (v->GetNumOrders() == 0) {
+				draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+			}
+			else if (have_missing_times) {
+				if (is_automated_timetable) {
+					draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+				}
+				else {
+					draw_info(STR_TIMETABLE_WARNING_AUTOSEP_MISSING_TIMINGS, true);
+				}
+			}
+			else {
+				draw_info(v->HasSharedOrdersList() ? STR_TIMETABLE_AUTOSEP_OK : STR_TIMETABLE_AUTOSEP_SINGLE_VEH, !v->HasSharedOrdersList());
+			}
+
+			if (have_conditional) draw_info(STR_TIMETABLE_WARNING_AUTOSEP_CONDITIONAL, true);
+			if (have_bad_full_load) draw_info(STR_TIMETABLE_WARNING_FULL_LOAD, true);
+		}
+
+		if (warning_count != this->summary_warnings) {
+			TimetableWindow* mutable_this = const_cast<TimetableWindow*>(this);
+			mutable_this->summary_warnings = warning_count;
+			mutable_this->ReInit();
+		}
+	}
+
 	virtual void DrawWidget(const Rect &r, int widget) const
 	{
 		const Vehicle *v = this->vehicle;
@@ -401,21 +497,21 @@ struct TimetableWindow : Window {
 							colour = ((i == selected) ? TC_SILVER : TC_GREY) | TC_NO_SHADE;
 						} else if (!order->IsTravelTimetabled()) {
 							if (order->GetTravelTime() > 0) {
-								SetTimetableParams(0, 1, order->GetTravelTime());
+								SetTimetableParams(order->GetTravelTime());
 								string = order->GetMaxSpeed() != UINT16_MAX ?
-										STR_TIMETABLE_TRAVEL_FOR_SPEED_ESTIMATED  :
-										STR_TIMETABLE_TRAVEL_FOR_ESTIMATED;
+									    STR_TIMETABLE_TRAVEL_FOR_MINUTES_SPEED_ESTIMATED :
+										STR_TIMETABLE_TRAVEL_FOR_MINUTES_ESTIMATED;
 							} else {
 								string = order->GetMaxSpeed() != UINT16_MAX ?
 										STR_TIMETABLE_TRAVEL_NOT_TIMETABLED_SPEED :
 										STR_TIMETABLE_TRAVEL_NOT_TIMETABLED;
 							}
 						} else {
-							SetTimetableParams(0, 1, order->GetTimetabledTravel());
+							SetTimetableParams(order->GetTimetabledTravel());
 							string = order->GetMaxSpeed() != UINT16_MAX ?
-									STR_TIMETABLE_TRAVEL_FOR_SPEED : STR_TIMETABLE_TRAVEL_FOR;
+								STR_TIMETABLE_TRAVEL_FOR_MINUTES_SPEED : STR_TIMETABLE_TRAVEL_FOR_MINUTES;
 						}
-						SetDParam(2, order->GetMaxSpeed());
+						SetDParam(3, order->GetMaxSpeed());
 
 						DrawString(rtl ? r.left + WD_FRAMERECT_LEFT : middle, rtl ? middle : r.right - WD_FRAMERECT_LEFT, y, string, colour);
 
@@ -443,7 +539,7 @@ struct TimetableWindow : Window {
 
 				int y = r.top + WD_FRAMERECT_TOP;
 
-				bool show_late = this->show_expected && v->lateness_counter > TICKS_PER_MINUTE;
+				bool show_late = this->show_expected && v->lateness_counter > _settings_client.gui.ticks_per_minute;
 				Ticks offset = show_late ? 0 : -v->lateness_counter;
 
 				if (HasBit(v->vehicle_flags, VF_SEPARATION_IN_PROGRESS)) {
@@ -453,8 +549,8 @@ struct TimetableWindow : Window {
 				bool rtl = _current_text_dir == TD_RTL;
 				int abbr_left = rtl ? r.right - WD_FRAMERECT_RIGHT - this->deparr_abbr_width : r.left + WD_FRAMERECT_LEFT;
 				int abbr_right = rtl ? r.right - WD_FRAMERECT_RIGHT : r.left + WD_FRAMERECT_LEFT + this->deparr_abbr_width;
-				int time_left = rtl ? r.left + WD_FRAMERECT_LEFT : r.right - WD_FRAMERECT_RIGHT - this->deparr_time_width;
-				int time_right = rtl ? r.left + WD_FRAMERECT_LEFT + this->deparr_time_width : r.right - WD_FRAMERECT_RIGHT;
+				int time_left = rtl ? r.right - WD_FRAMERECT_RIGHT - r.left - WD_FRAMERECT_RIGHT - this->deparr_abbr_width - 10 - this->deparr_time_width : r.left + WD_FRAMERECT_RIGHT + this->deparr_abbr_width + 10;
+				int time_right = rtl ? r.right - WD_FRAMERECT_RIGHT - this->deparr_abbr_width - 10 : r.left + WD_FRAMERECT_RIGHT + r.left + WD_FRAMERECT_RIGHT + this->deparr_abbr_width + 10 + this->deparr_time_width;
 
 				for (int i = this->vscroll->GetPosition(); i / 2 < v->GetNumOrders(); ++i) { // note: i is also incremented in the loop
 					/* Don't draw anything if it extends past the end of the window. */
@@ -465,10 +561,10 @@ struct TimetableWindow : Window {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_ARRIVAL_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
 							if (this->show_expected && i / 2 == earlyID) {
 								SetDParam(0, arr_dep[i / 2].arrival);
-								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, TC_GREEN);
+								DrawString(time_left, time_right, y, STR_JUST_TIME, TC_GREEN);
 							} else {
 								SetDParam(0, arr_dep[i / 2].arrival + offset);
-								DrawString(time_left, time_right, y, STR_JUST_TIME_TINY, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
+								DrawString(time_left, time_right, y, STR_JUST_TIME, show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 							}
 						}
 					}
@@ -476,7 +572,7 @@ struct TimetableWindow : Window {
 						if (arr_dep[i / 2].departure != INVALID_TICKS) {
 							DrawString(abbr_left, abbr_right, y, STR_TIMETABLE_DEPARTURE_ABBREVIATION, i == selected ? TC_WHITE : TC_BLACK);
 							SetDParam(0, arr_dep[i / 2].departure + offset);
-							DrawString(time_left, time_right, y, STR_JUST_TIME_TINY,
+							DrawString(time_left, time_right, y, STR_JUST_TIME,
 								show_late ? TC_RED : i == selected ? TC_WHITE : TC_BLACK);
 						}
 					}
@@ -490,8 +586,8 @@ struct TimetableWindow : Window {
 
 				Ticks total_time = v->GetTimetableDurationIncomplete();
 				if (total_time != 0) {
-					SetTimetableParams(0, 1, total_time);
-					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, v->HasCompleteTimetable() ? STR_TIMETABLE_TOTAL_TIME : STR_TIMETABLE_TOTAL_TIME_INCOMPLETE);
+					SetTimetableParams(total_time);
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, v->HasCompleteTimetable() ? STR_TIMETABLE_TOTAL_TIME_MINUTES : STR_TIMETABLE_TOTAL_TIME_MINUTES_INCOMPLETE);
 				}
 				y += FONT_HEIGHT_NORMAL;
 
@@ -500,7 +596,7 @@ struct TimetableWindow : Window {
 				if (v->timetable_start != 0) {
 					/* We are running towards the first station so we can start the
 					 * timetable at the given time. */
-					SetDParam(0, STR_JUST_DATE_TINY);
+					SetDParam(0, STR_JUST_DATE);
 					SetDParam(1, v->timetable_start);
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_START_AT);
 				}
@@ -513,9 +609,12 @@ struct TimetableWindow : Window {
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_TIMETABLE_STATUS_ON_TIME);
 				}
 				else {
-					SetTimetableParams(0, 1, abs(lateness_counter));
-					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, lateness_counter < 0 ? STR_TIMETABLE_STATUS_EARLY : STR_TIMETABLE_STATUS_LATE);
+					SetTimetableParams(abs(lateness_counter));
+					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, lateness_counter < 0 ? STR_TIMETABLE_STATUS_EARLY_MINUTES : STR_TIMETABLE_STATUS_LATE_MINUTES);
 				}
+				y += FONT_HEIGHT_NORMAL;
+
+				DrawWarnings(r, y, v);
 				break;
 			}
 
@@ -528,15 +627,9 @@ struct TimetableWindow : Window {
 				if (!_settings_game.order.automatic_timetable_separation || !this->vehicle->HasOrdersList())
 					break;
 
-				/* If the new mode is OFF... */
-				if (this->new_sep_settings.mode == TTS_MODE_OFF) {
-					/* ... skip description lines. */
-					int offset = GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
-
-					y = y + GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height + offset;
-
-				}
-				else {
+				if (this->new_sep_settings.mode != TTS_MODE_OFF &&
+					this->vehicle->HasCompleteTimetable() &&
+					this->vehicle->IsTimetableSeparationValid()) {
 					uint64 par;
 
 					// If separation hasn't just been switched off, we need to draw various description lines.
@@ -551,16 +644,19 @@ struct TimetableWindow : Window {
 						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.num_veh);
 					}
 
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_T || 
+					if (this->new_sep_settings.mode == TTS_MODE_MAN_T ||
 						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
-						
-						SetDParam(0, par);
-						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC_TICKS, TC_BLACK);
 
-						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
+						SetDParam(0, par);
+						SetDParam(1, par);
+						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC, TC_BLACK);
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
+
+						DrawString(left_border, right_border, y, STR_TTSEPARATION_BETWEEN, TC_BLACK);
+						y += GetStringBoundingBox(STR_TTSEPARATION_BETWEEN).height;
 					}
 					else {
-						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC_TICKS).height;
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
 					}
 
 					// Print either the chosen amount of vehicles (when in MAN_N mode) or the calculated result...
@@ -588,6 +684,9 @@ struct TimetableWindow : Window {
 					if (!this->vehicle->HasCompleteTimetable()) {
 						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_TIMETABLE);
 					}
+					else if (!this->vehicle->HasSharedOrdersList()) {
+						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_VEHICLES);
+					}
 					else {
 						/* ... set displayed status to either "Running" or "Initializing" */
 						SetDParam(0, (this->vehicle->IsTimetableSeparationValid()) ? STR_TTSEPARATION_STATUS_RUNNING : STR_TTSEPARATION_STATUS_INIT);
@@ -597,6 +696,8 @@ struct TimetableWindow : Window {
 					/* If separation is switched off, show this instead. */
 					SetDParam(0, STR_TTSEPARATION_STATUS_OFF);
 				}
+
+				y += FONT_HEIGHT_NORMAL;
 
 				/* Print status description. */
 				DrawStringMultiLine(left_border, right_border, y, r.bottom - WD_FRAMERECT_BOTTOM, STR_TTSEPARATION_STATUS_DESC);
@@ -871,14 +972,14 @@ static const NWidgetPart _nested_timetable_widgets[] = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TIMETABLE_PANEL), SetMinimalSize(388, 82), SetResize(1, 10), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		NWidget(NWID_SELECTION, INVALID_COLOUR, WID_VT_ARRIVAL_DEPARTURE_SELECTION),
-			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(80, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
+			NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_ARRIVAL_DEPARTURE_PANEL), SetMinimalSize(85, 0), SetFill(0, 1), SetDataTip(STR_NULL, STR_TIMETABLE_TOOLTIP), SetScrollbar(WID_VT_SCROLLBAR), EndContainer(),
 		EndContainer(),
 		NWidget(NWID_VSCROLLBAR, COLOUR_GREY, WID_VT_SCROLLBAR),
 		NWidget(WWT_PANEL, COLOUR_GREY),
 			NWidget(WWT_FRAME, COLOUR_GREY), SetDataTip(STR_TTSEPARATION_SETTINGS_DESC, STR_NULL), SetPadding(3),
 				NWidget(WWT_DROPDOWN, COLOUR_GREY, WID_VT_TTSEP_MODE_DROPDOWN), SetDataTip(STR_JUST_STRING, STR_TIMETABLE_TOOLTIP),
 				NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_VT_TTSEP_SET_PARAMETER), SetFill(1, 0), SetDataTip(STR_TTSEPARATION_SET_XX, STR_TIMETABLE_TOOLTIP),
-				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(180, 44), EndContainer(),
+				NWidget(WWT_PANEL, COLOUR_GREY, WID_VT_TTSEP_PANEL_TEXT), SetFill(1, 1), SetResize(0, 1), SetMinimalSize(225, 44), EndContainer(),
 			EndContainer(),
 		EndContainer(),
 	EndContainer(),

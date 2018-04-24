@@ -31,7 +31,7 @@ INSTANTIATE_POOL_METHODS(LinkGraphJob)
 static Ticks GetLinkGraphJobJoinDateTicks(uint duration_multiplier)
 {
 	Ticks ticks = _settings_game.linkgraph.recalc_time * DAY_TICKS * duration_multiplier;
-	ticks /= _settings_game.economy.daylength;
+	ticks /= std::max(_settings_game.economy.daylength, (uint8)1);
 
 	return ticks + (_date * DAY_TICKS) + _date_fract;
 }

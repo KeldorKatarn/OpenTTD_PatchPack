@@ -190,6 +190,8 @@ static void Load_ORDR()
 			if (IsSavegameVersionBefore(190) || IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_8)) {
 				order->SetTravelTimetabled(order->GetTravelTime() > 0);
 				order->SetWaitTimetabled(order->GetWaitTime() > 0);
+			} else if (order->IsType(OT_CONDITIONAL) && IsSavegameVersionBefore(SL_PATCH_PACK_1_24)) {
+				order->SetWaitTimetabled(order->GetWaitTime() > 0);
 			}
 		}
 	}
@@ -198,8 +200,10 @@ static void Load_ORDR()
 const SaveLoad *GetOrderExtraInfoDescription()
 {
 	static const SaveLoad _order_extra_info_desc[] = {
-		SLE_ARR(OrderExtraInfo, cargo_type_flags, SLE_UINT8, NUM_CARGO),
-		SLE_END()
+		    SLE_ARR(OrderExtraInfo, cargo_type_flags, SLE_UINT8, NUM_CARGO),
+		SLE_CONDVAR(OrderExtraInfo, xflags,           SLE_UINT8, SL_PATCH_PACK_1_24, SL_MAX_VERSION),
+		SLE_CONDVAR(OrderExtraInfo, xdata,           SLE_UINT32, SL_PATCH_PACK_1_24, SL_MAX_VERSION),
+		    SLE_END()
 	};
 
 	return _order_extra_info_desc;
@@ -305,6 +309,7 @@ const SaveLoad *GetOrderBackupDescription()
 		 SLE_CONDREF(OrderBackup, clone, REF_VEHICLE,                       SL_PATCH_PACK_1_8, SL_MAX_VERSION),
 		     SLE_VAR(OrderBackup, cur_real_order_index,     SLE_UINT8),
 		 SLE_CONDVAR(OrderBackup, cur_implicit_order_index, SLE_UINT8,                    176, SL_MAX_VERSION),
+		 SLE_CONDVAR(OrderBackup, cur_timetable_order_index, SLE_UINT8,    SL_PATCH_PACK_1_24, SL_MAX_VERSION),
 		 SLE_CONDVAR(OrderBackup, current_order_time,       SLE_UINT32,                   176, SL_MAX_VERSION),
 		 SLE_CONDVAR(OrderBackup, lateness_counter,         SLE_INT32,                    176, SL_MAX_VERSION),
 		 SLE_CONDVAR(OrderBackup, timetable_start,          SLE_INT32,                    176, SL_MAX_VERSION),

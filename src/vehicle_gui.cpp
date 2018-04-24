@@ -1687,7 +1687,7 @@ void BaseVehicleListWindow::DrawVehicleListItems(VehicleID selected_vehicle, int
 					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, STR_VEHICLE_LIST_TIMETABLE_DELAY_ON_TIME);
 				} else {
 					SetDParam(0, std::abs(lateness_counter));
-					SetDParam(1, std::abs(lateness_counter) / TICKS_PER_MINUTE);
+					SetDParam(1, std::abs(lateness_counter));
 					DrawString(text_left, text_right, y + line_height - FONT_HEIGHT_SMALL - WD_FRAMERECT_BOTTOM - 1, lateness_counter > 0 ? STR_VEHICLE_LIST_TIMETABLE_DELAY_LATE : STR_VEHICLE_LIST_TIMETABLE_DELAY_EARLY);
 				}
 				break;

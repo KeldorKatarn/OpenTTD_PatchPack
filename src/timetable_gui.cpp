@@ -157,6 +157,7 @@ struct TimetableWindow : Window {
 	bool query_is_bulk_query;             ///< The currently open query window applies to all relevant orders.
 	TTSepSettings new_sep_settings;       ///< Contains new separation settings.
 	VehicleTimetableWidgets query_widget; ///< Required to determinate source of input query
+	int summary_warnings = 0;             ///< Number of summary warnings shown
 
 	TimetableWindow(WindowDesc *desc, WindowNumber window_number) :
 			Window(desc),
@@ -221,9 +222,11 @@ struct TimetableWindow : Window {
 				size->height = WD_FRAMERECT_TOP + 8 * resize->height + WD_FRAMERECT_BOTTOM;
 				break;
 
-			case WID_VT_SUMMARY_PANEL:
-				size->height = WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + WD_FRAMERECT_BOTTOM;
+			case WID_VT_SUMMARY_PANEL: {
+				Dimension d = GetSpriteSize(SPR_WARNING_SIGN);
+				size->height = WD_FRAMERECT_TOP + 2 * FONT_HEIGHT_NORMAL + this->summary_warnings * max<int>(d.height, FONT_HEIGHT_NORMAL) + WD_FRAMERECT_BOTTOM;
 				break;
+			}
 		}
 	}
 
@@ -363,6 +366,101 @@ struct TimetableWindow : Window {
 			case WID_VT_EXPECTED: SetDParam(0, this->show_expected ? STR_TIMETABLE_EXPECTED : STR_TIMETABLE_SCHEDULED); break;
 			case WID_VT_TTSEP_MODE_DROPDOWN: SetDParam(0, TimetableSeparationDropdownOptions[this->new_sep_settings.mode]); break;
 			case WID_VT_TTSEP_SET_PARAMETER: SetDParam(0, (this->new_sep_settings.mode == TTS_MODE_MAN_N) ? STR_TTSEPARATION_SET_NUM : STR_TTSEPARATION_SET_TIME); break;
+		}
+	}
+
+	void DrawWarnings(const Rect& r, int& y, const Vehicle* v) const
+	{
+		bool have_missing_wait = false;
+		bool have_missing_travel = false;
+		bool have_conditional = false;
+		bool have_bad_full_load = false;
+
+		const bool assume_timetabled = HasBit(v->vehicle_flags, VF_AUTOMATE_TIMETABLE);
+
+		for (int n = 0; n < v->GetNumOrders(); ++n) {
+			const Order *order = v->GetOrder(n);
+
+			if (order->IsType(OT_CONDITIONAL)) {
+				have_conditional = true;
+			}
+			else {
+				if (order->GetWaitTime() == 0 && order->IsType(OT_GOTO_STATION)) {
+					have_missing_wait = true;
+				}
+				if (order->GetTravelTime() == 0 && !order->IsTravelTimetabled()) {
+					have_missing_travel = true;
+				}
+			}
+
+			if (!have_bad_full_load && (assume_timetabled || order->IsWaitTimetabled())) {
+				if (order->GetLoadType() & OLFB_FULL_LOAD) {
+					have_bad_full_load = true;
+				}
+				else if (order->GetLoadType() == OLFB_CARGO_TYPE_LOAD) {
+					for (CargoID c = 0; c < NUM_CARGO; c++) {
+						if (order->GetCargoLoadTypeRaw(c) & OLFB_FULL_LOAD) {
+							have_bad_full_load = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		const Dimension warning_dimensions = GetSpriteSize(SPR_WARNING_SIGN);
+		const int step_height = max<int>(warning_dimensions.height, FONT_HEIGHT_NORMAL);
+		const int text_offset_y = (step_height - FONT_HEIGHT_NORMAL) / 2;
+		const int warning_offset_y = (step_height - warning_dimensions.height) / 2;
+		const bool rtl = _current_text_dir == TD_RTL;
+
+		int warning_count = 0;
+
+		auto draw_info = [&](StringID text, bool warning) {
+			int left = r.left + WD_FRAMERECT_LEFT;
+			int right = r.right - WD_FRAMERECT_RIGHT;
+
+			if (warning) {
+				DrawSprite(SPR_WARNING_SIGN, 0, rtl ? right - warning_dimensions.width - 5 : left + 5, y + warning_offset_y);
+				if (rtl) {
+					right -= (warning_dimensions.width + 10);
+				}
+				else {
+					left += (warning_dimensions.width + 10);
+				}
+			}
+
+			DrawString(left, right, y + text_offset_y, text);
+
+			y += step_height;
+			warning_count++;
+		};
+
+		if (this->new_sep_settings.mode != TTS_MODE_OFF) {
+			if (have_conditional) draw_info(STR_TIMETABLE_WARNING_AUTOSEP_CONDITIONAL, true);
+
+			if (have_missing_wait || have_missing_travel) {
+				if (assume_timetabled) {
+					draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+				}
+				else {
+					draw_info(STR_TIMETABLE_WARNING_AUTOSEP_MISSING_TIMINGS, true);
+				}
+			}
+			else if (v->GetNumOrders() == 0) {
+				draw_info(STR_TIMETABLE_AUTOSEP_TIMETABLE_INCOMPLETE, false);
+			}
+			else if (!have_conditional) {
+				draw_info(v->HasSharedOrdersList() ? STR_TIMETABLE_AUTOSEP_OK : STR_TIMETABLE_AUTOSEP_SINGLE_VEH, false);
+			}
+		}
+
+		if (have_bad_full_load) draw_info(STR_TIMETABLE_WARNING_FULL_LOAD, true);
+
+		if (warning_count != this->summary_warnings) {
+			TimetableWindow* mutable_this = const_cast<TimetableWindow*>(this);
+			mutable_this->summary_warnings = warning_count;
+			mutable_this->ReInit();
 		}
 	}
 
@@ -524,6 +622,9 @@ struct TimetableWindow : Window {
 					SetTimetableParams(abs(lateness_counter));
 					DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, lateness_counter < 0 ? STR_TIMETABLE_STATUS_EARLY_MINUTES : STR_TIMETABLE_STATUS_LATE_MINUTES);
 				}
+				y += FONT_HEIGHT_NORMAL;
+
+				DrawWarnings(r, y, v);
 				break;
 			}
 
@@ -536,15 +637,9 @@ struct TimetableWindow : Window {
 				if (!_settings_game.order.automatic_timetable_separation || !this->vehicle->HasOrdersList())
 					break;
 
-				/* If the new mode is OFF... */
-				if (this->new_sep_settings.mode == TTS_MODE_OFF) {
-					/* ... skip description lines. */
-					int offset = GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
-
-					y = y + GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height + offset;
-
-				}
-				else {
+				if (this->new_sep_settings.mode != TTS_MODE_OFF &&
+					this->vehicle->HasCompleteTimetable() &&
+					this->vehicle->IsTimetableSeparationValid()) {
 					uint64 par;
 
 					// If separation hasn't just been switched off, we need to draw various description lines.
@@ -559,9 +654,9 @@ struct TimetableWindow : Window {
 						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.num_veh);
 					}
 
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_T || 
+					if (this->new_sep_settings.mode == TTS_MODE_MAN_T ||
 						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
-						
+
 						SetDParam(0, par);
 						SetDParam(1, par);
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC, TC_BLACK);
@@ -598,6 +693,9 @@ struct TimetableWindow : Window {
 				if (this->vehicle->IsTimetableSeparationOn()) {
 					if (!this->vehicle->HasCompleteTimetable()) {
 						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_TIMETABLE);
+					}
+					else if (!this->vehicle->HasSharedOrdersList()) {
+						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_VEHICLES);
 					}
 					else {
 						/* ... set displayed status to either "Running" or "Initializing" */

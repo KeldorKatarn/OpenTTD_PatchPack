@@ -2,6 +2,9 @@
 
 * * *
 
+### v1.24.1 (2018-04-24)
+* Hotfix: Conditional order comparator dropdown list was broken.
+
 ### v1.24.0 (2018-04-24)
 * Make it possible to filter the industry directory by accepted and produced cargo.
 * Adjust timetable window layout

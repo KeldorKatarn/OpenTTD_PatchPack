@@ -1517,6 +1517,24 @@ void TraceRestrictRemoveSlotID(TraceRestrictSlotID index)
 			if (IsTraceRestrictDoubleItem(item)) i++;
 		}
 	}
+ 
+	bool changed_order = false;
+
+	Order *o;
+	FOR_ALL_ORDERS(o) {
+		if (o->IsType(OT_CONDITIONAL) && o->GetConditionVariable() == OCV_SLOT_OCCUPANCY && o->GetConditionValue() == index) {
+			o->SetConditionValue(INVALID_TRACE_RESTRICT_SLOT_ID);
+			changed_order = true;
+		}
+	}
+
+	// Update windows
+	InvalidateWindowClassesData(WC_TRACE_RESTRICT);
+
+	if (changed_order) {
+		InvalidateWindowClassesData(WC_VEHICLE_ORDERS);
+		InvalidateWindowClassesData(WC_VEHICLE_TIMETABLE);
+	}
 }
 
 static bool IsUniqueSlotName(const char *name)

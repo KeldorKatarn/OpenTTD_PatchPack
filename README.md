@@ -27,7 +27,10 @@ See [joker-changelog.md](joker-changelog.md) for changelog.
 
 #### This patchpack contains the following
 
+
 * Variable day length setting
+
+* Show daytime next to date and use hours and minutes additional to ticks in the GUI (ticks_per_minute adjustable per client)
 
 * 255 GRFs in single AND multiplayer mode
 
@@ -43,7 +46,11 @@ See [joker-changelog.md](joker-changelog.md) for changelog.
 
 * Stations now keep a history of waiting cargo which can be displayed as a graph (last 48 days in 2 day increments)
 
-* Multiple rail-type sets should now be more compatible with eachother.
+* Filter the industry directory by accepted and produced cargo.
+
+* Useful warnings are shown in timetable window, e.g. when using auto-separation on conditional or full load orders.
+
+* Multiple rail-type sets should now be more compatible with each other.
 
 * Rail types are sorted differently in the toolbar dropdown, first by compatibility, then by max speed.
 

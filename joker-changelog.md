@@ -2,6 +2,19 @@
 
 * * *
 
+### v1.24.0 (2018-04-24)
+* Make it possible to filter the industry directory by accepted and produced cargo.
+* Adjust timetable window layout
+* Adjust trip history window layout
+* Add size definition button to the departure board window and color the entire window brown.
+* Change the way timetable automation handles conditional orders
+* Show useful warnings in timetable window, e.g. when using auto-separation on conditional or full load orders.
+* Add configurable buffer times to timetable automation and make ticks_per_minute a GUI setting.
+* Add settings to round up travel and loading times during timetable automation.
+* Display durations in hours and minutes everywhere additional to ticks.
+* Go back to original values for industry site search to prevent the game from freezing too long.
+* Bugfix: Conditional orders checking slot occupancy now react correctly when the referenced slot is deleted.
+
 ### v1.23.0 (2018-04-22)
 * Add a button to force a resort every 74 ticks (every standard non-scaled day). This is especially useful for very frequently changing properties like timetable delay. reliability or profit-this-year.
 * The sorting order toggle button in vehicle and group lists now forces a complete resort.
@@ -14,7 +27,7 @@
 * Bugfix custom road bridgeheads. The bridgehead now correctly allows removing certain road parts.
 * Bridges can now be upgraded without losing rail signals or custom road bridgehead properties.
 * Stations now keep a history of waiting cargo which can be displayed as a graph (last 48 days in 2 day increments)
-* Multiple rail-type sets should now be more compatible with eachother
+* Multiple rail-type sets should now be more compatible with each other
 * Adjusted the way rail types are sorted in the toolbar dropdown.
 
 ### v1.21.0 (2018-04-19)

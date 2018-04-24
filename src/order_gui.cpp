@@ -1998,7 +1998,7 @@ public:
 					(cond_var == OCV_REQUIRES_SERVICE ||
 					 cond_var == OCV_CARGO_ACCEPTANCE ||
 					 cond_var == OCV_CARGO_WAITING ||
-					 cond_var == OCV_SLOT_OCCUPANCY) ? 0x3F : 0xC0, DDSF_LOST_FOCUS);
+					 cond_var == OCV_SLOT_OCCUPANCY) ? 0x3F : 0xC0);
 				break;
 			}
 

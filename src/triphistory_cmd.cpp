@@ -59,7 +59,7 @@ int32 TripHistory::UpdateCalculated(bool update_entries)
 	}
 
 	// We ignore the first entry since it's still ongoing and would mess up the averages.
-	this->total_profit = std::accumulate(std::begin(this->entries) + 1, std::end(this->entries), 0,
+	this->total_profit = std::accumulate(std::begin(this->entries) + 1, std::end(this->entries), (Money)0,
 		[](auto sum, auto entry) { return sum + entry.profit; });
 
 	auto total_time_between_trips = std::accumulate(std::begin(this->entries) + 1, std::end(this->entries), 0,
@@ -74,7 +74,7 @@ int32 TripHistory::UpdateCalculated(bool update_entries)
 	this->avg_profit = (valid_entries > 1) ? (total_profit / (Money)(valid_entries - 1)) : 0;
 	this->avg_time_between_trips = (valid_tbt_entries > 0) ? (total_time_between_trips / valid_tbt_entries) : 0;
 
-	return valid_entries;
+	return (int32)valid_entries;
 }
 
 int32 TripHistory::FindPercentChange(float current_value, float previous_value)

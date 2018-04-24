@@ -193,7 +193,7 @@ std::list<std::shared_ptr<Packet>> NetworkUDPSocketHandler::SendNetworkGameNewGr
 
 		packet->Send_uint8(NETWORK_NEWGRF_INFO_VERSION);
 		packet->Send_uint8(packet_id++); // The id of this packet
-		packet->Send_uint8(pair.second.size()); // Number of NewGRFs in this packet
+		packet->Send_uint8((uint8)pair.second.size()); // Number of NewGRFs in this packet
 
 		for (auto grf_ident : pair.second) {
 			this->SendGRFIdentifier(packet.get(), &grf_ident);

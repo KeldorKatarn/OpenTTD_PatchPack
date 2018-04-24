@@ -1118,9 +1118,9 @@ TextColour GetContrastColour(uint8 background, uint8 threshold)
 	Colour c = _cur_palette.palette[background];
 	/* Compute brightness according to http://www.w3.org/TR/AERT#color-contrast.
 	 * The following formula computes 1000 * brightness^2, with brightness being in range 0 to 255. */
-	uint sq1000_brightness = c.r * c.r * 299 + c.g * c.g * 587 + c.b * c.b * 114;
+	auto sq1000_brightness = c.r * c.r * 299 + c.g * c.g * 587 + c.b * c.b * 114;
 	/* Compare with threshold brightness which defaults to 128 (50%) */
-	return sq1000_brightness < threshold * 128 * 1000 ? TC_WHITE : TC_BLACK;
+	return sq1000_brightness < (threshold * 128 * 1000) ? TC_WHITE : TC_BLACK;
 }
 
 /**

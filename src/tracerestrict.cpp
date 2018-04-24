@@ -369,11 +369,11 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
 						switch (static_cast<TraceRestrictSlotOccupancyCondAuxField>(GetTraceRestrictAuxField(item))) {
 							case TRSOCAF_OCCUPANTS:
-								result = TestCondition(slot != NULL ? slot->occupants.size() : 0, condop, value);
+								result = TestCondition(slot != NULL ? (int)slot->occupants.size() : 0, condop, value);
 								break;
 
 							case TRSOCAF_REMAINING:
-								result = TestCondition(slot != NULL ? slot->max_occupancy - slot->occupants.size() : 0, condop, value);
+								result = TestCondition(slot != NULL ? slot->max_occupancy - (int)slot->occupants.size() : 0, condop, value);
 								break;
 
 							default:

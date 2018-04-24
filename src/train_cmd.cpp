@@ -2426,7 +2426,7 @@ static int GetAndClearLastBridgeEntranceSetSignalIndex(TileIndex bridge_entrance
 				if (slot_bits) {
 					uint8 i = FindLastBit(slot_bits);
 					ClrBit(slot_bits, i);
-					return 1 + 15 + (64 * slot) + i;
+					return (int)(1 + 15 + (64 * slot) + i);
 				}
 			}
 		}

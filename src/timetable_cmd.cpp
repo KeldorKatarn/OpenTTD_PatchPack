@@ -497,7 +497,7 @@ CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 /**
  * Update the timetable for the vehicle.
  * @param v The vehicle to update the timetable for.
- * @param traveling Whether we just traveled or waited at a station.
+ * @param travelling Whether we just traveled or waited at a station.
  */
 void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 {
@@ -582,7 +582,15 @@ void UpdateVehicleTimetable(Vehicle *v, bool travelling)
 			return;
 		}
 	} else {
-		assert(real_timetable_order == real_current_order);
+		const auto type = v->type == VEH_TRAIN ?
+			                  "Train" :
+			                  v->type == VEH_ROAD ?
+			                  "Road Vehicle" :
+			                  v->type == VEH_SHIP ?
+			                  "Ship" :
+			                  "Aircraft";
+
+		assert_msg(real_timetable_order == real_current_order, "%u == %u on %s #%u", v->cur_timetable_order_index, v->cur_real_order_index, type, v->unitnumber);
 	}
 
 	if (just_started) return;

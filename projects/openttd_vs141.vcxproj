@@ -93,18 +93,18 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -1431,7 +1431,7 @@ struct SpecializedVehicle : public Vehicle {
 	static inline T *From(Vehicle *v)
 	{
 		assert(v->type == Type);
-		return (T *)v;
+		return dynamic_cast<T*>(v);
 	}
 
 	/**

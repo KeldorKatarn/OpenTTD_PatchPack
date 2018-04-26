@@ -10,57 +10,58 @@
 /** @file vehicle.cpp Base implementations of all vehicles. */
 
 #include "stdafx.h"
-#include "error.h"
-#include "roadveh.h"
-#include "ship.h"
-#include "spritecache.h"
-#include "timetable.h"
-#include "viewport_func.h"
-#include "news_func.h"
+
+#include "aircraft.h"
+#include "articulated_vehicles.h"
+#include "autoreplace_func.h"
+#include "autoreplace_gui.h"
+#include "bridge_map.h"
 #include "command_func.h"
 #include "company_func.h"
-#include "train.h"
-#include "aircraft.h"
+#include "date_func.h"
+#include "depot_base.h"
+#include "depot_func.h"
+#include "depot_map.h"
+#include "economy_base.h"
+#include "effectvehicle_base.h"
+#include "effectvehicle_func.h"
+#include "error.h"
+#include "gamelog.h"
+#include "group_gui.h"
 #include "newgrf_debug.h"
 #include "newgrf_sound.h"
 #include "newgrf_station.h"
-#include "group_gui.h"
-#include "strings_func.h"
-#include "zoom_func.h"
-#include "date_func.h"
-#include "vehicle_func.h"
-#include "autoreplace_func.h"
-#include "autoreplace_gui.h"
-#include "station_base.h"
-#include "ai/ai.hpp"
-#include "depot_func.h"
-#include "network/network.h"
-#include "core/pool_func.hpp"
-#include "economy_base.h"
-#include "articulated_vehicles.h"
-#include "roadstop_base.h"
-#include "depot_base.h"
-#include "core/random_func.hpp"
-#include "core/backup_type.hpp"
+#include "news_func.h"
 #include "order_backup.h"
+#include "roadstop_base.h"
+#include "roadveh.h"
+#include "ship.h"
 #include "sound_func.h"
-#include "effectvehicle_func.h"
-#include "effectvehicle_base.h"
-#include "vehiclelist.h"
-#include "bridge_map.h"
-#include "tunnel_map.h"
-#include "depot_map.h"
-#include "gamelog.h"
+#include "spritecache.h"
+#include "station_base.h"
+#include "strings_func.h"
+#include "tbtr_template_vehicle_func.h"
+#include "timetable.h"
 #include "tracerestrict.h"
+#include "train.h"
+#include "tunnel_map.h"
+#include "vehicle_func.h"
+#include "vehiclelist.h"
+#include "viewport_func.h"
+#include "zoom_func.h"
+
+#include "ai/ai.hpp"
+#include "blitter/factory.hpp"
+#include "core/backup_type.hpp"
+#include "core/pool_func.hpp"
+#include "core/random_func.hpp"
 #include "linkgraph/linkgraph.h"
 #include "linkgraph/refresh.h"
-#include "blitter/factory.hpp"
-
+#include "network/network.h"
 #include "table/strings.h"
 
 #include <algorithm>
 
-#include "tbtr_template_vehicle_func.h"
 #include "safeguards.h"
 
 /* Number of bits in the hash to use from each vehicle coord */
@@ -966,49 +967,78 @@ Vehicle::~Vehicle()
 
 /**
  * Adds a vehicle to the list of vehicles that visited a depot this tick
- * @param *v vehicle to add
+ * @param vehicle vehicle to add
  */
-void VehicleEnteredDepotThisTick(Vehicle *v)
+void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 {
-	/* Template Replacement Setup stuff */
-	bool stayInDepot = v->current_order.GetDepotActionType() != ODATF_SERVICE_ONLY;
-	TemplateReplacement *tr = GetTemplateReplacementByGroupID(v->group_id);
-	if ( tr ) {
-		if ( stayInDepot )	_vehicles_to_templatereplace[(Train*)v] = true;
-		else				_vehicles_to_templatereplace[(Train*)v] = false;
-	}
-	/* Moved the assignment for auto replacement here to prevent auto replacement
-	 * from happening if template replacement is also scheduled */
-	else
-		/* Vehicle should stop in the depot if it was in 'stopping' state */
-		_vehicles_to_autoreplace[v] = !(v->vehstatus & VS_STOPPED);
+	// Template Replacement Setup stuff
+	{
+		const bool stay_in_depot = vehicle->current_order.GetType() == OT_GOTO_DEPOT &&
+		                           vehicle->current_order.GetDepotActionType() != ODATF_SERVICE_ONLY;
 
-	/* We ALWAYS set the stopped state. Even when the vehicle does not plan on
-	 * stopping in the depot, so we stop it to ensure that it will not reserve
-	 * the path out of the depot before we might autoreplace it to a different
-	 * engine. The new engine would not own the reserved path we store that we
-	 * stopped the vehicle, so autoreplace can start it again */
+		TemplateReplacement* template_replacement = GetTemplateReplacementByGroupID(vehicle->group_id);
 
-
-	if (v->HasOrdersList() && (HasBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT) || HasBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
-		v->current_order.GetDepotOrderType() == ODTF_MANUAL)) {
-		for (int i = 0; i < v->GetNumOrders(); ++i) {
-			Order* order = v->GetOrderAt(i);
-
-			assert(order != nullptr);
-
-			if (order->GetType() == OT_GOTO_DEPOT && order->GetDestination() == v->current_order.GetDestination()) {
-				v->cur_implicit_order_index = i;
-				v->cur_real_order_index = i;
-				break;
-			}
+		if (template_replacement != nullptr) {
+			_vehicles_to_templatereplace[Train::From(vehicle)] = stay_in_depot;
+		} else {
+			// Moved the assignment for auto replacement here to prevent auto replacement
+			// from happening if template replacement is also scheduled.
+			// Vehicle should stop in the depot if it was in 'stopping' state.
+			_vehicles_to_autoreplace[vehicle] = !(vehicle->vehstatus & VS_STOPPED);
 		}
 	}
 
-	ClrBit(v->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
-	ClrBit(v->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
+	// Manual depot order stuff
+	{
+		const bool has_manual_depot_order = HasBit(vehicle->vehicle_flags, VF_SHOULD_GOTO_DEPOT) ||
+		                                    HasBit(vehicle->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
+		                                    (vehicle->current_order.GetType() == OT_GOTO_DEPOT &&
+		                                     vehicle->current_order.GetDepotOrderType() == ODTF_MANUAL);
 
-	v->vehstatus |= VS_STOPPED;
+		const bool current_order_needs_change = vehicle->GetOrderAt(vehicle->cur_real_order_index)->GetType() != OT_GOTO_DEPOT ||
+		                                        vehicle->GetOrderAt(vehicle->cur_real_order_index)->GetDestination() != vehicle->current_order.GetDestination();
+
+		if (vehicle->HasOrdersList() && has_manual_depot_order && current_order_needs_change) {
+			std::vector<int> depot_order_indices;
+
+			for (int i = 0; i < vehicle->GetNumOrders(); ++i) {
+				Order* order = vehicle->GetOrderAt(i);
+
+				assert(order != nullptr);
+
+				if (order->GetType() == OT_GOTO_DEPOT && order->GetDestination() == vehicle->current_order.GetDestination()) {
+					depot_order_indices.push_back(i);
+				}
+			}
+
+			if (!depot_order_indices.empty()) {
+				const auto next_depot_order = std::find_if(depot_order_indices.begin(), depot_order_indices.end(), [&](int index)
+				{
+					return index > vehicle->cur_real_order_index;
+				});
+
+				const int new_order_index = next_depot_order != depot_order_indices.end() ?
+					                            *next_depot_order :
+					                            *depot_order_indices.begin();
+
+				vehicle->cur_implicit_order_index = new_order_index;
+				vehicle->cur_real_order_index = new_order_index;
+				// We're skipping to the next depot order. Travel times will be wrong.
+				vehicle->cur_timetable_order_index = INVALID_VEH_ORDER_ID;;
+				InvalidateVehicleOrder(vehicle, 0);
+			}
+		}
+
+		ClrBit(vehicle->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
+		ClrBit(vehicle->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
+	}
+
+	// We ALWAYS set the stopped state. Even when the vehicle does not plan on
+	// stopping in the depot, so we stop it to ensure that it will not reserve
+	// the path out of the depot before we might autoreplace it to a different
+	// engine. The new engine would not own the reserved path we store that we
+	// stopped the vehicle, so autoreplace can start it again.
+	vehicle->vehstatus |= VS_STOPPED;
 }
 
 /**
@@ -2750,10 +2780,13 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 		if (command & DEPOT_DONT_CANCEL) return CMD_ERROR; // Requested no cancellation of depot orders
 
 		if(flags & DC_EXEC) {
-			// Cancel the forced depot order.
 			ClrBit(this->vehicle_flags, VF_SHOULD_GOTO_DEPOT);
 			ClrBit(this->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT);
 			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
+
+			// Prevent any attempt to update timetable for current order, as actual travel time
+			// will be incorrect due to depot command.
+			this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
 		}
 		return CommandCost();
 
@@ -2785,11 +2818,11 @@ CommandCost Vehicle::SendToDepot(DoCommandFlag flags, DepotCommand command)
 
 			this->current_order.MakeDummy();
 			SetWindowWidgetDirty(WC_VEHICLE_VIEW, this->index, WID_VV_START_STOP);
-		}
 
-		// Prevent any attempt to update timetable for current order, as actual travel time
-		// will be incorrect due to depot command.
-		this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+			// Prevent any attempt to update timetable for current order, as actual travel time
+			// will be incorrect due to depot command.
+			this->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+		}
 
 		return CommandCost();
 	}

@@ -833,115 +833,163 @@ static void ShowScreenshotResultMessage(bool ret)
 * Return the colour a tile would be displayed with in the small map in mode "Owner".
 *
 * @param tile The tile of which we would like to get the colour.
-* @param type The type of screenshot to create tile colors for.
+* @param screenshot_type The type of screenshot to create tile colors for.
 * @return The colour of tile in the small map in mode "Owner"
 */
-static inline byte GetMinimapPixels(TileIndex tile, ScreenshotType type)
+static byte GetMinimapPixels(TileIndex tile, ScreenshotType screenshot_type)
 {
-	auto t = GetTileType(tile);
+	const auto tile_type = GetTileType(tile);
 
-	switch (type) {
+	switch (screenshot_type) {
 		case SC_MINIMAP: {
-			if (t == MP_STATION) {
+			if (tile_type == MP_STATION) {
 				switch (GetStationType(tile)) {
-					case STATION_RAIL:     return MKCOLOUR(PC_LIGHT_BLUE);
-					case STATION_AIRPORT:  return MKCOLOUR(0xCF);
-					case STATION_TRUCK:    return MKCOLOUR(PC_ORANGE);
-					case STATION_BUS:      return MKCOLOUR(PC_YELLOW);
-					case STATION_OILRIG:   // FALLTHROUGH
-					case STATION_DOCK:     return MKCOLOUR(PC_WHITE);
-					case STATION_BUOY:     return MKCOLOUR(PC_WATER);
-					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
-					default:               NOT_REACHED();
+					case STATION_RAIL:
+						return MKCOLOUR(PC_LIGHT_BLUE);
+					case STATION_AIRPORT:
+						return MKCOLOUR(0xCF);
+					case STATION_TRUCK:
+						return MKCOLOUR(PC_ORANGE);
+					case STATION_BUS:
+						return MKCOLOUR(PC_YELLOW);
+					case STATION_OILRIG: // FALLTHROUGH
+					case STATION_DOCK:
+						return MKCOLOUR(PC_WHITE);
+					case STATION_BUOY:
+						return MKCOLOUR(PC_WATER);
+					case STATION_WAYPOINT:
+						return MKCOLOUR(PC_GREY);
+					default: NOT_REACHED();
 				}
 			}
-			
+
 			if (IsBridgeAbove(tile)) {
 				return MKCOLOUR(PC_DARK_GREY);
 			}
 
-			switch (t) {
-				case MP_TUNNELBRIDGE:	return MKCOLOUR(PC_DARK_GREY);
-				case MP_RAILWAY:		return MKCOLOUR(PC_GREY);
-				case MP_ROAD:			return MKCOLOUR(PC_BLACK);
-				case MP_HOUSE:			return MKCOLOUR(0xB5);
-				case MP_WATER:			return MKCOLOUR(PC_WATER);
-				case MP_INDUSTRY:		return MKCOLOUR(0xA2);
-				default:				return MKCOLOUR(0x51);
+			switch (tile_type) {
+				case MP_TUNNELBRIDGE:
+					return MKCOLOUR(PC_DARK_GREY);
+				case MP_RAILWAY:
+					return MKCOLOUR(PC_GREY);
+				case MP_ROAD:
+					return MKCOLOUR(PC_BLACK);
+				case MP_HOUSE:
+					return MKCOLOUR(0xB5);
+				case MP_WATER:
+					return MKCOLOUR(PC_WATER);
+				case MP_INDUSTRY:
+					return MKCOLOUR(0xA2);
+				default:
+					return MKCOLOUR(0x51);
 			}
 			break;
 		}
 
 		case SC_MINI_HEIGHTMAP: {
-			if (t == MP_STATION) {
+			if (tile_type == MP_STATION) {
 				switch (GetStationType(tile)) {
-					case STATION_RAIL:     return MKCOLOUR(PC_GREY);
-					case STATION_AIRPORT:  return MKCOLOUR(PC_GREY);
-					case STATION_TRUCK:    return MKCOLOUR(PC_BLACK);
-					case STATION_BUS:      return MKCOLOUR(PC_BLACK);
-					case STATION_OILRIG:   // FALLTHROUGH
-					case STATION_DOCK:     return MKCOLOUR(PC_GREY);
-					case STATION_BUOY:     return MKCOLOUR(PC_WATER);
-					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
-					default:               NOT_REACHED();
+					case STATION_RAIL:
+						return MKCOLOUR(PC_GREY);
+					case STATION_AIRPORT:
+						return MKCOLOUR(PC_GREY);
+					case STATION_TRUCK:
+						return MKCOLOUR(PC_BLACK);
+					case STATION_BUS:
+						return MKCOLOUR(PC_BLACK);
+					case STATION_OILRIG: // FALLTHROUGH
+					case STATION_DOCK:
+						return MKCOLOUR(PC_GREY);
+					case STATION_BUOY:
+						return MKCOLOUR(PC_WATER);
+					case STATION_WAYPOINT:
+						return MKCOLOUR(PC_GREY);
+					default: NOT_REACHED();
 				}
 			}
-			
+
 			if (IsBridgeAbove(tile)) {
 				return MKCOLOUR(PC_DARK_GREY);
 			}
 
-			switch (t) {
-				case MP_TUNNELBRIDGE:	return MKCOLOUR(PC_DARK_GREY);
-				case MP_RAILWAY:		return MKCOLOUR(PC_GREY);
-				case MP_ROAD:			return MKCOLOUR(PC_BLACK);
-				case MP_HOUSE:			return MKCOLOUR(0xB5);
-				case MP_WATER:			return MKCOLOUR(PC_WATER);
-				case MP_INDUSTRY:		return MKCOLOUR(0xA2);
-				default:
-				{
-					auto tile_z = GetTileZ(tile);
-					auto max_z = _settings_game.construction.max_heightlevel;
+			switch (tile_type) {
+				case MP_TUNNELBRIDGE:
+					return MKCOLOUR(PC_DARK_GREY);
+				case MP_RAILWAY:
+					return MKCOLOUR(PC_GREY);
+				case MP_ROAD:
+					return MKCOLOUR(PC_BLACK);
+				case MP_HOUSE:
+					return MKCOLOUR(0xB5);
+				case MP_WATER:
+					return MKCOLOUR(PC_WATER);
+				case MP_INDUSTRY:
+					return MKCOLOUR(0xA2);
+				default: {
+					const auto tile_z = GetTileZ(tile);
+					const auto max_z = _settings_game.construction.max_heightlevel;
 
-					auto color_index = (tile_z * 16) / max_z;
+					const auto color_index = (tile_z * 16) / max_z;
 
 					switch (color_index) {
-						case 0:  return MKCOLOUR(0x50);
-						case 1:  return MKCOLOUR(0x51);
-						case 2:  return MKCOLOUR(0x52);
-						case 3:  return MKCOLOUR(0x53);
-						case 4:  return MKCOLOUR(0x54);
-						case 5:  return MKCOLOUR(0x55);
-						case 6:  return MKCOLOUR(0x56);
-						case 7:  return MKCOLOUR(0x57);
-						case 8:  return MKCOLOUR(0x3B);
-						case 9:  return MKCOLOUR(0x3A);
-						case 10: return MKCOLOUR(0x39);
-						case 11: return MKCOLOUR(0x38);
-						case 12: return MKCOLOUR(0x37);
-						case 13: return MKCOLOUR(0x36);
-						case 14: return MKCOLOUR(0x35);
-						case 15: return MKCOLOUR(0x69);
-						default: return MKCOLOUR(0x46);
+						case 0:
+							return MKCOLOUR(0x50);
+						case 1:
+							return MKCOLOUR(0x51);
+						case 2:
+							return MKCOLOUR(0x52);
+						case 3:
+							return MKCOLOUR(0x53);
+						case 4:
+							return MKCOLOUR(0x54);
+						case 5:
+							return MKCOLOUR(0x55);
+						case 6:
+							return MKCOLOUR(0x56);
+						case 7:
+							return MKCOLOUR(0x57);
+						case 8:
+							return MKCOLOUR(0x3B);
+						case 9:
+							return MKCOLOUR(0x3A);
+						case 10:
+							return MKCOLOUR(0x39);
+						case 11:
+							return MKCOLOUR(0x38);
+						case 12:
+							return MKCOLOUR(0x37);
+						case 13:
+							return MKCOLOUR(0x36);
+						case 14:
+							return MKCOLOUR(0x35);
+						case 15:
+							return MKCOLOUR(0x69);
+						default:
+							return MKCOLOUR(0x46);
 					}
-					break;
 				}
 			}
-			break;
 		}
 
 		case SC_MINI_INDUSTRYMAP: {
-			if (t == MP_STATION) {
+			if (tile_type == MP_STATION) {
 				switch (GetStationType(tile)) {
-					case STATION_RAIL:     return MKCOLOUR(PC_DARK_GREY);
-					case STATION_AIRPORT:  return MKCOLOUR(GREY_SCALE(12));
-					case STATION_TRUCK:    return MKCOLOUR(PC_GREY);
-					case STATION_BUS:      return MKCOLOUR(PC_GREY);
-					case STATION_OILRIG:   // FALLTHROUGH
-					case STATION_DOCK:     return MKCOLOUR(PC_GREY);
-					case STATION_BUOY:     return MKCOLOUR(PC_BLACK);
-					case STATION_WAYPOINT: return MKCOLOUR(PC_GREY);
-					default:               NOT_REACHED();
+					case STATION_RAIL:
+						return MKCOLOUR(PC_DARK_GREY);
+					case STATION_AIRPORT:
+						return MKCOLOUR(GREY_SCALE(12));
+					case STATION_TRUCK:
+						return MKCOLOUR(PC_GREY);
+					case STATION_BUS:
+						return MKCOLOUR(PC_GREY);
+					case STATION_OILRIG: // FALLTHROUGH
+					case STATION_DOCK:
+						return MKCOLOUR(PC_GREY);
+					case STATION_BUOY:
+						return MKCOLOUR(PC_BLACK);
+					case STATION_WAYPOINT:
+						return MKCOLOUR(PC_GREY);
+					default: NOT_REACHED();
 				}
 			}
 
@@ -949,98 +997,94 @@ static inline byte GetMinimapPixels(TileIndex tile, ScreenshotType type)
 				return MKCOLOUR(GREY_SCALE(12));
 			}
 
-			switch (t) {
-				case MP_TUNNELBRIDGE:	return MKCOLOUR(GREY_SCALE(12));
-				case MP_RAILWAY:		return MKCOLOUR(PC_DARK_GREY);
-				case MP_ROAD:			return MKCOLOUR(PC_GREY);
-				case MP_HOUSE:			return MKCOLOUR(GREY_SCALE(4));
-				case MP_WATER:			return MKCOLOUR(0x12);
-				case MP_INDUSTRY:
-				{
-					IndustryType type = Industry::GetByTile(tile)->type;
+			switch (tile_type) {
+				case MP_TUNNELBRIDGE:
+					return MKCOLOUR(GREY_SCALE(12));
+				case MP_RAILWAY:
+					return MKCOLOUR(PC_DARK_GREY);
+				case MP_ROAD:
+					return MKCOLOUR(PC_GREY);
+				case MP_HOUSE:
+					return MKCOLOUR(GREY_SCALE(4));
+				case MP_WATER:
+					return MKCOLOUR(0x12);
+				case MP_INDUSTRY: {
+					const IndustryType industry_type = Industry::GetByTile(tile)->type;
 
-					return GetIndustrySpec(type)->map_colour * 0x01010101;
+					return GetIndustrySpec(industry_type)->map_colour * 0x01010101;
 				}
-				default:		return MKCOLOUR(GREY_SCALE(2));
+				default:
+					return MKCOLOUR(GREY_SCALE(2));
 			}
-			break;
 		}
 
 		case SC_MINI_OWNERMAP: {
 			if (IsBridgeAbove(tile)) return MKCOLOUR(PC_DARK_GREY);
 
-			/* setup owner table */
-			const Company *c;
+			// Setup owner table.
 			uint32 _owner_colours[OWNER_END + 1];
 
-			/* fill with some special colours */
+			// fill with some special colours.
 			_owner_colours[OWNER_TOWN] = MKCOLOUR(0x00994433);
 			_owner_colours[OWNER_NONE] = MKCOLOUR(0x54545454);
 			_owner_colours[OWNER_WATER] = MKCOLOUR(0x00000066);
-			_owner_colours[OWNER_END]   = MKCOLOUR(0x20202020); // industry
+			_owner_colours[OWNER_END] = MKCOLOUR(0x20202020); // Industry
 
-			/* now fill with the company colours */
+			// Now fill with the company colours.
+			const Company* c;
 			FOR_ALL_COMPANIES(c) {
 				_owner_colours[c->index] =
 					_colour_gradient[c->colour][5];
 			}
 
-			Owner o = GetTileOwner(tile);
-
 			switch (GetTileType(tile)) {
-				case MP_HOUSE:        return MKCOLOUR(GREY_SCALE(12));
-				case MP_INDUSTRY:     return MKCOLOUR(PC_GREY);
+				case MP_HOUSE:
+					return MKCOLOUR(GREY_SCALE(12));
+				case MP_INDUSTRY:
+					return MKCOLOUR(PC_GREY);
 
-				case MP_RAILWAY:      return _owner_colours[GetTileOwner(tile)];
+				case MP_RAILWAY:
+					return _owner_colours[GetTileOwner(tile)];
 
-				case MP_STATION:
-				{
-					Owner o = GetTileOwner(tile);
+				case MP_STATION: {
+					const Owner owner = GetTileOwner(tile);
 
-					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
-					{
+					if (owner == OWNER_TOWN || owner == OWNER_NONE || owner == OWNER_DEITY) {
 						return MKCOLOUR(PC_DARK_GREY);
 					}
-					else
-					{
-						return _owner_colours[GetTileOwner(tile)];
-					}
+
+					return _owner_colours[GetTileOwner(tile)];
 				}
 
-				case MP_ROAD:
-				{
-					Owner o = GetTileOwner(tile);
+				case MP_ROAD: {
+					const Owner owner = GetTileOwner(tile);
 
-					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
-					{
+					if (owner == OWNER_TOWN || owner == OWNER_NONE || owner == OWNER_DEITY) {
 						return MKCOLOUR(PC_DARK_GREY);
 					}
-					else
-					{
-						return _owner_colours[GetTileOwner(tile)];
-					}
+
+					return _owner_colours[GetTileOwner(tile)];
 				}
 
-				case MP_TUNNELBRIDGE: 
-				{
-					Owner o = GetTileOwner(tile);
+				case MP_TUNNELBRIDGE: {
+					const Owner owner = GetTileOwner(tile);
 
-					if (o == OWNER_TOWN || o == OWNER_NONE || o == OWNER_DEITY)
-					{
+					if (owner == OWNER_TOWN || owner == OWNER_NONE || owner == OWNER_DEITY) {
 						return MKCOLOUR(PC_DARK_GREY);
 					}
-					else
-					{
-						return _owner_colours[GetTileOwner(tile)];
-					}
+
+					return _owner_colours[GetTileOwner(tile)];
 				}
 
-				case MP_OBJECT:       // FALLTHROUGH
-				case MP_CLEAR:        // FALLTHROUGH
-				case MP_TREES:        return MKCOLOUR(GREY_SCALE(2));
-				case MP_WATER:        return MKCOLOUR(0x12);
-				case MP_VOID:         return MKCOLOUR(PC_BLACK);
-				default:		      NOT_REACHED();
+				case MP_OBJECT: // FALLTHROUGH
+				case MP_CLEAR:  // FALLTHROUGH
+				case MP_TREES:
+					return MKCOLOUR(GREY_SCALE(2));
+				case MP_WATER:
+					return MKCOLOUR(0x12);
+				case MP_VOID:
+					return MKCOLOUR(PC_BLACK);
+				default: NOT_REACHED();
 			}
 		}
 

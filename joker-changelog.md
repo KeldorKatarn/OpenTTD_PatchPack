@@ -2,6 +2,9 @@
 
 * * *
 
+### v1.24.2 (2018-04-26)
+* Hotfix: Certain order lists containing depot orders could cause a crash.
+
 ### v1.24.1 (2018-04-24)
 * Hotfix: Conditional order comparator dropdown list was broken.
 

@@ -442,7 +442,7 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 		int timetable_delta = 0;
 
 		for (int i = 0; i < num_orders; ++i) {
-			Order* order = v->GetOrderAt(i);
+			Order* order = v->GetOrder(i);
 
 			assert(order != nullptr);
 

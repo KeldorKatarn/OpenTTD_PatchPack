@@ -2072,7 +2072,7 @@ public:
 	 * @param data Information about the changed data.
 	 * @param gui_scope Whether the call is done from GUI scope. You may not do everything when not in GUI scope. See #InvalidateWindowData() for details.
 	 */
-	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
+	void OnInvalidateData(int data = 0, bool gui_scope = true) override
 	{
 		if (!gui_scope && HasBit(data, 31) && this->vli.type == VL_SHARED_ORDERS) {
 			/* Needs to be done in command-scope, so everything stays valid */
@@ -2109,12 +2109,13 @@ static void ShowVehicleListWindowLocal(CompanyID company, VehicleListType vlt, V
 {
 	if (!Company::IsValidID(company) && company != OWNER_NONE) return;
 
-	WindowNumber num = VehicleListIdentifier(vlt, vehicle_type, company, unique_number).Pack();
+	WindowNumber window_number = VehicleListIdentifier(vlt, vehicle_type, company, unique_number).Pack();
+
 	if (vehicle_type == VEH_TRAIN) {
-		AllocateWindowDescFront<VehicleListWindow>(&_vehicle_list_train_desc, num);
+		AllocateWindowDescFront<VehicleListWindow>(&_vehicle_list_train_desc, window_number);
 	} else {
 		_vehicle_list_other_desc.cls = GetWindowClassForVehicleType(vehicle_type);
-		AllocateWindowDescFront<VehicleListWindow>(&_vehicle_list_other_desc, num);
+		AllocateWindowDescFront<VehicleListWindow>(&_vehicle_list_other_desc, window_number);
 	}
 }
 
@@ -2125,7 +2126,7 @@ void ShowVehicleListWindow(CompanyID company, VehicleType vehicle_type)
 	 * if _ctrl_pressed, do the opposite action (Advanced list x Normal list)
 	 */
 
-	if ((_settings_client.gui.advanced_vehicle_list > (uint)(company != _local_company)) != _ctrl_pressed) {
+	if (_settings_client.gui.advanced_vehicle_list > static_cast<uint>(company != _local_company) != _ctrl_pressed) {
 		ShowCompanyGroup(company, vehicle_type);
 	} else {
 		ShowVehicleListWindowLocal(company, VL_STANDARD, vehicle_type, company);

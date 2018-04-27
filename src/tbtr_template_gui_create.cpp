@@ -161,6 +161,7 @@ public:
 		}
 
 		SetWindowClassesDirty(WC_TRAINS_LIST);
+		SetWindowClassesDirty(WC_TRACE_RESTRICT_SLOTS);
 
 		/* more cleanup */
 		*create_window_open = false;

@@ -204,7 +204,7 @@ const Order *LinkRefresher::PredictNextOrder(const Order *cur, const Order *next
 		if (next->IsType(OT_CONDITIONAL)) {
 			uint32 this_cargo_mask = this->cargo_mask;
 			const Order *skip_to = this->vehicle->GetNextDecisionNode(
-				this->vehicle->GetOrderAt(next->GetConditionSkipToOrder()), num_hops, this_cargo_mask);
+				this->vehicle->GetOrder(next->GetConditionSkipToOrder()), num_hops, this_cargo_mask);
 			assert(this_cargo_mask == this->cargo_mask);
 			if (skip_to != NULL && num_hops < this->vehicle->GetNumOrders()) {
 				/* Make copies of capacity tracking lists. There is potential

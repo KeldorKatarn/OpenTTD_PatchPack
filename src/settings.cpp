@@ -1069,6 +1069,7 @@ static bool InvalidateTicksPerMinute(int32 p1)
 {
 	InvalidateWindowClassesData(WC_VEHICLE_TIMETABLE, VIWD_MODIFY_ORDERS);
 	InvalidateWindowClassesData(WC_TRAINS_LIST);
+	InvalidateWindowClassesData(WC_TRACE_RESTRICT_SLOTS);
 	InvalidateWindowClassesData(WC_ROADVEH_LIST);
 	InvalidateWindowClassesData(WC_SHIPS_LIST);
 	InvalidateWindowClassesData(WC_AIRCRAFT_LIST);

@@ -1000,7 +1000,7 @@ void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 
 		const Order* real_current_order = vehicle->GetOrder(vehicle->cur_real_order_index);
 
-		const bool current_order_needs_change = //real_current_order == nullptr ||
+		const bool current_order_needs_change = real_current_order == nullptr ||
 		                                        real_current_order->GetType() != OT_GOTO_DEPOT ||
 		                                        real_current_order->GetDestination() != vehicle->current_order.GetDestination();
 

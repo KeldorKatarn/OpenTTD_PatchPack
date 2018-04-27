@@ -882,9 +882,9 @@ public:
 	 * @param index the order to fetch
 	 * @return the found (or not) order
 	 */
-	inline Order *GetOrder(int index) const
+	Order* GetOrder(int index) const
 	{
-		return (this->orders.list == NULL) ? NULL : this->orders.list->GetOrderAt(index);
+		return (this->orders.list == nullptr) ? nullptr : this->orders.list->GetOrderAt(index);
 	}
 
 	/**
@@ -904,16 +904,6 @@ public:
 	inline Order *GetLastOrder() const
 	{
 		return (this->orders.list == NULL) ? NULL : this->orders.list->GetLastOrder();
-	}
-
-	/**
-	* Get a certain order of the order chain.
-	* @param index zero-based index of the order within the chain.
-	* @return the order at position index or null if there are no orders.
-	*/
-	Order* GetOrderAt(int index) const
-	{
-		return (this->orders.list == nullptr) ? nullptr : this->orders.list->GetOrderAt(index);
 	}
 
 	/**

@@ -971,12 +971,15 @@ Vehicle::~Vehicle()
  */
 void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 {
+	assert(vehicle != nullptr);
+	assert(vehicle != nullptr);
+
 	// Template Replacement Setup stuff
 	{
 		const bool stay_in_depot = vehicle->current_order.GetType() == OT_GOTO_DEPOT &&
 		                           vehicle->current_order.GetDepotActionType() != ODATF_SERVICE_ONLY;
 
-		TemplateReplacement* template_replacement = GetTemplateReplacementByGroupID(vehicle->group_id);
+		const TemplateReplacement* template_replacement = GetTemplateReplacementByGroupID(vehicle->group_id);
 
 		if (template_replacement != nullptr) {
 			_vehicles_to_templatereplace[Train::From(vehicle)] = stay_in_depot;
@@ -991,18 +994,21 @@ void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 	// Manual depot order stuff
 	{
 		const bool has_manual_depot_order = HasBit(vehicle->vehicle_flags, VF_SHOULD_GOTO_DEPOT) ||
-		                                    HasBit(vehicle->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
-		                                    (vehicle->current_order.GetType() == OT_GOTO_DEPOT &&
-		                                     vehicle->current_order.GetDepotOrderType() == ODTF_MANUAL);
+											HasBit(vehicle->vehicle_flags, VF_SHOULD_SERVICE_AT_DEPOT) ||
+											(vehicle->current_order.GetType() == OT_GOTO_DEPOT &&
+											 vehicle->current_order.GetDepotOrderType() == ODTF_MANUAL);
 
-		const bool current_order_needs_change = vehicle->GetOrderAt(vehicle->cur_real_order_index)->GetType() != OT_GOTO_DEPOT ||
-		                                        vehicle->GetOrderAt(vehicle->cur_real_order_index)->GetDestination() != vehicle->current_order.GetDestination();
+		const Order* real_current_order = vehicle->GetOrder(vehicle->cur_real_order_index);
+
+		const bool current_order_needs_change = real_current_order == nullptr ||
+		                                        real_current_order->GetType() != OT_GOTO_DEPOT ||
+		                                        real_current_order->GetDestination() != vehicle->current_order.GetDestination();
 
 		if (vehicle->HasOrdersList() && has_manual_depot_order && current_order_needs_change) {
 			std::vector<int> depot_order_indices;
 
 			for (int i = 0; i < vehicle->GetNumOrders(); ++i) {
-				Order* order = vehicle->GetOrderAt(i);
+				const Order* order = vehicle->GetOrder(i);
 
 				assert(order != nullptr);
 
@@ -1023,8 +1029,10 @@ void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 
 				vehicle->cur_implicit_order_index = new_order_index;
 				vehicle->cur_real_order_index = new_order_index;
+
 				// We're skipping to the next depot order. Travel times will be wrong.
-				vehicle->cur_timetable_order_index = INVALID_VEH_ORDER_ID;;
+				vehicle->cur_timetable_order_index = INVALID_VEH_ORDER_ID;
+
 				InvalidateVehicleOrder(vehicle, 0);
 			}
 		}
@@ -1735,7 +1743,7 @@ void VehicleEnterDepot(Vehicle *v)
 			bool has_depot_in_orders = false;
 			
 			for (int i = 0; i < v->GetNumOrders(); ++i) {
-				Order* order = v->GetOrderAt(i);
+				Order* order = v->GetOrder(i);
 
 				bool isRegularOrder = (order->GetDepotOrderType() & ODTFB_PART_OF_ORDERS) != 0;
 				bool isDepotOrder = order->GetType() == OT_GOTO_DEPOT;

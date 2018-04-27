@@ -1000,7 +1000,7 @@ void VehicleEnteredDepotThisTick(Vehicle* vehicle)
 
 		const Order* real_current_order = vehicle->GetOrder(vehicle->cur_real_order_index);
 
-		const bool current_order_needs_change = real_current_order == nullptr ||
+		const bool current_order_needs_change = //real_current_order == nullptr ||
 		                                        real_current_order->GetType() != OT_GOTO_DEPOT ||
 		                                        real_current_order->GetDestination() != vehicle->current_order.GetDestination();
 
@@ -1683,6 +1683,7 @@ void VehicleEnterDepot(Vehicle *v)
 		case VEH_TRAIN: {
 			Train *t = Train::From(v);
 			SetWindowClassesDirty(WC_TRAINS_LIST);
+			SetWindowClassesDirty(WC_TRACE_RESTRICT_SLOTS);
 			/* Clear path reservation */
 			SetDepotReservation(t->tile, false);
 			if (_settings_client.gui.show_track_reservation) MarkTileDirtyByTile(t->tile, ZOOM_LVL_DRAW_MAP);
@@ -3300,6 +3301,7 @@ void VehiclesYearlyLoop()
 	}
 	GroupStatistics::UpdateProfits();
 	SetWindowClassesDirty(WC_TRAINS_LIST);
+	SetWindowClassesDirty(WC_TRACE_RESTRICT_SLOTS);
 	SetWindowClassesDirty(WC_SHIPS_LIST);
 	SetWindowClassesDirty(WC_ROADVEH_LIST);
 	SetWindowClassesDirty(WC_AIRCRAFT_LIST);

@@ -22,9 +22,9 @@ typedef GUIList<const Vehicle*, CargoID> GUIVehicleList;
 
 struct BaseVehicleListWindow : public Window {
 	GUIVehicleList vehicles;  ///< The list of vehicles
-	Listing *sorting;         ///< Pointer to the vehicle type related sorting.
-	byte unitnumber_digits;   ///< The number of digits of the highest unit number
-	Scrollbar *vscroll;
+	Listing *sorting{};         ///< Pointer to the vehicle type related sorting.
+	byte unitnumber_digits{};   ///< The number of digits of the highest unit number
+	Scrollbar *vscroll{};
 	VehicleListIdentifier vli; ///< Identifier of the vehicle list we want to currently show.
 	VehicleID vehicle_sel;    ///< Selected vehicle
 
@@ -35,9 +35,9 @@ struct BaseVehicleListWindow : public Window {
 		CF_FREIGHT = CT_AUTO_REFIT,             ///< Show only vehicles which carry any freight (non-passenger) cargo
 	};
 
-	CargoID cargo_filter[NUM_CARGO + 3];        ///< Available cargo filters; CargoID or CF_ANY or CF_NONE
-	StringID cargo_filter_texts[NUM_CARGO + 4]; ///< Texts for filter_cargo, terminated by INVALID_STRING_ID
-	byte cargo_filter_criteria;                 ///< Selected cargo filter
+	CargoID cargo_filter[NUM_CARGO + 3]{};        ///< Available cargo filters; CargoID or CF_ANY or CF_NONE
+	StringID cargo_filter_texts[NUM_CARGO + 4]{}; ///< Texts for filter_cargo, terminated by INVALID_STRING_ID
+	byte cargo_filter_criteria{};                 ///< Selected cargo filter
 
 	enum ActionDropdownItem {
 		ADI_SET_ALL_ON_TIME,
@@ -56,10 +56,10 @@ struct BaseVehicleListWindow : public Window {
 	static GUIVehicleList::SortFunction * const vehicle_sorter_funcs[];
 	const uint vehicle_sorter_non_ground_veh_disable_mask = (1 << 11); // STR_SORT_BY_LENGTH
 
-	BaseVehicleListWindow(WindowDesc *desc, WindowNumber wno) : Window(desc), vli(VehicleListIdentifier::UnPack(wno))
+	BaseVehicleListWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc), vli(VehicleListIdentifier::UnPack(window_number))
 	{
 		this->vehicle_sel = INVALID_VEHICLE;
-		this->vehicles.SetSortFuncs(this->vehicle_sorter_funcs);
+		this->vehicles.SetSortFuncs(vehicle_sorter_funcs);
 	}
 
 	void DrawVehicleListItems(VehicleID selected_vehicle, int line_height, const Rect &r) const;

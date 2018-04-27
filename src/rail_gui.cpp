@@ -1205,6 +1205,7 @@ public:
 					}
 				}
 				size->width = max(size->width, d.width + padding.width);
+				size->width = min(size->width, ScaleGUITrad(400));
 				break;
 			}
 

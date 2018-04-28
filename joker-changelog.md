@@ -2,6 +2,9 @@
 
 * * *
 
+### v1.24.4 (2018-04-28)
+* Fix several crashes caused by switch from std::list to std::deque due to invalid iterators
+
 ### v1.24.3 (2018-04-28)
 * Set maximum size for left part of build-rail-station window since some newGRFs overdo it with the string length.
 * Hotfix: Fix two crashes in trace restrict slot window when selling vehicles

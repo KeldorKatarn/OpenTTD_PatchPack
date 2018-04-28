@@ -290,14 +290,22 @@ void VehicleCargoList::Append(CargoPacket *cp, MoveToAction action)
 template<class Taction>
 void VehicleCargoList::ShiftCargo(Taction action)
 {
-	Iterator it(this->packets.begin());
-	while (it != this->packets.end() && action.MaxMove() > 0) {
+	std::vector<CargoPacket*> packets_to_erase;
+	std::vector<CargoPacket*> packets_copy(this->packets.begin(), this->packets.end());
+
+	auto it = packets_copy.begin();
+	while (it != packets_copy.end() && action.MaxMove() > 0) {
 		CargoPacket *cp = *it;
 		if (action(cp)) {
-			it = this->packets.erase(it);
+			packets_to_erase.push_back(*it);
+			++it;
 		} else {
 			break;
 		}
+	}
+
+	for (auto cp : packets_to_erase) {
+		this->packets.erase(std::find(this->packets.begin(), this->packets.end(), cp));
 	}
 }
 
@@ -581,20 +589,28 @@ uint VehicleCargoList::Reassign<VehicleCargoList::MTA_DELIVER, VehicleCargoList:
 	max_move = min(this->action_counts[MTA_DELIVER], max_move);
 
 	uint sum = 0;
-	for (Iterator it(this->packets.begin()); sum < this->action_counts[MTA_TRANSFER] + max_move;) {
-		CargoPacket *cp = *it++;
+
+	std::list<CargoPacket*> packets_to_insert;
+
+	for (auto it(this->packets.begin()); sum < this->action_counts[MTA_TRANSFER] + max_move;) {
+		CargoPacket* cp = *it++;
 		sum += cp->Count();
 		if (sum <= this->action_counts[MTA_TRANSFER]) continue;
 		if (sum > this->action_counts[MTA_TRANSFER] + max_move) {
-			CargoPacket *cp_split = cp->Split(sum - this->action_counts[MTA_TRANSFER] + max_move);
+			CargoPacket* cp_split = cp->Split(sum - this->action_counts[MTA_TRANSFER] + max_move);
 			sum -= cp_split->Count();
-			this->packets.insert(it, cp_split);
+			packets_to_insert.push_back(cp_split);
 		}
 		cp->next_station = next_station;
 	}
 
+	for (auto packet : packets_to_insert) {
+		this->packets.push_back(packet);
+	}
+
 	this->action_counts[MTA_DELIVER] -= max_move;
 	this->action_counts[MTA_TRANSFER] += max_move;
+
 	return max_move;
 }
 

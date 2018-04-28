@@ -229,7 +229,7 @@ bool VehicleCargoReroute::operator()(CargoPacket *cp)
 		this->destination->AddToMeta(cp_new, VehicleCargoList::MTA_TRANSFER);
 	}
 
-	/* Legal, as front pushing doesn't invalidate iterators in std::list. */
+	// Invalidates iterator, but we're working for a copy of the list while doing this, so it's fine.
 	this->destination->packets.push_front(cp_new);
 	return cp_new == cp;
 }

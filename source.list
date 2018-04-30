@@ -46,13 +46,6 @@ hotkeys.cpp
 ini.cpp
 ini_load.cpp
 landscape.cpp
-linkgraph/demands.cpp
-linkgraph/flowmapper.cpp
-linkgraph/linkgraph.cpp
-linkgraph/linkgraphjob.cpp
-linkgraph/linkgraphschedule.cpp
-linkgraph/mcf.cpp
-linkgraph/refresh.cpp
 logic_signal_program.cpp
 logic_signals.cpp
 map.cpp
@@ -229,18 +222,6 @@ ini_type.h
 landscape.h
 landscape_type.h
 language.h
-linkgraph/demands.h
-linkgraph/flowmapper.h
-linkgraph/init.h
-linkgraph/linkgraph.h
-linkgraph/linkgraph_base.h
-linkgraph/linkgraph_gui.h
-linkgraph/linkgraph_type.h
-linkgraph/linkgraphjob.h
-linkgraph/linkgraphjob_base.h
-linkgraph/linkgraphschedule.h
-linkgraph/mcf.h
-linkgraph/refresh.h
 livery.h
 logic_signals.h
 map_func.h
@@ -424,7 +405,28 @@ video/cocoa/cocoa_keys.h
 video/cocoa/cocoa_v.h
 #end
 
-# Core Source Code
+# Linkgraph
+linkgraph/demands.cpp
+linkgraph/flowmapper.cpp
+linkgraph/linkgraph.cpp
+linkgraph/linkgraphjob.cpp
+linkgraph/linkgraphschedule.cpp
+linkgraph/mcf.cpp
+linkgraph/refresh.cpp
+linkgraph/demands.h
+linkgraph/flowmapper.h
+linkgraph/init.h
+linkgraph/linkgraph.h
+linkgraph/linkgraph_base.h
+linkgraph/linkgraph_gui.h
+linkgraph/linkgraph_type.h
+linkgraph/linkgraphjob.h
+linkgraph/linkgraphjob_base.h
+linkgraph/linkgraphschedule.h
+linkgraph/mcf.h
+linkgraph/refresh.h
+
+# Core
 core/alloc_func.cpp
 core/alloc_func.hpp
 core/alloc_type.hpp
@@ -456,7 +458,7 @@ core/smallvec_type.hpp
 core/sort_func.hpp
 core/string_compare_type.hpp
 
-# GUI Source Code
+# GUI
 aircraft_gui.cpp
 airport_gui.cpp
 autoreplace_gui.cpp
@@ -748,8 +750,6 @@ script/squirrel_std.hpp
 3rdparty/squirrel/sqstdlib/sqstdmath.cpp
 3rdparty/squirrel/squirrel/sqtable.cpp
 3rdparty/squirrel/squirrel/sqvm.cpp
-
-# Squirrel headers
 3rdparty/squirrel/squirrel/sqarray.h
 3rdparty/squirrel/squirrel/sqclass.h
 3rdparty/squirrel/squirrel/sqclosure.h
@@ -871,8 +871,6 @@ script/api/script_viewport.hpp
 script/api/script_waypoint.hpp
 script/api/script_waypointlist.hpp
 script/api/script_window.hpp
-
-# Script API Implementation
 script/api/script_accounting.cpp
 script/api/script_admin.cpp
 script/api/script_airport.cpp
@@ -1101,7 +1099,7 @@ pathfinder/pathfinder_func.h
 pathfinder/pathfinder_type.h
 pathfinder/pf_performance_timer.hpp
 
-# NPF
+# Pathfinder\NPF
 pathfinder/npf/aystar.cpp
 pathfinder/npf/aystar.h
 pathfinder/npf/npf.cpp
@@ -1109,7 +1107,7 @@ pathfinder/npf/npf_func.h
 pathfinder/npf/queue.cpp
 pathfinder/npf/queue.h
 
-# YAPF
+# Pathfinder\YAPF
 pathfinder/yapf/nodelist.hpp
 pathfinder/yapf/yapf.h
 pathfinder/yapf/yapf.hpp
@@ -1253,7 +1251,7 @@ thread/thread.h
 	thread/thread_none.cpp
 #end
 
-# Btree containers
+# Btree
 3rdparty/cpp-btree/btree.h
 3rdparty/cpp-btree/btree_container.h
 3rdparty/cpp-btree/btree_map.h

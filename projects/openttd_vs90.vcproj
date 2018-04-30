@@ -616,34 +616,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\..\src\linkgraph\demands.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\flowmapper.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraph.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraphjob.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraphschedule.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\mcf.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\refresh.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\src\logic_signal_program.cpp"
 				>
 			</File>
@@ -1225,54 +1197,6 @@
 			</File>
 			<File
 				RelativePath=".\..\src\language.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\demands.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\flowmapper.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\init.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraph.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraph_base.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraph_gui.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraph_type.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraphjob.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraphjob_base.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\linkgraphschedule.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\mcf.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\src\linkgraph\refresh.h"
 				>
 			</File>
 			<File
@@ -1945,7 +1869,87 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Core Source Code"
+			Name="Linkgraph"
+			>
+			<File
+				RelativePath=".\..\src\linkgraph\demands.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\flowmapper.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraph.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraphjob.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraphschedule.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\mcf.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\refresh.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\demands.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\flowmapper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\init.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraph.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraph_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraph_gui.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraph_type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraphjob.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraphjob_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\linkgraphschedule.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\mcf.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\linkgraph\refresh.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Core"
 			>
 			<File
 				RelativePath=".\..\src\core\alloc_func.cpp"
@@ -2069,7 +2073,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="GUI Source Code"
+			Name="GUI"
 			>
 			<File
 				RelativePath=".\..\src\aircraft_gui.cpp"
@@ -3207,10 +3211,6 @@
 				RelativePath=".\..\src\3rdparty\squirrel\squirrel\sqvm.cpp"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Squirrel headers"
-			>
 			<File
 				RelativePath=".\..\src\3rdparty\squirrel\squirrel\sqarray.h"
 				>
@@ -3675,10 +3675,6 @@
 				RelativePath=".\..\src\script\api\script_window.hpp"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Script API Implementation"
-			>
 			<File
 				RelativePath=".\..\src\script\api\script_accounting.cpp"
 				>
@@ -4525,7 +4521,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="NPF"
+			Name="Pathfinder\NPF"
 			>
 			<File
 				RelativePath=".\..\src\pathfinder\npf\aystar.cpp"
@@ -4553,7 +4549,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="YAPF"
+			Name="Pathfinder\YAPF"
 			>
 			<File
 				RelativePath=".\..\src\pathfinder\yapf\nodelist.hpp"
@@ -4709,7 +4705,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Btree containers"
+			Name="Btree"
 			>
 			<File
 				RelativePath=".\..\src\3rdparty\cpp-btree\btree.h"

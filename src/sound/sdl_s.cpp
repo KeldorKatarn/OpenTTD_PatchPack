@@ -39,7 +39,7 @@ const char *SoundDriver_SDL::Start(const char * const *parm)
 	SDL_AudioSpec spec;
 
 	const char *s = SdlOpen(SDL_INIT_AUDIO);
-	if (s != NULL) return s;
+	if (s != nullptr) return s;
 
 	spec.freq = GetDriverParamInt(parm, "hz", 44100);
 	spec.format = AUDIO_S16SYS;
@@ -49,7 +49,7 @@ const char *SoundDriver_SDL::Start(const char * const *parm)
 	MxInitialize(spec.freq);
 	SDL_CALL SDL_OpenAudio(&spec, &spec);
 	SDL_CALL SDL_PauseAudio(0);
-	return NULL;
+	return nullptr;
 }
 
 void SoundDriver_SDL::Stop()

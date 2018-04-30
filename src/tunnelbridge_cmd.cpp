@@ -117,7 +117,7 @@ void ResetBridges()
 {
 	/* First, free sprite table data */
 	for (BridgeType i = 0; i < MAX_BRIDGES; i++) {
-		if (_bridge[i].sprite_table != NULL) {
+		if (_bridge[i].sprite_table != nullptr) {
 			for (BridgePieces j = BRIDGE_PIECE_NORTH; j < BRIDGE_PIECE_INVALID; j++) free(_bridge[i].sprite_table[j]);
 			free(_bridge[i].sprite_table);
 		}
@@ -183,7 +183,7 @@ static inline const PalSpriteID *GetBridgeSpriteTable(int index, BridgePieces ta
 {
 	const BridgeSpec *bridge = GetBridgeSpec(index);
 	assert(table < BRIDGE_PIECE_INVALID);
-	if (bridge->sprite_table == NULL || bridge->sprite_table[table] == NULL) {
+	if (bridge->sprite_table == nullptr || bridge->sprite_table[table] == nullptr) {
 		return _bridge_sprite_table[index][table];
 	} else {
 		return bridge->sprite_table[table];
@@ -205,7 +205,7 @@ static CommandCost CheckBridgeSlopeNorth(Axis axis, Slope *tileh, int *z)
 	*z += ApplyFoundationToSlope(f, tileh);
 
 	Slope valid_inclined = (axis == AXIS_X ? SLOPE_NE : SLOPE_NW);
-	if ((*tileh != SLOPE_FLAT) && (*tileh != valid_inclined)) return CMD_ERROR;
+	if ((*tileh != SLOPE_FLAT) && (*tileh != valid_inclined)) return CommandError();
 
 	if (f == FOUNDATION_NONE) return CommandCost();
 
@@ -226,7 +226,7 @@ static CommandCost CheckBridgeSlopeSouth(Axis axis, Slope *tileh, int *z)
 	*z += ApplyFoundationToSlope(f, tileh);
 
 	Slope valid_inclined = (axis == AXIS_X ? SLOPE_SW : SLOPE_SE);
-	if ((*tileh != SLOPE_FLAT) && (*tileh != valid_inclined)) return CMD_ERROR;
+	if ((*tileh != SLOPE_FLAT) && (*tileh != valid_inclined)) return CommandError();
 
 	if (f == FOUNDATION_NONE) return CommandCost();
 
@@ -243,19 +243,19 @@ CommandCost CheckBridgeAvailability(BridgeType bridge_type, uint bridge_len, DoC
 {
 	if (flags & DC_QUERY_COST) {
 		if (bridge_len <= _settings_game.construction.max_bridge_length) return CommandCost();
-		return_cmd_error(STR_ERROR_BRIDGE_TOO_LONG);
+		return CommandError(STR_ERROR_BRIDGE_TOO_LONG);
 	}
 
-	if (bridge_type >= MAX_BRIDGES) return CMD_ERROR;
+	if (bridge_type >= MAX_BRIDGES) return CommandError();
 
 	const BridgeSpec *b = GetBridgeSpec(bridge_type);
-	if (b->avail_year > _cur_year) return CMD_ERROR;
+	if (b->avail_year > _cur_year) return CommandError();
 
 	uint max = min(b->max_length, _settings_game.construction.max_bridge_length);
 
-	if (b->min_length > bridge_len) return CMD_ERROR;
+	if (b->min_length > bridge_len) return CommandError();
 	if (bridge_len <= max) return CommandCost();
-	return_cmd_error(STR_ERROR_BRIDGE_TOO_LONG);
+	return CommandError(STR_ERROR_BRIDGE_TOO_LONG);
 }
 
 /**
@@ -280,7 +280,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	/* unpack parameters */
 	BridgeType bridge_type = GB(p2, 0, 8);
 
-	if (!IsValidTile(p1)) return_cmd_error(STR_ERROR_BRIDGE_THROUGH_MAP_BORDER);
+	if (!IsValidTile(p1)) return CommandError(STR_ERROR_BRIDGE_THROUGH_MAP_BORDER);
 
 	TransportType transport_type = Extract<TransportType, 15, 2>(p2);
 
@@ -288,12 +288,12 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	switch (transport_type) {
 		case TRANSPORT_ROAD:
 			roadtypes = Extract<RoadTypes, 8, 2>(p2);
-			if (!HasExactlyOneBit(roadtypes) || !HasRoadTypesAvail(company, roadtypes)) return CMD_ERROR;
+			if (!HasExactlyOneBit(roadtypes) || !HasRoadTypesAvail(company, roadtypes)) return CommandError();
 			break;
 
 		case TRANSPORT_RAIL:
 			railtype = Extract<RailType, 8, 5>(p2);
-			if (!ValParamRailtype(railtype)) return CMD_ERROR;
+			if (!ValParamRailtype(railtype)) return CommandError();
 			break;
 
 		case TRANSPORT_WATER:
@@ -301,25 +301,25 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 		default:
 			/* Airports don't have bridges. */
-			return CMD_ERROR;
+			return CommandError();
 	}
 	TileIndex tile_start = p1;
 	TileIndex tile_end = end_tile;
 
 	if (company == OWNER_DEITY) {
-		if (transport_type != TRANSPORT_ROAD) return CMD_ERROR;
+		if (transport_type != TRANSPORT_ROAD) return CommandError();
 		const Town *town = CalcClosestTownFromTile(tile_start);
 
 		company = OWNER_TOWN;
 
 		/* If we are not within a town, we are not owned by the town */
-		if (town == NULL || DistanceSquare(tile_start, town->xy) > town->cache.squared_town_zone_radius[HZB_TOWN_EDGE]) {
+		if (town == nullptr || DistanceSquare(tile_start, town->xy) > town->cache.squared_town_zone_radius[HZB_TOWN_EDGE]) {
 			company = OWNER_NONE;
 		}
 	}
 
 	if (tile_start == tile_end) {
-		return_cmd_error(STR_ERROR_CAN_T_START_AND_END_ON);
+		return CommandError(STR_ERROR_CAN_T_START_AND_END_ON);
 	}
 
 	Axis direction;
@@ -328,7 +328,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	} else if (TileY(tile_start) == TileY(tile_end)) {
 		direction = AXIS_X;
 	} else {
-		return_cmd_error(STR_ERROR_START_AND_END_MUST_BE_IN);
+		return CommandError(STR_ERROR_START_AND_END_MUST_BE_IN);
 	}
 
 	if (tile_end < tile_start) Swap(tile_start, tile_end);
@@ -339,7 +339,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		CommandCost ret = CheckBridgeAvailability(bridge_type, bridge_len, flags);
 		if (ret.Failed()) return ret;
 	} else {
-		if (bridge_len > _settings_game.construction.max_bridge_length) return_cmd_error(STR_ERROR_BRIDGE_TOO_LONG);
+		if (bridge_len > _settings_game.construction.max_bridge_length) return CommandError(STR_ERROR_BRIDGE_TOO_LONG);
 	}
 
 	int z_start;
@@ -352,8 +352,8 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	CommandCost terraform_cost_south = CheckBridgeSlopeSouth(direction, &tileh_end,   &z_end);
 
 	/* Aqueducts can't be built of flat land. */
-	if (transport_type == TRANSPORT_WATER && (tileh_start == SLOPE_FLAT || tileh_end == SLOPE_FLAT)) return_cmd_error(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
-	if (z_start != z_end) return_cmd_error(STR_ERROR_BRIDGEHEADS_NOT_SAME_HEIGHT);
+	if (transport_type == TRANSPORT_WATER && (tileh_start == SLOPE_FLAT || tileh_end == SLOPE_FLAT)) return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
+	if (z_start != z_end) return CommandError(STR_ERROR_BRIDGEHEADS_NOT_SAME_HEIGHT);
 
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	Owner owner;
@@ -366,7 +366,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 		/* If this is a railway bridge, make sure the railtypes match. */
 		if (transport_type == TRANSPORT_RAIL && GetRailType(tile_start) != railtype) {
-			return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+			return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 		}
 
 		/* Do not replace town bridges with lower speed bridges, unless in scenario editor. */
@@ -375,22 +375,22 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				_game_mode != GM_EDITOR) {
 			Town *t = ClosestTownFromTile(tile_start, UINT_MAX);
 
-			if (t == NULL) {
-				return CMD_ERROR;
+			if (t == nullptr) {
+				return CommandError();
 			} else {
 				SetDParam(0, t->index);
-				return_cmd_error(STR_ERROR_LOCAL_AUTHORITY_REFUSES_TO_ALLOW_THIS);
+				return CommandError(STR_ERROR_LOCAL_AUTHORITY_REFUSES_TO_ALLOW_THIS);
 			}
 		}
 
 		/* Do not replace the bridge with the same bridge type. */
 		if (!(flags & DC_QUERY_COST) && (bridge_type == GetBridgeType(tile_start)) && (transport_type != TRANSPORT_ROAD || (roadtypes & ~GetRoadTypes(tile_start)) == 0)) {
-			return_cmd_error(STR_ERROR_ALREADY_BUILT);
+			return CommandError(STR_ERROR_ALREADY_BUILT);
 		}
 
 		/* Do not allow replacing another company's bridges. */
 		if (!IsTileOwner(tile_start, company) && !IsTileOwner(tile_start, OWNER_TOWN) && !IsTileOwner(tile_start, OWNER_NONE)) {
-			return_cmd_error(STR_ERROR_AREA_IS_OWNED_BY_ANOTHER);
+			return CommandError(STR_ERROR_AREA_IS_OWNED_BY_ANOTHER);
 		}
 
 		cost.AddCost((bridge_len + 1) * _price[PR_CLEAR_BRIDGE]); // The cost of clearing the current bridge.
@@ -425,7 +425,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		if (ret.Failed()) return ret;
 		cost = ret;
 
-		if (terraform_cost_north.Failed() || (terraform_cost_north.GetCost() != 0 && !allow_on_slopes)) return_cmd_error(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
+		if (terraform_cost_north.Failed() || (terraform_cost_north.GetCost() != 0 && !allow_on_slopes)) return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 		cost.AddCost(terraform_cost_north);
 
 		/* Try and clear the end landscape */
@@ -434,7 +434,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		cost.AddCost(ret);
 
 		/* false - end tile slope check */
-		if (terraform_cost_south.Failed() || (terraform_cost_south.GetCost() != 0 && !allow_on_slopes)) return_cmd_error(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
+		if (terraform_cost_south.Failed() || (terraform_cost_south.GetCost() != 0 && !allow_on_slopes)) return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 		cost.AddCost(terraform_cost_south);
 
 		const TileIndex heads[] = {tile_start, tile_end};
@@ -442,17 +442,17 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			if (IsBridgeAbove(heads[i])) {
 				TileIndex north_head = GetNorthernBridgeEnd(heads[i]);
 
-				if (direction == GetBridgeAxis(heads[i])) return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+				if (direction == GetBridgeAxis(heads[i])) return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 
 				if (z_start + 1 == GetBridgeHeight(north_head)) {
-					return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+					return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 				}
 			}
 		}
 
 		TileIndexDiff delta = (direction == AXIS_X ? TileDiffXY(1, 0) : TileDiffXY(0, 1));
 		for (TileIndex tile = tile_start + delta; tile != tile_end; tile += delta) {
-			if (GetTileMaxZ(tile) > z_start) return_cmd_error(STR_ERROR_BRIDGE_TOO_LOW_FOR_TERRAIN);
+			if (GetTileMaxZ(tile) > z_start) return CommandError(STR_ERROR_BRIDGE_TOO_LOW_FOR_TERRAIN);
 
 			if (z_start >= (GetTileZ(tile) + _settings_game.construction.max_bridge_height)) {
 				/*
@@ -461,12 +461,12 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 				 * See http://www.tt-forums.net/viewtopic.php?f=33&t=40844&start=980#p1131762
 				 * for a detailed discussion. z_start here is one heightlevel below the bridge level.
 				 */
-				return_cmd_error(STR_ERROR_BRIDGE_TOO_HIGH_FOR_TERRAIN);
+				return CommandError(STR_ERROR_BRIDGE_TOO_HIGH_FOR_TERRAIN);
 			}
 
 			if (IsBridgeAbove(tile)) {
 				/* Disallow crossing bridges for the time being */
-				return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+				return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 			}
 
 			switch (GetTileType(tile)) {
@@ -527,7 +527,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 		switch (transport_type) {
 			case TRANSPORT_RAIL:
 				/* Add to company infrastructure count if required. */
-				if (is_new_owner && c != NULL) c->infrastructure.rail[railtype] += (bridge_len + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
+				if (is_new_owner && c != nullptr) c->infrastructure.rail[railtype] += (bridge_len + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
 				MakeRailBridgeRamp(tile_start, owner, bridge_type, dir,                 railtype, is_upgrade);
 				MakeRailBridgeRamp(tile_end,   owner, bridge_type, ReverseDiagDir(dir), railtype, is_upgrade);
 				SetTunnelBridgeReservation(tile_start, pbs_reservation);
@@ -541,7 +541,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 					if (HasBit(prev_roadtypes, ROADTYPE_ROAD) && GetRoadOwner(tile_start, ROADTYPE_ROAD) == OWNER_NONE) ClrBit(prev_roadtypes, ROADTYPE_ROAD);
 					if (HasBit(prev_roadtypes, ROADTYPE_TRAM) && GetRoadOwner(tile_start, ROADTYPE_TRAM) == OWNER_NONE) ClrBit(prev_roadtypes, ROADTYPE_TRAM);
 				}
-				if (c != NULL) {
+				if (c != nullptr) {
 					/* Add all new road types to the company infrastructure counter. */
 					RoadType new_rt;
 					FOR_EACH_SET_ROADTYPE(new_rt, roadtypes ^ prev_roadtypes) {
@@ -557,7 +557,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			}
 
 			case TRANSPORT_WATER:
-				if (is_new_owner && c != NULL) c->infrastructure.water += (bridge_len + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
+				if (is_new_owner && c != nullptr) c->infrastructure.water += (bridge_len + 2) * TUNNELBRIDGE_TRACKBIT_FACTOR;
 				MakeAqueductBridgeRamp(tile_start, owner, dir);
 				MakeAqueductBridgeRamp(tile_end,   owner, ReverseDiagDir(dir));
 				break;
@@ -582,7 +582,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	 * and cost is computed in "bridge_gui.c". For AI, Towns this has to be of course calculated
 	 */
 	Company *c = Company::GetIfValid(company);
-	if (!(flags & DC_QUERY_COST) || (c != NULL && c->is_ai)) {
+	if (!(flags & DC_QUERY_COST) || (c != nullptr && c->is_ai)) {
 		bridge_len += 2; // begin and end tiles/ramps
 
 		switch (transport_type) {
@@ -591,7 +591,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 			default: break;
 		}
 
-		if (c != NULL) bridge_len = CalcBridgeLenCostFactor(bridge_len);
+		if (c != nullptr) bridge_len = CalcBridgeLenCostFactor(bridge_len);
 
 		if (transport_type != TRANSPORT_WATER) {
 			cost.AddCost((int64)bridge_len * _price[PR_BUILD_BRIDGE] * GetBridgeSpec(bridge_type)->price >> 8);
@@ -641,12 +641,12 @@ static inline CommandCost CanBuildChunnel(TileIndex tile, DiagDirection directio
 	bool crossed_sea = false;
 	TileIndex ramp_start = tile;
 
-	if (GetTileZ(tile) > 0) return_cmd_error(STR_ERROR_CHUNNEL_ONLY_OVER_SEA);
+	if (GetTileZ(tile) > 0) return CommandError(STR_ERROR_CHUNNEL_ONLY_OVER_SEA);
 
 	const TileIndexDiff delta = TileOffsByDiagDir(direction);
 	for (;;) {
 		tile += delta;
-		if (!IsValidTile(tile)) return_cmd_error(STR_ERROR_CHUNNEL_THROUGH_MAP_BORDER);
+		if (!IsValidTile(tile)) return CommandError(STR_ERROR_CHUNNEL_THROUGH_MAP_BORDER);
 		_build_tunnel_endtile = tile;
 		int end_z;
 		Slope end_tileh = GetTileSlope(tile, &end_z);
@@ -660,7 +660,7 @@ static inline CommandCost CanBuildChunnel(TileIndex tile, DiagDirection directio
 
 				/* A shore was found, check if start ramp was too short or too long. */
 				StringID err_msg = IsRampBetweenLimits(ramp_start, tile, delta);
-				if (err_msg > STR_NULL) return_cmd_error(err_msg);
+				if (err_msg > STR_NULL) return CommandError(err_msg);
 
 				/* Pass the water and find a proper shore tile that potentially
 				 * could have a tunnel portal behind. */
@@ -675,22 +675,22 @@ static inline CommandCost CanBuildChunnel(TileIndex tile, DiagDirection directio
 					if ((IsTileType(tile, MP_STATION) && IsOilRig(tile)) ||
 							(IsTileType(tile, MP_INDUSTRY)               &&
 							GetIndustryGfx(tile) >= GFX_OILRIG_1         &&
-							GetIndustryGfx(tile) <= GFX_OILRIG_5)) return_cmd_error(STR_ERROR_NO_DRILLING_ABOVE_CHUNNEL);
+							GetIndustryGfx(tile) <= GFX_OILRIG_5)) return CommandError(STR_ERROR_NO_DRILLING_ABOVE_CHUNNEL);
 
 					if (IsTileType(tile, MP_WATER) && IsSea(tile)) crossed_sea = true;
-					if (!_cheats.crossing_tunnels.value && IsTunnelInWay(tile, start_z)) return_cmd_error(STR_ERROR_ANOTHER_TUNNEL_IN_THE_WAY);
+					if (!_cheats.crossing_tunnels.value && IsTunnelInWay(tile, start_z)) return CommandError(STR_ERROR_ANOTHER_TUNNEL_IN_THE_WAY);
 					tile += delta;
-					if (!IsValidTile(tile)) return_cmd_error(STR_ERROR_CHUNNEL_THROUGH_MAP_BORDER);
+					if (!IsValidTile(tile)) return CommandError(STR_ERROR_CHUNNEL_THROUGH_MAP_BORDER);
 					_build_tunnel_endtile = tile;
 					sea_tiles++;
 				}
-				if (!crossed_sea) return_cmd_error(STR_ERROR_CHUNNEL_ONLY_OVER_SEA);
+				if (!crossed_sea) return CommandError(STR_ERROR_CHUNNEL_ONLY_OVER_SEA);
 				ramp_start = tile;
 			} else {
 				/* Check if end ramp was too short or too long after crossing the sea. */
 				if (crossed_sea) {
 					StringID err_msg = IsRampBetweenLimits(ramp_start, tile, delta);
-					if (err_msg > STR_NULL) return_cmd_error(err_msg);
+					if (err_msg > STR_NULL) return CommandError(err_msg);
 				}
 				break;
 			}
@@ -724,25 +724,25 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	switch (transport_type) {
 		case TRANSPORT_RAIL:
 			railtype = Extract<RailType, 0, 5>(p1);
-			if (!ValParamRailtype(railtype)) return CMD_ERROR;
+			if (!ValParamRailtype(railtype)) return CommandError();
 			break;
 
 		case TRANSPORT_ROAD:
 			rts = Extract<RoadTypes, 0, 2>(p1);
-			if (!HasExactlyOneBit(rts) || !HasRoadTypesAvail(company, rts)) return CMD_ERROR;
+			if (!HasExactlyOneBit(rts) || !HasRoadTypesAvail(company, rts)) return CommandError();
 			break;
 
-		default: return CMD_ERROR;
+		default: return CommandError();
 	}
 
 	if (company == OWNER_DEITY) {
-		if (transport_type != TRANSPORT_ROAD) return CMD_ERROR;
+		if (transport_type != TRANSPORT_ROAD) return CommandError();
 		const Town *town = CalcClosestTownFromTile(start_tile);
 
 		company = OWNER_TOWN;
 
 		/* If we are not within a town, we are not owned by the town */
-		if (town == NULL || DistanceSquare(start_tile, town->xy) > town->cache.squared_town_zone_radius[HZB_TOWN_EDGE]) {
+		if (town == nullptr || DistanceSquare(start_tile, town->xy) > town->cache.squared_town_zone_radius[HZB_TOWN_EDGE]) {
 			company = OWNER_NONE;
 		}
 	}
@@ -751,9 +751,9 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	int end_z;
 	Slope start_tileh = GetTileSlope(start_tile, &start_z);
 	DiagDirection direction = GetInclinedSlopeDirection(start_tileh);
-	if (direction == INVALID_DIAGDIR) return_cmd_error(STR_ERROR_SITE_UNSUITABLE_FOR_TUNNEL);
+	if (direction == INVALID_DIAGDIR) return CommandError(STR_ERROR_SITE_UNSUITABLE_FOR_TUNNEL);
 
-	if (HasTileWaterGround(start_tile)) return_cmd_error(STR_ERROR_CAN_T_BUILD_ON_WATER);
+	if (HasTileWaterGround(start_tile)) return CommandError(STR_ERROR_CAN_T_BUILD_ON_WATER);
 
 	CommandCost ret = DoCommand(start_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 	if (ret.Failed()) return ret;
@@ -787,7 +787,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	Slope end_tileh;
 	for (;;) {
 		end_tile += delta;
-		if (!IsValidTile(end_tile)) return_cmd_error(STR_ERROR_TUNNEL_THROUGH_MAP_BORDER);
+		if (!IsValidTile(end_tile)) return CommandError(STR_ERROR_TUNNEL_THROUGH_MAP_BORDER);
 		end_tileh = GetTileSlope(end_tile, &end_z);
 
 		if (start_z == end_z) {
@@ -822,13 +822,13 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 	/* if the command fails from here on we want the end tile to be highlighted */
 	_build_tunnel_endtile = end_tile;
 
-	if (tiles > _settings_game.construction.max_tunnel_length) return_cmd_error(STR_ERROR_TUNNEL_TOO_LONG);
+	if (tiles > _settings_game.construction.max_tunnel_length) return CommandError(STR_ERROR_TUNNEL_TOO_LONG);
 
-	if (HasTileWaterGround(end_tile)) return_cmd_error(STR_ERROR_CAN_T_BUILD_ON_WATER);
+	if (HasTileWaterGround(end_tile)) return CommandError(STR_ERROR_CAN_T_BUILD_ON_WATER);
 
 	/* Clear the tile in any case */
 	ret = DoCommand(end_tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
-	if (ret.Failed()) return_cmd_error(STR_ERROR_UNABLE_TO_EXCAVATE_LAND);
+	if (ret.Failed()) return CommandError(STR_ERROR_UNABLE_TO_EXCAVATE_LAND);
 	cost.AddCost(ret);
 
 	/* slope of end tile must be complementary to the slope of the start tile */
@@ -836,7 +836,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 		/* Mark the tile as already cleared for the terraform command.
 		 * Do this for all tiles (like trees), not only objects. */
 		ClearedObjectArea *coa = FindClearedObject(end_tile);
-		if (coa == NULL) {
+		if (coa == nullptr) {
 			coa = _cleared_object_areas.Append();
 			coa->first_tile = end_tile;
 			coa->area = TileArea(end_tile, 1, 1);
@@ -847,7 +847,7 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 		coa->first_tile = INVALID_TILE;
 		ret = DoCommand(end_tile, end_tileh & start_tileh, 0, flags, CMD_TERRAFORM_LAND);
 		coa->first_tile = old_first_tile;
-		if (ret.Failed()) return_cmd_error(STR_ERROR_UNABLE_TO_EXCAVATE_LAND);
+		if (ret.Failed()) return CommandError(STR_ERROR_UNABLE_TO_EXCAVATE_LAND);
 		cost.AddCost(ret);
 	}
 	cost.AddCost(_price[PR_BUILD_TUNNEL]);
@@ -870,17 +870,17 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 		TileIndex ts = end_tile;
 		if(start_tile > end_tile) Swap(tn, ts);
 
-		if (!Tunnel::CanAllocateItem()) return_cmd_error(STR_ERROR_TUNNEL_TOO_MANY);
+		if (!Tunnel::CanAllocateItem()) return CommandError(STR_ERROR_TUNNEL_TOO_MANY);
 		const Tunnel *t = new Tunnel(tn, ts, TileHeight(tn), is_chunnel);
 
 		if (transport_type == TRANSPORT_RAIL) {
-			if (!IsTunnelTile(start_tile) && c != NULL) c->infrastructure.rail[railtype] += num_pieces;
+			if (!IsTunnelTile(start_tile) && c != nullptr) c->infrastructure.rail[railtype] += num_pieces;
 			MakeRailTunnel(start_tile, company, t->index, direction, railtype);
 			MakeRailTunnel(end_tile, company, t->index, ReverseDiagDir(direction), railtype);
 			AddSideToSignalBuffer(start_tile, INVALID_DIAGDIR, company);
 			YapfNotifyTrackLayoutChange(start_tile, DiagDirToDiagTrack(direction));
 		} else {
-			if (c != NULL) {
+			if (c != nullptr) {
 				RoadType rt;
 				FOR_EACH_SET_ROADTYPE(rt, rts ^ (IsTunnelTile(start_tile) ? GetRoadTypes(start_tile) : ROADTYPES_NONE)) {
 					c->infrastructure.road[rt] += num_pieces * 2; // A full diagonal road has two road bits.
@@ -960,7 +960,7 @@ static CommandCost DoClearTunnel(TileIndex tile, DoCommandFlag flags)
 
 	_build_tunnel_endtile = endtile;
 
-	Town *t = NULL;
+	Town *t = nullptr;
 	if (IsTileOwner(tile, OWNER_TOWN) && _game_mode != GM_EDITOR) {
 		t = ClosestTownFromTile(tile, UINT_MAX); // town penalty rating
 
@@ -987,10 +987,10 @@ static CommandCost DoClearTunnel(TileIndex tile, DoCommandFlag flags)
 			Track track = DiagDirToDiagTrack(dir);
 			Owner owner = GetTileOwner(tile);
 
-			Train *v = NULL;
+			Train *v = nullptr;
 			if (HasTunnelBridgeReservation(tile)) {
 				v = GetTrainForReservation(tile, track);
-				if (v != NULL) FreeTrainTrackReservation(v);
+				if (v != nullptr) FreeTrainTrackReservation(v);
 			}
 
 			if (Company::IsValidID(owner)) {
@@ -1013,13 +1013,13 @@ static CommandCost DoClearTunnel(TileIndex tile, DoCommandFlag flags)
 			YapfNotifyTrackLayoutChange(tile,    track);
 			YapfNotifyTrackLayoutChange(endtile, track);
 
-			if (v != NULL) TryPathReserve(v);
+			if (v != nullptr) TryPathReserve(v);
 		} else {
 			RoadType rt;
 			FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(tile)) {
 				/* A full diagonal road tile has two road bits. */
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
-				if (c != NULL) {
+				if (c != nullptr) {
 					c->infrastructure.road[rt] -= len * 2 * TUNNELBRIDGE_TRACKBIT_FACTOR;
 					DirtyCompanyInfrastructureWindows(c->index);
 				}
@@ -1056,7 +1056,7 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 	DiagDirection direction = GetTunnelBridgeDirection(tile);
 	TileIndexDiff delta = TileOffsByDiagDir(direction);
 
-	Town *t = NULL;
+	Town *t = nullptr;
 	if (IsTileOwner(tile, OWNER_TOWN) && _game_mode != GM_EDITOR) {
 		t = ClosestTownFromTile(tile, UINT_MAX); // town penalty rating
 
@@ -1080,11 +1080,11 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 		bool rail = GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL;
 		Owner owner = GetTileOwner(tile);
 		int height = GetBridgeHeight(tile);
-		Train *v = NULL;
+		Train *v = nullptr;
 
 		if (rail && HasTunnelBridgeReservation(tile)) {
 			v = GetTrainForReservation(tile, DiagDirToDiagTrack(direction));
-			if (v != NULL) FreeTrainTrackReservation(v);
+			if (v != nullptr) FreeTrainTrackReservation(v);
 		}
 
 		/* Update company infrastructure counts. */
@@ -1126,7 +1126,7 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 			YapfNotifyTrackLayoutChange(tile,    track);
 			YapfNotifyTrackLayoutChange(endtile, track);
 
-			if (v != NULL) TryPathReserve(v, true);
+			if (v != nullptr) TryPathReserve(v, true);
 		}
 	}
 
@@ -1142,10 +1142,10 @@ static CommandCost DoClearBridge(TileIndex tile, DoCommandFlag flags)
 static CommandCost ClearTile_TunnelBridge(TileIndex tile, DoCommandFlag flags)
 {
 	if (IsTunnel(tile)) {
-		if (flags & DC_AUTO) return_cmd_error(STR_ERROR_MUST_DEMOLISH_TUNNEL_FIRST);
+		if (flags & DC_AUTO) return CommandError(STR_ERROR_MUST_DEMOLISH_TUNNEL_FIRST);
 		return DoClearTunnel(tile, flags);
 	} else { // IsBridge(tile)
-		if (flags & DC_AUTO) return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+		if (flags & DC_AUTO) return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 		return DoClearBridge(tile, flags);
 	}
 }
@@ -1181,7 +1181,7 @@ static int DrawPillarColumn(int z_bottom, int z_top, const PalSpriteID *psid, in
 {
 	int cur_z;
 	for (cur_z = z_top; cur_z >= z_bottom; cur_z -= TILE_HEIGHT) {
-		DrawPillar(psid, x, y, cur_z, w, h, NULL);
+		DrawPillar(psid, x, y, cur_z, w, h, nullptr);
 	}
 	return cur_z;
 }
@@ -1970,7 +1970,7 @@ static void UpdateRoadTunnelBridgeInfrastructure(TileIndex begin, TileIndex end,
 	RoadType rt;
 	FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(begin)) {
 		Company * const c = Company::GetIfValid(GetRoadOwner(begin, rt));
-		if (c != NULL) {
+		if (c != nullptr) {
 			uint infra = 0;
 			if (IsBridge(begin)) {
 				const RoadBits bits = GetCustomBridgeHeadRoadBits(begin, rt);
@@ -1990,7 +1990,7 @@ static void UpdateRoadTunnelBridgeInfrastructure(TileIndex begin, TileIndex end,
 	}
 	FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(end)) {
 		Company * const c = Company::GetIfValid(GetRoadOwner(end, rt));
-		if (c != NULL) {
+		if (c != nullptr) {
 			uint infra = 0;
 			if (IsBridge(end)) {
 				const RoadBits bits = GetCustomBridgeHeadRoadBits(end, rt);
@@ -2281,14 +2281,14 @@ extern const TileTypeProcs _tile_type_tunnelbridge_procs = {
 	DrawTile_TunnelBridge,           // draw_tile_proc
 	GetSlopePixelZ_TunnelBridge,     // get_slope_z_proc
 	ClearTile_TunnelBridge,          // clear_tile_proc
-	NULL,                            // add_accepted_cargo_proc
+	nullptr,                            // add_accepted_cargo_proc
 	GetTileDesc_TunnelBridge,        // get_tile_desc_proc
 	GetTileTrackStatus_TunnelBridge, // get_tile_track_status_proc
 	ClickTile_TunnelBridge,          // click_tile_proc
-	NULL,                            // animate_tile_proc
+	nullptr,                            // animate_tile_proc
 	TileLoop_TunnelBridge,           // tile_loop_proc
 	ChangeTileOwner_TunnelBridge,    // change_tile_owner_proc
-	NULL,                            // add_produced_cargo_proc
+	nullptr,                            // add_produced_cargo_proc
 	VehicleEnter_TunnelBridge,       // vehicle_enter_tile_proc
 	GetFoundation_TunnelBridge,      // get_foundation_proc
 	TerraformTile_TunnelBridge,      // terraform_tile_proc

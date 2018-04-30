@@ -101,7 +101,7 @@ static void _DoCommandReturnBuildBridge1(class ScriptInstance *instance)
 
 	ScriptObject::SetCallbackVariable(0, start);
 	ScriptObject::SetCallbackVariable(1, end);
-	return ScriptObject::DoCommand(end, start, type | bridge_id, CMD_BUILD_BRIDGE, NULL, &::_DoCommandReturnBuildBridge1);
+	return ScriptObject::DoCommand(end, start, type | bridge_id, CMD_BUILD_BRIDGE, nullptr, &::_DoCommandReturnBuildBridge1);
 }
 
 /* static */ bool ScriptBridge::_BuildBridgeRoad1()
@@ -113,7 +113,7 @@ static void _DoCommandReturnBuildBridge1(class ScriptInstance *instance)
 	DiagDirection dir_1 = ::DiagdirBetweenTiles(end, start);
 	DiagDirection dir_2 = ::ReverseDiagDir(dir_1);
 
-	return ScriptObject::DoCommand(start + ::TileOffsByDiagDir(dir_1), ::DiagDirToRoadBits(dir_2) | (ScriptObject::GetRoadType() << 4) | (1 << 8), 0, CMD_BUILD_ROAD, NULL, &::_DoCommandReturnBuildBridge2);
+	return ScriptObject::DoCommand(start + ::TileOffsByDiagDir(dir_1), ::DiagDirToRoadBits(dir_2) | (ScriptObject::GetRoadType() << 4) | (1 << 8), 0, CMD_BUILD_ROAD, nullptr, &::_DoCommandReturnBuildBridge2);
 }
 
 /* static */ bool ScriptBridge::_BuildBridgeRoad2()
@@ -137,7 +137,7 @@ static void _DoCommandReturnBuildBridge1(class ScriptInstance *instance)
 
 /* static */ char *ScriptBridge::GetName(BridgeID bridge_id)
 {
-	if (!IsValidBridge(bridge_id)) return NULL;
+	if (!IsValidBridge(bridge_id)) return nullptr;
 
 	return GetString(::GetBridgeSpec(bridge_id)->transport_name[0]);
 }

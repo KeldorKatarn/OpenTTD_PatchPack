@@ -1463,10 +1463,10 @@ public:
 
 	virtual void OnQueryTextFinished(char *str)
 	{
-		if (str == NULL) return;
+		if (str == nullptr) return;
 		/* Set a new company manager face number */
 		if (!StrEmpty(str)) {
-			this->face = strtoul(str, NULL, 10);
+			this->face = strtoul(str, nullptr, 10);
 			ScaleAllCompanyManagerFaceBits(this->face);
 			ShowErrorMessage(STR_FACE_FACECODE_SET, INVALID_STRING_ID, WL_INFO);
 			this->UpdateData();
@@ -2395,17 +2395,17 @@ struct CompanyWindow : Window
 
 	virtual void OnQueryTextFinished(char *str)
 	{
-		if (str == NULL) return;
+		if (str == nullptr) return;
 
 		switch (this->query_widget) {
 			default: NOT_REACHED();
 
 			case WID_C_PRESIDENT_NAME:
-				DoCommandP(0, 0, 0, CMD_RENAME_PRESIDENT | CMD_MSG(STR_ERROR_CAN_T_CHANGE_PRESIDENT), NULL, str);
+				DoCommandP(0, 0, 0, CMD_RENAME_PRESIDENT | CMD_MSG(STR_ERROR_CAN_T_CHANGE_PRESIDENT), nullptr, str);
 				break;
 
 			case WID_C_COMPANY_NAME:
-				DoCommandP(0, 0, 0, CMD_RENAME_COMPANY | CMD_MSG(STR_ERROR_CAN_T_CHANGE_COMPANY_NAME), NULL, str);
+				DoCommandP(0, 0, 0, CMD_RENAME_COMPANY | CMD_MSG(STR_ERROR_CAN_T_CHANGE_COMPANY_NAME), nullptr, str);
 				break;
 
 #ifdef ENABLE_NETWORK
@@ -2569,7 +2569,7 @@ static const NWidgetPart _nested_buy_company_widgets[] = {
 };
 
 static WindowDesc _buy_company_desc(
-	WDP_AUTO, NULL, 0, 0,
+	WDP_AUTO, nullptr, 0, 0,
 	WC_BUY_COMPANY, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_buy_company_widgets, lengthof(_nested_buy_company_widgets)

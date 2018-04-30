@@ -48,7 +48,7 @@ struct ChatMessage {
 };
 
 /* used for chat window */
-static ChatMessage *_chatmsg_list = NULL; ///< The actual chat message list.
+static ChatMessage *_chatmsg_list = nullptr; ///< The actual chat message list.
 static bool _chatmessage_dirty = false;   ///< Does the chat message need repainting?
 static bool _chatmessage_visible = false; ///< Is a chat message visible.
 static bool _chat_tab_completion_active;  ///< Whether tab completion is active.
@@ -59,7 +59,7 @@ static uint MAX_CHAT_MESSAGES = 0;        ///< The limit of chat messages to sho
  * the left and pixels from the bottom. The height is the maximum height.
  */
 static PointDimension _chatmsg_box;
-static uint8 *_chatmessage_backup = NULL; ///< Backup in case text is moved.
+static uint8 *_chatmessage_backup = nullptr; ///< Backup in case text is moved.
 
 /**
  * Count the chat messages.
@@ -364,7 +364,7 @@ struct NetworkChatWindow : public Window {
 			}
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	/**
@@ -375,7 +375,7 @@ struct NetworkChatWindow : public Window {
 	static char *ChatTabCompletionFindText(char *buf)
 	{
 		char *p = strrchr(buf, ' ');
-		if (p == NULL) return buf;
+		if (p == nullptr) return buf;
 
 		*p = '\0';
 		return p + 1;
@@ -404,7 +404,7 @@ struct NetworkChatWindow : public Window {
 		tb_buf  = ChatTabCompletionFindText(pre_buf);
 		tb_len  = strlen(tb_buf);
 
-		while ((cur_name = ChatTabCompletionNextItem(&item)) != NULL) {
+		while ((cur_name = ChatTabCompletionNextItem(&item)) != nullptr) {
 			item++;
 
 			if (_chat_tab_completion_active) {
@@ -547,7 +547,7 @@ static const NWidgetPart _nested_chat_window_widgets[] = {
 
 /** The description of the chat window. */
 static WindowDesc _chat_window_desc(
-	WDP_MANUAL, NULL, 0, 0,
+	WDP_MANUAL, nullptr, 0, 0,
 	WC_SEND_NETWORK_MSG, WC_NONE,
 	0,
 	_nested_chat_window_widgets, lengthof(_nested_chat_window_widgets)

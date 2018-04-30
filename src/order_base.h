@@ -96,7 +96,7 @@ public:
 		return this->extra->xdata;
 	}
 
-	Order *next;          ///< Pointer to next order. If NULL, end of list
+	Order *next;          ///< Pointer to next order. If nullptr, end of list
 
 	Order() : refit_cargo(CT_NO_REFIT), max_speed(UINT16_MAX) {}
 	~Order();
@@ -467,7 +467,7 @@ public:
 		NOT_REACHED();
 	}
 
-	void FillNextStoppingStation(const Vehicle *v, const OrderList *o, const Order *first = NULL, uint hops = 0);
+	void FillNextStoppingStation(const Vehicle *v, const OrderList *o, const Order *first = nullptr, uint hops = 0);
 };
 
 
@@ -552,7 +552,7 @@ private:
 public:
 	/** Default constructor producing an invalid order list. */
 	OrderList(VehicleOrderID num_orders = INVALID_VEH_ORDER_ID)
-		: first(NULL), num_orders(num_orders), num_manual_orders(0), num_vehicles(0), first_shared(NULL),
+		: first(nullptr), num_orders(num_orders), num_manual_orders(0), num_vehicles(0), first_shared(nullptr),
 		  timetable_duration(0), total_duration(0),
 		  last_timetable_init(INVALID_TICKS), separation_counter(0),
 		  is_separation_valid(false), current_separation(INVALID_TICKS), current_sep_mode(TTS_MODE_OFF),
@@ -592,7 +592,7 @@ public:
 	 * @param curr Order to find the next one for.
 	 * @return Next order.
 	 */
-	inline const Order *GetNext(const Order *curr) const { return (curr->next == NULL) ? this->GetFirstOrder() : curr->next; }
+	inline const Order *GetNext(const Order *curr) const { return (curr->next == nullptr) ? this->GetFirstOrder() : curr->next; }
 
 	/**
 	 * Get number of orders in the order list.
@@ -606,7 +606,7 @@ public:
 	 */
 	inline VehicleOrderID GetNumManualOrders() const { return this->num_manual_orders; }
 
-	CargoMaskedStationIDStack GetNextStoppingStation(const Vehicle *v, uint32 cargo_mask, const Order *first = NULL, uint hops = 0) const;
+	CargoMaskedStationIDStack GetNextStoppingStation(const Vehicle *v, uint32 cargo_mask, const Order *first = nullptr, uint hops = 0) const;
 	const Order *GetNextDecisionNode(const Order *next, uint hops, uint32 &cargo_mask) const;
 
 	void InsertOrderAt(Order *new_order, int index);
@@ -765,7 +765,7 @@ public:
 #define FOR_ALL_ORDERS(var) FOR_ALL_ORDERS_FROM(var, 0)
 
 
-#define FOR_VEHICLE_ORDERS(v, order) for (order = v->GetFirstOrder(); order != NULL; order = order->next)
+#define FOR_VEHICLE_ORDERS(v, order) for (order = v->GetFirstOrder(); order != nullptr; order = order->next)
 
 
 #define FOR_ALL_ORDER_LISTS_FROM(var, start) FOR_ALL_ITEMS_FROM(OrderList, orderlist_index, var, start)

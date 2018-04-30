@@ -25,7 +25,7 @@ protected:
 
 public:
 	Blitter_32bppAnim() :
-		anim_buf(NULL),
+		anim_buf(nullptr),
 		anim_buf_width(0),
 		anim_buf_height(0),
 		anim_buf_pitch(0)

@@ -271,7 +271,7 @@ static const NWidgetPart _nested_select_game_widgets[] = {
 };
 
 static WindowDesc _select_game_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_SELECT_GAME, WC_NONE,
 	0,
 	_nested_select_game_widgets, lengthof(_nested_select_game_widgets)
@@ -313,7 +313,7 @@ void AskExitGame()
 	ShowQuery(
 		STR_QUIT_CAPTION,
 		STR_QUIT_ARE_YOU_SURE_YOU_WANT_TO_EXIT_OPENTTD,
-		NULL,
+		nullptr,
 		AskExitGameCallback
 	);
 }
@@ -332,7 +332,7 @@ void AskExitToGameMenu()
 	ShowQuery(
 		STR_ABANDON_GAME_CAPTION,
 		(_game_mode != GM_EDITOR) ? STR_ABANDON_GAME_QUERY : STR_ABANDON_SCENARIO_QUERY,
-		NULL,
+		nullptr,
 		AskExitToGameMenuCallback
 	);
 }

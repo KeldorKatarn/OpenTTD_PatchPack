@@ -503,7 +503,7 @@ void Blitter_32bppAnim::CopyToBuffer(const void *video, void *dst, int width, in
 	uint32 *udst = (uint32 *)dst;
 	const uint32 *src = (const uint32 *)video;
 
-	if (this->anim_buf == NULL) return;
+	if (this->anim_buf == nullptr) return;
 
 	assert(_screen.pitch == this->anim_buf_pitch); // precondition for translating 'video' into an 'anim_buf' offset below.
 	const uint16 *anim_line = ((const uint32 *)video - (uint32 *)_screen.dst_ptr) + this->anim_buf;

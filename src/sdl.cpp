@@ -68,13 +68,13 @@ SDLProcs sdl_proc;
 
 static const char *LoadSdlDLL()
 {
-	if (sdl_proc.SDL_Init != NULL) {
-		return NULL;
+	if (sdl_proc.SDL_Init != nullptr) {
+		return nullptr;
 	}
 	if (!LoadLibraryList((Function *)(void *)&sdl_proc, sdl_files)) {
 		return "Unable to load sdl.dll";
 	}
-	return NULL;
+	return nullptr;
 }
 
 #endif /* DYNAMICALLY_LOADED_SDL */
@@ -90,7 +90,7 @@ const char *SdlOpen(uint32 x)
 #ifdef DYNAMICALLY_LOADED_SDL
 	{
 		const char *s = LoadSdlDLL();
-		if (s != NULL) return s;
+		if (s != nullptr) return s;
 	}
 #endif
 	if (_sdl_usage++ == 0) {
@@ -99,7 +99,7 @@ const char *SdlOpen(uint32 x)
 		if (SDL_CALL SDL_InitSubSystem(x) == -1) return SDL_CALL SDL_GetError();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /**

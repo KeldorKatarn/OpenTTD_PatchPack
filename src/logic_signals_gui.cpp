@@ -255,7 +255,7 @@ static const NWidgetPart _nested_program_widgets[] = {
 };
 
 static WindowDesc _signal_program_desc (
-	WDP_AUTO, NULL, 0, 0,
+	WDP_AUTO, nullptr, 0, 0,
 	WC_SIGNAL_PROGRAM, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_program_widgets, lengthof(_nested_program_widgets)
@@ -269,7 +269,7 @@ void ShowSignalProgramWindow(SignalProgram *program)
 {
 	WindowNumber wnum = GetSignalReference(program->tile, program->track);
 
-	if (BringWindowToFrontById(WC_SIGNAL_PROGRAM, wnum) != NULL) return;
+	if (BringWindowToFrontById(WC_SIGNAL_PROGRAM, wnum) != nullptr) return;
 
 	new SignalProgramWindow(&_signal_program_desc, wnum, program);
 }

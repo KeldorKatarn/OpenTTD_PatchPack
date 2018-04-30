@@ -266,14 +266,14 @@ static void InitializeWindowsAndCaches()
 	/* Identify owners of persistent storage arrays */
 	Industry *i;
 	FOR_ALL_INDUSTRIES(i) {
-		if (i->psa != NULL) {
+		if (i->psa != nullptr) {
 			i->psa->feature = GSF_INDUSTRIES;
 			i->psa->tile = i->location.tile;
 		}
 	}
 	Station *s;
 	FOR_ALL_STATIONS(s) {
-		if (s->airport.psa != NULL) {
+		if (s->airport.psa != nullptr) {
 			s->airport.psa->feature = GSF_AIRPORTS;
 			s->airport.psa->tile = s->airport.tile;
 		}
@@ -307,9 +307,9 @@ static void InitializeWindowsAndCaches()
 }
 
 typedef void (CDECL *SignalHandlerPointer)(int);
-static SignalHandlerPointer _prev_segfault = NULL;
-static SignalHandlerPointer _prev_abort    = NULL;
-static SignalHandlerPointer _prev_fpe      = NULL;
+static SignalHandlerPointer _prev_segfault = nullptr;
+static SignalHandlerPointer _prev_abort    = nullptr;
+static SignalHandlerPointer _prev_fpe      = nullptr;
 
 static void CDECL HandleSavegameLoadCrash(int signum);
 
@@ -379,7 +379,7 @@ static void CDECL HandleSavegameLoadCrash(int signum)
 	char *p = buffer;
 	p += seprintf(p, lastof(buffer), "Loading your savegame caused OpenTTD to crash.\n");
 
-	for (const GRFConfig *c = _grfconfig; !_saveload_crash_with_missing_newgrfs && c != NULL; c = c->next) {
+	for (const GRFConfig *c = _grfconfig; !_saveload_crash_with_missing_newgrfs && c != nullptr; c = c->next) {
 		_saveload_crash_with_missing_newgrfs = HasBit(c->flags, GCF_COMPATIBLE) || c->status == GCS_NOT_FOUND;
 	}
 
@@ -397,7 +397,7 @@ static void CDECL HandleSavegameLoadCrash(int signum)
 			"Please load the savegame with the appropriate NewGRFs installed.\n"
 			"The missing/compatible NewGRFs are:\n");
 
-		for (const GRFConfig *c = _grfconfig; c != NULL; c = c->next) {
+		for (const GRFConfig *c = _grfconfig; c != nullptr; c = c->next) {
 			if (HasBit(c->flags, GCF_COMPATIBLE)) {
 				const GRFIdentifier *replaced = GetOverriddenIdentifier(c);
 				char buf[40];
@@ -418,14 +418,14 @@ static void CDECL HandleSavegameLoadCrash(int signum)
 
 	ShowInfo(buffer);
 
-	SignalHandlerPointer call = NULL;
+	SignalHandlerPointer call = nullptr;
 	switch (signum) {
 		case SIGSEGV: call = _prev_segfault; break;
 		case SIGABRT: call = _prev_abort; break;
 		case SIGFPE:  call = _prev_fpe; break;
 		default: NOT_REACHED();
 	}
-	if (call != NULL) call(signum);
+	if (call != nullptr) call(signum);
 }
 
 /**
@@ -438,7 +438,7 @@ static void FixOwnerOfRailTrack(TileIndex t)
 	assert(!Company::IsValidID(GetTileOwner(t)) && (IsLevelCrossingTile(t) || IsPlainRailTile(t)));
 
 	/* remove leftover rail piece from crossing (from very old savegames) */
-	Train *v = NULL, *w;
+	Train *v = nullptr, *w;
 	FOR_ALL_TRAINS(w) {
 		if (w->tile == t) {
 			v = w;
@@ -446,7 +446,7 @@ static void FixOwnerOfRailTrack(TileIndex t)
 		}
 	}
 
-	if (v != NULL) {
+	if (v != nullptr) {
 		/* when there is a train on crossing (it could happen in TTD), set owner of crossing to train owner */
 		SetTileOwner(t, v->owner);
 		return;
@@ -647,22 +647,22 @@ bool AfterLoadGame()
 		Company *c;
 		FOR_ALL_COMPANIES(c) {
 			c->name = CopyFromOldName(c->name_1);
-			if (c->name != NULL) c->name_1 = STR_SV_UNNAMED;
+			if (c->name != nullptr) c->name_1 = STR_SV_UNNAMED;
 			c->president_name = CopyFromOldName(c->president_name_1);
-			if (c->president_name != NULL) c->president_name_1 = SPECSTR_PRESIDENT_NAME;
+			if (c->president_name != nullptr) c->president_name_1 = SPECSTR_PRESIDENT_NAME;
 		}
 
 		Station *st;
 		FOR_ALL_STATIONS(st) {
 			st->name = CopyFromOldName(st->string_id);
 			/* generating new name would be too much work for little effect, use the station name fallback */
-			if (st->name != NULL) st->string_id = STR_SV_STNAME_FALLBACK;
+			if (st->name != nullptr) st->string_id = STR_SV_STNAME_FALLBACK;
 		}
 
 		Town *t;
 		FOR_ALL_TOWNS(t) {
 			t->name = CopyFromOldName(t->townnametype);
-			if (t->name != NULL) t->townnametype = SPECSTR_TOWNNAME_START + _settings_game.game_creation.town_name;
+			if (t->name != nullptr) t->townnametype = SPECSTR_TOWNNAME_START + _settings_game.game_creation.town_name;
 		}
 	}
 
@@ -692,7 +692,7 @@ bool AfterLoadGame()
 
 	/* Check if all NewGRFs are present, we are very strict in MP mode */
 	GRFListCompatibility gcf_res = IsGoodGRFConfigList(_grfconfig);
-	for (GRFConfig *c = _grfconfig; c != NULL; c = c->next) {
+	for (GRFConfig *c = _grfconfig; c != nullptr; c = c->next) {
 		if (c->status == GCS_NOT_FOUND) {
 			GamelogGRFRemove(c->ident.grfid);
 		} else if (HasBit(c->flags, GCF_COMPATIBLE)) {
@@ -817,7 +817,7 @@ bool AfterLoadGame()
 	{
 		Company *c;
 		FOR_ALL_COMPANIES(c) {
-			if (c->is_ai && c->ai_instance == NULL) AI::StartNew(c->index);
+			if (c->is_ai && c->ai_instance == nullptr) AI::StartNew(c->index);
 		}
 	}
 
@@ -1040,7 +1040,7 @@ bool AfterLoadGame()
 	if (IsSavegameVersionBefore(16)) {
 		Company *c;
 		FOR_ALL_COMPANIES(c) {
-			c->engine_renew_list            = NULL;
+			c->engine_renew_list            = nullptr;
 			c->settings.engine_renew        = false;
 			c->settings.engine_renew_months = 6;
 			c->settings.engine_renew_money  = 100000;
@@ -1053,7 +1053,7 @@ bool AfterLoadGame()
 		 * companies are 'invalid'.
 		 */
 		c = Company::GetIfValid(COMPANY_FIRST);
-		if (!_network_dedicated && c != NULL) {
+		if (!_network_dedicated && c != nullptr) {
 			c->settings = _settings_client.company;
 		}
 	}
@@ -1157,7 +1157,7 @@ bool AfterLoadGame()
 					}
 					if (!IsRoadDepot(t) && !HasTownOwnedRoad(t)) {
 						const Town *town = CalcClosestTownFromTile(t);
-						if (town != NULL) SetTownIndex(t, town->index);
+						if (town != nullptr) SetTownIndex(t, town->index);
 					}
 					_m[t].m4 = 0;
 					break;
@@ -2215,7 +2215,7 @@ bool AfterLoadGame()
 		FOR_ALL_DISASTERVEHICLES(v) {
 			if (v->subtype == 2 /* ST_SMALL_UFO */ && v->current_order.GetDestination() != 0) {
 				const Vehicle *u = Vehicle::GetIfValid(v->dest_tile);
-				if (u == NULL || u->type != VEH_ROAD || !RoadVehicle::From(u)->IsFrontEngine()) {
+				if (u == nullptr || u->type != VEH_ROAD || !RoadVehicle::From(u)->IsFrontEngine()) {
 					delete v;
 				}
 			}
@@ -2234,7 +2234,7 @@ bool AfterLoadGame()
 				 * assert() in Pool::GetNew() happy by calling CanAllocateItem(). */
 				assert_compile(CargoPaymentPool::MAX_SIZE == VehiclePool::MAX_SIZE);
 				assert(CargoPayment::CanAllocateItem());
-				if (v->cargo_payment == NULL) v->cargo_payment = new CargoPayment(v);
+				if (v->cargo_payment == nullptr) v->cargo_payment = new CargoPayment(v);
 			}
 		}
 	}
@@ -2248,7 +2248,7 @@ bool AfterLoadGame()
 
 		for (uint i = 0; i < _animated_tile_count; /* Nothing */) {
 			/* Remove if tile is not animated */
-			bool remove = _tile_type_procs[GetTileType(_animated_tile_list[i])]->animate_tile_proc == NULL;
+			bool remove = _tile_type_procs[GetTileType(_animated_tile_list[i])]->animate_tile_proc == nullptr;
 
 			/* and remove if duplicate */
 			for (uint j = 0; !remove && j < i; j++) {
@@ -2320,7 +2320,7 @@ bool AfterLoadGame()
 						/* Town -> Town */
 						const Station *ss = Station::GetIfValid(s->src);
 						const Station *sd = Station::GetIfValid(s->dst);
-						if (ss != NULL && sd != NULL && ss->owner == sd->owner &&
+						if (ss != nullptr && sd != nullptr && ss->owner == sd->owner &&
 								Company::IsValidID(ss->owner)) {
 							s->src_type = s->dst_type = ST_TOWN;
 							s->src = ss->town->index;
@@ -2487,13 +2487,13 @@ bool AfterLoadGame()
 		FOR_ALL_AIRCRAFT(v) {
 			if (!v->IsNormalAircraft()) continue;
 			Station *st = GetTargetAirportIfValid(v);
-			if (st == NULL && v->state != FLYING) {
+			if (st == nullptr && v->state != FLYING) {
 				v->state = FLYING;
 				UpdateAircraftCache(v);
 				AircraftNextAirportPos_and_Order(v);
 				/* get aircraft back on running altitude */
 				if ((v->vehstatus & VS_CRASHED) == 0) {
-					GetAircraftFlightLevelBounds(v, &v->z_pos, NULL);
+					GetAircraftFlightLevelBounds(v, &v->z_pos, nullptr);
 					SetAircraftPosition(v, v->x_pos, v->y_pos, GetAircraftFlightLevel(v));
 				}
 			}
@@ -2555,11 +2555,11 @@ bool AfterLoadGame()
 		 * order they have in the pool. */
 		Waypoint *wp;
 		FOR_ALL_WAYPOINTS(wp) {
-			if (wp->name != NULL) wp->town_cn = UINT16_MAX;
+			if (wp->name != nullptr) wp->town_cn = UINT16_MAX;
 		}
 
 		FOR_ALL_WAYPOINTS(wp) {
-			if (wp->name != NULL) MakeDefaultName(wp);
+			if (wp->name != nullptr) MakeDefaultName(wp);
 		}
 	}
 
@@ -2791,7 +2791,7 @@ bool AfterLoadGame()
 		if (!IsSavegameVersionBefore(76)) {
 			Industry *ind;
 			FOR_ALL_INDUSTRIES(ind) {
-				assert(ind->psa != NULL);
+				assert(ind->psa != nullptr);
 
 				/* Check if the old storage was empty. */
 				bool is_empty = true;
@@ -2806,7 +2806,7 @@ bool AfterLoadGame()
 					ind->psa->grfid = _industry_mngr.GetGRFID(ind->type);
 				} else {
 					delete ind->psa;
-					ind->psa = NULL;
+					ind->psa = nullptr;
 				}
 			}
 		}
@@ -2815,7 +2815,7 @@ bool AfterLoadGame()
 			Station *st;
 			FOR_ALL_STATIONS(st) {
 				if (!(st->facilities & FACIL_AIRPORT)) continue;
-				assert(st->airport.psa != NULL);
+				assert(st->airport.psa != nullptr);
 
 				/* Check if the old storage was empty. */
 				bool is_empty = true;
@@ -2830,7 +2830,7 @@ bool AfterLoadGame()
 					st->airport.psa->grfid = _airport_mngr.GetGRFID(st->airport.type);
 				} else {
 					delete st->airport.psa;
-					st->airport.psa = NULL;
+					st->airport.psa = nullptr;
 
 				}
 			}
@@ -2874,12 +2874,12 @@ bool AfterLoadGame()
 			/* Set the default cargo requirement for town growth */
 			switch (_settings_game.game_creation.landscape) {
 				case LT_ARCTIC:
-					if (FindFirstCargoWithTownEffect(TE_FOOD) != NULL) t->goal[TE_FOOD] = TOWN_GROWTH_WINTER;
+					if (FindFirstCargoWithTownEffect(TE_FOOD) != nullptr) t->goal[TE_FOOD] = TOWN_GROWTH_WINTER;
 					break;
 
 				case LT_TROPIC:
-					if (FindFirstCargoWithTownEffect(TE_FOOD) != NULL) t->goal[TE_FOOD] = TOWN_GROWTH_DESERT;
-					if (FindFirstCargoWithTownEffect(TE_WATER) != NULL) t->goal[TE_WATER] = TOWN_GROWTH_DESERT;
+					if (FindFirstCargoWithTownEffect(TE_FOOD) != nullptr) t->goal[TE_FOOD] = TOWN_GROWTH_DESERT;
+					if (FindFirstCargoWithTownEffect(TE_WATER) != nullptr) t->goal[TE_WATER] = TOWN_GROWTH_DESERT;
 					break;
 			}
 		}
@@ -2999,7 +2999,7 @@ bool AfterLoadGame()
 			TileIndex prev_tile = v->tile;
 			uint prev_tile_skip = 0;
 			uint cur_skip = 0;
-			for (RoadVehicle *u = v; u != NULL; u = u->Next()) {
+			for (RoadVehicle *u = v; u != nullptr; u = u->Next()) {
 				if (u->tile != prev_tile) {
 					prev_tile_skip = cur_skip;
 					prev_tile = u->tile;
@@ -3033,7 +3033,7 @@ bool AfterLoadGame()
 			}
 			while (cur_skip > skip_frames[0]) {
 				RoadVehicle *u = v;
-				RoadVehicle *prev = NULL;
+				RoadVehicle *prev = nullptr;
 				for (uint *it = skip_frames.Begin(); it != skip_frames.End(); ++it, prev = u, u = u->Next()) {
 					extern bool IndividualRoadVehicleController(RoadVehicle *v, const RoadVehicle *prev);
 					if (*it >= cur_skip) IndividualRoadVehicleController(u, prev);

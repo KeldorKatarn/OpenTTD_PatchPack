@@ -45,44 +45,44 @@ INSTANTIATE_POOL_METHODS(Goal)
  */
 CommandCost CmdCreateGoal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!Goal::CanAllocateItem()) return CMD_ERROR;
+	if (!Goal::CanAllocateItem()) return CommandError();
 
 	GoalType type = (GoalType)GB(p1, 0, 8);
 	CompanyID company = (CompanyID)GB(p1, 8, 8);
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (StrEmpty(text)) return CMD_ERROR;
-	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (StrEmpty(text)) return CommandError();
+	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CommandError();
 
 	switch (type) {
 		case GT_NONE:
-			if (p2 != 0) return CMD_ERROR;
+			if (p2 != 0) return CommandError();
 			break;
 
 		case GT_TILE:
-			if (!IsValidTile(p2)) return CMD_ERROR;
+			if (!IsValidTile(p2)) return CommandError();
 			break;
 
 		case GT_INDUSTRY:
-			if (!Industry::IsValidID(p2)) return CMD_ERROR;
+			if (!Industry::IsValidID(p2)) return CommandError();
 			break;
 
 		case GT_TOWN:
-			if (!Town::IsValidID(p2)) return CMD_ERROR;
+			if (!Town::IsValidID(p2)) return CommandError();
 			break;
 
 		case GT_COMPANY:
-			if (!Company::IsValidID(p2)) return CMD_ERROR;
+			if (!Company::IsValidID(p2)) return CommandError();
 			break;
 
 		case GT_STORY_PAGE: {
-			if (!StoryPage::IsValidID(p2)) return CMD_ERROR;
+			if (!StoryPage::IsValidID(p2)) return CommandError();
 			CompanyByte story_company = StoryPage::Get(p2)->company;
-			if (company == INVALID_COMPANY ? story_company != INVALID_COMPANY : story_company != INVALID_COMPANY && story_company != company) return CMD_ERROR;
+			if (company == INVALID_COMPANY ? story_company != INVALID_COMPANY : story_company != INVALID_COMPANY && story_company != company) return CommandError();
 			break;
 		}
 
-		default: return CMD_ERROR;
+		default: return CommandError();
 	}
 
 	if (flags & DC_EXEC) {
@@ -91,7 +91,7 @@ CommandCost CmdCreateGoal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 		g->dst = p2;
 		g->company = company;
 		g->text = stredup(text);
-		g->progress = NULL;
+		g->progress = nullptr;
 		g->completed = false;
 
 		if (g->company == INVALID_COMPANY) {
@@ -118,8 +118,8 @@ CommandCost CmdCreateGoal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
  */
 CommandCost CmdRemoveGoal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!Goal::IsValidID(p1)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!Goal::IsValidID(p1)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Goal *g = Goal::Get(p1);
@@ -148,9 +148,9 @@ CommandCost CmdRemoveGoal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
  */
 CommandCost CmdSetGoalText(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!Goal::IsValidID(p1)) return CMD_ERROR;
-	if (StrEmpty(text)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!Goal::IsValidID(p1)) return CommandError();
+	if (StrEmpty(text)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Goal *g = Goal::Get(p1);
@@ -178,14 +178,14 @@ CommandCost CmdSetGoalText(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
  */
 CommandCost CmdSetGoalProgress(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!Goal::IsValidID(p1)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!Goal::IsValidID(p1)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Goal *g = Goal::Get(p1);
 		free(g->progress);
 		if (StrEmpty(text)) {
-			g->progress = NULL;
+			g->progress = nullptr;
 		} else {
 			g->progress = stredup(text);
 		}
@@ -211,8 +211,8 @@ CommandCost CmdSetGoalProgress(TileIndex tile, DoCommandFlag flags, uint32 p1, u
  */
 CommandCost CmdSetGoalCompleted(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!Goal::IsValidID(p1)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!Goal::IsValidID(p1)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Goal *g = Goal::Get(p1);
@@ -245,12 +245,12 @@ CommandCost CmdGoalQuestion(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 	CompanyID company = (CompanyID)GB(p1, 16, 8);
 	byte type = GB(p1, 24, 8);
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (StrEmpty(text)) return CMD_ERROR;
-	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CMD_ERROR;
-	if (CountBits(p2) < 1 || CountBits(p2) > 3) return CMD_ERROR;
-	if (p2 >= (1 << GOAL_QUESTION_BUTTON_COUNT)) return CMD_ERROR;
-	if (type >= GOAL_QUESTION_TYPE_COUNT) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (StrEmpty(text)) return CommandError();
+	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CommandError();
+	if (CountBits(p2) < 1 || CountBits(p2) > 3) return CommandError();
+	if (p2 >= (1 << GOAL_QUESTION_BUTTON_COUNT)) return CommandError();
+	if (type >= GOAL_QUESTION_TYPE_COUNT) return CommandError();
 
 	if (flags & DC_EXEC) {
 		if ((company != INVALID_COMPANY && company == _local_company) || (company == INVALID_COMPANY && Company::IsValidID(_local_company))) ShowGoalQuestion(uniqueid, type, p2, text);
@@ -270,8 +270,8 @@ CommandCost CmdGoalQuestion(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
  */
 CommandCost CmdGoalQuestionAnswer(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (p1 > UINT16_MAX) return CMD_ERROR;
-	if (p2 >= GOAL_QUESTION_BUTTON_COUNT) return CMD_ERROR;
+	if (p1 > UINT16_MAX) return CommandError();
+	if (p2 >= GOAL_QUESTION_BUTTON_COUNT) return CommandError();
 
 	if (_current_company == OWNER_DEITY) {
 		/* It has been requested to close this specific question on all clients */

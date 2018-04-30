@@ -96,7 +96,7 @@ struct SignList {
 		if (!this->signs.Sort(&SignNameSorter)) return;
 
 		/* Reset the name sorter sort cache */
-		this->last_sign = NULL;
+		this->last_sign = nullptr;
 	}
 
 	/** Filter sign list by sign name */
@@ -138,7 +138,7 @@ struct SignList {
 	}
 };
 
-const Sign *SignList::last_sign = NULL;
+const Sign *SignList::last_sign = nullptr;
 bool SignList::match_case = false;
 
 /** Enum referring to the Hotkeys in the sign list window */
@@ -348,7 +348,7 @@ static EventState SignListGlobalHotkeys(int hotkey)
 {
 	if (_game_mode == GM_MENU) return ES_NOT_HANDLED;
 	Window *w = ShowSignList();
-	if (w == NULL) return ES_NOT_HANDLED;
+	if (w == nullptr) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);
 }
 
@@ -398,7 +398,7 @@ static WindowDesc _sign_list_desc(
 /**
  * Open the sign list window
  *
- * @return newly opened sign list window, or NULL if the window could not be opened.
+ * @return newly opened sign list window, or nullptr if the window could not be opened.
  */
 Window *ShowSignList()
 {
@@ -414,7 +414,7 @@ Window *ShowSignList()
 static bool RenameSign(SignID index, const char *text)
 {
 	bool remove = StrEmpty(text);
-	DoCommandP(0, index, 0, CMD_RENAME_SIGN | (StrEmpty(text) ? CMD_MSG(STR_ERROR_CAN_T_DELETE_SIGN) : CMD_MSG(STR_ERROR_CAN_T_CHANGE_SIGN_NAME)), NULL, text);
+	DoCommandP(0, index, 0, CMD_RENAME_SIGN | (StrEmpty(text) ? CMD_MSG(STR_ERROR_CAN_T_DELETE_SIGN) : CMD_MSG(STR_ERROR_CAN_T_CHANGE_SIGN_NAME)), nullptr, text);
 	return remove;
 }
 
@@ -438,7 +438,7 @@ struct SignWindow : Window, SignList {
 	void UpdateSignEditWindow(const Sign *si)
 	{
 		/* Display an empty string when the sign hasn't been edited yet */
-		if (si->name != NULL) {
+		if (si->name != nullptr) {
 			SetDParam(0, si->index);
 			this->name_editbox.text.Assign(STR_SIGN_NAME);
 		} else {
@@ -555,7 +555,7 @@ static WindowDesc _query_sign_edit_desc(
 void HandleClickOnSign(const Sign *si)
 {
 	if (_ctrl_pressed && (si->owner == _local_company || (si->owner == OWNER_DEITY && _game_mode == GM_EDITOR))) {
-		RenameSign(si->index, NULL);
+		RenameSign(si->index, nullptr);
 		return;
 	}
 	ShowRenameSignWindow(si);
@@ -581,5 +581,5 @@ void DeleteRenameSignWindow(SignID sign)
 {
 	SignWindow *w = dynamic_cast<SignWindow *>(FindWindowById(WC_QUERY_STRING, WN_QUERY_STRING_SIGN));
 
-	if (w != NULL && w->cur_sign == sign) delete w;
+	if (w != nullptr && w->cur_sign == sign) delete w;
 }

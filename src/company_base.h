@@ -100,7 +100,7 @@ struct CompanyProperties {
 	CompanyEconomyEntry old_economy[MAX_HISTORY_QUARTERS]; ///< Economic data of the company of the last #MAX_HISTORY_QUARTERS quarters.
 	byte num_valid_stat_ent;                               ///< Number of valid statistical entries in #old_economy.
 
-	CompanyProperties() : name(NULL), president_name(NULL) {}
+	CompanyProperties() : name(nullptr), president_name(nullptr) {}
 
 	~CompanyProperties()
 	{
@@ -134,7 +134,7 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 	static inline bool IsValidAiID(size_t index)
 	{
 		const Company *c = Company::GetIfValid(index);
-		return c != NULL && c->is_ai;
+		return c != nullptr && c->is_ai;
 	}
 
 	/**
@@ -146,7 +146,7 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 	static inline bool IsValidHumanID(size_t index)
 	{
 		const Company *c = Company::GetIfValid(index);
-		return c != NULL && !c->is_ai;
+		return c != nullptr && !c->is_ai;
 	}
 
 	/**

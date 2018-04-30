@@ -58,11 +58,11 @@ CommandCost CmdProgramLogicSignal(TileIndex tile, DoCommandFlag flags, uint32 p1
 		Track target_track = SignalTrackFromTile(target_tile);
 
 		if (tile == target_tile && track == target_track) {
-			return_cmd_error(STR_ERROR_LINK_SIGNAL_TO_ITSELF);
+			return CommandError(STR_ERROR_LINK_SIGNAL_TO_ITSELF);
 		} else if (!IsPlainRailTile(target_tile) || !HasSignalOnTrack(target_tile, target_track)) {
-			return_cmd_error(STR_ERROR_LINK_SIGNAL_NO_SIGNAL);
+			return CommandError(STR_ERROR_LINK_SIGNAL_NO_SIGNAL);
 		} else if (CheckTileOwnership(target_tile).Failed()) {
-			return_cmd_error(STR_ERROR_OWNED_BY);
+			return CommandError(STR_ERROR_OWNED_BY);
 		}
 
 		if (flags & DC_EXEC) {

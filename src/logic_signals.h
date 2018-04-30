@@ -35,8 +35,7 @@ typedef TinyEnumT<SignalOperator> SignalOperatorByte;
 /**
  * The definition of a signal program reference.
  *
- * The first 22 bits (0 to 21) is the TileIndex and 3 bits 22 to 24 is the Track.
- * This will stop working if maps larger than 2048 x 2048 are used.
+ * The first 29 bits (0 to 28) is the TileIndex and 3 bits 29 to 31 is the Track.
  */
 typedef uint32 SignalReference;
 

@@ -145,7 +145,7 @@ public:
 	 */
 	inline bool HasParent()
 	{
-		return this->parent != NULL;
+		return this->parent != nullptr;
 	}
 };
 

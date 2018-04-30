@@ -47,7 +47,7 @@ typedef unsigned long in_addr_t;
 
 static inline int OTTDgetnameinfo(const struct sockaddr *sa, socklen_t salen, char *host, DWORD hostlen, char *serv, DWORD servlen, int flags)
 {
-	static int (WINAPI *getnameinfo)(const struct sockaddr *, socklen_t, char *, DWORD, char *, DWORD, int) = NULL;
+	static int (WINAPI *getnameinfo)(const struct sockaddr *, socklen_t, char *, DWORD, char *, DWORD, int) = nullptr;
 	static bool first_time = true;
 
 	if (first_time) {
@@ -55,7 +55,7 @@ static inline int OTTDgetnameinfo(const struct sockaddr *sa, socklen_t salen, ch
 		first_time = false;
 	}
 
-	if (getnameinfo != NULL) return getnameinfo(sa, salen, host, hostlen, serv, servlen, flags);
+	if (getnameinfo != nullptr) return getnameinfo(sa, salen, host, hostlen, serv, servlen, flags);
 
 	strncpy(host, inet_ntoa(((const struct sockaddr_in *)sa)->sin_addr), hostlen);
 	return 0;
@@ -64,7 +64,7 @@ static inline int OTTDgetnameinfo(const struct sockaddr *sa, socklen_t salen, ch
 
 static inline int OTTDgetaddrinfo(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res)
 {
-	static int (WINAPI *getaddrinfo)(const char *, const char *, const struct addrinfo *, struct addrinfo **) = NULL;
+	static int (WINAPI *getaddrinfo)(const char *, const char *, const struct addrinfo *, struct addrinfo **) = nullptr;
 	static bool first_time = true;
 
 	if (first_time) {
@@ -72,20 +72,20 @@ static inline int OTTDgetaddrinfo(const char *nodename, const char *servname, co
 		first_time = false;
 	}
 
-	if (getaddrinfo != NULL) return getaddrinfo(nodename, servname, hints, res);
+	if (getaddrinfo != nullptr) return getaddrinfo(nodename, servname, hints, res);
 
-	*res = NULL;
+	*res = nullptr;
 
 	in_addr_t ip = inet_addr(nodename);
 	if (ip == INADDR_NONE) {
 		struct hostent *he = gethostbyname(nodename);
-		if (he == NULL) return EAI_NONAME;
+		if (he == nullptr) return EAI_NONAME;
 		ip = (*(struct in_addr *)he->h_addr).s_addr;
 	}
 
 	struct sockaddr_in *sin = CallocT<struct sockaddr_in>(1);
 	sin->sin_family = AF_INET;
-	sin->sin_port = htons(strtoul(servname, NULL, 10));
+	sin->sin_port = htons(strtoul(servname, nullptr, 10));
 	sin->sin_addr.s_addr = ip;
 
 	struct addrinfo *ai = CallocT<struct addrinfo>(1);
@@ -101,17 +101,17 @@ static inline int OTTDgetaddrinfo(const char *nodename, const char *servname, co
 
 static inline void OTTDfreeaddrinfo(struct addrinfo *ai)
 {
-	static int (WINAPI *freeaddrinfo)(struct addrinfo *) = NULL;
+	static int (WINAPI *freeaddrinfo)(struct addrinfo *) = nullptr;
 	static bool first_time = true;
 
-	if (ai == NULL) return;
+	if (ai == nullptr) return;
 
 	if (first_time) {
 		LoadLibraryList((Function*)&freeaddrinfo, "ws2_32.dll\0freeaddrinfo\0\0");
 		first_time = false;
 	}
 
-	if (freeaddrinfo != NULL) {
+	if (freeaddrinfo != nullptr) {
 		freeaddrinfo(ai);
 		return;
 	}
@@ -121,7 +121,7 @@ static inline void OTTDfreeaddrinfo(struct addrinfo *ai)
 		free(ai->ai_addr);
 		free(ai);
 		ai = next;
-	} while (ai != NULL);
+	} while (ai != nullptr);
 }
 #define freeaddrinfo OTTDfreeaddrinfo
 #endif /* __MINGW32__ && __CYGWIN__ */

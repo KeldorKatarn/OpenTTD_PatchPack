@@ -24,7 +24,7 @@ char *_hotkeys_file;
  * List of all HotkeyLists.
  * This is a pointer to ensure initialisation order with the various static HotkeyList instances.
  */
-static SmallVector<HotkeyList*, 16> *_hotkey_lists = NULL;
+static SmallVector<HotkeyList*, 16> *_hotkey_lists = nullptr;
 
 /** String representation of a keycode */
 struct KeycodeNames {
@@ -255,7 +255,7 @@ void Hotkey::AddKeycode(uint16 keycode)
 HotkeyList::HotkeyList(const char *ini_group, Hotkey *items, GlobalHotkeyHandlerFunc global_hotkey_handler) :
 	global_hotkey_handler(global_hotkey_handler), ini_group(ini_group), items(items)
 {
-	if (_hotkey_lists == NULL) _hotkey_lists = new SmallVector<HotkeyList*, 16>();
+	if (_hotkey_lists == nullptr) _hotkey_lists = new SmallVector<HotkeyList*, 16>();
 	*_hotkey_lists->Append() = this;
 }
 
@@ -271,11 +271,11 @@ HotkeyList::~HotkeyList()
 void HotkeyList::Load(IniFile *ini)
 {
 	IniGroup *group = ini->GetGroup(this->ini_group);
-	for (Hotkey *hotkey = this->items; hotkey->name != NULL; ++hotkey) {
+	for (Hotkey *hotkey = this->items; hotkey->name != nullptr; ++hotkey) {
 		IniItem *item = group->GetItem(hotkey->name, false);
-		if (item != NULL) {
+		if (item != nullptr) {
 			hotkey->keycodes.Clear();
-			if (item->value != NULL) ParseHotkeys(hotkey, item->value);
+			if (item->value != nullptr) ParseHotkeys(hotkey, item->value);
 		}
 	}
 }
@@ -287,7 +287,7 @@ void HotkeyList::Load(IniFile *ini)
 void HotkeyList::Save(IniFile *ini) const
 {
 	IniGroup *group = ini->GetGroup(this->ini_group);
-	for (const Hotkey *hotkey = this->items; hotkey->name != NULL; ++hotkey) {
+	for (const Hotkey *hotkey = this->items; hotkey->name != nullptr; ++hotkey) {
 		IniItem *item = group->GetItem(hotkey->name, true);
 		item->SetValue(SaveKeycodes(hotkey));
 	}
@@ -301,7 +301,7 @@ void HotkeyList::Save(IniFile *ini) const
  */
 int HotkeyList::CheckMatch(uint16 keycode, bool global_only) const
 {
-	for (const Hotkey *list = this->items; list->name != NULL; ++list) {
+	for (const Hotkey *list = this->items; list->name != nullptr; ++list) {
 		if (list->keycodes.Contains(keycode | WKC_GLOBAL_HOTKEY) || (!global_only && list->keycodes.Contains(keycode))) {
 			return list->num;
 		}
@@ -343,7 +343,7 @@ void SaveHotkeysToConfig()
 void HandleGlobalHotkeys(WChar key, uint16 keycode)
 {
 	for (HotkeyList **list = _hotkey_lists->Begin(); list != _hotkey_lists->End(); ++list) {
-		if ((*list)->global_hotkey_handler == NULL) continue;
+		if ((*list)->global_hotkey_handler == nullptr) continue;
 
 		int hotkey = (*list)->CheckMatch(keycode, true);
 		if (hotkey >= 0 && ((*list)->global_hotkey_handler(hotkey) == ES_HANDLED)) return;

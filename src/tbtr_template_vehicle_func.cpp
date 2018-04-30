@@ -124,7 +124,7 @@ void DrawTemplate(const TemplateVehicle *tv, int left, int right, int y)
 
 	int px = rtl ? max_width : 0;
 	bool sel_articulated = false;
-	for (; tv != NULL && (rtl ? px > 0 : px < max_width); tv = tv->Next()) {
+	for (; tv != nullptr && (rtl ? px > 0 : px < max_width); tv = tv->Next()) {
 		int width = tv->image_width;
 
 		if (rtl ? px + width > 0 : px - width < max_width) {
@@ -162,7 +162,7 @@ inline void SetupTemplateVehicleFromVirtual(TemplateVehicle *tmp, TemplateVehicl
 	tmp->power = gcache->cached_power;
 	tmp->weight = 0;
 
-	for (const Train *u = virt; u != NULL; u = u->Next()) {
+	for (const Train *u = virt; u != nullptr; u = u->Next()) {
 		tmp->weight += u->GetLoadedWeight();
 	}
 
@@ -213,7 +213,7 @@ Train* DeleteVirtualTrain(Train *chain, Train *to_del) {
 
 // retrieve template vehicle from template replacement that belongs to the given group
 TemplateVehicle* GetTemplateVehicleByGroupID(GroupID gid) {
-	if (gid >= NEW_GROUP) return NULL;
+	if (gid >= NEW_GROUP) return nullptr;
 	
 	TemplateReplacement *tr;
 	
@@ -272,7 +272,7 @@ Train* DepotContainsEngine(TileIndex tile, EngineID eid, Train *not_in=0) {
 	Train *t;
 	FOR_ALL_TRAINS(t) {
 		// conditions: v is stopped in the given depot, has the right engine and if 'not_in' is given v must not be contained within 'not_in'
-		// if 'not_in' is NULL, no check is needed
+		// if 'not_in' is nullptr, no check is needed
 		if ( t->tile==tile
 				// If the veh belongs to a chain, wagons will not return true on IsStoppedInDepot(), only primary vehicles will
 				// in case of t not a primary veh, we demand it to be a free wagon to consider it for replacement
@@ -288,7 +288,7 @@ void NeutralizeStatus(Train *t) {
 	DoCommand(t->tile, DEFAULT_GROUP, t->index, DC_EXEC, CMD_ADD_VEHICLE_GROUP);
 	DoCommand(0, t->index | CO_UNSHARE << 30, 0, DC_EXEC, CMD_CLONE_ORDER);
 	DoCommand(0, t->index, FreeUnitIDGenerator(VEH_TRAIN, t->owner).NextID(), DC_EXEC, CMD_SET_VEHICLE_UNIT_NUMBER);
-	DoCommand(0, t->index, 0, DC_EXEC, CMD_RENAME_VEHICLE, NULL);
+	DoCommand(0, t->index, 0, DC_EXEC, CMD_RENAME_VEHICLE, nullptr);
 }
 
 bool TrainMatchesTemplate(const Train *t, TemplateVehicle *tv) {
@@ -396,7 +396,7 @@ void TransferCargoForTrain(Train *old_veh, Train *new_head)
 	// how much cargo has to be moved (if possible)
 	uint remainingAmount = old_veh->cargo.TotalCount();
 	// each vehicle in the new chain shall be given as much of the old cargo as possible, until none is left
-	for (Train *tmp=new_head; tmp!=NULL && remainingAmount>0; tmp=tmp->GetNextUnit())
+	for (Train *tmp=new_head; tmp!=nullptr && remainingAmount>0; tmp=tmp->GetNextUnit())
 	{
 		if (tmp->cargo_type == _cargo_type && tmp->cargo_subtype == _cargo_subtype)
 		{

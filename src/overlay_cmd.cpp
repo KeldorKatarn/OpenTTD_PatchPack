@@ -10,11 +10,11 @@
 #include "viewport_func.h"
 #include "overlay_cmd.h"
 
-Overlays* Overlays::instance = NULL;
+Overlays* Overlays::instance = nullptr;
 
 Overlays* Overlays::Instance() 
 {
-	if (instance == NULL)
+	if (instance == nullptr)
 		instance = new Overlays();
 	return instance;
 };

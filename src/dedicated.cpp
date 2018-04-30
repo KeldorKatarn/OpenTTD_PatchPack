@@ -13,8 +13,8 @@
 
 #ifdef ENABLE_NETWORK
 
-char *_log_file = NULL; ///< File to reroute output of a forked OpenTTD to
-FILE *_log_fd   = NULL; ///< File to reroute output of a forked OpenTTD to
+char *_log_file = nullptr; ///< File to reroute output of a forked OpenTTD to
+FILE *_log_fd   = nullptr; ///< File to reroute output of a forked OpenTTD to
 
 #if defined(UNIX) && !defined(__MORPHOS__)
 
@@ -44,7 +44,7 @@ void DedicatedFork()
 		case 0: { // We're the child
 			/* Open the log-file to log all stuff too */
 			_log_fd = fopen(_log_file, "a");
-			if (_log_fd == NULL) {
+			if (_log_fd == nullptr) {
 				perror("Unable to open logfile");
 				exit(1);
 			}

@@ -37,7 +37,7 @@ ClientNetworkContentSocketHandler _network_content_client;
 /** Wrapper function for the HasProc */
 static bool HasGRFConfig(const ContentInfo *ci, bool md5sum)
 {
-	return FindGRFConfig(BSWAP32(ci->unique_id), md5sum ? FGCM_EXACT : FGCM_ANY, md5sum ? ci->md5sum : NULL) != NULL;
+	return FindGRFConfig(BSWAP32(ci->unique_id), md5sum ? FGCM_EXACT : FGCM_ANY, md5sum ? ci->md5sum : nullptr) != nullptr;
 }
 
 /**
@@ -81,7 +81,7 @@ bool ClientNetworkContentSocketHandler::Receive_SERVER_INFO(Packet *p)
 	}
 
 	/* Find the appropriate check function */
-	HasProc proc = NULL;
+	HasProc proc = nullptr;
 	switch (ci->type) {
 		case CONTENT_TYPE_NEWGRF:
 			proc = HasGRFConfig;
@@ -124,7 +124,7 @@ bool ClientNetworkContentSocketHandler::Receive_SERVER_INFO(Packet *p)
 			break;
 	}
 
-	if (proc != NULL) {
+	if (proc != nullptr) {
 		if (proc(ci, true)) {
 			ci->state = ContentInfo::ALREADY_HERE;
 		} else {
@@ -244,7 +244,7 @@ void ClientNetworkContentSocketHandler::RequestContentList(uint count, const Con
  */
 void ClientNetworkContentSocketHandler::RequestContentList(ContentVector *cv, bool send_md5sum)
 {
-	if (cv == NULL) return;
+	if (cv == nullptr) return;
 
 	this->Connect();
 
@@ -381,12 +381,12 @@ void ClientNetworkContentSocketHandler::DownloadSelectedContentFallback(const Co
  * @param ci         the information to get the filename from
  * @param compressed should the filename end with .gz?
  * @return a statically allocated buffer with the filename or
- *         NULL when no filename could be made.
+ *         nullptr when no filename could be made.
  */
 static char *GetFullFilename(const ContentInfo *ci, bool compressed)
 {
 	Subdirectory dir = GetContentInfoSubDir(ci->type);
-	if (dir == NO_DIRECTORY) return NULL;
+	if (dir == NO_DIRECTORY) return nullptr;
 
 	static char buf[MAX_PATH];
 	FioGetFullPath(buf, lastof(buf), SP_AUTODOWNLOAD_DIR, dir, ci->filename);
@@ -405,12 +405,12 @@ static bool GunzipFile(const ContentInfo *ci)
 #if defined(WITH_ZLIB)
 	bool ret = true;
 	FILE *ftmp = fopen(GetFullFilename(ci, true), "rb");
-	if (ftmp == NULL) return false;
+	if (ftmp == nullptr) return false;
 
 	gzFile fin = gzdopen(fileno(ftmp), "rb");
 	FILE *fout = fopen(GetFullFilename(ci, false), "wb");
 
-	if (fin == NULL || fout == NULL) {
+	if (fin == nullptr || fout == nullptr) {
 		ret = false;
 	} else {
 		byte buff[8192];
@@ -444,15 +444,15 @@ static bool GunzipFile(const ContentInfo *ci)
 		}
 	}
 
-	if (fin != NULL) {
+	if (fin != nullptr) {
 		/* Closes ftmp too! */
 		gzclose(fin);
-	} else if (ftmp != NULL) {
+	} else if (ftmp != nullptr) {
 		/* In case the gz stream was opened correctly this will
 		 * be closed by gzclose. */
 		fclose(ftmp);
 	}
-	if (fout != NULL) fclose(fout);
+	if (fout != nullptr) fclose(fout);
 
 	return ret;
 #else
@@ -462,7 +462,7 @@ static bool GunzipFile(const ContentInfo *ci)
 
 bool ClientNetworkContentSocketHandler::Receive_SERVER_CONTENT(Packet *p)
 {
-	if (this->curFile == NULL) {
+	if (this->curFile == nullptr) {
 		delete this->curInfo;
 		/* When we haven't opened a file this must be our first packet with metadata. */
 		this->curInfo = new ContentInfo;
@@ -483,7 +483,7 @@ bool ClientNetworkContentSocketHandler::Receive_SERVER_CONTENT(Packet *p)
 			ShowErrorMessage(STR_CONTENT_ERROR_COULD_NOT_DOWNLOAD, STR_CONTENT_ERROR_COULD_NOT_DOWNLOAD_FILE_NOT_WRITABLE, WL_ERROR);
 			this->Close();
 			fclose(this->curFile);
-			this->curFile = NULL;
+			this->curFile = nullptr;
 
 			return false;
 		}
@@ -504,14 +504,14 @@ bool ClientNetworkContentSocketHandler::BeforeDownload()
 {
 	if (!this->curInfo->IsValid()) {
 		delete this->curInfo;
-		this->curInfo = NULL;
+		this->curInfo = nullptr;
 		return false;
 	}
 
 	if (this->curInfo->filesize != 0) {
 		/* The filesize is > 0, so we are going to download it */
 		const char *filename = GetFullFilename(this->curInfo, true);
-		if (filename == NULL || (this->curFile = fopen(filename, "wb")) == NULL) {
+		if (filename == nullptr || (this->curFile = fopen(filename, "wb")) == nullptr) {
 			/* Unless that fails of course... */
 			DeleteWindowById(WC_NETWORK_STATUS_WINDOW, WN_NETWORK_STATUS_WINDOW_CONTENT_DOWNLOAD);
 			ShowErrorMessage(STR_CONTENT_ERROR_COULD_NOT_DOWNLOAD, STR_CONTENT_ERROR_COULD_NOT_DOWNLOAD_FILE_NOT_WRITABLE, WL_ERROR);
@@ -530,7 +530,7 @@ void ClientNetworkContentSocketHandler::AfterDownload()
 	/* We read nothing; that's our marker for end-of-stream.
 	 * Now gunzip the tar and make it known. */
 	fclose(this->curFile);
-	this->curFile = NULL;
+	this->curFile = nullptr;
 
 	if (GunzipFile(this->curInfo)) {
 		unlink(GetFullFilename(this->curInfo, true));
@@ -563,25 +563,25 @@ void ClientNetworkContentSocketHandler::OnFailure()
 	this->http_response.Reset();
 	this->http_response_index = -2;
 
-	if (this->curFile != NULL) {
+	if (this->curFile != nullptr) {
 		/* Revert the download progress when we are going for the old system. */
 		long size = ftell(this->curFile);
 		if (size > 0) this->OnDownloadProgress(this->curInfo, (int)-size);
 
 		fclose(this->curFile);
-		this->curFile = NULL;
+		this->curFile = nullptr;
 	}
 }
 
 void ClientNetworkContentSocketHandler::OnReceiveData(const char *data, size_t length)
 {
-	assert(data == NULL || length != 0);
+	assert(data == nullptr || length != 0);
 
 	/* Ignore any latent data coming from a connection we closed. */
 	if (this->http_response_index == -2) return;
 
 	if (this->http_response_index == -1) {
-		if (data != NULL) {
+		if (data != nullptr) {
 			/* Append the rest of the response. */
 			memcpy(this->http_response.Append((uint)length), data, length);
 			return;
@@ -594,7 +594,7 @@ void ClientNetworkContentSocketHandler::OnReceiveData(const char *data, size_t l
 		}
 	}
 
-	if (data != NULL) {
+	if (data != nullptr) {
 		/* We have data, so write it to the file. */
 		if (fwrite(data, 1, length, this->curFile) != length) {
 			/* Writing failed somehow, let try via the old method. */
@@ -607,7 +607,7 @@ void ClientNetworkContentSocketHandler::OnReceiveData(const char *data, size_t l
 		return;
 	}
 
-	if (this->curFile != NULL) {
+	if (this->curFile != nullptr) {
 		/* We've finished downloading a file. */
 		this->AfterDownload();
 	}
@@ -625,7 +625,7 @@ void ClientNetworkContentSocketHandler::OnReceiveData(const char *data, size_t l
 	this->curInfo = new ContentInfo;
 
 /** Check p for not being null and return calling OnFailure if that's not the case. */
-#define check_not_null(p) { if ((p) == NULL) { this->OnFailure(); return; } }
+#define check_not_null(p) { if ((p) == nullptr) { this->OnFailure(); return; } }
 /** Check p for not being null and then terminate, or return calling OnFailure. */
 #define check_and_terminate(p) { check_not_null(p); *(p) = '\0'; }
 
@@ -704,8 +704,8 @@ void ClientNetworkContentSocketHandler::OnReceiveData(const char *data, size_t l
 ClientNetworkContentSocketHandler::ClientNetworkContentSocketHandler() :
 	NetworkContentSocketHandler(),
 	http_response_index(-2),
-	curFile(NULL),
-	curInfo(NULL),
+	curFile(nullptr),
+	curInfo(nullptr),
 	isConnecting(false),
 	lastActivity(_realtime_tick)
 {
@@ -715,7 +715,7 @@ ClientNetworkContentSocketHandler::ClientNetworkContentSocketHandler() :
 ClientNetworkContentSocketHandler::~ClientNetworkContentSocketHandler()
 {
 	delete this->curInfo;
-	if (this->curFile != NULL) fclose(this->curFile);
+	if (this->curFile != nullptr) fclose(this->curFile);
 
 	for (ContentIterator iter = this->infos.Begin(); iter != this->infos.End(); iter++) delete *iter;
 }
@@ -808,7 +808,7 @@ void ClientNetworkContentSocketHandler::DownloadContentInfo(ContentID cid)
 /**
  * Get the content info based on a ContentID
  * @param cid the ContentID to search for
- * @return the ContentInfo or NULL if not found
+ * @return the ContentInfo or nullptr if not found
  */
 ContentInfo *ClientNetworkContentSocketHandler::GetContent(ContentID cid)
 {
@@ -816,7 +816,7 @@ ContentInfo *ClientNetworkContentSocketHandler::GetContent(ContentID cid)
 		ContentInfo *ci = *iter;
 		if (ci->id == cid) return ci;
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -827,7 +827,7 @@ ContentInfo *ClientNetworkContentSocketHandler::GetContent(ContentID cid)
 void ClientNetworkContentSocketHandler::Select(ContentID cid)
 {
 	ContentInfo *ci = this->GetContent(cid);
-	if (ci == NULL || ci->state != ContentInfo::UNSELECTED) return;
+	if (ci == nullptr || ci->state != ContentInfo::UNSELECTED) return;
 
 	ci->state = ContentInfo::SELECTED;
 	this->CheckDependencyState(ci);
@@ -840,7 +840,7 @@ void ClientNetworkContentSocketHandler::Select(ContentID cid)
 void ClientNetworkContentSocketHandler::Unselect(ContentID cid)
 {
 	ContentInfo *ci = this->GetContent(cid);
-	if (ci == NULL || !ci->IsSelected()) return;
+	if (ci == nullptr || !ci->IsSelected()) return;
 
 	ci->state = ContentInfo::UNSELECTED;
 	this->CheckDependencyState(ci);
@@ -952,7 +952,7 @@ void ClientNetworkContentSocketHandler::CheckDependencyState(ContentInfo *ci)
 		 * selected and thus can unselect when a dependency is removed. */
 		for (uint i = 0; i < ci->dependency_count; i++) {
 			ContentInfo *c = this->GetContent(ci->dependencies[i]);
-			if (c == NULL) {
+			if (c == nullptr) {
 				this->DownloadContentInfo(ci->dependencies[i]);
 			} else if (c->state == ContentInfo::UNSELECTED) {
 				c->state = ContentInfo::AUTOSELECTED;
@@ -979,7 +979,7 @@ void ClientNetworkContentSocketHandler::CheckDependencyState(ContentInfo *ci)
 
 	for (uint i = 0; i < ci->dependency_count; i++) {
 		const ContentInfo *c = this->GetContent(ci->dependencies[i]);
-		if (c == NULL) {
+		if (c == nullptr) {
 			DownloadContentInfo(ci->dependencies[i]);
 			continue;
 		}
@@ -1083,7 +1083,7 @@ void ClientNetworkContentSocketHandler::OnDownloadProgress(const ContentInfo *ci
 void ClientNetworkContentSocketHandler::OnDownloadComplete(ContentID cid)
 {
 	ContentInfo *ci = this->GetContent(cid);
-	if (ci != NULL) {
+	if (ci != nullptr) {
 		ci->state = ContentInfo::ALREADY_HERE;
 	}
 

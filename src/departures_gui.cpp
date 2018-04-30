@@ -68,7 +68,7 @@ static const NWidgetPart _nested_departures_list[] = {
 };
 
 static WindowDesc _departures_desc(
-	WDP_AUTO, NULL, 260, 246,
+	WDP_AUTO, nullptr, 260, 246,
 	WC_DEPARTURES_BOARD, WC_NONE,
 	0,
 	_nested_departures_list, lengthof(_nested_departures_list)
@@ -484,11 +484,11 @@ void DeparturesWindow::DeleteDeparturesList(DepartureList *list)
 		Departure **d = list->Get(i);
 		delete *d;
 		/* Make sure a double free doesn't happen. */
-		*d = NULL;
+		*d = nullptr;
 	}
 	list->Reset();
 	delete list;
-	list = NULL;
+	list = nullptr;
 }
 
 /**

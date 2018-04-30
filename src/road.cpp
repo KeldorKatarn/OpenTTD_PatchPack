@@ -133,7 +133,7 @@ bool HasRoadTypesAvail(const CompanyID company, const RoadTypes rts)
 		avail_roadtypes = ROADTYPES_ROAD;
 	} else {
 		Company *c = Company::GetIfValid(company);
-		if (c == NULL) return false;
+		if (c == nullptr) return false;
 		avail_roadtypes = (RoadTypes)c->avail_roadtypes | ROADTYPES_ROAD; // road is available for always for everybody
 	}
 	return (rts & ~avail_roadtypes) == 0;
@@ -541,7 +541,7 @@ static void PublicRoad_FoundEndNode(AyStar *aystar, OpenListNode *current)
 {
 	PathNode* child = nullptr;
 
-	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
+	for (PathNode *path = &current->path; path != nullptr; path = path->parent) {
 		TileIndex tile = path->node.tile;
 
 		TownID townID = CalcClosestTownFromTile(tile)->index;

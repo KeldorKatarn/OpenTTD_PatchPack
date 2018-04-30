@@ -40,10 +40,10 @@ SignID _new_sign_id;
 CommandCost CmdPlaceSign(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	/* Try to locate a new sign */
-	if (!Sign::CanAllocateItem()) return_cmd_error(STR_ERROR_TOO_MANY_SIGNS);
+	if (!Sign::CanAllocateItem()) return CommandError(STR_ERROR_TOO_MANY_SIGNS);
 
 	/* Check sign text length if any */
-	if (!StrEmpty(text) && Utf8StringLength(text) >= MAX_LENGTH_SIGN_NAME_CHARS) return CMD_ERROR;
+	if (!StrEmpty(text) && Utf8StringLength(text) >= MAX_LENGTH_SIGN_NAME_CHARS) return CommandError();
 
 	/* When we execute, really make the sign */
 	if (flags & DC_EXEC) {
@@ -79,12 +79,12 @@ CommandCost CmdPlaceSign(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 CommandCost CmdRenameSign(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Sign *si = Sign::GetIfValid(p1);
-	if (si == NULL) return CMD_ERROR;
-	if (si->owner == OWNER_DEITY && _current_company != OWNER_DEITY && _game_mode != GM_EDITOR) return CMD_ERROR;
+	if (si == nullptr) return CommandError();
+	if (si->owner == OWNER_DEITY && _current_company != OWNER_DEITY && _game_mode != GM_EDITOR) return CommandError();
 
 	/* Rename the signs when empty, otherwise remove it */
 	if (!StrEmpty(text)) {
-		if (Utf8StringLength(text) >= MAX_LENGTH_SIGN_NAME_CHARS) return CMD_ERROR;
+		if (Utf8StringLength(text) >= MAX_LENGTH_SIGN_NAME_CHARS) return CommandError();
 
 		if (flags & DC_EXEC) {
 			/* Delete the old name */

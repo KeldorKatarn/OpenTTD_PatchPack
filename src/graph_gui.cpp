@@ -595,7 +595,7 @@ public:
 		int numd = 0;
 		for (CompanyID k = COMPANY_FIRST; k < MAX_COMPANIES; k++) {
 			c = Company::GetIfValid(k);
-			if (c != NULL) {
+			if (c != nullptr) {
 				this->colours[numd] = _colour_gradient[c->colour][6];
 				for (int j = this->num_on_x_axis, i = 0; --j >= 0;) {
 					this->cost[numd][i] = (j >= c->num_valid_stat_ent) ? INVALID_DATAPOINT : GetGraphData(c, j);
@@ -1041,7 +1041,7 @@ static NWidgetBase *MakeCargoButtons(int *biggest_index)
 	NWidgetVertical *ver = new NWidgetVertical;
 
 	for (int i = 0; i < _sorted_standard_cargo_specs_size; i++) {
-		NWidgetBackground *leaf = new NWidgetBackground(WWT_PANEL, COLOUR_ORANGE, WID_CPR_CARGO_FIRST + i, NULL);
+		NWidgetBackground *leaf = new NWidgetBackground(WWT_PANEL, COLOUR_ORANGE, WID_CPR_CARGO_FIRST + i, nullptr);
 		leaf->tool_tip = STR_GRAPH_CARGO_PAYMENT_TOGGLE_CARGO;
 		leaf->SetFill(1, 0);
 		leaf->SetLowered(true);
@@ -1780,7 +1780,7 @@ static NWidgetBase *MakeStationCargoButtons(int *biggest_index)
 	NWidgetVertical *ver = new NWidgetVertical;
 
 	for (int i = 0; i < _sorted_standard_cargo_specs_size; i++) {
-		NWidgetBackground *leaf = new NWidgetBackground(WWT_PANEL, COLOUR_ORANGE, WID_SCG_CARGO_FIRST + i, NULL);
+		NWidgetBackground *leaf = new NWidgetBackground(WWT_PANEL, COLOUR_ORANGE, WID_SCG_CARGO_FIRST + i, nullptr);
 		leaf->tool_tip = STR_GRAPH_CARGO_PAYMENT_TOGGLE_CARGO;
 		leaf->SetFill(1, 0);
 		leaf->SetLowered(true);

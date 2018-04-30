@@ -63,7 +63,7 @@ TemplateVehicle::TemplateVehicle(VehicleType ty, EngineID eid, byte subtypeflag,
 
 TemplateVehicle::~TemplateVehicle() {
 	TemplateVehicle *v = this->Next();
-	this->SetNext(NULL);
+	this->SetNext(nullptr);
 
 	delete v;
 }

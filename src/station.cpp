@@ -100,7 +100,7 @@ Station::~Station()
 
 	for (CargoID c = 0; c < NUM_CARGO; ++c) {
 		LinkGraph *lg = LinkGraph::GetIfValid(this->goods[c].link_graph);
-		if (lg == NULL) continue;
+		if (lg == nullptr) continue;
 
 		for (NodeID node = 0; node < lg->Size(); ++node) {
 			Station *st = Station::Get((*lg)[node].Station());
@@ -199,7 +199,7 @@ RoadStop *Station::GetPrimaryRoadStop(const RoadVehicle *v) const
 {
 	RoadStop *rs = this->GetPrimaryRoadStop(v->IsBus() ? ROADSTOP_BUS : ROADSTOP_TRUCK);
 
-	for (; rs != NULL; rs = rs->next) {
+	for (; rs != nullptr; rs = rs->next) {
 		/* The vehicle cannot go to this roadstop (different roadtype) */
 		if ((GetRoadTypes(rs->xy) & v->compatible_roadtypes) == ROADTYPES_NONE) continue;
 		/* The vehicle is articulated and can therefore not go to a standard road stop. */
@@ -322,13 +322,13 @@ uint Station::GetCatchmentRadius() const
 	uint ret = CA_NONE;
 
 	if (_settings_game.station.modified_catchment) {
-		if (this->bus_stops          != NULL)         ret = max<uint>(ret, CA_BUS);
-		if (this->truck_stops        != NULL)         ret = max<uint>(ret, CA_TRUCK);
+		if (this->bus_stops          != nullptr)         ret = max<uint>(ret, CA_BUS);
+		if (this->truck_stops        != nullptr)         ret = max<uint>(ret, CA_TRUCK);
 		if (this->train_station.tile != INVALID_TILE) ret = max<uint>(ret, CA_TRAIN);
-		if (this->docks              != NULL)         ret = max<uint>(ret, CA_DOCK);
+		if (this->docks              != nullptr)         ret = max<uint>(ret, CA_DOCK);
 		if (this->airport.tile       != INVALID_TILE) ret = max<uint>(ret, this->airport.GetSpec()->catchment);
 	} else {
-		if (this->bus_stops != NULL || this->truck_stops != NULL || this->train_station.tile != INVALID_TILE || this->docks != NULL || this->airport.tile != INVALID_TILE) {
+		if (this->bus_stops != nullptr || this->truck_stops != nullptr || this->train_station.tile != INVALID_TILE || this->docks != nullptr || this->airport.tile != INVALID_TILE) {
 			ret = CA_UNMODIFIED;
 		}
 	}
@@ -357,7 +357,7 @@ Rect Station::GetCatchmentRectUsingRadius(uint catchment_radius) const
  
 bool Station::IsDockingTile(TileIndex tile) const
 {
-	for (const Dock *d = this->docks; d != NULL; d = d->next) {
+	for (const Dock *d = this->docks; d != nullptr; d = d->next) {
 		if (tile == d->GetDockingTile()) return true;
 	}
 	return false;
@@ -492,7 +492,7 @@ CommandCost StationRect::BeforeAddTile(TileIndex tile, StationRectMode mode)
 		int h = new_rect.bottom - new_rect.top + 1;
 		if (mode != ADD_FORCE && (w > _settings_game.station.station_spread || h > _settings_game.station.station_spread)) {
 			assert(mode != ADD_TRY);
-			return_cmd_error(STR_ERROR_STATION_TOO_SPREAD_OUT);
+			return CommandError(STR_ERROR_STATION_TOO_SPREAD_OUT);
 		}
 
 		/* spread-out ok, return true */

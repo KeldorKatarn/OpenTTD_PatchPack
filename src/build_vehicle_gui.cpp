@@ -1294,7 +1294,7 @@ static int DrawAircraftPurchaseInfo(int left, int right, int y, EngineID engine_
  */
 static uint ShowAdditionalText(int left, int right, int y, EngineID engine)
 {
-	uint16 callback = GetVehicleCallback(CBID_VEHICLE_ADDITIONAL_TEXT, 0, 0, engine, NULL);
+	uint16 callback = GetVehicleCallback(CBID_VEHICLE_ADDITIONAL_TEXT, 0, 0, engine, nullptr);
 	if (callback == CALLBACK_FAILED || callback == 0x400) return y;
 	const GRFFile *grffile = Engine::Get(engine)->GetGRF();
 	if (callback > 0x400) {
@@ -1722,7 +1722,7 @@ struct BuildVehicleWindow : Window {
 
 		this->eng_list.Clear();
 
-		const Station *st = this->listview_mode ? NULL : Station::GetByTile(this->window_number);
+		const Station *st = this->listview_mode ? nullptr : Station::GetByTile(this->window_number);
 
 		/* Make list of all available planes.
 		 * Also check to see if the previously selected plane is still available,
@@ -1814,8 +1814,8 @@ struct BuildVehicleWindow : Window {
 				break;
 
 			case WID_BV_SHOW_HIDE: {
-				const Engine *e = (this->sel_engine == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine);
-				if (e != NULL) {
+				const Engine *e = (this->sel_engine == INVALID_ENGINE) ? nullptr : Engine::GetIfValid(this->sel_engine);
+				if (e != nullptr) {
 					DoCommandP(0, 0, this->sel_engine | (e->IsHidden(_current_company) ? 0 : (1u << 31)), CMD_SET_VEHICLE_VISIBILITY);
 				}
 				break;
@@ -1881,8 +1881,8 @@ struct BuildVehicleWindow : Window {
 				break;
 
 			case WID_BV_SHOW_HIDE: {
-				const Engine *e = (this->sel_engine == INVALID_ENGINE) ? NULL : Engine::Get(this->sel_engine);
-				if (e != NULL && e->IsHidden(_local_company)) {
+				const Engine *e = (this->sel_engine == INVALID_ENGINE) ? nullptr : Engine::Get(this->sel_engine);
+				if (e != nullptr && e->IsHidden(_local_company)) {
 					SetDParam(0, STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + this->vehicle_type);
 				} else {
 					SetDParam(0, STR_BUY_VEHICLE_TRAIN_HIDE_TOGGLE_BUTTON + this->vehicle_type);
@@ -1968,9 +1968,9 @@ struct BuildVehicleWindow : Window {
 
 	virtual void OnQueryTextFinished(char *str)
 	{
-		if (str == NULL) return;
+		if (str == nullptr) return;
 
-		DoCommandP(0, this->rename_engine, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), NULL, str);
+		DoCommandP(0, this->rename_engine, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), nullptr, str);
 	}
 
 	virtual void OnDropdownSelect(int widget, int index)
@@ -2054,7 +2054,7 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 		this->window_number = tile == INVALID_TILE ? (int)type : tile;	
 
 		this->virtual_train_out = virtual_train_out;
-		this->virtual_train_mode = (virtual_train_out != NULL);
+		this->virtual_train_mode = (virtual_train_out != nullptr);
 		if (this->virtual_train_mode) this->window_number = 0;
 
 		this->sel_engine_loco            = INVALID_ENGINE;
@@ -2433,8 +2433,8 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			}
 
 			case WID_BV_SHOW_HIDE_LOCO: {
-				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_loco);
-				if (e != NULL) {
+				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? nullptr : Engine::GetIfValid(this->sel_engine_loco);
+				if (e != nullptr) {
 					DoCommandP(0, 0, this->sel_engine_loco | (e->IsHidden(_current_company) ? 0 : (1u << 31)), CMD_SET_VEHICLE_VISIBILITY);
 				}
 				break;
@@ -2516,8 +2516,8 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			}
 
 			case WID_BV_SHOW_HIDE_WAGON: {
-				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_wagon);
-				if (e != NULL) {
+				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? nullptr : Engine::GetIfValid(this->sel_engine_wagon);
+				if (e != nullptr) {
 					DoCommandP(0, 0, this->sel_engine_wagon | (e->IsHidden(_current_company) ? 0 : (1u << 31)), CMD_SET_VEHICLE_VISIBILITY);
 				}
 				break;
@@ -2583,8 +2583,8 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			}
 
 			case WID_BV_SHOW_HIDE_LOCO: {
-				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_loco);
-				if (e != NULL && e->IsHidden(_local_company)) {
+				const Engine *e = (this->sel_engine_loco == INVALID_ENGINE) ? nullptr : Engine::GetIfValid(this->sel_engine_loco);
+				if (e != nullptr && e->IsHidden(_local_company)) {
 					SetDParam(0, STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + this->vehicle_type);
 				}
 				else {
@@ -2619,8 +2619,8 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 			}
 
 			case WID_BV_SHOW_HIDE_WAGON: {
-				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? NULL : Engine::GetIfValid(this->sel_engine_wagon);
-				if (e != NULL && e->IsHidden(_local_company)) {
+				const Engine *e = (this->sel_engine_wagon == INVALID_ENGINE) ? nullptr : Engine::GetIfValid(this->sel_engine_wagon);
+				if (e != nullptr && e->IsHidden(_local_company)) {
 					SetDParam(0, STR_BUY_VEHICLE_TRAIN_SHOW_TOGGLE_BUTTON + this->vehicle_type);
 				}
 				else {
@@ -2768,14 +2768,14 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 
 	virtual void OnQueryTextFinished(char *str)
 	{
-		if (str == NULL) return;
+		if (str == nullptr) return;
 		if(this->rename_engine_loco != INVALID_ENGINE)
 		{
-			DoCommandP(0, this->rename_engine_loco, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), NULL, str);
+			DoCommandP(0, this->rename_engine_loco, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), nullptr, str);
 		}
 		else
 		{
-			DoCommandP(0, this->rename_engine_wagon, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), NULL, str);
+			DoCommandP(0, this->rename_engine_wagon, 0, CMD_RENAME_ENGINE | CMD_MSG(STR_ERROR_CAN_T_RENAME_TRAIN_TYPE + this->vehicle_type), nullptr, str);
 		}
 	}
 
@@ -2834,9 +2834,9 @@ struct BuildVehicleWindowTrainAdvanced : Window {
 
 	void AddVirtualEngine(Train *toadd)
 	{
-		if (this->virtual_train_out == NULL) return;
+		if (this->virtual_train_out == nullptr) return;
 
-		if (*(this->virtual_train_out) == NULL) {
+		if (*(this->virtual_train_out) == nullptr) {
 			*(this->virtual_train_out) = toadd;
 		} else {
 			VehicleID target = (*(this->virtual_train_out))->GetLastUnit()->index;
@@ -2894,7 +2894,7 @@ void ShowBuildVehicleWindow(TileIndex tile, VehicleType type)
 
 	if(type == VEH_TRAIN && _settings_client.gui.advanced_train_purchase_window)
 	{
-		new BuildVehicleWindowTrainAdvanced(&_build_vehicle_desc_train_advanced, tile, type, NULL);
+		new BuildVehicleWindowTrainAdvanced(&_build_vehicle_desc_train_advanced, tile, type, nullptr);
 	}
 	else
 	{

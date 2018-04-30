@@ -53,8 +53,8 @@ static inline void GSortT(T *base, uint num, int (CDECL *comparator)(const T*, c
 {
 	if (num < 2) return;
 
-	assert(base != NULL);
-	assert(comparator != NULL);
+	assert(base != nullptr);
+	assert(comparator != nullptr);
 
 	T *a = base;
 	T *b = base + 1;

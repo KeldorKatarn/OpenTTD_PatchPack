@@ -37,23 +37,23 @@ public:
 	 * Create a win32 thread and start it, calling proc(param).
 	 */
 	ThreadObject_Win32(OTTDThreadFunc proc, void *param, bool self_destruct, const char *name) :
-		thread(NULL),
+		thread(nullptr),
 		id(0),
 		proc(proc),
 		param(param),
 		self_destruct(self_destruct),
 		name(name)
 	{
-		this->thread = (HANDLE)_beginthreadex(NULL, 0, &stThreadProc, this, CREATE_SUSPENDED, &this->id);
-		if (this->thread == NULL) return;
+		this->thread = (HANDLE)_beginthreadex(nullptr, 0, &stThreadProc, this, CREATE_SUSPENDED, &this->id);
+		if (this->thread == nullptr) return;
 		ResumeThread(this->thread);
 	}
 
 	/* virtual */ ~ThreadObject_Win32()
 	{
-		if (this->thread != NULL) {
+		if (this->thread != nullptr) {
 			CloseHandle(this->thread);
-			this->thread = NULL;
+			this->thread = nullptr;
 		}
 	}
 
@@ -105,8 +105,8 @@ private:
 
 /* static */ bool ThreadObject::New(OTTDThreadFunc proc, void *param, ThreadObject **thread, const char *name)
 {
-	ThreadObject *to = new ThreadObject_Win32(proc, param, thread == NULL, name);
-	if (thread != NULL) *thread = to;
+	ThreadObject *to = new ThreadObject_Win32(proc, param, thread == nullptr, name);
+	if (thread != nullptr) *thread = to;
 	return true;
 }
 
@@ -123,7 +123,7 @@ public:
 	ThreadMutex_Win32() : recursive_count(0)
 	{
 		InitializeCriticalSection(&this->critical_section);
-		this->event = CreateEvent(NULL, FALSE, FALSE, NULL);
+		this->event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	}
 
 	/* virtual */ ~ThreadMutex_Win32()

@@ -525,7 +525,7 @@ char *DumpCommandLog(char *buffer, const char *last)
 }
 
 /*!
- * This function range-checks a cmd, and checks if the cmd is not NULL
+ * This function range-checks a cmd, and checks if the cmd is not nullptr
  *
  * @param cmd The integer value of a command
  * @return true if the command is valid (and got a CommandProc function)
@@ -534,7 +534,7 @@ bool IsValidCommand(uint32 cmd)
 {
 	cmd &= CMD_ID_MASK;
 
-	return cmd < lengthof(_command_proc_table) && _command_proc_table[cmd].proc != NULL;
+	return cmd < lengthof(_command_proc_table) && _command_proc_table[cmd].proc != nullptr;
 }
 
 /*!
@@ -624,7 +624,7 @@ CommandCost DoCommand(TileIndex tile, uint32 p1, uint32 p2, DoCommandFlag flags,
 	CommandCost res;
 
 	/* Do not even think about executing out-of-bounds tile-commands */
-	if (tile != 0 && (tile >= MapSize() || (!IsValidTile(tile) && (flags & DC_ALL_TILES) == 0))) return CMD_ERROR;
+	if (tile != 0 && (tile >= MapSize() || (!IsValidTile(tile) && (flags & DC_ALL_TILES) == 0))) return CommandError();
 
 	/* Chop of any CMD_MSG or other flags; we don't need those here */
 	CommandProc *proc = _command_proc_table[cmd & CMD_ID_MASK].proc;
@@ -768,7 +768,7 @@ bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallbac
 		ShowCostOrIncomeAnimation(x, y, GetSlopePixelZ(x, y), res.GetCost());
 	}
 
-	if (!estimate_only && !only_sending && callback != NULL) {
+	if (!estimate_only && !only_sending && callback != nullptr) {
 		callback(res, tile, p1, p2);
 	}
  
@@ -822,7 +822,7 @@ CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd,
 	CommandProc *proc = _command_proc_table[cmd_id].proc;
 	/* Shouldn't happen, but you never know when someone adds
 	 * NULLs to the _command_proc_table. */
-	assert(proc != NULL);
+	assert(proc != nullptr);
 
 	/* Command flags are used internally */
 	CommandFlags cmd_flags = GetCommandFlags(cmd);
@@ -835,7 +835,7 @@ CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd,
 #endif
 
 	/* Do not even think about executing out-of-bounds tile-commands */
-	if (tile != 0 && (tile >= MapSize() || (!IsValidTile(tile) && (cmd_flags & CMD_ALL_TILES) == 0))) return_dcpi(CMD_ERROR);
+	if (tile != 0 && (tile >= MapSize() || (!IsValidTile(tile) && (cmd_flags & CMD_ALL_TILES) == 0))) return_dcpi(CommandError());
 
 	/* Always execute server and spectator commands as spectator */
 	bool exec_as_spectator = (cmd_flags & (CMD_SPECTATOR | CMD_SERVER)) != 0;
@@ -844,7 +844,7 @@ CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd,
 	 * The server will ditch any server commands a client sends to it, so effectively
 	 * this guards the server from executing functions for an invalid company. */
 	if (_game_mode == GM_NORMAL && !exec_as_spectator && !Company::IsValidID(_current_company) && !(_current_company == OWNER_DEITY && (cmd_flags & CMD_DEITY) != 0)) {
-		return_dcpi(CMD_ERROR);
+		return_dcpi(CommandError());
 	}
 
 	Backup<CompanyByte> cur_company(_current_company, FILE_LINE);
@@ -939,7 +939,7 @@ CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd,
 	/* update last build coordinate of company. */
 	if (tile != 0) {
 		Company *c = Company::GetIfValid(_current_company);
-		if (c != NULL) c->last_build_coordinate = tile;
+		if (c != nullptr) c->last_build_coordinate = tile;
 	}
 
 	SubtractMoneyFromCompany(res2);

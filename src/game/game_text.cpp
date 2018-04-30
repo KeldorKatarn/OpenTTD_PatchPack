@@ -62,11 +62,11 @@ void NORETURN CDECL strgen_fatal(const char *s, ...)
 /**
  * Create a new container for language strings.
  * @param language The language name.
- * @param end If not NULL, terminate \a language at this position.
+ * @param end If not nullptr, terminate \a language at this position.
  */
 LanguageStrings::LanguageStrings(const char *language, const char *end)
 {
-	this->language = stredup(language, end != NULL ? end - 1 : NULL);
+	this->language = stredup(language, end != nullptr ? end - 1 : nullptr);
 }
 
 /** Free everything. */
@@ -78,21 +78,21 @@ LanguageStrings::~LanguageStrings()
 /**
  * Read all the raw language strings from the given file.
  * @param file The file to read from.
- * @return The raw strings, or NULL upon error.
+ * @return The raw strings, or nullptr upon error.
  */
 LanguageStrings *ReadRawLanguageStrings(const char *file)
 {
-	LanguageStrings *ret = NULL;
-	FILE *fh = NULL;
+	LanguageStrings *ret = nullptr;
+	FILE *fh = nullptr;
 	try {
 		size_t to_read;
 		fh = FioFOpenFile(file, "rb", GAME_DIR, &to_read);
-		if (fh == NULL) {
-			return NULL;
+		if (fh == nullptr) {
+			return nullptr;
 		}
 
 		const char *langname = strrchr(file, PATHSEPCHAR);
-		if (langname == NULL) {
+		if (langname == nullptr) {
 			langname = file;
 		} else {
 			langname++;
@@ -101,13 +101,13 @@ LanguageStrings *ReadRawLanguageStrings(const char *file)
 		/* Check for invalid empty filename */
 		if (*langname == '.' || *langname == 0) {
 			fclose(fh);
-			return NULL;
+			return nullptr;
 		}
 
 		ret = new LanguageStrings(langname, strchr(langname, '.'));
 
 		char buffer[2048];
-		while (to_read != 0 && fgets(buffer, sizeof(buffer), fh) != NULL) {
+		while (to_read != 0 && fgets(buffer, sizeof(buffer), fh) != nullptr) {
 			size_t len = strlen(buffer);
 
 			/* Remove trailing spaces/newlines from the string. */
@@ -127,9 +127,9 @@ LanguageStrings *ReadRawLanguageStrings(const char *file)
 		fclose(fh);
 		return ret;
 	} catch (...) {
-		if (fh != NULL) fclose(fh);
+		if (fh != nullptr) fclose(fh);
 		delete ret;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -153,7 +153,7 @@ struct StringListReader : StringReader {
 
 	/* virtual */ char *ReadLine(char *buffer, const char *last)
 	{
-		if (this->p == this->end) return NULL;
+		if (this->p == this->end) return nullptr;
 
 		strecpy(buffer, *this->p, last);
 		this->p++;
@@ -261,11 +261,11 @@ GameStrings *LoadTranslations()
 	char filename[512];
 	strecpy(filename, info->GetMainScript(), lastof(filename));
 	char *e = strrchr(filename, PATHSEPCHAR);
-	if (e == NULL) return NULL;
+	if (e == nullptr) return nullptr;
 	e++; // Make 'e' point after the PATHSEPCHAR
 
 	strecpy(e, "lang" PATHSEP "english.txt", lastof(filename));
-	if (!FioCheckFileExists(filename, GAME_DIR)) return NULL;
+	if (!FioCheckFileExists(filename, GAME_DIR)) return nullptr;
 
 	GameStrings *gs = new GameStrings();
 	try {
@@ -278,7 +278,7 @@ GameStrings *LoadTranslations()
 
 		const char *tar_filename = info->GetTarFile();
 		TarList::iterator iter;
-		if (tar_filename != NULL && (iter = _tar_list[GAME_DIR].find(tar_filename)) != _tar_list[GAME_DIR].end()) {
+		if (tar_filename != nullptr && (iter = _tar_list[GAME_DIR].find(tar_filename)) != _tar_list[GAME_DIR].end()) {
 			/* The main script is in a tar file, so find all files that
 			 * are in the same tar and add them to the langfile scanner. */
 			TarFileList::iterator tar;
@@ -301,7 +301,7 @@ GameStrings *LoadTranslations()
 		return gs;
 	} catch (...) {
 		delete gs;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -331,7 +331,7 @@ void GameStrings::Compile()
 }
 
 /** The currently loaded game strings. */
-GameStrings *_current_data = NULL;
+GameStrings *_current_data = nullptr;
 
 /**
  * Get the string pointer of a particular game string.
@@ -352,7 +352,7 @@ void RegisterGameTranslation(Squirrel *engine)
 {
 	delete _current_data;
 	_current_data = LoadTranslations();
-	if (_current_data == NULL) return;
+	if (_current_data == nullptr) return;
 
 	HSQUIRRELVM vm = engine->GetVM();
 	sq_pushroottable(vm);
@@ -376,19 +376,19 @@ void RegisterGameTranslation(Squirrel *engine)
  */
 void ReconsiderGameScriptLanguage()
 {
-	if (_current_data == NULL) return;
+	if (_current_data == nullptr) return;
 
 	char temp[MAX_PATH];
 	strecpy(temp, _current_language->file, lastof(temp));
 
 	/* Remove the extension */
 	char *l = strrchr(temp, '.');
-	assert(l != NULL);
+	assert(l != nullptr);
 	*l = '\0';
 
 	/* Skip the path */
 	char *language = strrchr(temp, PATHSEPCHAR);
-	assert(language != NULL);
+	assert(language != nullptr);
 	language++;
 
 	for (LanguageStrings **p = _current_data->compiled_strings.Begin(); p != _current_data->compiled_strings.End(); p++) {

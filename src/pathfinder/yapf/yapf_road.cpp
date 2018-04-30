@@ -163,7 +163,7 @@ public:
 		n.m_segment_last_td = trackdir;
 
 		/* save also tile cost */
-		int parent_cost = (n.m_parent != NULL) ? n.m_parent->m_cost : 0;
+		int parent_cost = (n.m_parent != nullptr) ? n.m_parent->m_cost : 0;
 		n.m_cost = parent_cost + segment_cost;
 		return true;
 	}
@@ -369,10 +369,10 @@ public:
 		/* if path not found - return INVALID_TRACKDIR */
 		Trackdir next_trackdir = INVALID_TRACKDIR;
 		Node *pNode = Yapf().GetBestNode();
-		if (pNode != NULL) {
+		if (pNode != nullptr) {
 			/* path was found or at least suggested
 			 * walk through the path back to its origin */
-			while (pNode->m_parent != NULL) {
+			while (pNode->m_parent != nullptr) {
 				pNode = pNode->m_parent;
 			}
 			/* return trackdir from the best origin node (one of start nodes) */
@@ -409,7 +409,7 @@ public:
 		if (!Yapf().FindPath(v)) return dist;
 
 		Node *pNode = Yapf().GetBestNode();
-		if (pNode != NULL) {
+		if (pNode != nullptr) {
 			/* path was found
 			 * get the path cost estimate */
 			dist = pNode->GetCostEstimate();

@@ -17,7 +17,7 @@
 #include "safeguards.h"
 
 /** The table/list with animated tiles. */
-TileIndex *_animated_tile_list = NULL;
+TileIndex *_animated_tile_list = nullptr;
 /** The number of animated tiles in the current state. */
 uint _animated_tile_count = 0;
 /** The number of slots for animated tiles allocated currently. */

@@ -17,7 +17,7 @@
 /** The music player that does nothing. */
 class MusicDriver_Null : public MusicDriver {
 public:
-	/* virtual */ const char *Start(const char * const *param) { return NULL; }
+	/* virtual */ const char *Start(const char * const *param) { return nullptr; }
 
 	/* virtual */ void Stop() { }
 

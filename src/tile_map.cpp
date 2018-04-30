@@ -88,7 +88,7 @@ static Slope GetTileSlopeGivenHeight(int hnorth, int hwest, int heast, int hsout
 	int hmines = min(heast, hsouth);
 	int hmin = min(hminnw, hmines);
 
-	if (h != NULL) *h = hmin;
+	if (h != nullptr) *h = hmin;
 
 	int hmaxnw = max(hnorth, hwest);
 	int hmaxes = max(heast, hsouth);
@@ -109,7 +109,7 @@ static Slope GetTileSlopeGivenHeight(int hnorth, int hwest, int heast, int hsout
 /**
  * Return the slope of a given tile inside the map.
  * @param tile Tile to compute slope of
- * @param h    If not \c NULL, pointer to storage of z height
+ * @param h    If not \c nullptr, pointer to storage of z height
  * @return Slope of the tile, except for the HALFTILE part
  */
 Slope GetTileSlope(TileIndex tile, int *h)
@@ -119,7 +119,7 @@ Slope GetTileSlope(TileIndex tile, int *h)
 	uint x = TileX(tile);
 	uint y = TileY(tile);
 	if (x == MapMaxX() || y == MapMaxY()) {
-		if (h != NULL) *h = TileHeight(tile);
+		if (h != nullptr) *h = TileHeight(tile);
 		return SLOPE_FLAT;
 	}
 
@@ -135,7 +135,7 @@ Slope GetTileSlope(TileIndex tile, int *h)
  * Return the slope of a given tile outside the map.
  *
  * @param tile Tile outside the map to compute slope of.
- * @param h    If not \c NULL, pointer to storage of z height.
+ * @param h    If not \c nullptr, pointer to storage of z height.
  * @return Slope of the tile outside map, except for the HALFTILE part.
  */
 Slope GetTilePixelSlopeOutsideMap(int x, int y, int *h)
@@ -146,14 +146,14 @@ Slope GetTilePixelSlopeOutsideMap(int x, int y, int *h)
 	int hsouth = TileHeightOutsideMap(x + 1, y + 1); // S corner.
 
 	Slope s = GetTileSlopeGivenHeight(hnorth, hwest, heast, hsouth, h);
-	if (h != NULL) *h *= TILE_HEIGHT;
+	if (h != nullptr) *h *= TILE_HEIGHT;
 	return s;
 }
 
 /**
  * Check if a given tile is flat
  * @param tile Tile to check
- * @param h If not \c NULL, pointer to storage of z height (only if tile is flat)
+ * @param h If not \c nullptr, pointer to storage of z height (only if tile is flat)
  * @return Whether the tile is flat
  */
 bool IsTileFlat(TileIndex tile, int *h)
@@ -161,7 +161,7 @@ bool IsTileFlat(TileIndex tile, int *h)
 	assert(tile < MapSize());
 
 	if (!IsInnerTile(tile)) {
-		if (h != NULL) *h = TileHeight(tile);
+		if (h != nullptr) *h = TileHeight(tile);
 		return true;
 	}
 
@@ -170,7 +170,7 @@ bool IsTileFlat(TileIndex tile, int *h)
 	if (TileHeight(tile + TileDiffXY(0, 1)) != z) return false;
 	if (TileHeight(tile + TileDiffXY(1, 1)) != z) return false;
 
-	if (h != NULL) *h = z;
+	if (h != nullptr) *h = z;
 	return true;
 }
 

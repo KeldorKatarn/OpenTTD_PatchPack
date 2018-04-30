@@ -137,7 +137,7 @@ Track GetTrackFromSignalReference(SignalReference key)
  * An internal helper function used in searching for a signal program.
  * @param tile The tile to search for
  * @param track The track to search for
- * @return The corresponding signal program, or NULL if not found.
+ * @return The corresponding signal program, or nullptr if not found.
  */
 static inline SignalProgram * DoFindSignalProgram(TileIndex tile, Track track)
 {
@@ -146,7 +146,7 @@ static inline SignalProgram * DoFindSignalProgram(TileIndex tile, Track track)
 	if (it != _signal_program_list.end()) {
 		return it->second;
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -154,8 +154,8 @@ static inline SignalProgram * DoFindSignalProgram(TileIndex tile, Track track)
  * Find a link from a signal at the given tile/track.
  * @param tile The tile to search for.
  * @param track The track to search for.
- * @return The corresponding target where the link points to, if found, otherwise NULL.
- * @bug This code returns NULL (0) as a not-found value, but that is also valid for the first Tile/Track
+ * @return The corresponding target where the link points to, if found, otherwise nullptr.
+ * @bug This code returns nullptr (0) as a not-found value, but that is also valid for the first Tile/Track
  */
 static inline SignalReference FindSignalLink(TileIndex tile, Track track)
 {
@@ -164,7 +164,7 @@ static inline SignalReference FindSignalLink(TileIndex tile, Track track)
 	if (it != _signal_link_list.end()) {
 		return it->second;
 	} else {
-		return NULL;
+		return NULL; // TODO Fix this
 	}
 }
 
@@ -172,12 +172,12 @@ static inline SignalReference FindSignalLink(TileIndex tile, Track track)
  * Used to find a signal program at the given tile and track.
  * @param tile The tile to search for.
  * @param track The track to search for.
- * @return The signal program if found, or NULL.
+ * @return The signal program if found, or nullptr.
  */
 SignalProgram * FindSignalProgram(TileIndex tile, Track track)
 {
 	SignalProgram *program = DoFindSignalProgram(tile, track);
-	assert(program != NULL);
+	assert(program != nullptr);
 	return program;
 }
 
@@ -192,7 +192,7 @@ void RemoveSignalLink(TileIndex tile, Track track)
 {
 	SignalReference existing = FindSignalLink(tile, track);
 
-	if (existing != NULL) {
+	if (existing != NULL) { // TODO Fix this
 		/* Remove from signal program */
 		SignalProgram *old_prog = FindSignalProgram(GetTileFromSignalReference(existing), GetTrackFromSignalReference(existing));
 		old_prog->RemoveLink(tile, track);
@@ -215,7 +215,7 @@ void RemoveSignalLink(TileIndex tile, Track track)
 SignalProgram * CreateSignalProgram(TileIndex tile, Track track)
 {
 	/* Existing program for same tile/track would be a bug */
-	assert(DoFindSignalProgram(tile, track) == NULL);
+	assert(DoFindSignalProgram(tile, track) == nullptr);
 
 	SignalProgram *program = new SignalProgram(tile, track);
 	_signal_program_list[GetSignalReference(tile, track)] = program;
@@ -267,7 +267,7 @@ void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalT
 void SignalStateChanged(TileIndex tile, Track track, int depth)
 {
 	SignalReference link = FindSignalLink(tile, track);
-	if (link != NULL) {
+	if (link != NULL) { // TODO Fix this
 		SignalProgram *program = FindSignalProgram(GetTileFromSignalReference(link), GetTrackFromSignalReference(link));
 		program->InputChanged(depth);
 	}

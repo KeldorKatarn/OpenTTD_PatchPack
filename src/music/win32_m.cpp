@@ -33,7 +33,7 @@ static FMusicDriver_Win32 iFMusicDriver_Win32;
 
 void MusicDriver_Win32::PlaySong(const char *filename)
 {
-	assert(filename != NULL);
+	assert(filename != nullptr);
 	strecpy(_midi.start_song, filename, lastof(_midi.start_song));
 	_midi.playing = true;
 	_midi.stop_song = false;
@@ -68,7 +68,7 @@ static MCIERROR CDECL MidiSendCommand(const TCHAR *cmd, ...)
 	va_start(va, cmd);
 	_vsntprintf(buf, lengthof(buf), cmd, va);
 	va_end(va);
-	return mciSendString(buf, NULL, 0, 0);
+	return mciSendString(buf, nullptr, 0, 0);
 }
 
 static bool MidiIntPlaySong(const char *filename)
@@ -164,14 +164,14 @@ const char *MusicDriver_Win32::Start(const char * const *parm)
 		}
 	}
 
-	if (NULL == (_midi.wait_obj = CreateEvent(NULL, FALSE, FALSE, NULL))) return "Failed to create event";
+	if (nullptr == (_midi.wait_obj = CreateEvent(nullptr, FALSE, FALSE, nullptr))) return "Failed to create event";
 
 	/* The lpThreadId parameter of CreateThread (the last parameter)
-	 * may NOT be NULL on Windows 95, 98 and ME. */
+	 * may NOT be nullptr on Windows 95, 98 and ME. */
 	DWORD threadId;
-	if (NULL == (_midi.thread = CreateThread(NULL, 8192, MidiThread, 0, 0, &threadId))) return "Failed to create thread";
+	if (nullptr == (_midi.thread = CreateThread(nullptr, 8192, MidiThread, 0, 0, &threadId))) return "Failed to create thread";
 
-	return NULL;
+	return nullptr;
 }
 
 void MusicDriver_Win32::Stop()

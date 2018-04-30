@@ -23,7 +23,7 @@
 
 #ifdef __MORPHOS__
 /* the library base is required here */
-struct Library *SocketBase = NULL;
+struct Library *SocketBase = nullptr;
 #endif
 
 /**
@@ -39,7 +39,7 @@ bool NetworkCoreInitialize()
 	 */
 	DEBUG(net, 3, "[core] loading bsd socket library");
 	SocketBase = OpenLibrary("bsdsocket.library", 4);
-	if (SocketBase == NULL) {
+	if (SocketBase == nullptr) {
 		DEBUG(net, 0, "[core] can't open bsdsocket.library version 4, network unavailable");
 		return false;
 	}
@@ -47,12 +47,12 @@ bool NetworkCoreInitialize()
 #if defined(__AMIGA__)
 	/* for usleep() implementation (only required for legacy AmigaOS builds) */
 	TimerPort = CreateMsgPort();
-	if (TimerPort != NULL) {
+	if (TimerPort != nullptr) {
 		TimerRequest = (struct timerequest*)CreateIORequest(TimerPort, sizeof(struct timerequest);
-		if (TimerRequest != NULL) {
+		if (TimerRequest != nullptr) {
 			if (OpenDevice("timer.device", UNIT_MICROHZ, (struct IORequest*)TimerRequest, 0) == 0) {
 				TimerBase = TimerRequest->tr_node.io_Device;
-				if (TimerBase == NULL) {
+				if (TimerBase == nullptr) {
 					/* free resources... */
 					DEBUG(net, 0, "[core] can't initialize timer, network unavailable");
 					return false;
@@ -86,12 +86,12 @@ void NetworkCoreShutdown()
 #if defined(__MORPHOS__) || defined(__AMIGA__)
 	/* free allocated resources */
 #if defined(__AMIGA__)
-	if (TimerBase    != NULL) CloseDevice((struct IORequest*)TimerRequest); // XXX This smells wrong
-	if (TimerRequest != NULL) DeleteIORequest(TimerRequest);
-	if (TimerPort    != NULL) DeleteMsgPort(TimerPort);
+	if (TimerBase    != nullptr) CloseDevice((struct IORequest*)TimerRequest); // XXX This smells wrong
+	if (TimerRequest != nullptr) DeleteIORequest(TimerRequest);
+	if (TimerPort    != nullptr) DeleteMsgPort(TimerPort);
 #endif
 
-	if (SocketBase != NULL) CloseLibrary(SocketBase);
+	if (SocketBase != nullptr) CloseLibrary(SocketBase);
 #endif
 
 #if defined(WIN32)

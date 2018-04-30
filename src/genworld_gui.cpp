@@ -490,7 +490,7 @@ struct GenerateLandscapeWindow : public Window {
 
 	virtual void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize)
 	{
-		const StringID *strs = NULL;
+		const StringID *strs = nullptr;
 		switch (widget) {
 			case WID_GL_MAX_HEIGHTLEVEL_TEXT:
 				SetDParam(0, MAX_TILE_HEIGHT);
@@ -572,7 +572,7 @@ struct GenerateLandscapeWindow : public Window {
 			default:
 				return;
 		}
-		if (strs != NULL) {
+		if (strs != nullptr) {
 			while (*strs != INVALID_STRING_ID) {
 				*size = maxdim(*size, GetStringBoundingBox(*strs++));
 			}
@@ -879,7 +879,7 @@ struct GenerateLandscapeWindow : public Window {
 	virtual void OnQueryTextFinished(char *str)
 	{
 		/* Was 'cancel' pressed? */
-		if (str == NULL) return;
+		if (str == nullptr) return;
 
 		int32 value;
 		if (!StrEmpty(str)) {
@@ -944,14 +944,14 @@ struct GenerateLandscapeWindow : public Window {
 };
 
 static WindowDesc _generate_landscape_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_GENERATE_LANDSCAPE, WC_NONE,
 	0,
 	_nested_generate_landscape_widgets, lengthof(_nested_generate_landscape_widgets)
 );
 
 static WindowDesc _heightmap_load_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_GENERATE_LANDSCAPE, WC_NONE,
 	0,
 	_nested_heightmap_load_widgets, lengthof(_nested_heightmap_load_widgets)
@@ -1246,7 +1246,7 @@ static const NWidgetPart _nested_create_scenario_widgets[] = {
 };
 
 static WindowDesc _create_scenario_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_GENERATE_LANDSCAPE, WC_NONE,
 	0,
 	_nested_create_scenario_widgets, lengthof(_nested_create_scenario_widgets)
@@ -1274,7 +1274,7 @@ static const NWidgetPart _nested_generate_progress_widgets[] = {
 
 
 static WindowDesc _generate_progress_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_MODAL_PROGRESS, WC_NONE,
 	0,
 	_nested_generate_progress_widgets, lengthof(_nested_generate_progress_widgets)

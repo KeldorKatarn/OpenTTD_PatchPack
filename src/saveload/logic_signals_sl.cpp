@@ -91,6 +91,6 @@ static void Load_SLNK()
 }
 
 extern const ChunkHandler _logic_signal_handlers[] = {
-	{  'SPRG', Save_SPRG, Load_SPRG, NULL, NULL, CH_ARRAY },
-	{  'SLNK', Save_SLNK, Load_SLNK, NULL, NULL, CH_ARRAY | CH_LAST }
+	{  'SPRG', Save_SPRG, Load_SPRG, nullptr, nullptr, CH_ARRAY },
+	{  'SLNK', Save_SLNK, Load_SLNK, nullptr, nullptr, CH_ARRAY | CH_LAST }
 };

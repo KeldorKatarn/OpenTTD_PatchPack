@@ -106,12 +106,12 @@ static void UpdateElement(StoryPageElement &pe, TileIndex tile, uint32 reference
  */
 CommandCost CmdCreateStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!StoryPage::CanAllocateItem()) return CMD_ERROR;
+	if (!StoryPage::CanAllocateItem()) return CommandError();
 
 	CompanyID company = (CompanyID)GB(p1, 0, 8);
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (company != INVALID_COMPANY && !Company::IsValidID(company)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		if (_story_page_pool.items == 0) {
@@ -124,7 +124,7 @@ CommandCost CmdCreateStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 		s->date = _date;
 		s->company = company;
 		if (StrEmpty(text)) {
-			s->title = NULL;
+			s->title = nullptr;
 		} else {
 			s->title = stredup(text);
 		}
@@ -152,7 +152,7 @@ CommandCost CmdCreateStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, u
  */
 CommandCost CmdCreateStoryPageElement(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!StoryPageElement::CanAllocateItem()) return CMD_ERROR;
+	if (!StoryPageElement::CanAllocateItem()) return CommandError();
 
 	StoryPageID page_id = (CompanyID)GB(p1, 0, 16);
 	StoryPageElementType type = Extract<StoryPageElementType, 16, 8>(p1);
@@ -163,11 +163,11 @@ CommandCost CmdCreateStoryPageElement(TileIndex tile, DoCommandFlag flags, uint3
 	FOR_ALL_STORY_PAGE_ELEMENTS(iter) {
 		if (iter->page == page_id) element_count++;
 	}
-	if (element_count >= 128) return CMD_ERROR;
+	if (element_count >= 128) return CommandError();
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!StoryPage::IsValidID(page_id)) return CMD_ERROR;
-	if (!VerifyElementContentParameters(page_id, type, tile, p2, text)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!StoryPage::IsValidID(page_id)) return CommandError();
+	if (!VerifyElementContentParameters(page_id, type, tile, p2, text)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		if (_story_page_element_pool.items == 0) {
@@ -205,14 +205,14 @@ CommandCost CmdUpdateStoryPageElement(TileIndex tile, DoCommandFlag flags, uint3
 {
 	StoryPageElementID page_element_id = (StoryPageElementID)GB(p1, 0, 16);
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
-	if (!StoryPageElement::IsValidID(page_element_id)) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
+	if (!StoryPageElement::IsValidID(page_element_id)) return CommandError();
 
 	StoryPageElement *pe = StoryPageElement::Get(page_element_id);
 	StoryPageID page_id = pe->page;
 	StoryPageElementType type = pe->type;
 
-	if (!VerifyElementContentParameters(page_id, type, tile, p2, text)) return CMD_ERROR;
+	if (!VerifyElementContentParameters(page_id, type, tile, p2, text)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		UpdateElement(*pe, tile, p2, text);
@@ -233,15 +233,15 @@ CommandCost CmdUpdateStoryPageElement(TileIndex tile, DoCommandFlag flags, uint3
  */
 CommandCost CmdSetStoryPageTitle(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 	StoryPageID page_id = (StoryPageID)GB(p1, 0, 16);
-	if (!StoryPage::IsValidID(page_id)) return CMD_ERROR;
+	if (!StoryPage::IsValidID(page_id)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		StoryPage *p = StoryPage::Get(page_id);
 		free(p->title);
 		if (StrEmpty(text)) {
-			p->title = NULL;
+			p->title = nullptr;
 		} else {
 			p->title = stredup(text);
 		}
@@ -263,9 +263,9 @@ CommandCost CmdSetStoryPageTitle(TileIndex tile, DoCommandFlag flags, uint32 p1,
  */
 CommandCost CmdSetStoryPageDate(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 	StoryPageID page_id = (StoryPageID)GB(p1, 0, 16);
-	if (!StoryPage::IsValidID(page_id)) return CMD_ERROR;
+	if (!StoryPage::IsValidID(page_id)) return CommandError();
 	Date date = (Date)p2;
 
 	if (flags & DC_EXEC) {
@@ -290,9 +290,9 @@ CommandCost CmdSetStoryPageDate(TileIndex tile, DoCommandFlag flags, uint32 p1, 
  */
 CommandCost CmdShowStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 	StoryPageID page_id = (StoryPageID)GB(p1, 0, 16);
-	if (!StoryPage::IsValidID(page_id)) return CMD_ERROR;
+	if (!StoryPage::IsValidID(page_id)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		StoryPage *g = StoryPage::Get(page_id);
@@ -312,9 +312,9 @@ CommandCost CmdShowStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
  */
 CommandCost CmdRemoveStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 	StoryPageID page_id = (StoryPageID)p1;
-	if (!StoryPage::IsValidID(page_id)) return CMD_ERROR;
+	if (!StoryPage::IsValidID(page_id)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		StoryPage *p = StoryPage::Get(page_id);
@@ -346,9 +346,9 @@ CommandCost CmdRemoveStoryPage(TileIndex tile, DoCommandFlag flags, uint32 p1, u
  */
 CommandCost CmdRemoveStoryPageElement(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 	StoryPageElementID page_element_id = (StoryPageElementID)p1;
-	if (!StoryPageElement::IsValidID(page_element_id)) return CMD_ERROR;
+	if (!StoryPageElement::IsValidID(page_element_id)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		StoryPageElement *pe = StoryPageElement::Get(page_element_id);

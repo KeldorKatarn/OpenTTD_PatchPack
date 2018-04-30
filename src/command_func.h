@@ -16,28 +16,16 @@
 #include "company_type.h"
 
 /**
- * Define a default return value for a failed command.
+ * Returns a specific StringID as error.
  *
- * This variable contains a CommandCost object with is declared as "failed".
- * Other functions just need to return this error if there is an error,
- * which doesn't need to specific by a StringID.
+ * @param error_msg The StringID to return
  */
-static const CommandCost CMD_ERROR = CommandCost(INVALID_STRING_ID);
+inline CommandCost CommandError(StringID error_msg = INVALID_STRING_ID) { return CommandCost(error_msg); }
 
-/**
- * Returns from a function with a specific StringID as error.
- *
- * This macro is used to return from a function. The parameter contains the
- * StringID which will be returned.
- *
- * @param errcode The StringID to return
- */
-#define return_cmd_error(errcode) return CommandCost(errcode);
-
-CommandCost DoCommand(TileIndex tile, uint32 p1, uint32 p2, DoCommandFlag flags, uint32 cmd, const char *text = NULL);
+CommandCost DoCommand(TileIndex tile, uint32 p1, uint32 p2, DoCommandFlag flags, uint32 cmd, const char *text = nullptr);
 CommandCost DoCommand(const CommandContainer *container, DoCommandFlag flags);
 
-bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback = NULL, const char *text = NULL, bool my_cmd = true, uint32 binary_length = 0);
+bool DoCommandP(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback = nullptr, const char *text = nullptr, bool my_cmd = true, uint32 binary_length = 0);
 bool DoCommandP(const CommandContainer *container, bool my_cmd = true);
 
 CommandCost DoCommandPInternal(TileIndex tile, uint32 p1, uint32 p2, uint32 cmd, CommandCallback *callback, const char *text, bool my_cmd, bool estimate_only, uint32 binary_length);

@@ -48,9 +48,9 @@ static const uint32 ADVERTISE_NORMAL_INTERVAL = 15 * 60 * 1000; ///< interval be
 static const uint32 ADVERTISE_RETRY_INTERVAL  =      10 * 1000; ///< re-advertise when no response after this many ms (10 seconds)
 static const uint32 ADVERTISE_RETRY_TIMES     =              3; ///< give up re-advertising after this much failed retries
 
-NetworkUDPSocketHandler *_udp_client_socket = NULL; ///< udp client socket
-NetworkUDPSocketHandler *_udp_server_socket = NULL; ///< udp server socket
-NetworkUDPSocketHandler *_udp_master_socket = NULL; ///< udp master socket
+NetworkUDPSocketHandler *_udp_client_socket = nullptr; ///< udp client socket
+NetworkUDPSocketHandler *_udp_server_socket = nullptr; ///< udp server socket
+NetworkUDPSocketHandler *_udp_master_socket = nullptr; ///< udp master socket
 
 /** Simpler wrapper struct for NetworkUDPQueryServerThread */
 struct NetworkUDPQueryServerInfo : NetworkAddress {
@@ -87,7 +87,7 @@ static void NetworkUDPQueryServer(NetworkAddress *address, bool needs_mutex, boo
 	if (needs_mutex) _network_udp_mutex->BeginCritical();
 	/* Init the packet */
 	Packet p(PACKET_UDP_CLIENT_FIND_SERVER);
-	if (_udp_client_socket != NULL) _udp_client_socket->SendPacket(&p, address);
+	if (_udp_client_socket != nullptr) _udp_client_socket->SendPacket(&p, address);
 	if (needs_mutex) _network_udp_mutex->EndCritical();
 }
 
@@ -111,7 +111,7 @@ static void NetworkUDPQueryServerThread(void *pntr)
 void NetworkUDPQueryServer(NetworkAddress address, bool manually)
 {
 	NetworkUDPQueryServerInfo *info = new NetworkUDPQueryServerInfo(address, manually);
-	if (address.IsResolved() || !ThreadObject::New(NetworkUDPQueryServerThread, info, NULL, "ottd:udp-query")) {
+	if (address.IsResolved() || !ThreadObject::New(NetworkUDPQueryServerThread, info, nullptr, "ottd:udp-query")) {
 		NetworkUDPQueryServerThread(info);
 	}
 }
@@ -299,7 +299,7 @@ void ServerNetworkUDPSocketHandler::Receive_CLIENT_GET_NEWGRFS(Packet *p, Networ
 
 		/* Find the matching GRF file */
 		f = FindGRFConfig(c.grfid, FGCM_EXACT, c.md5sum);
-		if (f == NULL) continue; // The GRF is unknown to this server
+		if (f == nullptr) continue; // The GRF is unknown to this server
 
 		/* If the reply might exceed the size of the packet, only reply
 		 * the current list and do not send the other data.
@@ -391,7 +391,7 @@ bool ClientNetworkUDPSocketHandler::CheckItemCompleteness(NetworkGameList* item)
 	const GRFConfig *c;
 	uint in_request_count = 0;
 
-	for (c = item->info.grfconfig; c != NULL; c = c->next) {
+	for (c = item->info.grfconfig; c != nullptr; c = c->next) {
 		if (c->status == GCS_NOT_FOUND) item->info.compatible = false;
 		if (c->status != GCS_NOT_FOUND || strcmp(c->GetName(), UNKNOWN_GRF_NAME_PLACEHOLDER) != 0) continue;
 		in_request[in_request_count] = c;
@@ -545,7 +545,7 @@ void ClientNetworkUDPSocketHandler::Receive_SERVER_NEWGRFS(Packet *p, NetworkAdd
 		 * If it exists and not resolved yet, then name of the fake GRF is
 		 * overwritten with the name from the reply. */
 		GRFTextWrapper *unknown_name = FindUnknownGRFName(c.grfid, c.md5sum, false);
-		if (unknown_name != NULL && strcmp(GetGRFStringFromGRFText(unknown_name->text), UNKNOWN_GRF_NAME_PLACEHOLDER) == 0) {
+		if (unknown_name != nullptr && strcmp(GetGRFStringFromGRFText(unknown_name->text), UNKNOWN_GRF_NAME_PLACEHOLDER) == 0) {
 			AddGRFTextToList(&unknown_name->text, name);
 		}
 	}
@@ -555,7 +555,7 @@ void ClientNetworkUDPSocketHandler::HandleIncomingNetworkGameInfoGRFConfig(GRFCo
 {
 	/* Find the matching GRF file */
 	const GRFConfig *f = FindGRFConfig(config->ident.grfid, FGCM_EXACT, config->ident.md5sum);
-	if (f == NULL) {
+	if (f == nullptr) {
 		/* Don't know the GRF, so mark game incompatible and the (possibly)
 		 * already resolved name for this GRF (another server has sent the
 		 * name of the GRF already */
@@ -636,7 +636,7 @@ static void NetworkUDPRemoveAdvertiseThread(void *pntr)
 	p.Send_uint16(_settings_client.network.server_port);
 
 	_network_udp_mutex->BeginCritical();
-	if (_udp_master_socket != NULL) _udp_master_socket->SendPacket(&p, &out_addr, true);
+	if (_udp_master_socket != nullptr) _udp_master_socket->SendPacket(&p, &out_addr, true);
 	_network_udp_mutex->EndCritical();
 }
 
@@ -649,8 +649,8 @@ void NetworkUDPRemoveAdvertise(bool blocking)
 	/* Check if we are advertising */
 	if (!_networking || !_network_server || !_network_udp_server) return;
 
-	if (blocking || !ThreadObject::New(NetworkUDPRemoveAdvertiseThread, NULL, NULL, "ottd:udp-advert")) {
-		NetworkUDPRemoveAdvertiseThread(NULL);
+	if (blocking || !ThreadObject::New(NetworkUDPRemoveAdvertiseThread, nullptr, nullptr, "ottd:udp-advert")) {
+		NetworkUDPRemoveAdvertiseThread(nullptr);
 	}
 }
 
@@ -690,7 +690,7 @@ static void NetworkUDPAdvertiseThread(void *pntr)
 	p.Send_uint64(_session_key);
 
 	_network_udp_mutex->BeginCritical();
-	if (_udp_master_socket != NULL) _udp_master_socket->SendPacket(&p, &out_addr, true);
+	if (_udp_master_socket != nullptr) _udp_master_socket->SendPacket(&p, &out_addr, true);
 	_network_udp_mutex->EndCritical();
 }
 
@@ -732,8 +732,8 @@ void NetworkUDPAdvertise()
 	if (_next_advertisement < _last_advertisement) _next_advertisement = UINT32_MAX;
 	if (_next_retry         < _last_advertisement) _next_retry         = UINT32_MAX;
 
-	if (!ThreadObject::New(NetworkUDPAdvertiseThread, NULL, NULL, "ottd:udp-advert")) {
-		NetworkUDPAdvertiseThread(NULL);
+	if (!ThreadObject::New(NetworkUDPAdvertiseThread, nullptr, nullptr, "ottd:udp-advert")) {
+		NetworkUDPAdvertiseThread(nullptr);
 	}
 }
 
@@ -741,10 +741,10 @@ void NetworkUDPAdvertise()
 void NetworkUDPInitialize()
 {
 	/* If not closed, then do it. */
-	if (_udp_server_socket != NULL) NetworkUDPClose();
+	if (_udp_server_socket != nullptr) NetworkUDPClose();
 
 	DEBUG(net, 1, "[udp] initializing listeners");
-	assert(_udp_client_socket == NULL && _udp_server_socket == NULL && _udp_master_socket == NULL);
+	assert(_udp_client_socket == nullptr && _udp_server_socket == nullptr && _udp_master_socket == nullptr);
 
 	_network_udp_mutex->BeginCritical();
 
@@ -773,9 +773,9 @@ void NetworkUDPClose()
 	delete _udp_client_socket;
 	delete _udp_server_socket;
 	delete _udp_master_socket;
-	_udp_client_socket = NULL;
-	_udp_server_socket = NULL;
-	_udp_master_socket = NULL;
+	_udp_client_socket = nullptr;
+	_udp_server_socket = nullptr;
+	_udp_master_socket = nullptr;
 	_network_udp_mutex->EndCritical();
 
 	_network_udp_server = false;

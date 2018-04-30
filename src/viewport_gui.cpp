@@ -10,22 +10,20 @@
 /** @file viewport_gui.cpp Extra viewport window. */
 
 #include "stdafx.h"
-#include "landscape.h"
-#include "window_gui.h"
-#include "viewport_func.h"
-#include "strings_func.h"
-#include "tunnelbridge.h"
-#include "tilehighlight_func.h"
-#include "zoom_func.h"
-#include "window_func.h"
+
 #include "gfx_func.h"
-#include "industry.h"
-#include "town_map.h"
+#include "landscape.h"
+#include "strings_func.h"
+#include "tilehighlight_func.h"
+#include "tunnelbridge.h"
+#include "viewport_func.h"
+#include "window_func.h"
+#include "window_gui.h"
+#include "zoom_func.h"
 
-#include "widgets/viewport_widget.h"
-
-#include "table/strings.h"
 #include "table/sprites.h"
+#include "table/strings.h"
+#include "widgets/viewport_widget.h"
 
 #include "safeguards.h"
 
@@ -63,40 +61,43 @@ public:
 	{
 		this->InitNested(window_number);
 
-		NWidgetViewport *nvp = this->GetWidget<NWidgetViewport>(WID_EV_VIEWPORT);
-		nvp->InitializeViewport(this, 0, ZOOM_LVL_VIEWPORT);
+		auto viewport = this->GetWidget<NWidgetViewport>(WID_EV_VIEWPORT);
+		viewport->InitializeViewport(this, 0, ZOOM_LVL_VIEWPORT);
 		if (_settings_client.gui.zoom_min == ZOOM_LVL_VIEWPORT) this->DisableWidget(WID_EV_ZOOM_IN);
 
-		Point pt;
+		Point point{};
+
 		if (tile == INVALID_TILE) {
 			/* No tile? Use center of main viewport. */
 			const Window *w = FindWindowById(WC_MAIN_WINDOW, 0);
 
 			/* center on same place as main window (zoom is maximum, no adjustment needed) */
-			pt.x = w->viewport->scrollpos_x + w->viewport->virtual_width / 2;
-			pt.y = w->viewport->scrollpos_y + w->viewport->virtual_height / 2;
+			point.x = w->viewport->scrollpos_x + w->viewport->virtual_width / 2;
+			point.y = w->viewport->scrollpos_y + w->viewport->virtual_height / 2;
 		} else {
-			pt = RemapCoords(TileX(tile) * TILE_SIZE + TILE_SIZE / 2, TileY(tile) * TILE_SIZE + TILE_SIZE / 2, TilePixelHeight(tile));
+			point = RemapCoords(TileX(tile) * TILE_SIZE + TILE_SIZE / 2, TileY(tile) * TILE_SIZE + TILE_SIZE / 2, TilePixelHeight(tile));
 		}
 
-		this->viewport->scrollpos_x = pt.x - this->viewport->virtual_width / 2;
-		this->viewport->scrollpos_y = pt.y - this->viewport->virtual_height / 2;
+		this->viewport->scrollpos_x = point.x - this->viewport->virtual_width / 2;
+		this->viewport->scrollpos_y = point.y - this->viewport->virtual_height / 2;
 		this->viewport->dest_scrollpos_x = this->viewport->scrollpos_x;
 		this->viewport->dest_scrollpos_y = this->viewport->scrollpos_y;
-		this->viewport->map_type = (ViewportMapType) _settings_client.gui.default_viewport_map_mode;
+		this->viewport->map_type = static_cast<ViewportMapType>(_settings_client.gui.default_viewport_map_mode);
 	}
 
-	virtual void SetStringParameters(int widget) const
+	void SetStringParameters(int widget) const override
 	{
 		switch (widget) {
 			case WID_EV_CAPTION:
 				/* set the number in the title bar */
 				SetDParam(0, this->window_number + 1);
 				break;
+
+			default: ;
 		}
 	}
 
-	virtual void OnClick(Point pt, int widget, int click_count)
+	void OnClick(Point pt, int widget, int click_count) override
 	{
 		switch (widget) {
 			case WID_EV_ZOOM_IN: DoZoomInOutWindow(ZOOM_IN,  this); break;
@@ -104,8 +105,8 @@ public:
 
 			case WID_EV_MAIN_TO_VIEW: { // location button (move main view to same spot as this view) 'Paste Location'
 				Window *w = FindWindowById(WC_MAIN_WINDOW, 0);
-				int x = this->viewport->scrollpos_x; // Where is the main looking at
-				int y = this->viewport->scrollpos_y;
+				const int x = this->viewport->scrollpos_x; // Where is the main looking at
+				const int y = this->viewport->scrollpos_y;
 
 				/* set this view to same location. Based on the center, adjusting for zoom */
 				w->viewport->dest_scrollpos_x =  x - (w->viewport->virtual_width -  this->viewport->virtual_width) / 2;
@@ -116,25 +117,28 @@ public:
 
 			case WID_EV_VIEW_TO_MAIN: { // inverse location button (move this view to same spot as main view) 'Copy Location'
 				const Window *w = FindWindowById(WC_MAIN_WINDOW, 0);
-				int x = w->viewport->scrollpos_x;
-				int y = w->viewport->scrollpos_y;
+				const int x = w->viewport->scrollpos_x;
+				const int y = w->viewport->scrollpos_y;
 
 				this->viewport->dest_scrollpos_x =  x + (w->viewport->virtual_width -  this->viewport->virtual_width) / 2;
 				this->viewport->dest_scrollpos_y =  y + (w->viewport->virtual_height - this->viewport->virtual_height) / 2;
 				break;
 			}
+
+			default: 
+				break;
 		}
 	}
 
-	virtual void OnResize()
+	void OnResize() override
 	{
-		if (this->viewport != NULL) {
-			NWidgetViewport *nvp = this->GetWidget<NWidgetViewport>(WID_EV_VIEWPORT);
-			nvp->UpdateViewportCoordinates(this);
+		if (this->viewport != nullptr) {
+			auto viewport = this->GetWidget<NWidgetViewport>(WID_EV_VIEWPORT);
+			viewport->UpdateViewportCoordinates(this);
 		}
 	}
 
-	virtual void OnScroll(Point delta)
+	void OnScroll(Point delta) override
 	{
 		this->viewport->scrollpos_x += ScaleByZoom(delta.x, this->viewport->zoom);
 		this->viewport->scrollpos_y += ScaleByZoom(delta.y, this->viewport->zoom);
@@ -142,7 +146,7 @@ public:
 		this->viewport->dest_scrollpos_y = this->viewport->scrollpos_y;
 	}
 
-	virtual void OnMouseWheel(int wheel)
+	void OnMouseWheel(int wheel) override
 	{
 		if (_ctrl_pressed) {
 			/* Cycle through the drawing modes */
@@ -158,7 +162,7 @@ public:
 	 * @param data Information about the changed data.
 	 * @param gui_scope Whether the call is done from GUI scope. You may not do everything when not in GUI scope. See #InvalidateWindowData() for details.
 	 */
-	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
+	void OnInvalidateData(int data, bool gui_scope) override
 	{
 		if (!gui_scope) return;
 		/* Only handle zoom message if intended for us (msg ZOOM_IN/ZOOM_OUT) */
@@ -182,7 +186,7 @@ void ShowExtraViewPortWindow(TileIndex tile)
 	int i = 0;
 
 	/* find next free window number for extra viewport */
-	while (FindWindowById(WC_EXTRA_VIEW_PORT, i) != NULL) i++;
+	while (FindWindowById(WC_EXTRA_VIEW_PORT, i) != nullptr) i++;
 
 	new ExtraViewportWindow(&_extra_view_port_desc, i, tile);
 }
@@ -202,6 +206,6 @@ void ShowExtraViewPortWindowForTileUnderCursor()
 
 	/* Use tile under mouse as center for new viewport.
 	 * Do this before creating the window, it might appear just below the mouse. */
-	Point pt = GetTileBelowCursor();
-	ShowExtraViewPortWindow(pt.x != -1 ? TileVirtXY(pt.x, pt.y) : INVALID_TILE);
+	const Point point = GetTileBelowCursor();
+	ShowExtraViewPortWindow(point.x != -1 ? TileVirtXY(point.x, point.y) : INVALID_TILE);
 }

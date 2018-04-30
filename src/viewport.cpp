@@ -1383,7 +1383,7 @@ static void ViewportAddTownNames(DrawPixelInfo *dpi)
 	const Town *t;
 	FOR_ALL_TOWNS(t) {
 		if (!checker.IsSignMaybeOnScreen(&t->cache.sign)) continue;
-		ViewportAddString(dpi, ZOOM_LVL_OUT_16X, &t->cache.sign,
+		ViewportAddString(dpi, ZOOM_LVL_OUT_64X, &t->cache.sign,
 				t->Label(), t->SmallLabel(), STR_VIEWPORT_TOWN_TINY_BLACK,
 				t->index, t->cache.population);
 	}

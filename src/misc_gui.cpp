@@ -406,7 +406,7 @@ static const NWidgetPart _nested_about_widgets[] = {
 };
 
 static WindowDesc _about_desc(
-	WDP_CENTER, NULL, 0, 0,
+	WDP_CENTER, nullptr, 0, 0,
 	WC_GAME_OPTIONS, WC_NONE,
 	0,
 	_nested_about_widgets, lengthof(_nested_about_widgets)
@@ -487,7 +487,7 @@ static const char * const _credits[] = {
 struct AboutWindow : public Window {
 	int text_position;                       ///< The top of the scrolling text
 	byte counter;                            ///< Used to scroll the text every 5 ticks
-	int line_height;                         ///< The height of a single line
+	int line_height = FONT_HEIGHT_NORMAL;    ///< The height of a single line
 	static const int num_visible_lines = 19; ///< The number of lines visible simultaneously
 
 	AboutWindow() : Window(&_about_desc)
@@ -498,51 +498,53 @@ struct AboutWindow : public Window {
 		this->text_position = this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->pos_y + this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->current_y;
 	}
 
-	virtual void SetStringParameters(int widget) const
+	void SetStringParameters(int widget) const override
 	{
 		if (widget == WID_A_WEBSITE) SetDParamStr(0, "Main project website: http://www.openttd.org");
 		if (widget == WID_A_WEBSITE1) SetDParamStr(0, "Patchpack thread: https://www.tt-forums.net/viewtopic.php?f=33&t=74365");
 		if (widget == WID_A_WEBSITE2) SetDParamStr(0, "Patchpack Github: https://github.com/KeldorKatarn/OpenTTD_PatchPack");
 	}
 
-	virtual void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize)
+	void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize) override
 	{
 		if (widget != WID_A_SCROLLING_TEXT) return;
 
 		this->line_height = FONT_HEIGHT_NORMAL;
 
-		Dimension d;
+		Dimension d{};
 		d.height = this->line_height * num_visible_lines;
-
 		d.width = 0;
-		for (uint i = 0; i < lengthof(_credits); i++) {
-			d.width = max(d.width, GetStringBoundingBox(_credits[i]).width);
+
+		for (auto text_line : _credits) {
+			d.width = max(d.width, GetStringBoundingBox(text_line).width);
 		}
+
 		*size = maxdim(*size, d);
 	}
 
-	virtual void DrawWidget(const Rect &r, int widget) const
+	void DrawWidget(const Rect &r, int widget) const override
 	{
 		if (widget != WID_A_SCROLLING_TEXT) return;
 
 		int y = this->text_position;
 
 		/* Show all scrolling _credits */
-		for (uint i = 0; i < lengthof(_credits); i++) {
+		for (auto text_line : _credits) {
 			if (y >= r.top + 7 && y < r.bottom - this->line_height) {
-				DrawString(r.left, r.right, y, _credits[i], TC_BLACK, SA_LEFT | SA_FORCE);
+				DrawString(r.left, r.right, y, text_line, TC_BLACK, SA_LEFT | SA_FORCE);
 			}
+
 			y += this->line_height;
 		}
 	}
 
-	virtual void OnTick()
+	void OnTick() override
 	{
 		if (--this->counter == 0) {
 			this->counter = 5;
 			this->text_position--;
 			/* If the last text has scrolled start a new from the start */
-			if (this->text_position < (int)(this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->pos_y - lengthof(_credits) * this->line_height)) {
+			if (this->text_position < int(this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->pos_y - lengthof(_credits) * this->line_height)) {
 				this->text_position = this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->pos_y + this->GetWidget<NWidgetBase>(WID_A_SCROLLING_TEXT)->current_y;
 			}
 			this->SetDirty();
@@ -564,14 +566,15 @@ void ShowAboutWindow()
  */
 void ShowEstimatedCostOrIncome(Money cost, int x, int y)
 {
-	StringID msg = STR_MESSAGE_ESTIMATED_COST;
+	StringID message = STR_MESSAGE_ESTIMATED_COST;
 
 	if (cost < 0) {
 		cost = -cost;
-		msg = STR_MESSAGE_ESTIMATED_INCOME;
+		message = STR_MESSAGE_ESTIMATED_INCOME;
 	}
+
 	SetDParam(0, cost);
-	ShowErrorMessage(msg, INVALID_STRING_ID, WL_INFO, x, y);
+	ShowErrorMessage(message, INVALID_STRING_ID, WL_INFO, x, y);
 }
 
 /**
@@ -583,15 +586,16 @@ void ShowEstimatedCostOrIncome(Money cost, int x, int y)
  */
 void ShowCostOrIncomeAnimation(int x, int y, int z, Money cost)
 {
-	Point pt = RemapCoords(x, y, z);
-	StringID msg = STR_INCOME_FLOAT_COST;
+	const Point point = RemapCoords(x, y, z);
+	StringID message = STR_INCOME_FLOAT_COST;
 
 	if (cost < 0) {
 		cost = -cost;
-		msg = STR_INCOME_FLOAT_INCOME;
+		message = STR_INCOME_FLOAT_INCOME;
 	}
+
 	SetDParam(0, cost);
-	AddTextEffect(msg, pt.x, pt.y, DAY_TICKS, TE_RISING);
+	AddTextEffect(message, point.x, point.y, DAY_TICKS, TE_RISING);
 }
 
 /**
@@ -602,21 +606,24 @@ void ShowCostOrIncomeAnimation(int x, int y, int z, Money cost)
  * @param transfer Estimated feeder income.
  * @param income   Real income from goods being delivered to their final destination.
  */
-void ShowFeederIncomeAnimation(int x, int y, int z, Money transfer, Money income)
+void ShowFeederIncomeAnimation(int x, int y, int z, const Money& transfer, Money income)
 {
-	Point pt = RemapCoords(x, y, z);
+	const Point point = RemapCoords(x, y, z);
 
 	SetDParam(0, transfer);
+
 	if (income == 0) {
-		AddTextEffect(STR_FEEDER, pt.x, pt.y, DAY_TICKS, TE_RISING);
+		AddTextEffect(STR_FEEDER, point.x, point.y, DAY_TICKS, TE_RISING);
 	} else {
-		StringID msg = STR_FEEDER_COST;
+		StringID message = STR_FEEDER_COST;
+
 		if (income < 0) {
 			income = -income;
-			msg = STR_FEEDER_INCOME;
+			message = STR_FEEDER_INCOME;
 		}
+
 		SetDParam(1, income);
-		AddTextEffect(msg, pt.x, pt.y, DAY_TICKS, TE_RISING);
+		AddTextEffect(message, point.x, point.y, DAY_TICKS, TE_RISING);
 	}
 }
 
@@ -631,17 +638,18 @@ void ShowFeederIncomeAnimation(int x, int y, int z, Money transfer, Money income
  */
 TextEffectID ShowFillingPercent(int x, int y, int z, uint8 percent, StringID string)
 {
-	Point pt = RemapCoords(x, y, z);
+	const Point point = RemapCoords(x, y, z);
 
 	assert(string != STR_NULL);
 
 	SetDParam(0, percent);
-	return AddTextEffect(string, pt.x, pt.y, 0, TE_STATIC);
+	return AddTextEffect(string, point.x, point.y, 0, TE_STATIC);
 }
 
 /**
  * Update vehicle loading indicators.
  * @param te_id   TextEffectID to be updated.
+ * @param percent The filling percentage.
  * @param string  String which is printed.
  */
 void UpdateFillingPercent(TextEffectID te_id, uint8 percent, StringID string)
@@ -654,7 +662,7 @@ void UpdateFillingPercent(TextEffectID te_id, uint8 percent, StringID string)
 
 /**
  * Hide vehicle loading indicators.
- * @param *te_id TextEffectID which is supposed to be hidden.
+ * @param te_id TextEffectID which is supposed to be hidden.
  */
 void HideFillingPercent(TextEffectID *te_id)
 {
@@ -680,7 +688,7 @@ struct TooltipsWindow : public Window
 {
 	const char *tip;                  ///< The text being displayed in the window.
 	TooltipCloseCondition close_cond; ///< Condition for closing the window.
-	char buffer[DRAW_STRING_BUFFER];  ///< Text to draw
+	char buffer[DRAW_STRING_BUFFER]{};  ///< Text to draw
 
 	TooltipsWindow(Window *parent, const char *tip, TooltipCloseCondition close_tooltip) : Window(&_tool_tips_desc)
 	{
@@ -698,30 +706,34 @@ struct TooltipsWindow : public Window
 		free(this->tip);
 	}
 
-	virtual Point OnInitialPosition(int16 sm_width, int16 sm_height, int window_number)
+	Point OnInitialPosition(int16 sm_width, int16 sm_height, int window_number) override
 	{
 		/* Find the free screen space between the main toolbar at the top, and the statusbar at the bottom.
 		 * Add a fixed distance 2 so the tooltip floats free from both bars.
 		 */
-		int scr_top = GetMainViewTop() + 2;
-		int scr_bot = GetMainViewBottom() - 2;
+		const int screen_top = GetMainViewTop() + 2;
+		const int screen_bottom = GetMainViewBottom() - 2;
 
-		Point pt;
+		Point point{};
 
 		/* Correctly position the tooltip position, watch out for window and cursor size
 		 * Clamp value to below main toolbar and above statusbar. If tooltip would
 		 * go below window, flip it so it is shown above the cursor */
-		pt.y = Clamp(_cursor.pos.y + _cursor.total_size.y + _cursor.total_offs.y + 5, scr_top, scr_bot);
-		if (pt.y + sm_height > scr_bot) pt.y = min(_cursor.pos.y + _cursor.total_offs.y - 5, scr_bot) - sm_height;
-		pt.x = sm_width >= _screen.width ? 0 : Clamp(_cursor.pos.x - (sm_width >> 1), 0, _screen.width - sm_width);
+		point.y = Clamp(_cursor.pos.y + _cursor.total_size.y + _cursor.total_offs.y + 5, screen_top, screen_bottom);
 
-		return pt;
+		if (point.y + sm_height > screen_bottom) {
+			point.y = min(_cursor.pos.y + _cursor.total_offs.y - 5, screen_bottom) - sm_height;
+		}
+
+		point.x = sm_width >= _screen.width ? 0 : Clamp(_cursor.pos.x - (sm_width >> 1), 0, _screen.width - sm_width);
+
+		return point;
 	}
 
-	virtual void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize)
+	void UpdateWidgetSize(int widget, Dimension *size, const Dimension &padding, Dimension *fill, Dimension *resize) override
 	{
 		/* There is only one widget. */
-		size->width = min(GetStringBoundingBox(this->tip).width, ScaleGUITrad(194));
+		size->width = min(GetStringBoundingBox(this->tip).width, ScaleGUITrad(250));
 		size->height = GetStringHeight(this->tip, size->width);
 
 		/* Increase slightly to have some space around the box. */
@@ -729,7 +741,7 @@ struct TooltipsWindow : public Window
 		size->height += 2 + WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM;
 	}
 
-	virtual void DrawWidget(const Rect &r, int widget) const
+	void DrawWidget(const Rect &r, int widget) const override
 	{
 		/* There is only one widget. */
 		GfxFillRect(r.left, r.top, r.right, r.bottom, PC_BLACK);
@@ -738,7 +750,7 @@ struct TooltipsWindow : public Window
 		DrawStringMultiLine(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, r.top + WD_FRAMERECT_TOP, r.bottom - WD_FRAMERECT_BOTTOM, this->tip, TC_FROMSTRING, SA_CENTER);
 	}
 
-	virtual void OnMouseLoop()
+	void OnMouseLoop() override
 	{
 		/* Always close tooltips when the cursor is not in our window. */
 		if (!_cursor.in_window) {
@@ -755,7 +767,7 @@ struct TooltipsWindow : public Window
 		}
 	}
 
-	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
+	void OnInvalidateData(int data, bool gui_scope) override
 	{
 		if (!gui_scope) return;
 
@@ -821,7 +833,7 @@ static void GetTileTooltipsForIndustry(IndustryID iid, char *buff, const char *l
 
 /**
  * Get tooltip string for a station tile.
- * @param iid ID of the station.
+ * @param sid ID of the station.
  * @param buff Buffer to store the string in.
  * @param last Last character of the buffer.
  */
@@ -848,21 +860,28 @@ void GetTileTooltipsForStation(StationID sid, char *buff, const char *last)
 
 /**
  * Get tooltip string for a town tile.
- * @param iid ID of the town.
+ * @param town_id ID of the town.
  * @return The string.
  */
-static StringID GetTileTooltipsForTown(TownID tid)
+static StringID GetTileTooltipsForTown(TownID town_id)
 {
-	if (!Town::IsValidID(tid)) return STR_NULL;
+	const Town* town = Town::GetIfValid(town_id);
 
-	SetDParam(0, tid);
-	SetDParam(1, Town::Get(tid)->cache.population);
-	return STR_TILE_TOOLTIP_TOWN_NAME_POP;
+	if (town == nullptr) return STR_NULL;
+
+	SetDParam(0, town_id);
+	SetDParam(1, town->cache.population);
+
+	if (town->IsGrowing()) {
+		SetDParam(2, town->GetGrowthRateInDays());
+	}
+
+	return town->IsGrowing() ? STR_TILE_TOOLTIP_TOWN_NAME_POP_GROWTH : STR_TILE_TOOLTIP_TOWN_NAME_POP;
 }
 
 /**
  * Get tooltip string for a company owned tile.
- * @param iid ID of the company.
+ * @param cid ID of the company.
  * @return The string.
  */
 static StringID GetTileTooltipsForCompany(CompanyID cid)
@@ -879,21 +898,24 @@ static StringID GetTileTooltipsForCompany(CompanyID cid)
  * @param tile The tile to show the tip for.
  * @param close_tooltip Close condition for the tooltip.
  */
-void GuiShowTooltipsForTile(Window *parent, TileIndex tile, TooltipCloseCondition close_tooltip)
+void GuiShowTooltipsForTile(Window* parent, TileIndex tile, TooltipCloseCondition close_tooltip)
 {
-	StringID tip = STR_NULL;
+	StringID tool_tip_string = STR_NULL;
 
 	if (tile < MapSize()) {
-		TileType tt = GetTileType(tile);
-		switch (tt) {
+		const TileType tile_type = GetTileType(tile);
+
+		switch (tile_type) {
 			case MP_STATION:
 			case MP_INDUSTRY: {
 				char buff[DRAW_STRING_BUFFER] = "";
-				if (tt == MP_STATION) {
+
+				if (tile_type == MP_STATION) {
 					GetTileTooltipsForStation(GetStationIndex(tile), buff, lastof(buff));
 				} else {
 					GetTileTooltipsForIndustry(GetIndustryIndex(tile), buff, lastof(buff));
 				}
+
 				GuiShowTooltips(parent, buff, close_tooltip);
 				return;
 			}
@@ -902,16 +924,17 @@ void GuiShowTooltipsForTile(Window *parent, TileIndex tile, TooltipCloseConditio
 			case MP_ROAD:
 			case MP_WATER:
 			case MP_TUNNELBRIDGE:
-			case MP_OBJECT:
-				Owner o;
-				o = GetTileOwner(tile);
-				if (o != OWNER_TOWN) {
-					tip = GetTileTooltipsForCompany(o);
+			case MP_OBJECT: {
+				const Owner owner = GetTileOwner(tile);
+
+				if (owner != OWNER_TOWN) {
+					tool_tip_string = GetTileTooltipsForCompany(owner);
 					break;
 				}
+			}
 				/* FALLTHROUGH */
 			case MP_HOUSE:
-				tip = GetTileTooltipsForTown(tt != MP_TUNNELBRIDGE ? GetTownIndex(tile) : CalcClosestTownFromTile(tile)->index);
+				tool_tip_string = GetTileTooltipsForTown(tile_type != MP_TUNNELBRIDGE ? GetTownIndex(tile) : CalcClosestTownFromTile(tile)->index);
 				break;
 
 			default:
@@ -919,7 +942,7 @@ void GuiShowTooltipsForTile(Window *parent, TileIndex tile, TooltipCloseConditio
 		}
 	}
 
-	GuiShowTooltips(parent, tip, close_tooltip);
+	GuiShowTooltips(parent, tool_tip_string, close_tooltip);
 }
 
 void QueryString::HandleEditBox(Window *w, int wid)

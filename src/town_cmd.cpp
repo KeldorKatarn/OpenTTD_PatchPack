@@ -602,7 +602,7 @@ static void TileLoop_Town(TileIndex tile)
 	const int32 ticks_per_tile_loop = 256;
 
 	if ((hs->building_flags & BUILDING_HAS_1_TILE) &&
-			HasBit(t->flags, TOWN_IS_GROWING) &&
+			t->IsGrowing() &&
 			CanDeleteHouse(tile) &&
 			GetHouseAge(tile) >= hs->minimum_life &&
 			t->time_until_rebuild <= (_date - (hs->minimum_life * DAYS_IN_YEAR))) {
@@ -852,7 +852,7 @@ static bool GrowTown(Town *t);
 
 static void TownTickHandler(Town *t)
 {
-	if (HasBit(t->flags, TOWN_IS_GROWING)) {
+	if (t->IsGrowing()) {
 		int i = t->grow_counter - 1;
 		if (i < 0) {
 			if (GrowTown(t)) {

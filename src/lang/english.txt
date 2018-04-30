@@ -382,14 +382,14 @@ STR_SETTINGS_MENU_CONFIG_SETTINGS_TREE                          :Settings
 STR_SETTINGS_MENU_SCRIPT_SETTINGS                               :AI/Game script settings
 STR_SETTINGS_MENU_NEWGRF_SETTINGS                               :NewGRF settings
 STR_SETTINGS_MENU_TRANSPARENCY_OPTIONS                          :Transparency options
-STR_SETTINGS_MENU_ZONING                                        :Zoning
+STR_SETTINGS_MENU_ZONING                                        :Zoning Toolbar
 STR_SETTINGS_MENU_TOWN_NAMES_DISPLAYED                          :Town names displayed
 STR_SETTINGS_MENU_STATION_NAMES_DISPLAYED                       :Station names displayed
 STR_SETTINGS_MENU_WAYPOINTS_DISPLAYED                           :Waypoint names displayed
 STR_SETTINGS_MENU_SIGNS_DISPLAYED                               :Signs displayed
 STR_SETTINGS_MENU_SHOW_COMPETITOR_SIGNS                         :Competitor signs and names displayed
 STR_SETTINGS_MENU_FULL_ANIMATION                                :Full animation
-STR_SETTINGS_MENU_RAIL_FENCES                                   :Rail fences
+STR_SETTINGS_MENU_RAIL_FENCES                                   :Rail fences displayed
 STR_SETTINGS_MENU_FULL_DETAIL                                   :Full detail
 STR_SETTINGS_MENU_TRANSPARENT_BUILDINGS                         :Transparent buildings
 STR_SETTINGS_MENU_TRANSPARENT_SIGNS                             :Transparent signs
@@ -485,7 +485,7 @@ STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Fully zoomed in
 STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Default zoom screenshot
 STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Whole map screenshot
 STR_ABOUT_MENU_FLAT_MINIMAP_SCREENSHOT                          :Flat minimap screenshot
-STR_ABOUT_MENU_FLAT_HEIGHTMAP_SCREENSHOT                        :Flat heightmap screenshot
+STR_ABOUT_MENU_FLAT_HEIGHTMAP_SCREENSHOT                        :Flat topography screenshot
 STR_ABOUT_MENU_FLAT_INDUSTRYMAP_SCREENSHOT                      :Flat industry map screenshot
 STR_ABOUT_MENU_FLAT_OWNERMAP_SCREENSHOT                         :Flat owner map screenshot
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :About 'OpenTTD'
@@ -589,7 +589,7 @@ STR_GRAPH_COMPANY_PERFORMANCE_RATINGS_CAPTION                   :{WHITE}Company 
 STR_GRAPH_COMPANY_VALUES_CAPTION                                :{WHITE}Company values
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Cargo Payment Rates
-STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}{STATION} - Waiting Cargo History
+STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}{STATION} - Waiting Cargo
 STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Average transit speed (km/h)
 STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Payment for delivering 1 unit (or 1,000 litres) of cargo a distance of 200 squares
 STR_GRAPH_STATION_CARGO_X_LABEL                                 :{TINY_FONT}{BLACK}Development over the last 48 days
@@ -1282,8 +1282,8 @@ STR_CONFIG_SETTING_DYNAMIC_ENGINES_EXISTING_VEHICLES            :{WHITE}Changing
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE                   :Infrastructure maintenance: {STRING2}
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE_HELPTEXT          :When enabled, infrastructure causes maintenance costs. The cost grows over-proportional with the network size, thus affecting bigger companies more than smaller ones
 
-STR_CONFIG_SETTING_CHUNNEL                                      :Allow construction of tunnels under water: {STRING2}
-STR_CONFIG_SETTING_CHUNNEL_HELPTEXT                             :When enabled, tunnels can be constructed under bodies of water at sea level. This requires the tunnel ends to be least 3 tiles away from the shore.
+STR_CONFIG_SETTING_CHUNNEL                                      :Allow construction of undersea tunnels: {STRING2}
+STR_CONFIG_SETTING_CHUNNEL_HELPTEXT                             :When enabled, tunnels can be constructed below the sea bed. This requires the tunnel ends to be least 3 tiles away from the shore.
 
 STR_CONFIG_SETTING_NEVER_EXPIRE_AIRPORTS                        :Airports never expire: {STRING2}
 STR_CONFIG_SETTING_NEVER_EXPIRE_AIRPORTS_HELPTEXT               :Enabling this setting makes each airport type stay available forever after its introduction
@@ -5640,9 +5640,10 @@ STR_VIEWPORT_WAYPOINT_TINY                                      :{TINY_FONT}{WAY
 # Tile tooltips
 STR_TILE_TOOLTIP_INDUSTRY_NAME                                  :{BLACK}{INDUSTRY}
 STR_TILE_TOOLTIP_STATION_NAME_FEATURES                          :{BLACK}{STATION} {STATION_FEATURES}
-STR_TILE_TOOLTIP_CARGO_ITEM                                     :{CARGO_LONG} ({NUM}%)
+STR_TILE_TOOLTIP_CARGO_ITEM                                     :{CARGO_LONG}{NBSP}({NUM}%)
 STR_TILE_TOOLTIP_WAYPOINT_NAME                                  :{BLACK}{WAYPOINT}
-STR_TILE_TOOLTIP_TOWN_NAME_POP                                  :{BLACK}{TOWN}{}({COMMA})
+STR_TILE_TOOLTIP_TOWN_NAME_POP                                  :{BLACK}{TOWN}{}{COMMA}
+STR_TILE_TOOLTIP_TOWN_NAME_POP_GROWTH                           :{BLACK}{TOWN}{}{COMMA}{NBSP}({COMMA}{NBSP}day{P "" s})
 STR_TILE_TOOLTIP_COMPANY_NAME                                   :{BLACK}{COMPANY}
 
 # Simple strings to get specific types of data

@@ -233,6 +233,7 @@ STR_TOOLTIP_GROUP_ORDER                                         :{BLACK}Gruppier
 STR_TOOLTIP_SORT_ORDER                                          :{BLACK}Sortierreihenfolge auswählen (absteigend/aufsteigend)
 STR_TOOLTIP_SORT_CRITERIA                                       :{BLACK}Sortierkriterien auswählen
 STR_TOOLTIP_FILTER_CRITERIA                                     :{BLACK}Filterkriterien auswählen
+STR_BUTTON_COVERAGE                                             :{BLACK}Einzugsgebiet
 STR_BUTTON_SORT_BY                                              :{BLACK}Sortieren nach
 STR_BUTTON_LOCATION                                             :{BLACK}Standort
 STR_BUTTON_RENAME                                               :{BLACK}Umbenennen
@@ -274,6 +275,7 @@ STR_MEASURE_LENGTH                                              :{BLACK}Länge: 
 STR_MEASURE_AREA                                                :{BLACK}Gebiet: {NUM} × {NUM}
 STR_MEASURE_LENGTH_HEIGHTDIFF                                   :{BLACK}Länge: {NUM}{}Höhenunterschied: {HEIGHT}
 STR_MEASURE_AREA_HEIGHTDIFF                                     :{BLACK}Gebiet: {NUM} × {NUM}{}Höhenunterschied: {HEIGHT}
+STR_MEASURE_DIST_HEIGHTDIFF                                     :{BLACK}Manhattan-Distanz: {NUM}{}Luftliniendistanz: {NUM}{}Distanz vom Kartenrand: {NUM}{}Höhe über dem Meeresspiegel: {HEIGHT}{}Höhenunterschied: {HEIGHT}
 
 
 # These are used in buttons
@@ -287,6 +289,7 @@ STR_SORT_BY_TRANSPORTED                                         :Transportiert
 STR_SORT_BY_NUMBER                                              :Nummer
 STR_SORT_BY_PROFIT_LAST_YEAR                                    :Gewinn im letzten Jahr
 STR_SORT_BY_PROFIT_THIS_YEAR                                    :Gewinn in diesem Jahr
+STR_SORT_BY_PROFIT_LIFETIME                                     :Gewinn insgesamt
 STR_SORT_BY_AGE                                                 :Alter
 STR_SORT_BY_RELIABILITY                                         :Zuverlässigkeit
 STR_SORT_BY_TOTAL_CAPACITY_PER_CARGOTYPE                        :Gesamtkapazität pro Fracht
@@ -377,12 +380,14 @@ STR_SETTINGS_MENU_CONFIG_SETTINGS_TREE                          :Einstellungen
 STR_SETTINGS_MENU_SCRIPT_SETTINGS                               :KI- / Skripteinstellungen
 STR_SETTINGS_MENU_NEWGRF_SETTINGS                               :NewGRF-Einstellungen
 STR_SETTINGS_MENU_TRANSPARENCY_OPTIONS                          :Transparenzeinstellungen
+STR_SETTINGS_MENU_ZONING                                        :Zonen Werkzeugleiste
 STR_SETTINGS_MENU_TOWN_NAMES_DISPLAYED                          :Städtenamen anzeigen
 STR_SETTINGS_MENU_STATION_NAMES_DISPLAYED                       :Stationsnamen anzeigen
 STR_SETTINGS_MENU_WAYPOINTS_DISPLAYED                           :Wegpunktnamen anzeigen
 STR_SETTINGS_MENU_SIGNS_DISPLAYED                               :Schilder anzeigen
 STR_SETTINGS_MENU_SHOW_COMPETITOR_SIGNS                         :Fremde Stationsnamen & Schilder zeigen
 STR_SETTINGS_MENU_FULL_ANIMATION                                :Vollständige Animation
+STR_SETTINGS_MENU_RAIL_FENCES                                   :Eisenbahnzäune anzeigen
 STR_SETTINGS_MENU_FULL_DETAIL                                   :Vollständige Detailansicht
 STR_SETTINGS_MENU_TRANSPARENT_BUILDINGS                         :Transparenz für Gebäude
 STR_SETTINGS_MENU_TRANSPARENT_SIGNS                             :Transparenz für Schilder
@@ -401,6 +406,7 @@ STR_MAP_MENU_MAP_OF_WORLD                                       :Weltkarte
 STR_MAP_MENU_EXTRA_VIEW_PORT                                    :Zusatzansicht
 STR_MAP_MENU_LINGRAPH_LEGEND                                    :Frachtverbindungen
 STR_MAP_MENU_SIGN_LIST                                          :Schilderliste
+STR_MAP_MENU_PLAN_LIST                                          :Planliste
 
 ############ range for town menu starts
 STR_TOWN_MENU_TOWN_DIRECTORY                                    :Städteverzeichnis
@@ -476,6 +482,10 @@ STR_ABOUT_MENU_SCREENSHOT                                       :Screenshot (Sta
 STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Screenshot in Nahaufnahme
 STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Screenshot mit normalem Zoom
 STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Riesiger Screenshot (Standard: Strg+G)
+STR_ABOUT_MENU_FLAT_MINIMAP_SCREENSHOT                          :Flacher Minimap-Screenshot
+STR_ABOUT_MENU_FLAT_HEIGHTMAP_SCREENSHOT                        :Flacher Topographie-Screenshot
+STR_ABOUT_MENU_FLAT_INDUSTRYMAP_SCREENSHOT                      :Flacher Industriekarten-Screenshot
+STR_ABOUT_MENU_FLAT_OWNERMAP_SCREENSHOT                         :Flacher Eigentümerkarten-Screenshot
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :Über OpenTTD
 STR_ABOUT_MENU_SPRITE_ALIGNER                                   :Sprite-Ausrichtung
 STR_ABOUT_MENU_TOGGLE_BOUNDING_BOXES                            :Hüllquader anzeigen/ausblenden
@@ -577,8 +587,11 @@ STR_GRAPH_COMPANY_PERFORMANCE_RATINGS_CAPTION                   :{WHITE}Bewertun
 STR_GRAPH_COMPANY_VALUES_CAPTION                                :{WHITE}Firmenwert
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Frachtbeförderungspreise
+STR_GRAPH_STATION_CARGO_CAPTION                                 :{WHITE}{STATION} - Wartende Frachteinheiten
 STR_GRAPH_CARGO_PAYMENT_RATES_X_LABEL                           :{TINY_FONT}{BLACK}Mittlere Transportgeschwindigkeit (km/h)
 STR_GRAPH_CARGO_PAYMENT_RATES_TITLE                             :{TINY_FONT}{BLACK}Zahlung für 1 gelieferte Einheit (oder 1.000 Liter) Fracht über eine Strecke von 200 Feldern
+STR_GRAPH_STATION_CARGO_X_LABEL                                 :{TINY_FONT}{BLACK}Entwicklung über die letzten 48 Tage
+STR_GRAPH_STATION_CARGO_TITLE                                   :{TINY_FONT}{BLACK}Noch nicht beförderte Frachteinheiten
 STR_GRAPH_CARGO_ENABLE_ALL                                      :{TINY_FONT}{BLACK}Alle auswählen
 STR_GRAPH_CARGO_DISABLE_ALL                                     :{TINY_FONT}{BLACK}Alle abwählen
 STR_GRAPH_CARGO_TOOLTIP_ENABLE_ALL                              :{BLACK}Zeige alle Frachtarten im Frachtraten-Diagramm an
@@ -754,6 +767,7 @@ STR_SMALLMAP_INDUSTRY                                           :{TINY_FONT}{STR
 STR_SMALLMAP_LINKSTATS                                          :{TINY_FONT}{STRING}
 STR_SMALLMAP_COMPANY                                            :{TINY_FONT}{COMPANY}
 STR_SMALLMAP_TOWN                                               :{TINY_FONT}{WHITE}{TOWN}
+STR_SMALLMAP_SCREENSHOT                                         :{BLACK}Screenshot
 STR_SMALLMAP_DISABLE_ALL                                        :{BLACK}Alles ausblenden
 STR_SMALLMAP_ENABLE_ALL                                         :{BLACK}Alles einblenden
 STR_SMALLMAP_SHOW_HEIGHT                                        :{BLACK}Zeige Höhe
@@ -768,8 +782,9 @@ STR_SMALLMAP_TOOLTIP_ENABLE_ALL_CARGOS                          :{BLACK}Zeige al
 # Status bar messages
 STR_STATUSBAR_TOOLTIP_SHOW_LAST_NEWS                            :{BLACK}Letzte Nachricht oder letzten Bericht anzeigen
 STR_STATUSBAR_COMPANY_NAME                                      :{SILVER}- -  {COMPANY}  - -
-STR_STATUSBAR_PAUSED                                            :{YELLOW}*  *  ANGEHALTEN  *  *
-STR_STATUSBAR_AUTOSAVE                                          :{RED}Autosicherung
+STR_STATUSBAR_PAUSED                                            :{YELLOW}*  *  PAUSIERT  *  *
+STR_STATUSBAR_PAUSED_LINK_GRAPH                                 :{ORANGE}*  *  PAUSIERT (Warte auf Update der Warenverteilung) *  *
+STR_STATUSBAR_AUTOSAVE                                          :{RED}Automatische Sicherung
 STR_STATUSBAR_SAVING_GAME                                       :{RED}*  *  SPEICHERE SPIEL  *  *
 
 # News message history
@@ -1219,6 +1234,10 @@ STR_CONFIG_SETTING_SIGNALSIDE_DRIVING_SIDE                      :Auf der Straße
 STR_CONFIG_SETTING_SIGNALSIDE_RIGHT                             :Auf der rechten Seite
 STR_CONFIG_SETTING_SHOWFINANCES                                 :Zeige Firmenfinanzen am Ende des Jahres: {STRING}
 STR_CONFIG_SETTING_SHOWFINANCES_HELPTEXT                        :Blende am Ende jedes Jahres automatisch die Einkommensübersicht des Unternehmes ein, um eine schnelle Übersicht über den finanziellen Status zu bekommen
+STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME                          :Benutze Name der {STRING} für automatisch erstellte Gruppen
+STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_HELPTEXT                 :Benutzt den ausgewählten Namen des ersten und letzten Ziels eines Fahrzeugs um automatisch eine Gruppe zu erstellen
+STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_TOWN                     :Stadt
+STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_STATION                  :Station
 STR_CONFIG_SETTING_NONSTOP_BY_DEFAULT                           :Aufträge standardmäßig ohne Zwischenhalt anfahren: {STRING}
 STR_CONFIG_SETTING_NONSTOP_BY_DEFAULT_HELPTEXT                  :Normalerweise hält ein Fahrzeug an jeder Station, die es passiert. Wird diese Einstellung aktiviert, hält das Fahrzeug nur an den Stationen, die explizit in den Aufträgen angeführt sind. Bedenke, dass dieses nur das Standard-Verhalten für neue Aufträge beschreibt. Einzelne Aufträge können explizit auf jedes gewünschte Verhalten geändert werden
 STR_CONFIG_SETTING_STOP_LOCATION                                :Neue Aufträge: Zug hält standardmäßig {STRING} des Bahnsteigs
@@ -1259,6 +1278,9 @@ STR_CONFIG_SETTING_STOP_ON_COMPETITOR_ROAD_HELPTEXT             :Erlaube die Err
 STR_CONFIG_SETTING_DYNAMIC_ENGINES_EXISTING_VEHICLES            :{WHITE}Diese Einstellung kann nicht geändert werden solange Fahrzeuge im Spiel sind
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE                   :Instandhaltung der Infrastruktur: {STRING}
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE_HELPTEXT          :Unterhaltskosten für Infrastruktur einschalten. Die Unterhaltskosten wachsen mit zunehmender Netzwerkgröße überproportional an, so dass sie größere Firmen stärker belasten als kleinere
+
+STR_CONFIG_SETTING_CHUNNEL                                      :Bau von Unterwassertunneln erlauben: {STRING}
+STR_CONFIG_SETTING_CHUNNEL_HELPTEXT                             :Wird diese Option aktiviert, können Tunnel unter dem Meeresgrund gebaut werden. Um dies zu ermöglichen müssen die Tunnelenden mindestens 3 Felder von der Küsten entfernt sein.
 
 STR_CONFIG_SETTING_NEVER_EXPIRE_AIRPORTS                        :Flughäfen veralten nie: {STRING}
 STR_CONFIG_SETTING_NEVER_EXPIRE_AIRPORTS_HELPTEXT               :Wird diese Option aktiviert, können Flughäfen, die einmal eingeführt wurden, das ganze Spiel über gebaut werden und veralten nie
@@ -1318,6 +1340,8 @@ STR_CONFIG_SETTING_VARIETY                                      :Größe der Gel
 STR_CONFIG_SETTING_VARIETY_HELPTEXT                             :(nur TerraGenesis) Beinflusst, ob die Karte sowohl bergige als auch ebene Gegenden enthält. Weil dieses die Karte nur ebener macht, sollten andere Einstellungen auf bergig gesetzt werden
 STR_CONFIG_SETTING_RIVER_AMOUNT                                 :Anzahl Flüsse: {STRING}
 STR_CONFIG_SETTING_RIVER_AMOUNT_HELPTEXT                        :Wähle die Anzahl zu erzeugender Flüsse
+STR_CONFIG_SETTING_MIN_RIVER_LENGTH                             :Mindestlänge für Flüsse: {STRING}
+STR_CONFIG_SETTING_MIN_RIVER_LENGTH_HELPTEXT                    :Die Mindestlänge die ein Fluss haben muss um erzeugt zu werden
 STR_CONFIG_SETTING_TREE_PLACER                                  :Algorithmus zur Baumplatzierung: {STRING}
 STR_CONFIG_SETTING_TREE_PLACER_HELPTEXT                         :Wähle die Verteilung der Bäume auf der Karte: 'Original' pflanzt die Bäume gleichmäßig verteilt, 'Verbessert' pflanzt sie in Gruppen
 STR_CONFIG_SETTING_TREE_PLACER_NONE                             :Keiner

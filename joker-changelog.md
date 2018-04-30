@@ -2,6 +2,11 @@
 
 * * *
 
+### v1.24.5 (2018-04-30)
+* A few string corrections and German translations.
+* Change maximum size of tile tooltips and show growth rate in town tooltip.
+* Show town name in standard size until we truly switch to a different view mode. All zoom rates that still show sprites should keep the normal town name size.
+
 ### v1.24.4 (2018-04-28)
 * Fix several crashes caused by switch from std::list to std::deque due to invalid iterators
 

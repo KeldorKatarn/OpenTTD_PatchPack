@@ -1234,7 +1234,7 @@ STR_CONFIG_SETTING_SIGNALSIDE_DRIVING_SIDE                      :Auf der Straße
 STR_CONFIG_SETTING_SIGNALSIDE_RIGHT                             :Auf der rechten Seite
 STR_CONFIG_SETTING_SHOWFINANCES                                 :Zeige Firmenfinanzen am Ende des Jahres: {STRING}
 STR_CONFIG_SETTING_SHOWFINANCES_HELPTEXT                        :Blende am Ende jedes Jahres automatisch die Einkommensübersicht des Unternehmes ein, um eine schnelle Übersicht über den finanziellen Status zu bekommen
-STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME                          :Benutze Name der {STRING2} für automatisch erstellte Gruppen
+STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME                          :Benutze Name der {STRING} für automatisch erstellte Gruppen
 STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_HELPTEXT                 :Benutzt den ausgewählten Namen des ersten und letzten Ziels eines Fahrzeugs um automatisch eine Gruppe zu erstellen
 STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_TOWN                     :Stadt
 STR_CONFIG_SETTING_SPECIFIC_GROUP_NAME_STATION                  :Station
@@ -1279,7 +1279,7 @@ STR_CONFIG_SETTING_DYNAMIC_ENGINES_EXISTING_VEHICLES            :{WHITE}Diese Ei
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE                   :Instandhaltung der Infrastruktur: {STRING}
 STR_CONFIG_SETTING_INFRASTRUCTURE_MAINTENANCE_HELPTEXT          :Unterhaltskosten für Infrastruktur einschalten. Die Unterhaltskosten wachsen mit zunehmender Netzwerkgröße überproportional an, so dass sie größere Firmen stärker belasten als kleinere
 
-STR_CONFIG_SETTING_CHUNNEL                                      :Bau von Unterwassertunneln erlauben: {STRING2}
+STR_CONFIG_SETTING_CHUNNEL                                      :Bau von Unterwassertunneln erlauben: {STRING}
 STR_CONFIG_SETTING_CHUNNEL_HELPTEXT                             :Wird diese Option aktiviert, können Tunnel unter dem Meeresgrund gebaut werden. Um dies zu ermöglichen müssen die Tunnelenden mindestens 3 Felder von der Küsten entfernt sein.
 
 STR_CONFIG_SETTING_NEVER_EXPIRE_AIRPORTS                        :Flughäfen veralten nie: {STRING}
@@ -1340,7 +1340,7 @@ STR_CONFIG_SETTING_VARIETY                                      :Größe der Gel
 STR_CONFIG_SETTING_VARIETY_HELPTEXT                             :(nur TerraGenesis) Beinflusst, ob die Karte sowohl bergige als auch ebene Gegenden enthält. Weil dieses die Karte nur ebener macht, sollten andere Einstellungen auf bergig gesetzt werden
 STR_CONFIG_SETTING_RIVER_AMOUNT                                 :Anzahl Flüsse: {STRING}
 STR_CONFIG_SETTING_RIVER_AMOUNT_HELPTEXT                        :Wähle die Anzahl zu erzeugender Flüsse
-STR_CONFIG_SETTING_MIN_RIVER_LENGTH                             :Mindestlänge für Flüsse: {STRING2}
+STR_CONFIG_SETTING_MIN_RIVER_LENGTH                             :Mindestlänge für Flüsse: {STRING}
 STR_CONFIG_SETTING_MIN_RIVER_LENGTH_HELPTEXT                    :Die Mindestlänge die ein Fluss haben muss um erzeugt zu werden
 STR_CONFIG_SETTING_TREE_PLACER                                  :Algorithmus zur Baumplatzierung: {STRING}
 STR_CONFIG_SETTING_TREE_PLACER_HELPTEXT                         :Wähle die Verteilung der Bäume auf der Karte: 'Original' pflanzt die Bäume gleichmäßig verteilt, 'Verbessert' pflanzt sie in Gruppen

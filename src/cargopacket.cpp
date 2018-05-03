@@ -543,6 +543,7 @@ bool VehicleCargoList::Stage(bool accepted, StationID current_station, StationID
 	this->packets = std::move(transfer_deliver);
 	this->packets.insert(this->packets.end(), keep.begin(), keep.end());
 	this->AssertCountConsistency();
+	this->InvalidateCache();
 	return this->action_counts[MTA_DELIVER] > 0 || this->action_counts[MTA_TRANSFER] > 0;
 }
 

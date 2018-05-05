@@ -7,10 +7,11 @@
 
 /** @file logic_signals_sl.cpp Implementation of saving and loading of signal programs. */
 
-#include "../logic_signals.h"
+#include "logic_signals.h"
 #include "saveload.h"
 
-struct TempStorage {
+struct TempStorage
+{
 	SignalReference from;
 	SignalReference to;
 };
@@ -26,8 +27,10 @@ static const SaveLoad _signal_program_desc[] = {
 };
 
 static const SaveLoad _signal_link_desc[] = {
-	SLE_CONDVAR(TempStorage, from, SLE_UINT32, SL_PATCH_PACK_1_5, SL_MAX_VERSION),
-	SLE_CONDVAR(TempStorage, to, SLE_UINT32, SL_PATCH_PACK_1_5, SL_MAX_VERSION),
+	SLE_CONDVAR(TempStorage, from, SLE_FILE_U32 | SLE_VAR_U64, SL_PATCH_PACK_1_5, SL_PATCH_PACK_1_25-1),
+	SLE_CONDVAR(TempStorage, from, SLE_UINT64, SL_PATCH_PACK_1_25, SL_MAX_VERSION),
+	SLE_CONDVAR(TempStorage, to, SLE_FILE_U32 | SLE_VAR_U64, SL_PATCH_PACK_1_5, SL_PATCH_PACK_1_25-1),
+	SLE_CONDVAR(TempStorage, to, SLE_UINT64, SL_PATCH_PACK_1_25, SL_MAX_VERSION),
 	SLE_END()
 };
 
@@ -38,7 +41,7 @@ static void Save_SPRG()
 {
 	int index = 0;
 
-	for (SignalProgramList::iterator it = _signal_program_list.begin(); it != _signal_program_list.end(); it++) {
+	for (auto it = _signal_program_list.begin(); it != _signal_program_list.end(); ++it) {
 		SlSetArrayIndex(index++);
 		SlObject(it->second, _signal_program_desc);
 	}
@@ -52,7 +55,7 @@ static void Load_SPRG()
 	int index;
 
 	while ((index = SlIterateArray()) != -1) {
-		SignalProgram *program = new SignalProgram();
+		const auto program = new SignalProgram();
 		SlObject(program, _signal_program_desc);
 		_signal_program_list[GetSignalReference(program->tile, program->track)] = program;
 	}
@@ -63,10 +66,10 @@ static void Load_SPRG()
  */
 static void Save_SLNK()
 {
-	TempStorage storage;
+	TempStorage storage {};
 	int index = 0;
 
-	for (SignalLinkList::iterator it = _signal_link_list.begin(); it != _signal_link_list.end(); it++) {
+	for (auto it = _signal_link_list.begin(); it != _signal_link_list.end(); ++it) {
 		SlSetArrayIndex(index++);
 		storage.from = it->first;
 		storage.to = it->second;
@@ -79,18 +82,19 @@ static void Save_SLNK()
  */
 static void Load_SLNK()
 {
-	TempStorage storage;
+	TempStorage storage {};
 	int index;
 
 	while ((index = SlIterateArray()) != -1) {
 		SlObject(&storage, _signal_link_desc);
-		_signal_link_list[storage.from] = storage.to;
-		SignalProgram *program = FindSignalProgram(GetTileFromSignalReference(storage.to), GetTrackFromSignalReference(storage.to));
-		program->AddLink(GetTileFromSignalReference(storage.from), GetTrackFromSignalReference(storage.from), false);
+		_signal_link_list.push_back(std::make_pair(storage.from, storage.to));
+		SignalProgram* program = FindSignalProgram(GetTileFromSignalReference(storage.to),
+												   GetTrackFromSignalReference(storage.to));
+		program->AddLink(GetTileFromSignalReference(storage.from), GetTrackFromSignalReference(storage.from));
 	}
 }
 
 extern const ChunkHandler _logic_signal_handlers[] = {
-	{  'SPRG', Save_SPRG, Load_SPRG, nullptr, nullptr, CH_ARRAY },
-	{  'SLNK', Save_SLNK, Load_SLNK, nullptr, nullptr, CH_ARRAY | CH_LAST }
+	{ 'SPRG', Save_SPRG, Load_SPRG, nullptr, nullptr, CH_ARRAY },
+	{ 'SLNK', Save_SLNK, Load_SLNK, nullptr, nullptr, CH_ARRAY | CH_LAST }
 };

@@ -70,6 +70,8 @@ void Overlays::RefreshLogicSignalOverlay() const
 		for (auto reference : signal_references) {
 			MarkTileDirtyByTile(GetTileFromSignalReference(reference));
 		}
+
+		MarkTileDirtyByTile(this->logic_signal_program->tile);
 	}
 }
 
@@ -92,6 +94,13 @@ bool Overlays::IsTileLogicSignalInput(const TileInfo* ti)
 	return std::any_of(signal_references.begin(), signal_references.end(), [&](auto signal_reference) {
 		return GetTileFromSignalReference(signal_reference) == ti->tile;
 	});
+}
+
+bool Overlays::IsTileLogicSignalOutput(const TileInfo* ti) const
+{
+	if (this->logic_signal_program == nullptr) return false;
+
+	return ti->tile == this->logic_signal_program->tile;
 };
 
 bool Overlays::IsTileInCatchmentArea(const TileInfo* ti, CatchmentType type) 

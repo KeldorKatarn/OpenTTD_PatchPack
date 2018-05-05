@@ -4868,6 +4868,8 @@ void DrawOverlay(const TileInfo *ti, TileType tt)
 {
 	if (Overlays::Instance()->IsTileLogicSignalInput(ti)) {
 		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_RED);
+	} else if (Overlays::Instance()->IsTileLogicSignalOutput(ti)) {
+		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_BLUE);
 	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, PRODUCTION)) { 
 		DrawTileSelectionRect(ti, PALETTE_SEL_TILE_BLUE);
 	} else if (Overlays::Instance()->IsTileInCatchmentArea(ti, ACCEPTANCE)) { 

@@ -8,28 +8,22 @@
 /** @file logic_signals.cpp Utility functions of the Logic Signals patch. */
 
 #include "logic_signals.h"
-#include "rail_map.h"
-#include "viewport_func.h"
-#include "tile_cmd.h"
-#include "window_func.h"
 #include "overlay_cmd.h"
+#include "rail_map.h"
+#include "tile_cmd.h"
+#include "viewport_func.h"
+#include "window_func.h"
+
+SignalProgramList _signal_program_list; //!< List of all signal programs.
+SignalLinkList _signal_link_list;       //!< List of all links between signals.
 
 /**
- * List of all signal programs.
- */
-SignalProgramList _signal_program_list;
-/**
- * List of all links between signals.
- */
-SignalLinkList _signal_link_list;
-
-/**
- * Remove any nasty foul-smelling signal programs taking up precious RAM.
+ * Remove all signal programs.
  */
 void FreeAllSignalPrograms()
 {
-	for (SignalProgramList::iterator it = _signal_program_list.begin(); it != _signal_program_list.end(); it++) {
-		SignalProgram *program = it->second;
+	for (auto it = _signal_program_list.begin(); it != _signal_program_list.end(); ++it) {
+		SignalProgram* program = it->second;
 		delete program;
 	}
 
@@ -39,6 +33,7 @@ void FreeAllSignalPrograms()
 
 /**
  * Determine the color of signals at the given tile/track.
+ * 
  * @param tile The tile where the tested signal is located.
  * @param track The track where the tested signal is located.
  * @return Red if either of the two possible signals is red.
@@ -47,42 +42,39 @@ SignalState DetermineSignalState(TileIndex tile, Track track)
 {
 	assert(HasSignalOnTrack(tile, track));
 
-	uint signal_states = GetSignalStates(tile);
-	byte signal_mask_for_track = SignalOnTrack(track);
-	byte present_signals_on_tile = GetPresentSignals(tile);
+	const uint signal_states = GetSignalStates(tile);
+	const byte signal_mask_for_track = SignalOnTrack(track);
+	const byte present_signals_on_tile = GetPresentSignals(tile);
 
-	byte present_signals_on_track = signal_mask_for_track & present_signals_on_tile;
-	byte signal_states_on_track = present_signals_on_track & signal_states;
+	const byte present_signals_on_track = signal_mask_for_track & present_signals_on_tile;
+	const byte signal_states_on_track = present_signals_on_track & signal_states;
 
-	// We return red if one of the two possibly present signals is red. Both need to be green for us to accept the tile as green.
+	// We return red if one of the two possibly present signals is red.
+	// Both need to be green for us to accept the tile as green.
 	return (signal_states_on_track == present_signals_on_track) ? SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;
 }
 
 /**
  * Set the signal state for the given tile and track to the specified state.
  * Both possible signals for the given tile/track are set to the given state.
+ * 
  * @param tile Tile where the changed signal is located.
  * @param track Track where the changed signal is located.
  * @param state The new state to set to the signals.
  */
 void SetSignalStateForTrack(TileIndex tile, Track track, SignalState state)
 {
-	byte signal_mask_for_track = SignalOnTrack(track);
-	byte present_signals_on_tile = GetPresentSignals(tile);
+	const byte present_signals_on_tile = GetPresentSignals(tile);
 
 	if (state == SIGNAL_STATE_GREEN) {
 		SetSignalStates(tile, GetSignalStates(tile) | present_signals_on_tile);
-	}
-	else {
+	} else {
 		SetSignalStates(tile, GetSignalStates(tile) & ~present_signals_on_tile);
 	}
 }
 
 /**
  * Read a Track from a TileIndex.
- *
- * The author of this patch has no idea how this works or what it does. The code
- * is copied directly from GenericPlaceSignals function in rail_gui.cpp.
  *
  * @param tile The tile where to read the Track from.
  * @return The read Track
@@ -91,11 +83,13 @@ Track SignalTrackFromTile(TileIndex tile)
 {
 	TrackBits trackbits = TrackStatusToTrackBits(GetTileTrackStatus(tile, TRANSPORT_RAIL, 0));
 
-	if (trackbits & TRACK_BIT_VERT) { // N-S direction
+	if (trackbits & TRACK_BIT_VERT) {
+		// N-S direction
 		trackbits = (_tile_fract_coords.x <= _tile_fract_coords.y) ? TRACK_BIT_RIGHT : TRACK_BIT_LEFT;
 	}
 
-	if (trackbits & TRACK_BIT_HORZ) { // E-W direction
+	if (trackbits & TRACK_BIT_HORZ) {
+		// E-W direction
 		trackbits = (_tile_fract_coords.x + _tile_fract_coords.y <= 15) ? TRACK_BIT_UPPER : TRACK_BIT_LOWER;
 	}
 
@@ -110,7 +104,7 @@ Track SignalTrackFromTile(TileIndex tile)
  */
 SignalReference GetSignalReference(TileIndex tile, Track track)
 {
-	return tile | (((uint32) track) << 29);
+	return uint64(tile) | (uint64(track) << 32);
 }
 
 /**
@@ -120,7 +114,7 @@ SignalReference GetSignalReference(TileIndex tile, Track track)
  */
 TileIndex GetTileFromSignalReference(SignalReference key)
 {
-	return GB(key, 0, 29);
+	return GB(key, 0, 32);
 }
 
 /**
@@ -130,7 +124,7 @@ TileIndex GetTileFromSignalReference(SignalReference key)
  */
 Track GetTrackFromSignalReference(SignalReference key)
 {
-	return (Track) (key >> 29);
+	return static_cast<Track>(key >> 32);
 }
 
 /**
@@ -139,33 +133,32 @@ Track GetTrackFromSignalReference(SignalReference key)
  * @param track The track to search for
  * @return The corresponding signal program, or nullptr if not found.
  */
-static inline SignalProgram * DoFindSignalProgram(TileIndex tile, Track track)
+static SignalProgram* DoFindSignalProgram(TileIndex tile, Track track)
 {
-	SignalProgramList::iterator it = _signal_program_list.find(GetSignalReference(tile, track));
+	const auto found = _signal_program_list.find(GetSignalReference(tile, track));
 
-	if (it != _signal_program_list.end()) {
-		return it->second;
-	} else {
-		return nullptr;
-	}
+	return (found != _signal_program_list.end()) ? found->second : nullptr;
 }
 
 /**
- * Find a link from a signal at the given tile/track.
+ * Finds all links from a signal at the given tile/track.
  * @param tile The tile to search for.
  * @param track The track to search for.
- * @return The corresponding target where the link points to, if found, otherwise nullptr.
- * @bug This code returns nullptr (0) as a not-found value, but that is also valid for the first Tile/Track
+ * @return The corresponding targets where the link points to.
  */
-static inline SignalReference FindSignalLink(TileIndex tile, Track track)
+static std::list<SignalReference> FindSignalLinks(TileIndex tile, Track track)
 {
-	SignalLinkList::iterator it = _signal_link_list.find(GetSignalReference(tile, track));
+	const auto source = GetSignalReference(tile, track);
 
-	if (it != _signal_link_list.end()) {
-		return it->second;
-	} else {
-		return NULL; // TODO Fix this
+	std::list<SignalReference> targets;
+
+	for (const auto link : _signal_link_list) {
+		if (link.first == source) {
+			targets.push_back(link.second);
+		}
 	}
+
+	return targets;
 }
 
 /**
@@ -174,10 +167,12 @@ static inline SignalReference FindSignalLink(TileIndex tile, Track track)
  * @param track The track to search for.
  * @return The signal program if found, or nullptr.
  */
-SignalProgram * FindSignalProgram(TileIndex tile, Track track)
+SignalProgram* FindSignalProgram(TileIndex tile, Track track)
 {
-	SignalProgram *program = DoFindSignalProgram(tile, track);
+	SignalProgram* program = DoFindSignalProgram(tile, track);
+
 	assert(program != nullptr);
+
 	return program;
 }
 
@@ -190,56 +185,56 @@ SignalProgram * FindSignalProgram(TileIndex tile, Track track)
  */
 void RemoveSignalLink(TileIndex tile, Track track)
 {
-	SignalReference existing = FindSignalLink(tile, track);
+	auto targets = FindSignalLinks(tile, track);
 
-	if (existing != NULL) { // TODO Fix this
-		/* Remove from signal program */
-		SignalProgram *old_prog = FindSignalProgram(GetTileFromSignalReference(existing), GetTrackFromSignalReference(existing));
-		old_prog->RemoveLink(tile, track);
+	for (auto target : targets) {
+		SignalProgram* program = FindSignalProgram(GetTileFromSignalReference(target),
+												   GetTrackFromSignalReference(target));
+		program->RemoveLink(tile, track);
 
-		/* Remove from global list */
-		_signal_link_list.erase(GetSignalReference(tile, track));
-
-		/* Invalidate any windows which have this program open */
-		InvalidateWindowData(WC_SIGNAL_PROGRAM, existing);
+		// Invalidate any windows which have this program open.
+		InvalidateWindowData(WC_SIGNAL_PROGRAM, target);
 	}
 }
 
 /**
  * Create a new signal program at the given tile and track.
  * Used when a new logic signal is created.
+ * 
  * @param tile The tile of the logic signal
  * @param track The track of the logic signal
  * @return The newly created signal program
  */
-SignalProgram * CreateSignalProgram(TileIndex tile, Track track)
+SignalProgram* CreateSignalProgram(TileIndex tile, Track track)
 {
-	/* Existing program for same tile/track would be a bug */
+	// Existing program for same tile/track should not exist.
 	assert(DoFindSignalProgram(tile, track) == nullptr);
 
-	SignalProgram *program = new SignalProgram(tile, track);
+	const auto program = new SignalProgram(tile, track);
 	_signal_program_list[GetSignalReference(tile, track)] = program;
+
 	return program;
 }
 
 /**
  * Delete a signal program at the given tile and track.
+ * 
  * @param tile The tile of the logic signal
  * @param track The track of the logic signal
  */
 void DeleteSignalProgram(TileIndex tile, Track track)
 {
-	SignalReference key = GetSignalReference(tile, track);
+	const SignalReference signal_reference = GetSignalReference(tile, track);
 
-	/* Delete any windows which have this program open */
-	DeleteWindowById(WC_SIGNAL_PROGRAM, key, false);
+	// Delete any windows which have this program open.
+	DeleteWindowById(WC_SIGNAL_PROGRAM, signal_reference, false);
 
-	/* Remove the actual program and all links attached to it */
-	SignalProgram *program = FindSignalProgram(tile, track);
+	// Remove the actual program and all links attached to it.
+	SignalProgram* program = FindSignalProgram(tile, track);
 
 	Overlays::Instance()->HandleSignalProgramDeletion(program);
 
-	_signal_program_list.erase(key);
+	_signal_program_list.erase(signal_reference);
 	program->ClearAllLinks();
 
 	delete program;
@@ -247,6 +242,7 @@ void DeleteSignalProgram(TileIndex tile, Track track)
 
 /**
  * Used to create or delete signal programs at the given tile when the signal type changes.
+ * 
  * @param tile The tile where the change occurred.
  * @param track The track where the change occurred.
  * @param old_type The old type of the changed signal
@@ -260,15 +256,18 @@ void SignalTypeChanged(TileIndex tile, Track track, SignalType old_type, SignalT
 
 /**
  * Executed whenever signal state has changed by the main program.
+ * 
  * @param tile Tile where the change occurred
  * @param track Track where the change occurred
  * @param depth Recursion depth, starts at 1.
  */
 void SignalStateChanged(TileIndex tile, Track track, int depth)
 {
-	SignalReference link = FindSignalLink(tile, track);
-	if (link != NULL) { // TODO Fix this
-		SignalProgram *program = FindSignalProgram(GetTileFromSignalReference(link), GetTrackFromSignalReference(link));
+	auto targets = FindSignalLinks(tile, track);
+
+	for (auto target : targets) {
+		SignalProgram* program = FindSignalProgram(GetTileFromSignalReference(target),
+												   GetTrackFromSignalReference(target));
 		program->InputChanged(depth);
 	}
 }

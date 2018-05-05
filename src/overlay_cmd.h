@@ -39,6 +39,7 @@ public:
 	void Clear();
 
 	bool IsTileLogicSignalInput(const TileInfo* ti);
+	bool IsTileLogicSignalOutput(const TileInfo* ti) const;
 
 	bool IsTileInCatchmentArea(const TileInfo* ti, CatchmentType type);
 

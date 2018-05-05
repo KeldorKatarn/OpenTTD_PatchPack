@@ -66,7 +66,8 @@ struct SignalProgramWindow : Window
 	 */
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		uint32 p1 = 0, p2 = 0;
+		uint32 p1 = 0;
+		const uint32 p2 = 0;
 		bool changed = false;
 
 		SB(p1, 0, 3, program->track);

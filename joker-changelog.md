@@ -1,6 +1,14 @@
-## Joker's Patchpack Changelog
+## Joker's Patchpack Changelog v1.25.0
 
 * * *
+
+### v1.25.0 (2018-05-05)
+* Replace Win32 music driver.
+* Make it possible to always scroll stations calling at on departure boards.
+* Make it possible to stop road vehicles from slowing down in curves, so players are not punished for building "diagonal" roads while true diagonal roads don't exist.
+* Logic signals now work properly on all map sizes and allow signals to be inputs for multiple logic signals.
+* Bugfix: Show snow correctly on depot tiles.
+* Bugfix: Fix incorrect cargopacket cache because we're resetting the days in transit when transferring.
 
 ### v1.24.5 (2018-04-30)
 * A few string corrections and German translations.

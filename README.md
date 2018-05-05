@@ -1,4 +1,4 @@
-## Joker's Patchpack version v1.24.5
+## Joker's Patchpack version v1.25.0
 
 This is a collection of patches applied to [OpenTTD](http://www.openttd.org/)
 This patch pack is a collection of features created by various developers.

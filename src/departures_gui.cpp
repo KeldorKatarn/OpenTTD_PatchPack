@@ -129,11 +129,13 @@ public:
 		station(window_number),
 		departures(new DepartureList()),
 		arrivals(new DepartureList()),
-		entry_height(1 + FONT_HEIGHT_NORMAL + 1 + (_settings_client.gui.departure_larger_font ? FONT_HEIGHT_NORMAL : FONT_HEIGHT_SMALL) + 1 + 1),
 		tick_count(0),
 		calc_tick_countdown(0),
 		min_width(400)
 	{
+		const Dimension arrow_dimensions = GetSpriteSize(SPR_ARROW_DOWN);
+		this->entry_height = 1 + std::max(arrow_dimensions.height, uint(FONT_HEIGHT_NORMAL)) + 1 +
+							 (_settings_client.gui.departure_larger_font ? FONT_HEIGHT_NORMAL : FONT_HEIGHT_SMALL) + 1 + 1;
 		this->CreateNestedTree();
 		this->vscroll = this->GetScrollbar(WID_DB_SCROLLBAR);
 		this->FinishInitNested(window_number);

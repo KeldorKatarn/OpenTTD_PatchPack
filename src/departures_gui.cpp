@@ -872,14 +872,13 @@ void DeparturesWindow::DrawDeparturesListItems(const Rect &r) const
 			GetString(buffer, string, lastof(buffer));
 		} else {
 			buffer[0] = 0;
-			//SetDParam(0, d->terminus);
-			//GetString(scratch, STR_DEPARTURES_CALLING_AT_FIRST_STATION, lastof(scratch));
 		}
 
 		int list_width = (GetStringBoundingBox(buffer, _settings_client.gui.departure_larger_font ? FS_NORMAL : FS_SMALL)).width;
 
 		/* Draw the whole list if it will fit. Otherwise scroll it. */
-		if (list_width < text_right - (text_left + calling_at_width + 2)) {
+		if (!_settings_client.gui.departure_always_scroll &&
+			(list_width < text_right - (text_left + calling_at_width + 2))) {
 			ltr ? DrawString(text_left + calling_at_width + 2,                        text_right, bottom_y, buffer)
 				: DrawString(                       text_left, text_right - calling_at_width - 2, bottom_y, buffer);
 		} else {

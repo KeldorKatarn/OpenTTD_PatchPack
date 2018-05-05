@@ -1566,6 +1566,7 @@ static SettingsContainer &GetSettingsTree()
 				departureboards->Add(new SettingEntry("gui.departure_show_vehicle_type"));
 				departureboards->Add(new SettingEntry("gui.departure_show_vehicle_color"));
 				departureboards->Add(new SettingEntry("gui.departure_larger_font"));
+				departureboards->Add(new SettingEntry("gui.departure_always_scroll"));
 				departureboards->Add(new SettingEntry("gui.departure_destination_type"));
 				departureboards->Add(new SettingEntry("gui.departure_show_both"));
 				departureboards->Add(new SettingEntry("gui.departure_only_passengers"));

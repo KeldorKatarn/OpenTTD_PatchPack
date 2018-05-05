@@ -1566,7 +1566,7 @@ STR_CONFIG_SETTING_NOSERVICE_HELPTEXT                           :When enabled, v
 STR_CONFIG_SETTING_WAGONSPEEDLIMITS                             :Enable wagon speed limits: {STRING2}
 STR_CONFIG_SETTING_WAGONSPEEDLIMITS_HELPTEXT                    :When enabled, also use speed limits of wagons for deciding the maximum speed of a train
 STR_CONFIG_SETTING_SLOW_ROAD_VEHICLES_IN_CURVES                 :Road vehicles slow down in curves: {STRING2}
-STR_CONFIG_SETTING_SLOW_ROAD_VEHICLES_IN_CURVES_HELPTEXT        :When enabled, road vehicles slow down in curves.
+STR_CONFIG_SETTING_SLOW_ROAD_VEHICLES_IN_CURVES_HELPTEXT        :When enabled, road vehicles slow down in curves. (Only with realistic acceleration)
 STR_CONFIG_SETTING_TRAIN_SPEED_ADAPTION                         :Enable train speed adaption: {STRING2}
 STR_CONFIG_SETTING_TRAIN_SPEED_ADAPTION_HELPTEXT                :If enabled, faster trains behind slower trains slow down instead of catching up and stopping continuously.
 STR_CONFIG_SETTING_DISABLE_ELRAILS                              :Disable electric rails: {STRING2}
@@ -3600,6 +3600,8 @@ STR_CONFIG_DEPARTURE_VEHICLE_COLOR                              :Show vehicle ty
 STR_CONFIG_DEPARTURE_VEHICLE_COLOR_HELPTEXT                     :Whether to show vehicle type icons in silver
 STR_CONFIG_DEPARTURE_LARGER_FONT                                :Use larger font for stations called at on departure boards: {STRING2}
 STR_CONFIG_DEPARTURE_LARGER_FONT_HELPTEXT                       :Whether to use a larger font for lists of stations called at
+STR_CONFIG_DEPARTURE_ALWAYS_SCROLL                              :Always scroll stations called aton departure boards: {STRING2}
+STR_CONFIG_DEPARTURE_ALWAYS_SCROLL_HELPTEXT                     :Whether to always scroll stations called at or only when they do not fit into the window.
 STR_CONFIG_DEPARTURE_DESTINATION_TYPE                           :Show icons for destinations that are docks or airports: {STRING2}
 STR_CONFIG_DEPARTURE_DESTINATION_TYPE_HELPTEXT                  :Whether to show icons next to destinations that are docks or airports
 STR_CONFIG_DEPARTURE_SHOW_BOTH                                  :Show arrival and departure times on the same line: {STRING2}

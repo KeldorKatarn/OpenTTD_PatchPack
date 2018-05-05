@@ -132,6 +132,7 @@ struct GUISettings {
 	bool   departure_show_vehicle_type;      ///< whether to show vehicle type icons with departures
 	bool   departure_show_vehicle_color;     ///< whether to show vehicle type icons in silver instead of orange
 	bool   departure_larger_font;            ///< whether to show the calling at list in a larger font
+	bool   departure_always_scroll;          ///< whether to always scroll the calling at list
 	bool   departure_destination_type;       ///< whether to show destination types for ports and airports
 	bool   departure_show_both;              ///< whether to show departure and arrival times on the same line
 	bool   departure_only_passengers;        ///< whether to only show passenger services

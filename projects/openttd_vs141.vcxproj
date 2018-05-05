@@ -171,7 +171,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -227,7 +228,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -295,7 +297,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -353,7 +356,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>

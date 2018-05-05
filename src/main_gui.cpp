@@ -74,7 +74,7 @@ void HandleOnEditText(const char *str)
 #ifdef ENABLE_NETWORK
 	case 3: { // Give money, you can only give money in excess of loan
 		const Company *c = Company::GetIfValid(_local_company);
-		if (c == NULL) break;
+		if (c == nullptr) break;
 		Money money = min(c->money - c->current_loan, (Money)(atoi(str) / _currency->rate));
 
 		uint32 money_c = Clamp(ClampToI32(money), 0, 20000000); // Clamp between 20 million and 0
@@ -128,7 +128,7 @@ void ShowNetworkGiveMoneyWindow(CompanyID company)
 {
 	_rename_id = company;
 	_rename_what = 3;
-	ShowQueryString(STR_EMPTY, STR_NETWORK_GIVE_MONEY_CAPTION, 30, NULL, CS_NUMERAL, QSF_NONE);
+	ShowQueryString(STR_EMPTY, STR_NETWORK_GIVE_MONEY_CAPTION, 30, nullptr, CS_NUMERAL, QSF_NONE);
 }
 #endif /* ENABLE_NETWORK */
 
@@ -144,7 +144,7 @@ bool DoZoomInOutWindow(ZoomStateChange how, Window *w)
 {
 	ViewPort *vp;
 
-	assert(w != NULL);
+	assert(w != nullptr);
 	vp = w->viewport;
 
 	switch (how) {
@@ -178,7 +178,7 @@ bool DoZoomInOutWindow(ZoomStateChange how, Window *w)
 			w->viewport->follow_vehicle = INVALID_VEHICLE;
 			break;
 	}
-	if (vp != NULL) { // the vp can be null when how == ZOOM_NONE
+	if (vp != nullptr) { // the vp can be null when how == ZOOM_NONE
 		vp->virtual_left = w->viewport->scrollpos_x;
 		vp->virtual_top = w->viewport->scrollpos_y;
 	}
@@ -192,7 +192,7 @@ bool DoZoomInOutWindow(ZoomStateChange how, Window *w)
 
 void ZoomInOrOutToCursorWindow(bool in, Window *w)
 {
-	assert(w != NULL);
+	assert(w != nullptr);
 
 	if (_game_mode != GM_MENU) {
 		ViewPort *vp = w->viewport;
@@ -403,7 +403,7 @@ struct MainWindow : Window
 			case GHK_CHAT: // smart chat; send to team if any, otherwise to all
 				if (_networking) {
 					const NetworkClientInfo *cio = NetworkClientInfo::GetByClientID(_network_own_client_id);
-					if (cio == NULL) break;
+					if (cio == nullptr) break;
 
 					ShowNetworkChatQueryWindow(NetworkClientPreferTeamChat(cio) ? DESTTYPE_TEAM : DESTTYPE_BROADCAST, cio->client_playas);
 				}
@@ -416,7 +416,7 @@ struct MainWindow : Window
 			case GHK_CHAT_COMPANY: // send text to all team mates
 				if (_networking) {
 					const NetworkClientInfo *cio = NetworkClientInfo::GetByClientID(_network_own_client_id);
-					if (cio == NULL) break;
+					if (cio == nullptr) break;
 
 					ShowNetworkChatQueryWindow(DESTTYPE_TEAM, cio->client_playas);
 				}
@@ -478,7 +478,7 @@ struct MainWindow : Window
 
 	virtual void OnResize()
 	{
-		if (this->viewport != NULL) {
+		if (this->viewport != nullptr) {
 			NWidgetViewport *nvp = this->GetWidget<NWidgetViewport>(WID_M_VIEWPORT);
 			nvp->UpdateViewportCoordinates(this);
 			this->refresh = LINKGRAPH_DELAY;
@@ -556,7 +556,7 @@ static Hotkey global_hotkeys[] = {
 HotkeyList MainWindow::hotkeys("global", global_hotkeys);
 
 static WindowDesc _main_window_desc(
-	WDP_MANUAL, NULL, 0, 0,
+	WDP_MANUAL, nullptr, 0, 0,
 	WC_MAIN_WINDOW, WC_NONE,
 	0,
 	_nested_main_window_widgets, lengthof(_nested_main_window_widgets),

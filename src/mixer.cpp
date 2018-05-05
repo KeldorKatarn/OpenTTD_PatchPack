@@ -162,11 +162,11 @@ MixerChannel *MxAllocateChannel()
 	for (mc = _channels; mc != endof(_channels); mc++) {
 		if (!mc->active) {
 			free(mc->memory);
-			mc->memory = NULL;
+			mc->memory = nullptr;
 			return mc;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 void MxSetChannelRawSrc(MixerChannel *mc, int8 *mem, size_t size, uint rate, bool is16bit)

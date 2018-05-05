@@ -188,7 +188,7 @@ static bool TestBinaryConditionCommon(TraceRestrictItem item, bool input)
 
 /**
  * Test order condition
- * @p order may be NULL
+ * @p order may be nullptr
  */
 static bool TestOrderCondition(const Order *order, TraceRestrictItem item)
 {
@@ -228,7 +228,7 @@ static bool TestStationCondition(StationID station, TraceRestrictItem item)
 
 /**
  * Execute program on train and store results in out
- * @p v may not be NULL
+ * @p v may not be nullptr
  * @p out should be zero-initialised
  */
 void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInput &input, TraceRestrictProgramResult& out) const
@@ -299,7 +299,7 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 
 					case TRIT_COND_CARGO: {
 						bool have_cargo = false;
-						for (const Vehicle *v_iter = v; v_iter != NULL; v_iter = v_iter->Next()) {
+						for (const Vehicle *v_iter = v; v_iter != nullptr; v_iter = v_iter->Next()) {
 							if (v_iter->cargo_type == GetTraceRestrictValue(item) && v_iter->cargo_cap > 0) {
 								have_cargo = true;
 								break;
@@ -358,7 +358,7 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
  
 					case TRIT_COND_TRAIN_IN_SLOT: {
 						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
-						result = TestBinaryConditionCommon(item, slot != NULL && slot->IsOccupant(v->index));
+						result = TestBinaryConditionCommon(item, slot != nullptr && slot->IsOccupant(v->index));
 						break;
 					}
  
@@ -369,11 +369,11 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 						const TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
 						switch (static_cast<TraceRestrictSlotOccupancyCondAuxField>(GetTraceRestrictAuxField(item))) {
 							case TRSOCAF_OCCUPANTS:
-								result = TestCondition(slot != NULL ? (int)slot->occupants.size() : 0, condop, value);
+								result = TestCondition(slot != nullptr ? (int)slot->occupants.size() : 0, condop, value);
 								break;
 
 							case TRSOCAF_REMAINING:
-								result = TestCondition(slot != NULL ? slot->max_occupancy - (int)slot->occupants.size() : 0, condop, value);
+								result = TestCondition(slot != nullptr ? slot->max_occupancy - (int)slot->occupants.size() : 0, condop, value);
 								break;
 
 							default:
@@ -444,7 +444,7 @@ void TraceRestrictProgram::Execute(const Train* v, const TraceRestrictProgramInp
 					case TRIT_SLOT: {
 						if (!input.permitted_slot_operations) break;
 						TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GetTraceRestrictValue(item));
-						if (slot == NULL) break;
+						if (slot == nullptr) break;
 						switch (static_cast<TraceRestrictSlotCondOpField>(GetTraceRestrictCondOp(item))) {
 							case TRSCOF_ACQUIRE_WAIT:
 								if (input.permitted_slot_operations & TRPISP_ACQUIRE) {
@@ -512,7 +512,7 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 		if (IsTraceRestrictDoubleItem(item)) {
 			i++;
 			if (i >= size) {
-				return_cmd_error(STR_TRACE_RESTRICT_ERROR_OFFSET_TOO_LARGE); // instruction ran off end
+				return CommandError(STR_TRACE_RESTRICT_ERROR_OFFSET_TOO_LARGE); // instruction ran off end
 			}
 		}
 
@@ -521,12 +521,12 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 
 			if (type == TRIT_COND_ENDIF) {
 				if (condstack.empty()) {
-					return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_NO_IF); // else/endif with no starting if
+					return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_NO_IF); // else/endif with no starting if
 				}
 				if (condflags & TRCF_ELSE) {
 					// else
 					if (condstack.back() & TRCSF_SEEN_ELSE) {
-						return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_DUP_ELSE); // Two else clauses
+						return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_DUP_ELSE); // Two else clauses
 					}
 					HandleCondition(condstack, condflags, true);
 					condstack.back() |= TRCSF_SEEN_ELSE;
@@ -537,10 +537,10 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 			} else {
 				if (condflags & (TRCF_OR | TRCF_ELSE)) { // elif/orif
 					if (condstack.empty()) {
-						return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_ELIF_NO_IF); // Pre-empt assertions in HandleCondition
+						return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_ELIF_NO_IF); // Pre-empt assertions in HandleCondition
 					}
 					if (condstack.back() & TRCSF_SEEN_ELSE) {
-						return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_DUP_ELSE); // else clause followed by elif/orif
+						return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_DUP_ELSE); // else clause followed by elif/orif
 					}
 				}
 				HandleCondition(condstack, condflags, true);
@@ -563,7 +563,7 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 					break;
 
 				default:
-					return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_UNKNOWN_INSTRUCTION);
+					return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_UNKNOWN_INSTRUCTION);
 			}
 		} else {
 			switch (GetTraceRestrictType(item)) {
@@ -609,12 +609,12 @@ CommandCost TraceRestrictProgram::Validate(const std::vector<TraceRestrictItem> 
 					break;
 
 				default:
-					return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_UNKNOWN_INSTRUCTION);
+					return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_UNKNOWN_INSTRUCTION);
 			}
 		}
 	}
 	if (!condstack.empty()) {
-		return_cmd_error(STR_TRACE_RESTRICT_ERROR_VALIDATE_END_CONDSTACK);
+		return CommandError(STR_TRACE_RESTRICT_ERROR_VALIDATE_END_CONDSTACK);
 	}
 	return CommandCost();
 }
@@ -844,7 +844,7 @@ TraceRestrictProgram *GetTraceRestrictProgram(TraceRestrictRefId ref, bool creat
 
 		// Create new pool item
 		if (!TraceRestrictProgram::CanAllocateItem()) {
-			return NULL;
+			return nullptr;
 		}
 		TraceRestrictProgram *prog = new TraceRestrictProgram();
 
@@ -852,7 +852,7 @@ TraceRestrictProgram *GetTraceRestrictProgram(TraceRestrictRefId ref, bool creat
 		TraceRestrictCreateProgramMapping(ref, prog);
 		return prog;
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -888,10 +888,10 @@ static CommandCost TraceRestrictCheckTileIsUsable(TileIndex tile, Track track)
 {
 	// Check that there actually is a signal here
 	if (!IsPlainRailTile(tile) || !HasTrack(tile, track)) {
-		return_cmd_error(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
+		return CommandError(STR_ERROR_THERE_IS_NO_RAILROAD_TRACK);
 	}
 	if (!HasSignalOnTrack(tile, track)) {
-		return_cmd_error(STR_ERROR_THERE_ARE_NO_SIGNALS);
+		return CommandError(STR_ERROR_THERE_ARE_NO_SIGNALS);
 	}
 
 	// Check tile ownership, do this afterwards to avoid tripping up on house/industry tiles
@@ -939,7 +939,7 @@ CommandCost TraceRestrictProgramRemoveItemAt(std::vector<TraceRestrictItem> &ite
 		if (GetTraceRestrictCondFlags(old_item) == 0) {
 			if (GetTraceRestrictType(old_item) == TRIT_COND_ENDIF) {
 				// this is an end if, can't remove these
-				return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_REMOVE_ENDIF);
+				return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_REMOVE_ENDIF);
 			} else {
 				// this is an opening if
 				remove_whole_block = true;
@@ -986,12 +986,12 @@ CommandCost TraceRestrictProgramRemoveItemAt(std::vector<TraceRestrictItem> &ite
 					}
 					if (recursion_depth == 1 && remove_whole_block && shallow_mode) {
 						// shallow-removing whole if block, and it contains an else/or if, bail out
-						return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_SHALLOW_REMOVE_IF_ELIF);
+						return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_SHALLOW_REMOVE_IF_ELIF);
 					}
 				}
 			}
 		}
-		if (recursion_depth != 0) return CMD_ERROR; // ran off the end
+		if (recursion_depth != 0) return CommandError(); // ran off the end
 		if (shallow_mode) {
 			items.erase(remove_start, InstructionIteratorNext(remove_start));
 		} else {
@@ -1016,11 +1016,11 @@ CommandCost TraceRestrictProgramMoveItemAt(std::vector<TraceRestrictItem> &items
 		if (IsTraceRestrictConditional(old_item)) {
 			if (GetTraceRestrictCondFlags(old_item) != 0) {
 				// can't move or/else blocks
-				return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
+				return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
 			}
 			if (GetTraceRestrictType(old_item) == TRIT_COND_ENDIF) {
 				// this is an end if, can't move these
-				return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
+				return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
 			}
 
 			uint32 recursion_depth = 1;
@@ -1044,16 +1044,16 @@ CommandCost TraceRestrictProgramMoveItemAt(std::vector<TraceRestrictItem> &items
 					}
 				}
 			}
-			if (recursion_depth != 0) return CMD_ERROR; // ran off the end
+			if (recursion_depth != 0) return CommandError(); // ran off the end
 		}
 	}
 
 	if (up) {
-		if (move_start == items.begin()) return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
+		if (move_start == items.begin()) return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
 		std::rotate(TraceRestrictProgram::InstructionAt(items, offset - 1), move_start, move_end);
 		offset--;
 	} else {
-		if (move_end == items.end()) return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
+		if (move_end == items.end()) return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_MOVE_ITEM);
 		std::rotate(move_start, move_end, InstructionIteratorNext(move_end));
 		offset++;
 	}
@@ -1090,14 +1090,14 @@ CommandCost CmdProgramSignalTraceRestrict(TileIndex tile, DoCommandFlag flags, u
 	bool need_existing = (type != TRDCT_INSERT_ITEM);
 	TraceRestrictProgram *prog = GetTraceRestrictProgram(MakeTraceRestrictRefId(tile, track), can_make_new);
 	if (need_existing && !prog) {
-		return_cmd_error(STR_TRACE_RESTRICT_ERROR_NO_PROGRAM);
+		return CommandError(STR_TRACE_RESTRICT_ERROR_NO_PROGRAM);
 	}
 
 	uint32 offset_limit_exclusive = ((type == TRDCT_INSERT_ITEM) ? 1 : 0);
 	if (prog) offset_limit_exclusive += (uint32)prog->items.size();
 
 	if (offset >= offset_limit_exclusive) {
-		return_cmd_error(STR_TRACE_RESTRICT_ERROR_OFFSET_TOO_LARGE);
+		return CommandError(STR_TRACE_RESTRICT_ERROR_OFFSET_TOO_LARGE);
 	}
 
 	// copy program
@@ -1122,7 +1122,7 @@ CommandCost CmdProgramSignalTraceRestrict(TileIndex tile, DoCommandFlag flags, u
 		case TRDCT_MODIFY_ITEM: {
 			std::vector<TraceRestrictItem>::iterator old_item = TraceRestrictProgram::InstructionAt(items, offset);
 			if (IsTraceRestrictConditional(*old_item) != IsTraceRestrictConditional(item)) {
-				return_cmd_error(STR_TRACE_RESTRICT_ERROR_CAN_T_CHANGE_CONDITIONALITY);
+				return CommandError(STR_TRACE_RESTRICT_ERROR_CAN_T_CHANGE_CONDITIONALITY);
 			}
 			bool old_is_dual = IsTraceRestrictDoubleItem(*old_item);
 			bool new_is_dual = IsTraceRestrictDoubleItem(item);
@@ -1138,7 +1138,7 @@ CommandCost CmdProgramSignalTraceRestrict(TileIndex tile, DoCommandFlag flags, u
 		case TRDCT_MODIFY_DUAL_ITEM: {
 			std::vector<TraceRestrictItem>::iterator old_item = TraceRestrictProgram::InstructionAt(items, offset);
 			if (!IsTraceRestrictDoubleItem(*old_item)) {
-				return CMD_ERROR;
+				return CommandError();
 			}
 			*(old_item + 1) = p2;
 			break;
@@ -1228,7 +1228,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 
 	if (type == TRDCT_PROG_SHARE || type == TRDCT_PROG_COPY) {
 		if (self == source) {
-			return_cmd_error(STR_TRACE_RESTRICT_ERROR_SOURCE_SAME_AS_TARGET);
+			return CommandError(STR_TRACE_RESTRICT_ERROR_SOURCE_SAME_AS_TARGET);
 		}
 	}
 	if (type == TRDCT_PROG_SHARE || type == TRDCT_PROG_COPY || type == TRDCT_PROG_COPY_APPEND) {
@@ -1239,7 +1239,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 	}
 
 	if (type != TRDCT_PROG_RESET && !TraceRestrictProgram::CanAllocateItem()) {
-		return CMD_ERROR;
+		return CommandError();
 	}
 
 	if (!(flags & DC_EXEC)) {
@@ -1254,7 +1254,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 				TraceRestrictProgram *prog = GetTraceRestrictProgram(self, true);
 				if (!prog) {
 					// allocation failed
-					return CMD_ERROR;
+					return CommandError();
 				}
 				prog->items = source_prog->items; // copy
 				prog->Validate();
@@ -1268,7 +1268,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 				TraceRestrictProgram *prog = GetTraceRestrictProgram(self, true);
 				if (!prog) {
 					// allocation failed
-					return CMD_ERROR;
+					return CommandError();
 				}
 				prog->items.reserve(prog->items.size() + source_prog->items.size()); // this is in case prog == source_prog
 				prog->items.insert(prog->items.end(), source_prog->items.begin(), source_prog->items.end()); // append
@@ -1282,7 +1282,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 			TraceRestrictProgram *source_prog = GetTraceRestrictProgram(source, true);
 			if (!source_prog) {
 				// allocation failed
-				return CMD_ERROR;
+				return CommandError();
 			}
 
 			TraceRestrictCreateProgramMapping(self, source_prog);
@@ -1304,7 +1304,7 @@ CommandCost CmdProgramSignalTraceRestrictProgMgmt(TileIndex tile, DoCommandFlag 
 				TraceRestrictProgram *new_prog = GetTraceRestrictProgram(self, true);
 				if (!new_prog) {
 					// allocation failed
-					return CMD_ERROR;
+					return CommandError();
 				}
 
 				new_prog->items.swap(items);
@@ -1561,13 +1561,13 @@ static bool IsUniqueSlotName(const char *name)
  */
 CommandCost CmdCreateTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!TraceRestrictSlot::CanAllocateItem()) return CMD_ERROR;
-	if (StrEmpty(text)) return CMD_ERROR;
+	if (!TraceRestrictSlot::CanAllocateItem()) return CommandError();
+	if (StrEmpty(text)) return CommandError();
 
 	size_t length = Utf8StringLength(text);
-	if (length <= 0) return CMD_ERROR;
-	if (length >= MAX_LENGTH_TRACE_RESTRICT_SLOT_NAME_CHARS) return CMD_ERROR;
-	if (!IsUniqueSlotName(text)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+	if (length <= 0) return CommandError();
+	if (length >= MAX_LENGTH_TRACE_RESTRICT_SLOT_NAME_CHARS) return CommandError();
+	if (!IsUniqueSlotName(text)) return CommandError(STR_ERROR_NAME_MUST_BE_UNIQUE);
 
 	if (flags & DC_EXEC) {
 		TraceRestrictSlot *slot = new TraceRestrictSlot(_current_company);
@@ -1595,7 +1595,7 @@ CommandCost CmdCreateTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, uint
 CommandCost CmdDeleteTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(p1);
-	if (slot == NULL || slot->owner != _current_company) return CMD_ERROR;
+	if (slot == nullptr || slot->owner != _current_company) return CommandError();
 
 	if (flags & DC_EXEC) {
 		/* notify tracerestrict that group is about to be deleted */
@@ -1626,16 +1626,16 @@ CommandCost CmdDeleteTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, uint
 CommandCost CmdAlterTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(GB(p1, 0, 16));
-	if (slot == NULL || slot->owner != _current_company) return CMD_ERROR;
+	if (slot == nullptr || slot->owner != _current_company) return CommandError();
 
 	if (!HasBit(p1, 16)) {
 		/* Rename slot */
 
-		if (StrEmpty(text)) return CMD_ERROR;
+		if (StrEmpty(text)) return CommandError();
 		size_t length = Utf8StringLength(text);
-		if (length <= 0) return CMD_ERROR;
-		if (length >= MAX_LENGTH_TRACE_RESTRICT_SLOT_NAME_CHARS) return CMD_ERROR;
-		if (!IsUniqueSlotName(text)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+		if (length <= 0) return CommandError();
+		if (length >= MAX_LENGTH_TRACE_RESTRICT_SLOT_NAME_CHARS) return CommandError();
+		if (!IsUniqueSlotName(text)) return CommandError(STR_ERROR_NAME_MUST_BE_UNIQUE);
 
 		if (flags & DC_EXEC) {
 			slot->name = text;
@@ -1673,8 +1673,8 @@ CommandCost CmdAddVehicleTraceRestrictSlot(TileIndex tile, DoCommandFlag flags, 
 {
 	TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(p1);
 	Vehicle *v = Vehicle::GetIfValid(p2);
-	if (slot == NULL || slot->owner != _current_company) return CMD_ERROR;
-	if (v == NULL || v->owner != _current_company) return CMD_ERROR;
+	if (slot == nullptr || slot->owner != _current_company) return CommandError();
+	if (v == nullptr || v->owner != _current_company) return CommandError();
 
 	if (flags & DC_EXEC) {
 		slot->Occupy(v->index, true);
@@ -1698,8 +1698,8 @@ CommandCost CmdRemoveVehicleTraceRestrictSlot(TileIndex tile, DoCommandFlag flag
 {
 	TraceRestrictSlot *slot = TraceRestrictSlot::GetIfValid(p1);
 	Vehicle *v = Vehicle::GetIfValid(p2);
-	if (slot == NULL || slot->owner != _current_company) return CMD_ERROR;
-	if (v == NULL) return CMD_ERROR; // permit removing vehicles of other owners from your own slot
+	if (slot == nullptr || slot->owner != _current_company) return CommandError();
+	if (v == nullptr) return CommandError(); // permit removing vehicles of other owners from your own slot
 
 	if (flags & DC_EXEC) {
 		slot->Vacate(v->index);

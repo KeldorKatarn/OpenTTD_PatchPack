@@ -125,7 +125,7 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 	int GetDisplaySpeed() const { return this->gcache.last_speed; }
 	int GetDisplayMaxSpeed() const { return this->vcache.cached_max_speed; }
 	Money GetRunningCost() const;
-	int GetDisplayImageWidth(Point *offset = NULL) const;
+	int GetDisplayImageWidth(Point *offset = nullptr) const;
 	bool IsInDepot() const { return this->track == TRACK_BIT_DEPOT; }
 	bool Tick();
 	void OnNewDay();
@@ -154,7 +154,7 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 	inline Train *GetNextUnit() const
 	{
 		Train *v = this->GetNextVehicle();
-		if (v != NULL && v->IsRearDualheaded()) v = v->GetNextVehicle();
+		if (v != nullptr && v->IsRearDualheaded()) v = v->GetNextVehicle();
 
 		return v;
 	}
@@ -166,7 +166,7 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 	inline Train *GetPrevUnit()
 	{
 		Train *v = this->GetPrevVehicle();
-		if (v != NULL && v->IsRearDualheaded()) v = v->GetPrevVehicle();
+		if (v != nullptr && v->IsRearDualheaded()) v = v->GetPrevVehicle();
 
 		return v;
 	}
@@ -190,7 +190,7 @@ struct Train FINAL : public GroundVehicle<Train, VEH_TRAIN> {
 		 * longer than the part after the center. This means we have to round up the
 		 * length of the next vehicle but may not round the length of the current
 		 * vehicle. */
-		return this->gcache.cached_veh_length / 2 + (this->Next() != NULL ? this->Next()->gcache.cached_veh_length + 1 : 0) / 2;
+		return this->gcache.cached_veh_length / 2 + (this->Next() != nullptr ? this->Next()->gcache.cached_veh_length + 1 : 0) / 2;
 	}
 
 	/**

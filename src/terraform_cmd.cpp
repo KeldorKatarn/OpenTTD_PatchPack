@@ -105,15 +105,15 @@ static CommandCost TerraformTileHeight(TerraformerState *ts, TileIndex tile, int
 	assert(tile < MapSize());
 
 	/* Check range of destination height */
-	if (height < 0) return_cmd_error(STR_ERROR_ALREADY_AT_SEA_LEVEL);
-	if (height > _settings_game.construction.max_heightlevel) return_cmd_error(STR_ERROR_TOO_HIGH);
+	if (height < 0) return CommandError(STR_ERROR_ALREADY_AT_SEA_LEVEL);
+	if (height > _settings_game.construction.max_heightlevel) return CommandError(STR_ERROR_TOO_HIGH);
 
 	/*
 	 * Check if the terraforming has any effect.
 	 * This can only be true, if multiple corners of the start-tile are terraformed (i.e. the terraforming is done by towns/industries etc.).
 	 * In this case the terraforming should fail. (Don't know why.)
 	 */
-	if (height == TerraformGetHeightOfTile(ts, tile)) return CMD_ERROR;
+	if (height == TerraformGetHeightOfTile(ts, tile)) return CommandError();
 
 	/* Check "too close to edge of map". Only possible when freeform-edges is off. */
 	uint x = TileX(tile);
@@ -125,7 +125,7 @@ static CommandCost TerraformTileHeight(TerraformerState *ts, TileIndex tile, int
 		if (x == 1) x = 0;
 		if (y == 1) y = 0;
 		_terraform_err_tile = TileXY(x, y);
-		return_cmd_error(STR_ERROR_TOO_CLOSE_TO_EDGE_OF_MAP);
+		return CommandError(STR_ERROR_TOO_CLOSE_TO_EDGE_OF_MAP);
 	}
 
 	/* Mark incident tiles that are involved in the terraforming. */
@@ -260,25 +260,25 @@ CommandCost CmdTerraformLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 					/* Check if bridge would take damage. */
 					if (direction == 1 && bridge_height <= z_max) {
 						_terraform_err_tile = tile; // highlight the tile under the bridge
-						return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+						return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 					}
 
 					/* Is the bridge above not too high afterwards? */
 					if (direction == -1 && bridge_height > (z_min + _settings_game.construction.max_bridge_height)) {
 						_terraform_err_tile = tile;
-						return_cmd_error(STR_ERROR_BRIDGE_TOO_HIGH_AFTER_LOWER_LAND);
+						return CommandError(STR_ERROR_BRIDGE_TOO_HIGH_AFTER_LOWER_LAND);
 					}
 				}
 				/* Check if tunnel would take damage */
 				if (direction == -1 && IsTunnelInWay(tile, z_min, ITIWF_IGNORE_CHUNNEL)) {
 					_terraform_err_tile = tile; // highlight the tile above the tunnel
-					return_cmd_error(STR_ERROR_EXCAVATION_WOULD_DAMAGE);
+					return CommandError(STR_ERROR_EXCAVATION_WOULD_DAMAGE);
 				}
 			}
 
 			/* Is the tile already cleared? */
 			const ClearedObjectArea *coa = FindClearedObject(tile);
-			bool indirectly_cleared = coa != NULL && coa->first_tile != tile;
+			bool indirectly_cleared = coa != nullptr && coa->first_tile != tile;
 
 			/* Check tiletype-specific things, and add extra-cost */
 			const bool curr_gen = _generating_world;
@@ -304,8 +304,8 @@ CommandCost CmdTerraformLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	}
 
 	Company *c = Company::GetIfValid(_current_company);
-	if (c != NULL && GB(c->terraform_limit, 16, 16) < ts.tile_to_new_height.size()) {
-		return_cmd_error(STR_ERROR_TERRAFORM_LIMIT_REACHED);
+	if (c != nullptr && GB(c->terraform_limit, 16, 16) < ts.tile_to_new_height.size()) {
+		return CommandError(STR_ERROR_TERRAFORM_LIMIT_REACHED);
 	}
 
 	if (flags & DC_EXEC) {
@@ -403,7 +403,7 @@ CommandCost CmdTerraformLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 			}
 		}
 
-		if (c != NULL) c->terraform_limit -= (uint32)ts.tile_to_new_height.size() << 16;
+		if (c != nullptr) c->terraform_limit -= (uint32)ts.tile_to_new_height.size() << 16;
 	}
 	return total_cost;
 }
@@ -422,7 +422,7 @@ CommandCost CmdTerraformLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
  */
 CommandCost CmdLevelLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (p1 >= MapSize()) return CMD_ERROR;
+	if (p1 >= MapSize()) return CommandError();
 
 	_terraform_err_tile = INVALID_TILE;
 
@@ -436,11 +436,11 @@ CommandCost CmdLevelLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		case LM_LEVEL: break;
 		case LM_RAISE: h++; break;
 		case LM_LOWER: h--; break;
-		default: return CMD_ERROR;
+		default: return CommandError();
 	}
 
 	/* Check range of destination height */
-	if (h > _settings_game.construction.max_heightlevel) return_cmd_error((oldh == 0) ? STR_ERROR_ALREADY_AT_SEA_LEVEL : STR_ERROR_TOO_HIGH);
+	if (h > _settings_game.construction.max_heightlevel) return CommandError((oldh == 0) ? STR_ERROR_ALREADY_AT_SEA_LEVEL : STR_ERROR_TOO_HIGH);
 
 	Money money = GetAvailableMoneyForCommand();
 	CommandCost cost(EXPENSES_CONSTRUCTION);
@@ -448,8 +448,8 @@ CommandCost CmdLevelLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	bool had_success = false;
 
 	const Company *c = Company::GetIfValid(_current_company);
-	int limit = (c == NULL ? INT32_MAX : GB(c->terraform_limit, 16, 16));
-	if (limit == 0) return_cmd_error(STR_ERROR_TERRAFORM_LIMIT_REACHED);
+	int limit = (c == nullptr ? INT32_MAX : GB(c->terraform_limit, 16, 16));
+	if (limit == 0) return CommandError(STR_ERROR_TERRAFORM_LIMIT_REACHED);
 
 	TileIterator *iter = HasBit(p2, 0) ? (TileIterator *)new DiagonalTileIterator(tile, p1) : new OrthogonalTileIterator(tile, p1);
 	for (; *iter != INVALID_TILE; ++(*iter)) {

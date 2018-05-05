@@ -623,7 +623,7 @@ static CallBackFunction MenuClickCompany(int index)
 				if (_network_server) {
 					DoCommandP(0, 0, _network_own_client_id, CMD_COMPANY_CTRL);
 				} else {
-					NetworkSendCommand(0, 0, 0, CMD_COMPANY_CTRL, NULL, NULL, _local_company, 0);
+					NetworkSendCommand(0, 0, 0, CMD_COMPANY_CTRL, nullptr, nullptr, _local_company, 0);
 				}
 				return CBF_NONE;
 
@@ -1062,12 +1062,12 @@ static CallBackFunction ToolbarHelpClick(Window *w)
 
 static void MenuClickSmallScreenshot()
 {
-	MakeScreenshot(SC_VIEWPORT, NULL);
+	MakeScreenshot(SC_VIEWPORT, nullptr);
 }
 
 static void MenuClickFlatMinimapScreenshot(ScreenshotType type)
 {
-	MakeScreenshot(type, NULL);
+	MakeScreenshot(type, nullptr);
 }
 
 /**
@@ -1077,7 +1077,7 @@ static void MenuClickFlatMinimapScreenshot(ScreenshotType type)
  */
 static void ScreenshotConfirmCallback(Window *w, bool confirmed)
 {
-	if (confirmed) MakeScreenshot(_confirmed_screenshot_type, NULL);
+	if (confirmed) MakeScreenshot(_confirmed_screenshot_type, nullptr);
 }
 
 /**
@@ -1094,10 +1094,10 @@ static void MenuClickLargeWorldScreenshot(ScreenshotType t)
 		SetDParam(0, vp.width);
 		SetDParam(1, vp.height);
 		_confirmed_screenshot_type = t;
-		ShowQuery(STR_WARNING_SCREENSHOT_SIZE_CAPTION, STR_WARNING_SCREENSHOT_SIZE_MESSAGE, NULL, ScreenshotConfirmCallback);
+		ShowQuery(STR_WARNING_SCREENSHOT_SIZE_CAPTION, STR_WARNING_SCREENSHOT_SIZE_MESSAGE, nullptr, ScreenshotConfirmCallback);
 	} else {
 		/* Less than 64M pixels, just do it */
-		MakeScreenshot(t, NULL);
+		MakeScreenshot(t, nullptr);
 	}
 }
 
@@ -1295,8 +1295,8 @@ static CallBackFunction ToolbarBtn_NULL(Window *w)
 typedef CallBackFunction MenuClickedProc(int index);
 
 static MenuClickedProc * const _menu_clicked_procs[] = {
-	NULL,                 // 0
-	NULL,                 // 1
+	nullptr,                 // 0
+	nullptr,                 // 1
 	MenuClickSettings,    // 2
 	MenuClickSaveLoad,    // 3
 	MenuClickMap,         // 4
@@ -1315,7 +1315,7 @@ static MenuClickedProc * const _menu_clicked_procs[] = {
 	MenuClickShowShips,   // 17
 	MenuClickShowAir,     // 18
 	MenuClickMap,         // 19
-	NULL,                 // 20
+	nullptr,                 // 20
 	MenuClickBuildRail,   // 21
 	MenuClickBuildRoad,   // 22
 	MenuClickBuildWater,  // 23
@@ -1359,7 +1359,7 @@ public:
 
 		uint nbuttons = 0;
 		/* First initialise some variables... */
-		for (NWidgetBase *child_wid = this->head; child_wid != NULL; child_wid = child_wid->next) {
+		for (NWidgetBase *child_wid = this->head; child_wid != nullptr; child_wid = child_wid->next) {
 			child_wid->SetupSmallestSize(w, init_array);
 			this->smallest_y = max(this->smallest_y, child_wid->smallest_y + child_wid->padding_top + child_wid->padding_bottom);
 			if (this->IsButton(child_wid->type)) {
@@ -1371,7 +1371,7 @@ public:
 		}
 
 		/* ... then in a second pass make sure the 'current' heights are set. Won't change ever. */
-		for (NWidgetBase *child_wid = this->head; child_wid != NULL; child_wid = child_wid->next) {
+		for (NWidgetBase *child_wid = this->head; child_wid != nullptr; child_wid = child_wid->next) {
 			child_wid->current_y = this->smallest_y;
 			if (!this->IsButton(child_wid->type)) {
 				child_wid->current_x = child_wid->smallest_x;
@@ -1399,7 +1399,7 @@ public:
 
 		/* Create us ourselves a quick lookup table */
 		NWidgetBase *widgets[WID_TN_END];
-		for (NWidgetBase *child_wid = this->head; child_wid != NULL; child_wid = child_wid->next) {
+		for (NWidgetBase *child_wid = this->head; child_wid != nullptr; child_wid = child_wid->next) {
 			if (child_wid->type == NWID_SPACER) continue;
 			widgets[((NWidgetCore*)child_wid)->index] = child_wid;
 		}
@@ -1418,7 +1418,7 @@ public:
 			/* If we have to give space to the spacers, do that */
 			if (spacer_space != 0) {
 				NWidgetBase *possible_spacer = rtl ? child_wid->next : child_wid->prev;
-				if (possible_spacer != NULL && possible_spacer->type == NWID_SPACER) {
+				if (possible_spacer != nullptr && possible_spacer->type == NWID_SPACER) {
 					uint add = spacer_space / (spacer_count - spacer_i);
 					position += add;
 					spacer_space -= add;
@@ -1450,7 +1450,7 @@ public:
 		GfxFillRect(this->pos_x, this->pos_y, this->pos_x + this->current_x - 1, this->pos_y + this->current_y - 1, PC_DARK_RED, FILLRECT_CHECKER);
 
 		bool rtl = _current_text_dir == TD_RTL;
-		for (NWidgetBase *child_wid = rtl ? this->tail : this->head; child_wid != NULL; child_wid = rtl ? child_wid->prev : child_wid->next) {
+		for (NWidgetBase *child_wid = rtl ? this->tail : this->head; child_wid != nullptr; child_wid = rtl ? child_wid->prev : child_wid->next) {
 			if (child_wid->type == NWID_SPACER) continue;
 			if (!this->visible[((NWidgetCore*)child_wid)->index]) continue;
 
@@ -1460,16 +1460,16 @@ public:
 
 	/* virtual */ NWidgetCore *GetWidgetFromPos(int x, int y)
 	{
-		if (!IsInsideBS(x, this->pos_x, this->current_x) || !IsInsideBS(y, this->pos_y, this->current_y)) return NULL;
+		if (!IsInsideBS(x, this->pos_x, this->current_x) || !IsInsideBS(y, this->pos_y, this->current_y)) return nullptr;
 
-		for (NWidgetBase *child_wid = this->head; child_wid != NULL; child_wid = child_wid->next) {
+		for (NWidgetBase *child_wid = this->head; child_wid != nullptr; child_wid = child_wid->next) {
 			if (child_wid->type == NWID_SPACER) continue;
 			if (!this->visible[((NWidgetCore*)child_wid)->index]) continue;
 
 			NWidgetCore *nwid = child_wid->GetWidgetFromPos(x, y);
-			if (nwid != NULL) return nwid;
+			if (nwid != nullptr) return nwid;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	/**
@@ -1814,7 +1814,7 @@ class NWidgetScenarioToolbarContainer : public NWidgetToolbarContainer {
 
 		/* Find the size of panel_widths */
 		uint i = 0;
-		for (NWidgetBase *child_wid = this->head; child_wid != NULL; child_wid = child_wid->next) {
+		for (NWidgetBase *child_wid = this->head; child_wid != nullptr; child_wid = child_wid->next) {
 			if (child_wid->type == NWID_SPACER || this->IsButton(child_wid->type)) continue;
 
 			assert(i < lengthof(this->panel_widths));
@@ -2145,7 +2145,7 @@ struct MainToolbarWindow : Window {
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
 		if (!gui_scope) return;
-		if (FindWindowById(WC_MAIN_WINDOW, 0) != NULL) HandleZoomMessage(this, FindWindowById(WC_MAIN_WINDOW, 0)->viewport, WID_TN_ZOOM_IN, WID_TN_ZOOM_OUT);
+		if (FindWindowById(WC_MAIN_WINDOW, 0) != nullptr) HandleZoomMessage(this, FindWindowById(WC_MAIN_WINDOW, 0)->viewport, WID_TN_ZOOM_IN, WID_TN_ZOOM_OUT);
 	}
 
 	static HotkeyList hotkeys;
@@ -2262,7 +2262,7 @@ static const NWidgetPart _nested_toolbar_normal_widgets[] = {
 };
 
 static WindowDesc _toolb_normal_desc(
-	WDP_MANUAL, NULL, 0, 0,
+	WDP_MANUAL, nullptr, 0, 0,
 	WC_MAIN_TOOLBAR, WC_NONE,
 	WDF_NO_FOCUS,
 	_nested_toolbar_normal_widgets, lengthof(_nested_toolbar_normal_widgets),
@@ -2292,15 +2292,15 @@ static ToolbarButtonProc * const _scen_toolbar_button_procs[] = {
 	ToolbarScenPlantTrees,
 	ToolbarScenPlaceSign,
 	ToolbarBtn_NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 	ToolbarMusicClick,
-	NULL,
+	nullptr,
 	ToolbarHelpClick,
 	ToolbarSwitchClick,
 };
@@ -2487,13 +2487,13 @@ struct ScenarioEditorToolbarWindow : Window {
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
 		if (!gui_scope) return;
-		if (FindWindowById(WC_MAIN_WINDOW, 0) != NULL) HandleZoomMessage(this, FindWindowById(WC_MAIN_WINDOW, 0)->viewport, WID_TE_ZOOM_IN, WID_TE_ZOOM_OUT);
+		if (FindWindowById(WC_MAIN_WINDOW, 0) != nullptr) HandleZoomMessage(this, FindWindowById(WC_MAIN_WINDOW, 0)->viewport, WID_TE_ZOOM_IN, WID_TE_ZOOM_OUT);
 	}
 
 	virtual void OnQueryTextFinished(char *str)
 	{
 		/* Was 'cancel' pressed? */
-		if (str == NULL) return;
+		if (str == nullptr) return;
 
 		int32 value;
 		if (!StrEmpty(str)) {
@@ -2581,7 +2581,7 @@ static const NWidgetPart _nested_toolb_scen_widgets[] = {
 };
 
 static WindowDesc _toolb_scen_desc(
-	WDP_MANUAL, NULL, 0, 0,
+	WDP_MANUAL, nullptr, 0, 0,
 	WC_MAIN_TOOLBAR, WC_NONE,
 	WDF_NO_FOCUS,
 	_nested_toolb_scen_widgets, lengthof(_nested_toolb_scen_widgets),

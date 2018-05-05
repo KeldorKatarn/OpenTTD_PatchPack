@@ -125,6 +125,7 @@ enum SLRefType {
 #define SL_PATCH_PACK_1_22   281
 #define SL_PATCH_PACK_1_23   282
 #define SL_PATCH_PACK_1_24   283
+#define SL_PATCH_PACK_1_25   284
 
 /** Flags of a chunk. */
 enum ChunkType {
@@ -445,11 +446,11 @@ typedef SaveLoad SaveLoadGlobVarList;
 /** Translate values ingame to different values in the savegame and vv. */
 #define SLE_WRITEBYTE(base, variable, value) SLE_GENERAL(SL_WRITEBYTE, base, variable, 0, 0, value, value)
 
-#define SLE_VEH_INCLUDE() {false, SL_VEH_INCLUDE, 0, 0, 0, SL_MAX_VERSION, NULL, 0}
-#define SLE_ST_INCLUDE() {false, SL_ST_INCLUDE, 0, 0, 0, SL_MAX_VERSION, NULL, 0}
+#define SLE_VEH_INCLUDE() {false, SL_VEH_INCLUDE, 0, 0, 0, SL_MAX_VERSION, nullptr, 0}
+#define SLE_ST_INCLUDE() {false, SL_ST_INCLUDE, 0, 0, 0, SL_MAX_VERSION, nullptr, 0}
 
 /** End marker of a struct/class save or load. */
-#define SLE_END() {false, SL_END, 0, 0, 0, 0, NULL, 0}
+#define SLE_END() {false, SL_END, 0, 0, 0, 0, nullptr, 0}
 
 /**
  * Storage of global simple variables, references (pointers), and arrays.
@@ -582,10 +583,10 @@ typedef SaveLoad SaveLoadGlobVarList;
  * @param from   First savegame version that has the empty space.
  * @param to     Last savegame version that has the empty space.
  */
-#define SLEG_CONDNULL(length, from, to) {true, SL_ARR, SLE_FILE_U8 | SLE_VAR_NULL | SLF_NOT_IN_CONFIG, length, from, to, (void*)NULL}
+#define SLEG_CONDNULL(length, from, to) {true, SL_ARR, SLE_FILE_U8 | SLE_VAR_NULL | SLF_NOT_IN_CONFIG, length, from, to, (void*)nullptr}
 
 /** End marker of global variables save or load. */
-#define SLEG_END() {true, SL_END, 0, 0, 0, 0, NULL, 0}
+#define SLEG_END() {true, SL_END, 0, 0, 0, 0, nullptr, 0}
 
 /**
  * Checks whether the savegame is below \a major.\a minor.
@@ -659,13 +660,13 @@ static inline bool IsNumericType(VarType conv)
 
 /**
  * Get the address of the variable. Which one to pick depends on the object
- * pointer. If it is NULL we are dealing with global variables so the address
+ * pointer. If it is nullptr we are dealing with global variables so the address
  * is taken. If non-null only the offset is stored in the union and we need
  * to add this to the address of the object
  */
 static inline void *GetVariableAddress(const void *object, const SaveLoad *sld)
 {
-	return const_cast<byte *>((const byte*)(sld->global ? NULL : object) + (ptrdiff_t)sld->address);
+	return const_cast<byte *>((const byte*)(sld->global ? nullptr : object) + (ptrdiff_t)sld->address);
 }
 
 int64 ReadValue(const void *ptr, VarType conv);
@@ -687,7 +688,7 @@ void SlGlobList(const SaveLoadGlobVarList *sldg);
 void SlArray(void *array, size_t length, VarType conv);
 void SlObject(void *object, const SaveLoad *sld);
 bool SlObjectMember(void *object, const SaveLoad *sld);
-void NORETURN SlError(StringID string, const char *extra_msg = NULL);
+void NORETURN SlError(StringID string, const char *extra_msg = nullptr);
 void NORETURN SlErrorCorrupt(const char *msg);
 
 bool SaveloadCrashWithMissingNewGRFs();

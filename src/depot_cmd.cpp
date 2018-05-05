@@ -33,7 +33,7 @@ static bool IsUniqueDepotName(const char *name)
 	const Depot *d;
 
 	FOR_ALL_DEPOTS(d) {
-		if (d->name != NULL && strcmp(d->name, name) == 0) return false;
+		if (d->name != nullptr && strcmp(d->name, name) == 0) return false;
 	}
 
 	return true;
@@ -51,7 +51,7 @@ static bool IsUniqueDepotName(const char *name)
 CommandCost CmdRenameDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Depot *d = Depot::GetIfValid(p1);
-	if (d == NULL) return CMD_ERROR;
+	if (d == nullptr) return CommandError();
 
 	CommandCost ret = CheckTileOwnership(d->xy);
 	if (ret.Failed()) return ret;
@@ -59,15 +59,15 @@ CommandCost CmdRenameDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 	bool reset = StrEmpty(text);
 
 	if (!reset) {
-		if (Utf8StringLength(text) >= MAX_LENGTH_DEPOT_NAME_CHARS) return CMD_ERROR;
-		if (!IsUniqueDepotName(text)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+		if (Utf8StringLength(text) >= MAX_LENGTH_DEPOT_NAME_CHARS) return CommandError();
+		if (!IsUniqueDepotName(text)) return CommandError(STR_ERROR_NAME_MUST_BE_UNIQUE);
 	}
 
 	if (flags & DC_EXEC) {
 		free(d->name);
 
 		if (reset) {
-			d->name = NULL;
+			d->name = nullptr;
 			MakeDefaultName(d);
 		} else {
 			d->name = stredup(text);

@@ -17,7 +17,7 @@
 /** Implementation of the null sound driver. */
 class SoundDriver_Null : public SoundDriver {
 public:
-	/* virtual */ const char *Start(const char * const *param) { return NULL; }
+	/* virtual */ const char *Start(const char * const *param) { return nullptr; }
 
 	/* virtual */ void Stop() { }
 	/* virtual */ const char *GetName() const { return "null"; }

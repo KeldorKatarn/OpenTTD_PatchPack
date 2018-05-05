@@ -7,34 +7,34 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000001}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core Source Code">
+    <Filter Include="Linkgraph">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000002}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GUI Source Code">
+    <Filter Include="Core">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000003}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Widgets">
+    <Filter Include="GUI">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000004}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Command handlers">
+    <Filter Include="Widgets">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000005}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Save/Load handlers">
+    <Filter Include="Command handlers">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000006}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tables">
+    <Filter Include="Save/Load handlers">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000007}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MD5">
+    <Filter Include="Tables">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000008}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script">
+    <Filter Include="MD5">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000009}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Squirrel">
+    <Filter Include="Script">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000010}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Squirrel headers">
+    <Filter Include="Squirrel">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000011}</UniqueIdentifier>
     </Filter>
     <Filter Include="AI Core">
@@ -52,59 +52,56 @@
     <Filter Include="Script API">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000016}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script API Implementation">
+    <Filter Include="Blitters">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000017}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Blitters">
+    <Filter Include="Drivers">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000018}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Drivers">
+    <Filter Include="Sprite loaders">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000019}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sprite loaders">
+    <Filter Include="NewGRF">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000020}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NewGRF">
+    <Filter Include="Map Accessors">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000021}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Accessors">
+    <Filter Include="Misc">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000022}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Misc">
+    <Filter Include="Network Core">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000023}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Network Core">
+    <Filter Include="Network">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000024}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Network">
+    <Filter Include="Pathfinder">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000025}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pathfinder">
+    <Filter Include="Pathfinder\NPF">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000026}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NPF">
+    <Filter Include="Pathfinder\YAPF">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000027}</UniqueIdentifier>
     </Filter>
-    <Filter Include="YAPF">
+    <Filter Include="Video">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000028}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Video">
+    <Filter Include="Music">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000029}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Music">
+    <Filter Include="Sound">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000030}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sound">
+    <Filter Include="Windows files">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000031}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Windows files">
+    <Filter Include="Threading">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000032}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Threading">
+    <Filter Include="Btree">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000033}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Btree containers">
-      <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000034}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -244,27 +241,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\landscape.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\demands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\flowmapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\linkgraph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\linkgraphjob.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\linkgraphschedule.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\mcf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linkgraph\refresh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\logic_signal_program.cpp">
@@ -702,42 +678,6 @@
     <ClInclude Include="..\src\language.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\linkgraph\demands.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\flowmapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\init.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraph_base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraph_gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraph_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraphjob.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraphjob_base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\linkgraphschedule.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\mcf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linkgraph\refresh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\livery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -847,6 +787,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\news_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\music\midi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\music\midifile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\music\null_m.h">
@@ -1239,290 +1185,347 @@
     <ClInclude Include="..\src\zoning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="..\src\linkgraph\demands.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\flowmapper.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\linkgraph.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\linkgraphjob.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\linkgraphschedule.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\mcf.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\linkgraph\refresh.cpp">
+      <Filter>Linkgraph</Filter>
+    </ClCompile>
+    <ClInclude Include="..\src\linkgraph\demands.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\flowmapper.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\init.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraph.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraph_base.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraph_gui.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraph_type.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraphjob.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraphjob_base.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\linkgraphschedule.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\mcf.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\linkgraph\refresh.h">
+      <Filter>Linkgraph</Filter>
+    </ClInclude>
     <ClCompile Include="..\src\core\alloc_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\alloc_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\alloc_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\backup_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\core\bitmath_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\bitmath_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\container_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\dyn_arena_alloc.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\endian_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\endian_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\enum_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\core\geometry_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\geometry_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\geometry_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\core\math_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\math_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\mem_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\multimap.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\overflowsafe_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\core\pool_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\pool_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\pool_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\core\random_func.cpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClInclude Include="..\src\core\random_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\smallmap_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\smallmatrix_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\smallstack_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\smallvec_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\sort_func.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\string_compare_type.hpp">
-      <Filter>Core Source Code</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClCompile Include="..\src\aircraft_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\airport_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\autoreplace_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\bootstrap_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\bridge_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\build_vehicle_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cheat_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\company_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\console_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\date_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\departures_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\depot_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dock_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\engine_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\error_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\fios_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\genworld_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\goal_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\graph_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\group_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\highscore_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\industry_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\intro_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\linkgraph\linkgraph_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\logic_signals_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\main_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\misc_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\music_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\network\network_chat_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\network\network_content_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\network\network_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\newgrf_debug_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\newgrf_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\news_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\object_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\order_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\osk_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\plans_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rail_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\road_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\roadveh_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\settings_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ship_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\signs_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\smallmap_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\station_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\statusbar_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\story_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\subsidy_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tbtr_template_gui_create.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tbtr_template_gui_main.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\terraform_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\textfile_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\timetable_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\toolbar_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\town_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tracerestrict_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\train_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\transparency_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\tree_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\triphistory_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vehicle_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\viewport_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\waypoint_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\zoning_gui.cpp">
-      <Filter>GUI Source Code</Filter>
+      <Filter>GUI</Filter>
     </ClCompile>
     <ClInclude Include="..\src\widgets\airport_widget.h">
       <Filter>Widgets</Filter>
@@ -2161,64 +2164,64 @@
       <Filter>Squirrel</Filter>
     </ClCompile>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqarray.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqclass.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqclosure.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqcompiler.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqfuncproto.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqfuncstate.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqlexer.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqobject.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqopcodes.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqpcheader.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstate.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdaux.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdmath.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\sqstdstring.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqstring.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqtable.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\include\squirrel.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\squserdata.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\squtils.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\squirrel\squirrel\sqvm.h">
-      <Filter>Squirrel headers</Filter>
+      <Filter>Squirrel</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ai\ai.hpp">
       <Filter>AI Core</Filter>
@@ -2494,193 +2497,193 @@
       <Filter>Script API</Filter>
     </ClInclude>
     <ClCompile Include="..\src\script\api\script_accounting.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_admin.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_airport.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_base.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_basestation.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_bridge.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_bridgelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_cargo.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_cargolist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_cargomonitor.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_company.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_companymode.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_controller.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_date.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_depotlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_engine.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_enginelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_error.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_event.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_event_types.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_execmode.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_game.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_gamesettings.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_goal.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_group.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_grouplist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_industry.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_industrylist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_industrytype.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_industrytypelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_infrastructure.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_list.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_log.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_map.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_marine.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_news.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_object.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_order.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_rail.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_railtypelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_road.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_sign.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_signlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_station.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_stationlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_story_page.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_storypagelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_storypageelementlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_subsidy.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_subsidylist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_testmode.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_text.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_tile.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_tilelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_town.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_townlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_tunnel.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_vehicle.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_vehiclelist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_viewport.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_waypoint.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_waypointlist.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\script\api\script_window.cpp">
-      <Filter>Script API Implementation</Filter>
+      <Filter>Script API</Filter>
     </ClCompile>
     <ClCompile Include="..\src\blitter\32bpp_anim.cpp">
       <Filter>Blitters</Filter>
@@ -3100,76 +3103,76 @@
       <Filter>Pathfinder</Filter>
     </ClInclude>
     <ClCompile Include="..\src\pathfinder\npf\aystar.cpp">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClCompile>
     <ClInclude Include="..\src\pathfinder\npf\aystar.h">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClInclude>
     <ClCompile Include="..\src\pathfinder\npf\npf.cpp">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClCompile>
     <ClInclude Include="..\src\pathfinder\npf\npf_func.h">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClInclude>
     <ClCompile Include="..\src\pathfinder\npf\queue.cpp">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClCompile>
     <ClInclude Include="..\src\pathfinder\npf\queue.h">
-      <Filter>NPF</Filter>
+      <Filter>Pathfinder\NPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\nodelist.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf.h">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_base.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_cache.h">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_common.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_costbase.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_costcache.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_costrail.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_destrail.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_node.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_node_rail.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_node_road.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_node_ship.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClCompile Include="..\src\pathfinder\yapf\yapf_rail.cpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClCompile>
     <ClCompile Include="..\src\pathfinder\yapf\yapf_road.cpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClCompile>
     <ClCompile Include="..\src\pathfinder\yapf\yapf_ship.cpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClCompile>
     <ClInclude Include="..\src\pathfinder\yapf\yapf_type.hpp">
-      <Filter>YAPF</Filter>
+      <Filter>Pathfinder\YAPF</Filter>
     </ClInclude>
     <ClCompile Include="..\src\video\dedicated_v.cpp">
       <Filter>Video</Filter>
@@ -3187,6 +3190,9 @@
       <Filter>Music</Filter>
     </ClCompile>
     <ClCompile Include="..\src\music\null_m.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\music\midifile.cpp">
       <Filter>Music</Filter>
     </ClCompile>
     <ClCompile Include="..\src\music\win32_m.cpp">
@@ -3217,25 +3223,25 @@
       <Filter>Threading</Filter>
     </ClCompile>
     <ClInclude Include="..\src\3rdparty\cpp-btree\btree.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\btree_container.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\btree_map.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\btree_set.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_map.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
     <ClInclude Include="..\src\3rdparty\cpp-btree\safe_btree_set.h">
-      <Filter>Btree containers</Filter>
+      <Filter>Btree</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -33,13 +33,13 @@ protected:
 	uint capacity; ///< The available space for storing items
 
 public:
-	SmallVector() : data(NULL), items(0), capacity(0) { }
+	SmallVector() : data(nullptr), items(0), capacity(0) { }
 
 	/**
 	 * Copy constructor.
 	 * @param other The other vector to copy.
 	 */
-	SmallVector(const SmallVector &other) : data(NULL), items(0), capacity(0)
+	SmallVector(const SmallVector &other) : data(nullptr), items(0), capacity(0)
 	{
 		this->Assign(other);
 	}
@@ -49,7 +49,7 @@ public:
 	 * @param other The other vector to copy.
 	 */
 	template <uint X>
-	SmallVector(const SmallVector<T, X> &other) : data(NULL), items(0), capacity(0)
+	SmallVector(const SmallVector<T, X> &other) : data(nullptr), items(0), capacity(0)
 	{
 		this->Assign(other);
 	}
@@ -111,7 +111,7 @@ public:
 		this->items = 0;
 		this->capacity = 0;
 		free(data);
-		data = NULL;
+		data = nullptr;
 	}
 
 	/**

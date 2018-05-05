@@ -16,7 +16,7 @@
 #include "company_base.h"
 
 void RemoveAllEngineReplacement(EngineRenewList *erl);
-EngineID EngineReplacement(EngineRenewList erl, EngineID engine, GroupID group, bool *replace_when_old = NULL);
+EngineID EngineReplacement(EngineRenewList erl, EngineID engine, GroupID group, bool *replace_when_old = nullptr);
 CommandCost AddEngineReplacement(EngineRenewList *erl, EngineID old_engine, EngineID new_engine, GroupID group, bool replace_when_old, DoCommandFlag flags);
 CommandCost RemoveEngineReplacement(EngineRenewList *erl, EngineID engine, GroupID group, DoCommandFlag flags);
 
@@ -38,7 +38,7 @@ static inline void RemoveAllEngineReplacementForCompany(Company *c)
  * @return The engine type to replace with, or INVALID_ENGINE if no
  * replacement is in the list.
  */
-static inline EngineID EngineReplacementForCompany(const Company *c, EngineID engine, GroupID group, bool *replace_when_old = NULL)
+static inline EngineID EngineReplacementForCompany(const Company *c, EngineID engine, GroupID group, bool *replace_when_old = nullptr)
 {
 	return EngineReplacement(c->engine_renew_list, engine, group, replace_when_old);
 }
@@ -77,7 +77,7 @@ static inline bool EngineHasReplacementWhenOldForCompany(const Company *c, Engin
  * @param group The group related to this replacement.
  * @param replace_when_old Replace when old or always?
  * @param flags The calling command flags.
- * @return 0 on success, CMD_ERROR on failure.
+ * @return 0 on success, CommandError() on failure.
  */
 static inline CommandCost AddEngineReplacementForCompany(Company *c, EngineID old_engine, EngineID new_engine, GroupID group, bool replace_when_old, DoCommandFlag flags)
 {
@@ -90,7 +90,7 @@ static inline CommandCost AddEngineReplacementForCompany(Company *c, EngineID ol
  * @param engine The original engine type.
  * @param group The group related to this replacement.
  * @param flags The calling command flags.
- * @return 0 on success, CMD_ERROR on failure.
+ * @return 0 on success, CommandError() on failure.
  */
 static inline CommandCost RemoveEngineReplacementForCompany(Company *c, EngineID engine, GroupID group, DoCommandFlag flags)
 {

@@ -33,16 +33,16 @@
 static FMusicDriver_DMusic iFMusicDriver_DMusic;
 
 /** the direct music object manages buffers and ports */
-static IDirectMusic *music = NULL;
+static IDirectMusic *music = nullptr;
 
 /** the performance object controls manipulation of the segments */
-static IDirectMusicPerformance *performance = NULL;
+static IDirectMusicPerformance *performance = nullptr;
 
 /** the loader object can load many types of DMusic related files */
-static IDirectMusicLoader *loader = NULL;
+static IDirectMusicLoader *loader = nullptr;
 
 /** the segment object is where the MIDI data is stored for playback */
-static IDirectMusicSegment *segment = NULL;
+static IDirectMusicSegment *segment = nullptr;
 
 static bool seeking = false;
 
@@ -68,23 +68,23 @@ static ProcPtrs proc;
 
 const char *MusicDriver_DMusic::Start(const char * const *parm)
 {
-	if (performance != NULL) return NULL;
+	if (performance != nullptr) return nullptr;
 
-	if (proc.CoCreateInstance == NULL) {
+	if (proc.CoCreateInstance == nullptr) {
 		if (!LoadLibraryList((Function*)&proc, ole_files)) {
 			return "ole32.dll load failed";
 		}
 	}
 
 	/* Initialize COM */
-	if (FAILED(proc.CoInitialize(NULL))) {
+	if (FAILED(proc.CoInitialize(nullptr))) {
 		return "COM initialization failed";
 	}
 
 	/* create the performance object */
 	if (FAILED(proc.CoCreateInstance(
 				CLSID_DirectMusicPerformance,
-				NULL,
+				nullptr,
 				CLSCTX_INPROC,
 				IID_IDirectMusicPerformance,
 				(LPVOID*)&performance
@@ -93,7 +93,7 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 	}
 
 	/* initialize it */
-	if (FAILED(performance->Init(&music, NULL, NULL))) {
+	if (FAILED(performance->Init(&music, nullptr, nullptr))) {
 		return "Failed to initialize performance object";
 	}
 
@@ -118,7 +118,7 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 	}
 #endif
 
-	IDirectMusicPort *music_port = NULL; // NULL means 'use default port'.
+	IDirectMusicPort *music_port = nullptr; // nullptr means 'use default port'.
 
 	if (port >= 0) {
 		/* Check if the passed port is a valid port. */
@@ -135,7 +135,7 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 		params.dwValidParams   = DMUS_PORTPARAMS_CHANNELGROUPS;
 		params.dwChannelGroups = 1;
 
-		if (FAILED(music->CreatePort(caps.guidPort, &params, &music_port, NULL))) {
+		if (FAILED(music->CreatePort(caps.guidPort, &params, &music_port, nullptr))) {
 			return "Failed to create port";
 		}
 
@@ -148,13 +148,13 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 
 	/* Add port to performance. */
 	if (FAILED(performance->AddPort(music_port))) {
-		if (music_port != NULL) music_port->Release();
+		if (music_port != nullptr) music_port->Release();
 		return "AddPort failed";
 	}
 
 	/* Assign a performance channel block to the performance if we added
 	 * a custom port to the performance. */
-	if (music_port != NULL) {
+	if (music_port != nullptr) {
 		if (FAILED(performance->AssignPChannelBlock(0, music_port, 1))) {
 			music_port->Release();
 			return "Failed to assign PChannel block";
@@ -166,7 +166,7 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 	/* create the loader object; this will be used to load the MIDI file */
 	if (FAILED(proc.CoCreateInstance(
 				CLSID_DirectMusicLoader,
-				NULL,
+				nullptr,
 				CLSCTX_INPROC,
 				IID_IDirectMusicLoader,
 				(LPVOID*)&loader
@@ -174,7 +174,7 @@ const char *MusicDriver_DMusic::Start(const char * const *parm)
 		return "Failed to create loader object";
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -188,28 +188,28 @@ void MusicDriver_DMusic::Stop()
 {
 	seeking = false;
 
-	if (performance != NULL) performance->Stop(NULL, NULL, 0, 0);
+	if (performance != nullptr) performance->Stop(nullptr, nullptr, 0, 0);
 
-	if (segment != NULL) {
+	if (segment != nullptr) {
 		segment->SetParam(GUID_Unload, 0xFFFFFFFF, 0, 0, performance);
 		segment->Release();
-		segment = NULL;
+		segment = nullptr;
 	}
 
-	if (music != NULL) {
+	if (music != nullptr) {
 		music->Release();
-		music = NULL;
+		music = nullptr;
 	}
 
-	if (performance != NULL) {
+	if (performance != nullptr) {
 		performance->CloseDown();
 		performance->Release();
-		performance = NULL;
+		performance = nullptr;
 	}
 
-	if (loader != NULL) {
+	if (loader != nullptr) {
 		loader->Release();
-		loader = NULL;
+		loader = nullptr;
 	}
 
 	proc.CoUninitialize();
@@ -231,9 +231,9 @@ void MusicDriver_DMusic::PlaySong(const char *filename)
 	);
 
 	/* release the existing segment if we have any */
-	if (segment != NULL) {
+	if (segment != nullptr) {
 		segment->Release();
-		segment = NULL;
+		segment = nullptr;
 	}
 
 	/* make a new segment */
@@ -259,7 +259,7 @@ void MusicDriver_DMusic::PlaySong(const char *filename)
 	}
 
 	/* start playing the MIDI file */
-	if (FAILED(performance->PlaySegment(segment, 0, 0, NULL))) {
+	if (FAILED(performance->PlaySegment(segment, 0, 0, nullptr))) {
 		DEBUG(driver, 0, "DirectMusic: PlaySegment failed");
 		return;
 	}
@@ -270,7 +270,7 @@ void MusicDriver_DMusic::PlaySong(const char *filename)
 
 void MusicDriver_DMusic::StopSong()
 {
-	if (FAILED(performance->Stop(segment, NULL, 0, 0))) {
+	if (FAILED(performance->Stop(segment, nullptr, 0, 0))) {
 		DEBUG(driver, 0, "DirectMusic: StopSegment failed");
 	}
 	seeking = false;
@@ -281,7 +281,7 @@ bool MusicDriver_DMusic::IsSongPlaying()
 {
 	/* Not the nicest code, but there is a short delay before playing actually
 	 * starts. OpenTTD makes no provision for this. */
-	if (performance->IsPlaying(segment, NULL) == S_OK) {
+	if (performance->IsPlaying(segment, nullptr) == S_OK) {
 		seeking = false;
 		return true;
 	} else {

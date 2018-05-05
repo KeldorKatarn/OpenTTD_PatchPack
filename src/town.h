@@ -38,8 +38,8 @@ static const uint INVALID_TOWN = 0xFFFF;
 
 static const uint TOWN_GROWTH_WINTER = 0xFFFFFFFE; ///< The town only needs this cargo in the winter (any amount)
 static const uint TOWN_GROWTH_DESERT = 0xFFFFFFFF; ///< The town needs the cargo for growth when on desert (any amount)
-static const uint16 TOWN_GROW_RATE_CUSTOM      = 0x8000; ///< If this mask is applied to Town::growth_rate, the grow_counter will not be calculated by the system (but assumed to be set by scripts)
-static const uint16 TOWN_GROW_RATE_CUSTOM_NONE = 0xFFFF; ///< Special value for Town::growth_rate to disable town growth.
+static const uint16 TOWN_GROWTH_RATE_NONE = 0xFFFF; ///< Special value for Town::growth_rate to disable town growth.
+static const uint16 MAX_TOWN_GROWTH_TICKS = 930; ///< Max amount of original town ticks that still fit into uint16, about equal to UINT16_MAX / TOWN_GROWTH_TICKS but sligtly less to simplify calculations
 
 typedef Pool<Town, TownID, 64, 64000> TownPool;
 extern TownPool _town_pool;
@@ -64,9 +64,10 @@ enum TownRatingCheckType
 */
 enum TownFlags
 {
-	TOWN_IS_GROWING = 0,   ///< Conditions for town growth are met. Grow according to Town::growth_rate.
-	TOWN_HAS_CHURCH = 1,   ///< There can be only one church by town.
-	TOWN_HAS_STADIUM = 2,   ///< There can be only one stadium by town.
+	TOWN_IS_GROWING    = 0,  ///< Conditions for town growth are met. Grow according to Town::growth_rate.
+	TOWN_HAS_CHURCH    = 1,  ///< There can be only one church by town.
+	TOWN_HAS_STADIUM   = 2,  ///< There can be only one stadium by town.
+	TOWN_CUSTOM_GROWTH = 3,  ///< Growth rate is controlled by GS.
 };
 
 /** Data structure with cached data of towns. */
@@ -89,7 +90,7 @@ struct Town : TownPool::PoolItem<&_town_pool> {
 	uint32 townnamegrfid;
 	uint16 townnametype;
 	uint32 townnameparts;
-	char *name;                    ///< Custom town name. If NULL, the town was not renamed and uses the generated name.
+	char *name;                    ///< Custom town name. If nullptr, the town was not renamed and uses the generated name.
 
 	byte flags;                    ///< See #TownFlags.
 
@@ -196,7 +197,7 @@ struct Town : TownPool::PoolItem<&_town_pool> {
 
 	uint16 GetGrowthRateInDays() const
 	{
-		return IsGrowing() ? ((this->growth_rate & (~TOWN_GROW_RATE_CUSTOM)) * TOWN_GROWTH_TICKS + DAY_TICKS) / DAY_TICKS : 0;
+		return IsGrowing() ? RoundDivSU(this->growth_rate + 1, DAY_TICKS) : 0;
 	}
 
 	static void PostDestructor(size_t index);
@@ -235,7 +236,6 @@ uint GetMaskOfTownActions(int *nump, CompanyID cid, const Town *t);
 bool GenerateTowns(TownLayout layout);
 const CargoSpec *FindFirstCargoWithTownEffect(TownEffect effect);
 
-
 /** Town actions of a company. */
 enum TownActions {
 	TACT_NONE             = 0x00, ///< Empty action set.
@@ -270,7 +270,7 @@ template <class T>
 void MakeDefaultName(T *obj)
 {
 	/* We only want to set names if it hasn't been set before, or when we're calling from afterload. */
-	assert(obj->name == NULL || obj->town_cn == UINT16_MAX);
+	assert(obj->name == nullptr || obj->town_cn == UINT16_MAX);
 
 	obj->town = ClosestTownFromTile(obj->xy, UINT_MAX);
 
@@ -294,7 +294,7 @@ void MakeDefaultName(T *obj)
 		T *lobj = T::GetIfValid(cid);
 
 		/* check only valid waypoints... */
-		if (lobj != NULL && obj != lobj) {
+		if (lobj != nullptr && obj != lobj) {
 			/* only objects within the same city and with the same type */
 			if (lobj->town == obj->town && lobj->IsOfType(obj)) {
 				/* if lobj->town_cn < next, uint will overflow to '+inf' */
@@ -324,6 +324,15 @@ void MakeDefaultName(T *obj)
 
 	obj->town_cn = (uint16)next; // set index...
 }
+
+/*
+ * Converts original town ticks counters to plain game ticks. Note that
+ * tick 0 is a valid tick so actual amount is one more than the counter value.
+ */
+static inline uint16 TownTicksToGameTicks(uint16 ticks) {
+	return (min(ticks, MAX_TOWN_GROWTH_TICKS) + 1) * TOWN_GROWTH_TICKS - 1;
+}
+
 
 extern uint32 _town_cargoes_accepted;
 

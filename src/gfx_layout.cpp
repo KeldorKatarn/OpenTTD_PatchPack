@@ -180,7 +180,7 @@ public:
 	ParagraphLayouter::Line *NextLine(int max_width)
 	{
 		ParagraphLayout::Line *l = p->nextLine(max_width);
-		return l == NULL ? NULL : new ICULine(l);
+		return l == nullptr ? nullptr : new ICULine(l);
 	}
 };
 
@@ -204,10 +204,10 @@ static ParagraphLayouter *GetParagraphLayout(UChar *buff, UChar *buff_end, FontM
 	LEErrorCode status = LE_NO_ERROR;
 	/* ParagraphLayout does not copy "buff", so it must stay valid.
 	 * "runs" is copied according to the ICU source, but the documentation does not specify anything, so this might break somewhen. */
-	ParagraphLayout *p = new ParagraphLayout(buff, length, &runs, NULL, NULL, NULL, _current_text_dir == TD_RTL ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR, false, status);
+	ParagraphLayout *p = new ParagraphLayout(buff, length, &runs, nullptr, nullptr, nullptr, _current_text_dir == TD_RTL ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR, false, status);
 	if (status != LE_NO_ERROR) {
 		delete p;
-		return NULL;
+		return nullptr;
 	}
 
 	return new ICUParagraphLayout(p);
@@ -221,7 +221,7 @@ static ParagraphLayouter *GetParagraphLayout(UChar *buff, UChar *buff_end, FontM
  * visual runs.
  *
  * One constructs this class with the text that needs to be split into
- * lines. Then nextLine is called with the maximum width until NULL is
+ * lines. Then nextLine is called with the maximum width until nullptr is
  * returned. Each nextLine call creates VisualRuns which contain the
  * length of text that are to be drawn with the same font. In other
  * words, the result of this class is a list of sub strings with their
@@ -439,7 +439,7 @@ void FallbackParagraphLayout::Reflow()
 /**
  * Construct a new line with a maximum width.
  * @param max_width The maximum width of the string.
- * @return A Line, or NULL when at the end of the paragraph.
+ * @return A Line, or nullptr when at the end of the paragraph.
  */
 const ParagraphLayouter::Line *FallbackParagraphLayout::NextLine(int max_width)
 {
@@ -447,19 +447,19 @@ const ParagraphLayouter::Line *FallbackParagraphLayout::NextLine(int max_width)
 	 *  - split a line at a newline character, or at a space where we can break a line.
 	 *  - split for a visual run whenever a new line happens, or the font changes.
 	 */
-	if (this->buffer == NULL) return NULL;
+	if (this->buffer == nullptr) return nullptr;
 
 	FallbackLine *l = new FallbackLine();
 
 	if (*this->buffer == '\0') {
 		/* Only a newline. */
-		this->buffer = NULL;
+		this->buffer = nullptr;
 		*l->Append() = new FallbackVisualRun(this->runs.Begin()->second, this->buffer, 0, 0);
 		return l;
 	}
 
 	const WChar *begin = this->buffer;
-	const WChar *last_space = NULL;
+	const WChar *last_space = nullptr;
 	const WChar *last_char = begin;
 	int width = 0;
 
@@ -478,7 +478,7 @@ const ParagraphLayouter::Line *FallbackParagraphLayout::NextLine(int max_width)
 		last_char = this->buffer;
 
 		if (c == '\0') {
-			this->buffer = NULL;
+			this->buffer = nullptr;
 			break;
 		}
 
@@ -491,7 +491,7 @@ const ParagraphLayouter::Line *FallbackParagraphLayout::NextLine(int max_width)
 			next_run = this->buffer_begin + iter->first;
 			begin = this->buffer;
 
-			last_space = NULL;
+			last_space = nullptr;
 		}
 
 		if (IsWhitespace(c)) last_space = this->buffer;
@@ -505,11 +505,11 @@ const ParagraphLayouter::Line *FallbackParagraphLayout::NextLine(int max_width)
 				if (width == char_width) {
 					/* The character is wider than allowed width; don't know
 					 * what to do with this case... bail out! */
-					this->buffer = NULL;
+					this->buffer = nullptr;
 					return l;
 				}
 
-				if (last_space == NULL) {
+				if (last_space == nullptr) {
 					/* No space has been found. Just terminate at our current
 					 * location. This usually happens for languages that do not
 					 * require spaces in strings, like Chinese, Japanese and
@@ -564,7 +564,7 @@ static FallbackParagraphLayout *GetParagraphLayout(WChar *buff, WChar *buff_end,
 /**
  * Helper for getting a ParagraphLayouter of the given type.
  *
- * @note In case no ParagraphLayouter could be constructed, line.layout will be NULL.
+ * @note In case no ParagraphLayouter could be constructed, line.layout will be nullptr.
  * @param line The cache item to store our layouter in.
  * @param str The string to create a layouter for.
  * @param state The state of the font and color.
@@ -573,7 +573,7 @@ static FallbackParagraphLayout *GetParagraphLayout(WChar *buff, WChar *buff_end,
 template <typename T>
 static inline void GetLayouter(Layouter::LineCacheItem &line, const char *&str, FontState &state)
 {
-	if (line.buffer != NULL) free(line.buffer);
+	if (line.buffer != nullptr) free(line.buffer);
 
 	typename T::CharType *buff_begin = MallocT<typename T::CharType>(DRAW_STRING_BUFFER);
 	const typename T::CharType *buffer_last = buff_begin + DRAW_STRING_BUFFER;
@@ -647,7 +647,7 @@ Layouter::Layouter(const char *str, int maxw, TextColour colour, FontSize fontsi
 		}
 
 		LineCacheItem& line = GetCachedParagraphLayout(str, lineend - str, state);
-		if (line.layout != NULL) {
+		if (line.layout != nullptr) {
 			/* Line is in cache */
 			str = lineend + 1;
 			state = line.state_after;
@@ -659,7 +659,7 @@ Layouter::Layouter(const char *str, int maxw, TextColour colour, FontSize fontsi
 			const char *old_str = str;
 
 			GetLayouter<ICUParagraphLayout>(line, str, state);
-			if (line.layout == NULL) {
+			if (line.layout == nullptr) {
 				static bool warned = false;
 				if (!warned) {
 					DEBUG(misc, 0, "ICU layouter bailed on the font. Falling back to the fallback layouter");
@@ -677,7 +677,7 @@ Layouter::Layouter(const char *str, int maxw, TextColour colour, FontSize fontsi
 
 		/* Copy all lines into a local cache so we can reuse them later on more easily. */
 		const ParagraphLayouter::Line *l;
-		while ((l = line.layout->NextLine(maxw)) != NULL) {
+		while ((l = line.layout->NextLine(maxw)) != nullptr) {
 			*this->Append() = l;
 		}
 
@@ -749,7 +749,7 @@ Point Layouter::GetCharPosition(const char *ch) const
 /**
  * Get the character that is at a position.
  * @param x Position in the string.
- * @return Pointer to the character at the position or NULL if no character is at the position.
+ * @return Pointer to the character at the position or nullptr if no character is at the position.
  */
 const char *Layouter::GetCharAtPosition(int x) const
 {
@@ -780,7 +780,7 @@ const char *Layouter::GetCharAtPosition(int x) const
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /**
@@ -821,7 +821,7 @@ void Layouter::ResetFontCache(FontSize size)
  */
 Layouter::LineCacheItem &Layouter::GetCachedParagraphLayout(const char *str, size_t len, const FontState &state)
 {
-	if (linecache == NULL) {
+	if (linecache == nullptr) {
 		/* Create linecache on first access to avoid trouble with initialisation order of static variables. */
 		linecache = new LineCache();
 	}
@@ -837,7 +837,7 @@ Layouter::LineCacheItem &Layouter::GetCachedParagraphLayout(const char *str, siz
  */
 void Layouter::ResetLineCache()
 {
-	if (linecache != NULL) linecache->clear();
+	if (linecache != nullptr) linecache->clear();
 }
 
 /**
@@ -845,7 +845,7 @@ void Layouter::ResetLineCache()
  */
 void Layouter::ReduceLineCache()
 {
-	if (linecache != NULL) {
+	if (linecache != nullptr) {
 		/* TODO LRU cache would be fancy, but not exactly necessary */
 		if (linecache->size() > 4096) ResetLineCache();
 	}

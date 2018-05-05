@@ -68,7 +68,7 @@ static const NWidgetPart _nested_departures_list[] = {
 };
 
 static WindowDesc _departures_desc(
-	WDP_AUTO, NULL, 260, 246,
+	WDP_AUTO, nullptr, 260, 246,
 	WC_DEPARTURES_BOARD, WC_NONE,
 	0,
 	_nested_departures_list, lengthof(_nested_departures_list)
@@ -129,11 +129,13 @@ public:
 		station(window_number),
 		departures(new DepartureList()),
 		arrivals(new DepartureList()),
-		entry_height(1 + FONT_HEIGHT_NORMAL + 1 + (_settings_client.gui.departure_larger_font ? FONT_HEIGHT_NORMAL : FONT_HEIGHT_SMALL) + 1 + 1),
 		tick_count(0),
 		calc_tick_countdown(0),
 		min_width(400)
 	{
+		const Dimension arrow_dimensions = GetSpriteSize(SPR_ARROW_DOWN);
+		this->entry_height = 1 + std::max(arrow_dimensions.height, uint(FONT_HEIGHT_NORMAL)) + 1 +
+							 (_settings_client.gui.departure_larger_font ? FONT_HEIGHT_NORMAL : FONT_HEIGHT_SMALL) + 1 + 1;
 		this->CreateNestedTree();
 		this->vscroll = this->GetScrollbar(WID_DB_SCROLLBAR);
 		this->FinishInitNested(window_number);
@@ -484,11 +486,11 @@ void DeparturesWindow::DeleteDeparturesList(DepartureList *list)
 		Departure **d = list->Get(i);
 		delete *d;
 		/* Make sure a double free doesn't happen. */
-		*d = NULL;
+		*d = nullptr;
 	}
 	list->Reset();
 	delete list;
-	list = NULL;
+	list = nullptr;
 }
 
 /**
@@ -872,14 +874,13 @@ void DeparturesWindow::DrawDeparturesListItems(const Rect &r) const
 			GetString(buffer, string, lastof(buffer));
 		} else {
 			buffer[0] = 0;
-			//SetDParam(0, d->terminus);
-			//GetString(scratch, STR_DEPARTURES_CALLING_AT_FIRST_STATION, lastof(scratch));
 		}
 
 		int list_width = (GetStringBoundingBox(buffer, _settings_client.gui.departure_larger_font ? FS_NORMAL : FS_SMALL)).width;
 
 		/* Draw the whole list if it will fit. Otherwise scroll it. */
-		if (list_width < text_right - (text_left + calling_at_width + 2)) {
+		if (!_settings_client.gui.departure_always_scroll &&
+			(list_width < text_right - (text_left + calling_at_width + 2))) {
 			ltr ? DrawString(text_left + calling_at_width + 2,                        text_right, bottom_y, buffer)
 				: DrawString(                       text_left, text_right - calling_at_width - 2, bottom_y, buffer);
 		} else {

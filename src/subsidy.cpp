@@ -251,7 +251,7 @@ void CreateSubsidy(CargoID cid, SourceType src_type, SourceID src, SourceType ds
  */
 CommandCost CmdCreateSubsidy(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!Subsidy::CanAllocateItem()) return CMD_ERROR;
+	if (!Subsidy::CanAllocateItem()) return CommandError();
 
 	CargoID cid = GB(p1, 24, 8);
 	SourceType src_type = (SourceType)GB(p1, 0, 8);
@@ -259,29 +259,29 @@ CommandCost CmdCreateSubsidy(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	SourceType dst_type = (SourceType)GB(p2, 0, 8);
 	SourceID dst = GB(p2, 8, 16);
 
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (_current_company != OWNER_DEITY) return CommandError();
 
-	if (cid >= NUM_CARGO || !::CargoSpec::Get(cid)->IsValid()) return CMD_ERROR;
+	if (cid >= NUM_CARGO || !::CargoSpec::Get(cid)->IsValid()) return CommandError();
 
 	switch (src_type) {
 		case ST_TOWN:
-			if (!Town::IsValidID(src)) return CMD_ERROR;
+			if (!Town::IsValidID(src)) return CommandError();
 			break;
 		case ST_INDUSTRY:
-			if (!Industry::IsValidID(src)) return CMD_ERROR;
+			if (!Industry::IsValidID(src)) return CommandError();
 			break;
 		default:
-			return CMD_ERROR;
+			return CommandError();
 	}
 	switch (dst_type) {
 		case ST_TOWN:
-			if (!Town::IsValidID(dst)) return CMD_ERROR;
+			if (!Town::IsValidID(dst)) return CommandError();
 			break;
 		case ST_INDUSTRY:
-			if (!Industry::IsValidID(dst)) return CMD_ERROR;
+			if (!Industry::IsValidID(dst)) return CommandError();
 			break;
 		default:
-			return CMD_ERROR;
+			return CommandError();
 	}
 
 	if (flags & DC_EXEC) {
@@ -375,7 +375,7 @@ bool FindSubsidyIndustryCargoRoute()
 
 	/* Select a random industry. */
 	const Industry *src_ind = Industry::GetRandom();
-	if (src_ind == NULL) return false;
+	if (src_ind == nullptr) return false;
 
 	uint trans, total;
 
@@ -434,7 +434,7 @@ bool FindSubsidyCargoDestination(CargoID cid, SourceType src_type, SourceID src)
 			const Industry *dst_ind = Industry::GetRandom();
 
 			/* The industry must accept the cargo */
-			if (dst_ind == NULL ||
+			if (dst_ind == nullptr ||
 					(cid != dst_ind->accepts_cargo[0] &&
 					 cid != dst_ind->accepts_cargo[1] &&
 					 cid != dst_ind->accepts_cargo[2])) {

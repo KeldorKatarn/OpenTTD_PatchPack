@@ -83,12 +83,12 @@ extern const byte _slope_to_sprite_offset[32] = {
 /**
  * Description of the snow line throughout the year.
  *
- * If it is \c NULL, a static snowline height is used, as set by \c _settings_game.game_creation.snow_line_height.
+ * If it is \c nullptr, a static snowline height is used, as set by \c _settings_game.game_creation.snow_line_height.
  * Otherwise it points to a table loaded from a newGRF file that describes the variable snowline.
  * @ingroup SnowLineGroup
  * @see GetSnowLine() GameCreationSettings
  */
-static SnowLine *_snow_line = NULL;
+static SnowLine *_snow_line = nullptr;
 
 static const int LONG_RIVER_LENGTH = 512;
 static TileIndex _current_spring = INVALID_TILE;
@@ -343,7 +343,7 @@ void GetSlopePixelZOnEdge(Slope tileh, DiagDirection edge, int *z1, int *z2)
  * If a tile does not have a foundation, the function returns the same as GetTileSlope.
  *
  * @param tile The tile of interest.
- * @param z returns the z of the foundation slope. (Can be NULL, if not needed)
+ * @param z returns the z of the foundation slope. (Can be nullptr, if not needed)
  * @return The slope on top of the foundation.
  */
 Slope GetFoundationSlope(TileIndex tile, int *z)
@@ -351,7 +351,7 @@ Slope GetFoundationSlope(TileIndex tile, int *z)
 	Slope tileh = GetTileSlope(tile, z);
 	Foundation f = _tile_type_procs[GetTileType(tile)]->get_foundation_proc(tile, tileh);
 	uint z_inc = ApplyFoundationToSlope(f, &tileh);
-	if (z != NULL) *z += z_inc;
+	if (z != nullptr) *z += z_inc;
 	return tileh;
 }
 
@@ -501,7 +501,7 @@ void DrawFoundation(TileInfo *ti, Foundation f)
 void DoClearSquare(TileIndex tile)
 {
 	/* If the tile can have animation and we clear it, delete it from the animated tile list. */
-	if (_tile_type_procs[GetTileType(tile)]->animate_tile_proc != NULL) DeleteAnimatedTile(tile);
+	if (_tile_type_procs[GetTileType(tile)]->animate_tile_proc != nullptr) DeleteAnimatedTile(tile);
 
 	MakeClear(tile, CLEAR_GRASS, _generating_world ? 3 : 0);
 	MarkTileDirtyByTile(tile);
@@ -545,7 +545,7 @@ void GetTileDesc(TileIndex tile, TileDesc *td)
  */
 bool IsSnowLineSet()
 {
-	return _snow_line != NULL;
+	return _snow_line != nullptr;
 }
 
 /**
@@ -574,7 +574,7 @@ void SetSnowLine(byte table[SNOW_LINE_MONTHS][SNOW_LINE_DAYS])
  */
 uint16 GetSnowLine()
 {
-	if (_snow_line == NULL) return _settings_game.game_creation.snow_line_height;
+	if (_snow_line == nullptr) return _settings_game.game_creation.snow_line_height;
 
 	return _snow_line->table[_cur_date_ymd.month][_cur_date_ymd.day];
 }
@@ -586,7 +586,7 @@ uint16 GetSnowLine()
  */
 uint16 HighestSnowLine()
 {
-	return _snow_line == NULL ? _settings_game.game_creation.snow_line_height : _snow_line->highest_value;
+	return _snow_line == nullptr ? _settings_game.game_creation.snow_line_height : _snow_line->highest_value;
 }
 
 /**
@@ -596,7 +596,7 @@ uint16 HighestSnowLine()
  */
 uint16 LowestSnowLine()
 {
-	return _snow_line == NULL ? _settings_game.game_creation.snow_line_height : _snow_line->lowest_value;
+	return _snow_line == nullptr ? _settings_game.game_creation.snow_line_height : _snow_line->lowest_value;
 }
 
 /**
@@ -606,7 +606,7 @@ uint16 LowestSnowLine()
 void ClearSnowLine()
 {
 	free(_snow_line);
-	_snow_line = NULL;
+	_snow_line = nullptr;
 }
 
 /**
@@ -624,35 +624,35 @@ CommandCost CmdLandscapeClear(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 	bool do_clear = false;
 	/* Test for stuff which results in water when cleared. Then add the cost to also clear the water. */
 	if ((flags & DC_FORCE_CLEAR_TILE) && HasTileWaterClass(tile) && IsTileOnWater(tile) && !IsWaterTile(tile) && !IsCoastTile(tile)) {
-		if ((flags & DC_AUTO) && GetWaterClass(tile) == WATER_CLASS_CANAL) return_cmd_error(STR_ERROR_MUST_DEMOLISH_CANAL_FIRST);
+		if ((flags & DC_AUTO) && GetWaterClass(tile) == WATER_CLASS_CANAL) return CommandError(STR_ERROR_MUST_DEMOLISH_CANAL_FIRST);
 		do_clear = true;
 		cost.AddCost(GetWaterClass(tile) == WATER_CLASS_CANAL ? _price[PR_CLEAR_CANAL] : _price[PR_CLEAR_WATER]);
 	}
 
-	Company *c = (flags & (DC_AUTO | DC_BANKRUPT)) ? NULL : Company::GetIfValid(_current_company);
-	if (c != NULL && (int)GB(c->clear_limit, 16, 16) < 1) {
-		return_cmd_error(STR_ERROR_CLEARING_LIMIT_REACHED);
+	Company *c = (flags & (DC_AUTO | DC_BANKRUPT)) ? nullptr : Company::GetIfValid(_current_company);
+	if (c != nullptr && (int)GB(c->clear_limit, 16, 16) < 1) {
+		return CommandError(STR_ERROR_CLEARING_LIMIT_REACHED);
 	}
 
 	const ClearedObjectArea *coa = FindClearedObject(tile);
 
 	/* If this tile was the first tile which caused object destruction, always
 	 * pass it on to the tile_type_proc. That way multiple test runs and the exec run stay consistent. */
-	if (coa != NULL && coa->first_tile != tile) {
+	if (coa != nullptr && coa->first_tile != tile) {
 		/* If this tile belongs to an object which was already cleared via another tile, pretend it has been
 		 * already removed.
 		 * However, we need to check stuff, which is not the same for all object tiles. (e.g. being on water or not) */
 
 		/* If a object is removed, it leaves either bare land or water. */
 		if ((flags & DC_NO_WATER) && HasTileWaterClass(tile) && IsTileOnWater(tile)) {
-			return_cmd_error(STR_ERROR_CAN_T_BUILD_ON_WATER);
+			return CommandError(STR_ERROR_CAN_T_BUILD_ON_WATER);
 		}
 	} else {
 		cost.AddCost(_tile_type_procs[GetTileType(tile)]->clear_tile_proc(tile, flags));
 	}
 
 	if (flags & DC_EXEC) {
-		if (c != NULL) c->clear_limit -= 1 << 16;
+		if (c != nullptr) c->clear_limit -= 1 << 16;
 		if (do_clear) DoClearSquare(tile);
 	}
 	return cost;
@@ -670,15 +670,15 @@ CommandCost CmdLandscapeClear(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
  */
 CommandCost CmdClearArea(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (p1 >= MapSize()) return CMD_ERROR;
+	if (p1 >= MapSize()) return CommandError();
 
 	Money money = GetAvailableMoneyForCommand();
 	CommandCost cost(EXPENSES_CONSTRUCTION);
-	CommandCost last_error = CMD_ERROR;
+	CommandCost last_error = CommandError();
 	bool had_success = false;
 
-	const Company *c = (flags & (DC_AUTO | DC_BANKRUPT)) ? NULL : Company::GetIfValid(_current_company);
-	int limit = (c == NULL ? INT32_MAX : GB(c->clear_limit, 16, 16));
+	const Company *c = (flags & (DC_AUTO | DC_BANKRUPT)) ? nullptr : Company::GetIfValid(_current_company);
+	int limit = (c == nullptr ? INT32_MAX : GB(c->clear_limit, 16, 16));
 
 	TileIterator *iter = HasBit(p2, 0) ? (TileIterator *)new DiagonalTileIterator(tile, p1) : new OrthogonalTileIterator(tile, p1);
 	for (; *iter != INVALID_TILE; ++(*iter)) {
@@ -688,7 +688,7 @@ CommandCost CmdClearArea(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 			last_error = ret;
 
 			/* We may not clear more tiles. */
-			if (c != NULL && GB(c->clear_limit, 16, 16) < 1) break;
+			if (c != nullptr && GB(c->clear_limit, 16, 16) < 1) break;
 			continue;
 		}
 
@@ -792,7 +792,7 @@ static void GenerateTerrain(int type, uint flag)
 	uint32 r = Random();
 
 	const Sprite *templ = GetSprite((((r >> 24) * _genterrain_tbl_1[type]) >> 8) + _genterrain_tbl_2[type] + 4845, ST_MAPGEN);
-	if (templ == NULL) usererror("Map generator sprites could not be loaded");
+	if (templ == nullptr) usererror("Map generator sprites could not be loaded");
 
 	uint x = r & MapMaxX();
 	uint y = (r >> MapLogX()) & MapMaxY();
@@ -1065,7 +1065,7 @@ static bool RiverMakeWider(TileIndex tile, void *data)
 		MakeRiver(tile, Random());
 		/* Remove desert directly around the river tile. */
 		TileIndex cur_tile = tile;
-		CircularTileSearch(&cur_tile, 5, RiverModifyDesertZone, NULL);
+		CircularTileSearch(&cur_tile, 5, RiverModifyDesertZone, nullptr);
 	}
 	return false;
 }
@@ -1076,12 +1076,12 @@ static void River_FoundEndNode(AyStar *aystar, OpenListNode *current)
 	/* Count river length. */
 	uint length = 0;
 
-	for (PathNode *path = &current->path; path != NULL; path = path->parent) {
+	for (PathNode *path = &current->path; path != nullptr; path = path->parent) {
 		length++;
 	}
 
 	uint cur_pos = 0;
-	for (PathNode *path = &current->path; path != NULL; path = path->parent, cur_pos++) {
+	for (PathNode *path = &current->path; path != nullptr; path = path->parent, cur_pos++) {
 		TileIndex tile = path->node.tile;
 		if (!IsWaterTile(tile)) {
 			MakeRiver(tile, Random());
@@ -1093,7 +1093,7 @@ static void River_FoundEndNode(AyStar *aystar, OpenListNode *current)
 				CircularTileSearch(&tile, radius + RandomRange(1), RiverMakeWider, (void *)&path->node.tile);
 			} else {
 				/* Remove desert directly around the river tile. */
-				CircularTileSearch(&tile, 5, RiverModifyDesertZone, NULL);
+				CircularTileSearch(&tile, 5, RiverModifyDesertZone, nullptr);
 			}
 		}
 	}
@@ -1228,7 +1228,7 @@ static void CreateRivers()
 		IncreaseGeneratingWorldProgress(GWP_RIVER);
 		for (int tries = 0; tries < 2048; tries++) {
 			TileIndex t = RandomTile();
-			if (!CircularTileSearch(&t, 8, FindSpring, NULL)) continue;
+			if (!CircularTileSearch(&t, 8, FindSpring, nullptr)) continue;
 			_current_spring = t;
 			_is_main_river = false;
 			if (FlowRiver(t, t, LONG_RIVER_LENGTH)) break;
@@ -1239,7 +1239,7 @@ static void CreateRivers()
 		IncreaseGeneratingWorldProgress(GWP_RIVER);
 		for (int tries = 0; tries < 128; tries++) {
 			TileIndex t = RandomTile();
-			if (!CircularTileSearch(&t, 8, FindSpring, NULL)) continue;
+			if (!CircularTileSearch(&t, 8, FindSpring, nullptr)) continue;
 			_current_spring = t;
 			_is_main_river = false;
 			if (FlowRiver(t, t, _settings_game.game_creation.min_river_length)) break;

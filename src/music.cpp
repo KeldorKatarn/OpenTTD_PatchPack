@@ -41,13 +41,13 @@ template <class Tbase_set>
 template <class Tbase_set>
 /* static */ bool BaseMedia<Tbase_set>::DetermineBestSet()
 {
-	if (BaseMedia<Tbase_set>::used_set != NULL) return true;
+	if (BaseMedia<Tbase_set>::used_set != nullptr) return true;
 
-	const Tbase_set *best = NULL;
-	for (const Tbase_set *c = BaseMedia<Tbase_set>::available_sets; c != NULL; c = c->next) {
+	const Tbase_set *best = nullptr;
+	for (const Tbase_set *c = BaseMedia<Tbase_set>::available_sets; c != nullptr; c = c->next) {
 		if (c->GetNumMissing() != 0) continue;
 
-		if (best == NULL ||
+		if (best == nullptr ||
 				(best->fallback && !c->fallback) ||
 				best->valid_files < c->valid_files ||
 				(best->valid_files == c->valid_files &&
@@ -57,7 +57,7 @@ template <class Tbase_set>
 	}
 
 	BaseMedia<Tbase_set>::used_set = best;
-	return BaseMedia<Tbase_set>::used_set != NULL;
+	return BaseMedia<Tbase_set>::used_set != nullptr;
 }
 
 bool MusicSet::FillSetDetails(IniFile *ini, const char *path, const char *full_filename)
@@ -68,25 +68,25 @@ bool MusicSet::FillSetDetails(IniFile *ini, const char *path, const char *full_f
 		IniGroup *names = ini->GetGroup("names");
 		for (uint i = 0, j = 1; i < lengthof(this->song_name); i++) {
 			const char *filename = this->files[i].filename;
-			if (names == NULL || StrEmpty(filename)) {
+			if (names == nullptr || StrEmpty(filename)) {
 				this->song_name[i][0] = '\0';
 				continue;
 			}
 
-			IniItem *item = NULL;
+			IniItem *item = nullptr;
 			/* As we possibly add a path to the filename and we compare
 			 * on the filename with the path as in the .obm, we need to
 			 * keep stripping path elements until we find a match. */
-			for (const char *p = filename; p != NULL; p = strchr(p, PATHSEPCHAR)) {
+			for (const char *p = filename; p != nullptr; p = strchr(p, PATHSEPCHAR)) {
 				/* Remove possible double path separator characters from
 				 * the beginning, so we don't start reading e.g. root. */
 				while (*p == PATHSEPCHAR) p++;
 
 				item = names->GetItem(p, false);
-				if (item != NULL && !StrEmpty(item->value)) break;
+				if (item != nullptr && !StrEmpty(item->value)) break;
 			}
 
-			if (item == NULL || StrEmpty(item->value)) {
+			if (item == nullptr || StrEmpty(item->value)) {
 				DEBUG(grf, 0, "Base music set song name missing: %s", filename);
 				return false;
 			}

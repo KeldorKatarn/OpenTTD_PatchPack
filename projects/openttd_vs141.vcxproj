@@ -92,19 +92,19 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>..\src\;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>..\src\;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src\;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win32\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\src;..\lib\shared\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\src\;..\lib\shared\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\lib\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -171,7 +171,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -227,7 +228,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -295,7 +297,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -353,7 +356,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"</Command>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\bin\$(TargetName).exe"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "$(SolutionDir)..\bin\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy executable to /bin</Message>
@@ -406,13 +410,6 @@
     <ClCompile Include="..\src\ini.cpp" />
     <ClCompile Include="..\src\ini_load.cpp" />
     <ClCompile Include="..\src\landscape.cpp" />
-    <ClCompile Include="..\src\linkgraph\demands.cpp" />
-    <ClCompile Include="..\src\linkgraph\flowmapper.cpp" />
-    <ClCompile Include="..\src\linkgraph\linkgraph.cpp" />
-    <ClCompile Include="..\src\linkgraph\linkgraphjob.cpp" />
-    <ClCompile Include="..\src\linkgraph\linkgraphschedule.cpp" />
-    <ClCompile Include="..\src\linkgraph\mcf.cpp" />
-    <ClCompile Include="..\src\linkgraph\refresh.cpp" />
     <ClCompile Include="..\src\logic_signal_program.cpp" />
     <ClCompile Include="..\src\logic_signals.cpp" />
     <ClCompile Include="..\src\map.cpp" />
@@ -558,18 +555,6 @@
     <ClInclude Include="..\src\landscape.h" />
     <ClInclude Include="..\src\landscape_type.h" />
     <ClInclude Include="..\src\language.h" />
-    <ClInclude Include="..\src\linkgraph\demands.h" />
-    <ClInclude Include="..\src\linkgraph\flowmapper.h" />
-    <ClInclude Include="..\src\linkgraph\init.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraph.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraph_base.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraph_gui.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraph_type.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraphjob.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraphjob_base.h" />
-    <ClInclude Include="..\src\linkgraph\linkgraphschedule.h" />
-    <ClInclude Include="..\src\linkgraph\mcf.h" />
-    <ClInclude Include="..\src\linkgraph\refresh.h" />
     <ClInclude Include="..\src\livery.h" />
     <ClInclude Include="..\src\logic_signals.h" />
     <ClInclude Include="..\src\map_func.h" />
@@ -607,6 +592,8 @@
     <ClInclude Include="..\src\news_func.h" />
     <ClInclude Include="..\src\news_gui.h" />
     <ClInclude Include="..\src\news_type.h" />
+    <ClInclude Include="..\src\music\midi.h" />
+    <ClInclude Include="..\src\music\midifile.hpp" />
     <ClInclude Include="..\src\music\null_m.h" />
     <ClInclude Include="..\src\sound\null_s.h" />
     <ClInclude Include="..\src\video\null_v.h" />
@@ -737,6 +724,25 @@
     <ClInclude Include="..\src\zoom_func.h" />
     <ClInclude Include="..\src\zoom_type.h" />
     <ClInclude Include="..\src\zoning.h" />
+    <ClCompile Include="..\src\linkgraph\demands.cpp" />
+    <ClCompile Include="..\src\linkgraph\flowmapper.cpp" />
+    <ClCompile Include="..\src\linkgraph\linkgraph.cpp" />
+    <ClCompile Include="..\src\linkgraph\linkgraphjob.cpp" />
+    <ClCompile Include="..\src\linkgraph\linkgraphschedule.cpp" />
+    <ClCompile Include="..\src\linkgraph\mcf.cpp" />
+    <ClCompile Include="..\src\linkgraph\refresh.cpp" />
+    <ClInclude Include="..\src\linkgraph\demands.h" />
+    <ClInclude Include="..\src\linkgraph\flowmapper.h" />
+    <ClInclude Include="..\src\linkgraph\init.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraph.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraph_base.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraph_gui.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraph_type.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraphjob.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraphjob_base.h" />
+    <ClInclude Include="..\src\linkgraph\linkgraphschedule.h" />
+    <ClInclude Include="..\src\linkgraph\mcf.h" />
+    <ClInclude Include="..\src\linkgraph\refresh.h" />
     <ClCompile Include="..\src\core\alloc_func.cpp" />
     <ClInclude Include="..\src\core\alloc_func.hpp" />
     <ClInclude Include="..\src\core\alloc_type.hpp" />
@@ -1387,6 +1393,7 @@
     <ClCompile Include="..\src\video\win32_v.cpp" />
     <ClCompile Include="..\src\music\dmusic.cpp" />
     <ClCompile Include="..\src\music\null_m.cpp" />
+    <ClCompile Include="..\src\music\midifile.cpp" />
     <ClCompile Include="..\src\music\win32_m.cpp" />
     <ClCompile Include="..\src\sound\null_s.cpp" />
     <ClCompile Include="..\src\sound\sdl_s.cpp" />

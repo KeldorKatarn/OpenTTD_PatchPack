@@ -21,7 +21,7 @@ public:
 	/* virtual */ void Draw(Blitter::BlitterParams *bp, BlitterMode mode, ZoomLevel zoom) {};
 	/* virtual */ void DrawColourMappingRect(void *dst, int width, int height, PaletteID pal) {};
 	/* virtual */ Sprite *Encode(const SpriteLoader::Sprite *sprite, AllocatorProc *allocator);
-	/* virtual */ void *MoveTo(void *video, int x, int y) { return NULL; };
+	/* virtual */ void *MoveTo(void *video, int x, int y) { return nullptr; };
 	/* virtual */ void SetPixel(void *video, int x, int y, uint8 colour) {};
 	/* virtual */ void SetLine(void *video, int x, int y, uint8 *colours, uint width) {};
 	/* virtual */ void DrawRect(void *video, int width, int height, uint8 colour) {};

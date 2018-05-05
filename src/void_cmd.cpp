@@ -38,7 +38,7 @@ static Foundation GetFoundation_Void(TileIndex tile, Slope tileh)
 
 static CommandCost ClearTile_Void(TileIndex tile, DoCommandFlag flags)
 {
-	return_cmd_error(STR_ERROR_OFF_EDGE_OF_MAP);
+	return CommandError(STR_ERROR_OFF_EDGE_OF_MAP);
 }
 
 
@@ -65,22 +65,22 @@ static TrackStatus GetTileTrackStatus_Void(TileIndex tile, TransportType mode, u
 
 static CommandCost TerraformTile_Void(TileIndex tile, DoCommandFlag flags, int z_new, Slope tileh_new)
 {
-	return_cmd_error(STR_ERROR_OFF_EDGE_OF_MAP);
+	return CommandError(STR_ERROR_OFF_EDGE_OF_MAP);
 }
 
 extern const TileTypeProcs _tile_type_void_procs = {
 	DrawTile_Void,            // draw_tile_proc
 	GetSlopePixelZ_Void,      // get_slope_z_proc
 	ClearTile_Void,           // clear_tile_proc
-	NULL,                     // add_accepted_cargo_proc
+	nullptr,                     // add_accepted_cargo_proc
 	GetTileDesc_Void,         // get_tile_desc_proc
 	GetTileTrackStatus_Void,  // get_tile_track_status_proc
-	NULL,                     // click_tile_proc
-	NULL,                     // animate_tile_proc
+	nullptr,                     // click_tile_proc
+	nullptr,                     // animate_tile_proc
 	TileLoop_Void,            // tile_loop_proc
 	ChangeTileOwner_Void,     // change_tile_owner_proc
-	NULL,                     // add_produced_cargo_proc
-	NULL,                     // vehicle_enter_tile_proc
+	nullptr,                     // add_produced_cargo_proc
+	nullptr,                     // vehicle_enter_tile_proc
 	GetFoundation_Void,       // get_foundation_proc
 	TerraformTile_Void,       // terraform_tile_proc
 };

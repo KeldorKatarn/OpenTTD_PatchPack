@@ -237,7 +237,7 @@ void GroupStatistics::Clear()
 		g->statistics.ClearAutoreplace();
 	}
 
-	for (EngineRenewList erl = c->engine_renew_list; erl != NULL; erl = erl->next) {
+	for (EngineRenewList erl = c->engine_renew_list; erl != nullptr; erl = erl->next) {
 		const Engine *e = Engine::Get(erl->from);
 		GroupStatistics &stats = GroupStatistics::Get(company, erl->group_id, e->type);
 		if (!stats.autoreplace_defined) {
@@ -291,9 +291,9 @@ Group::~Group()
 CommandCost CmdCreateGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	VehicleType vt = Extract<VehicleType, 0, 3>(p1);
-	if (!IsCompanyBuildableVehicleType(vt)) return CMD_ERROR;
+	if (!IsCompanyBuildableVehicleType(vt)) return CommandError();
 
-	if (!Group::CanAllocateItem()) return CMD_ERROR;
+	if (!Group::CanAllocateItem()) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Group *g = new Group(_current_company);
@@ -323,7 +323,7 @@ CommandCost CmdCreateGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 CommandCost CmdDeleteGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Group *g = Group::GetIfValid(p1);
-	if (g == NULL || g->owner != _current_company) return CMD_ERROR;
+	if (g == nullptr || g->owner != _current_company) return CommandError();
 
 	/* Remove all vehicles from the group */
 	DoCommand(0, p1, 0, flags, CMD_REMOVE_ALL_VEHICLES_GROUP);
@@ -377,7 +377,7 @@ static bool IsUniqueGroupNameForVehicleType(const char *name, VehicleType type)
 	const Group *g;
 
 	FOR_ALL_GROUPS(g) {
-		if (g->name != NULL && g->vehicle_type == type && strcmp(g->name, name) == 0) return false;
+		if (g->name != nullptr && g->vehicle_type == type && strcmp(g->name, name) == 0) return false;
 	}
 
 	return true;
@@ -398,38 +398,38 @@ static bool IsUniqueGroupNameForVehicleType(const char *name, VehicleType type)
 CommandCost CmdAlterGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Group *g = Group::GetIfValid(GB(p1, 0, 16));
-	if (g == NULL || g->owner != _current_company) return CMD_ERROR;
+	if (g == nullptr || g->owner != _current_company) return CommandError();
 
 	if (!HasBit(p1, 16)) {
 		/* Rename group */
 		bool reset = StrEmpty(text);
 
 		if (!reset) {
-			if (Utf8StringLength(text) >= MAX_LENGTH_GROUP_NAME_CHARS) return CMD_ERROR;
-			if (!IsUniqueGroupNameForVehicleType(text, g->vehicle_type)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+			if (Utf8StringLength(text) >= MAX_LENGTH_GROUP_NAME_CHARS) return CommandError();
+			if (!IsUniqueGroupNameForVehicleType(text, g->vehicle_type)) return CommandError(STR_ERROR_NAME_MUST_BE_UNIQUE);
 		}
 
 		if (flags & DC_EXEC) {
 			/* Delete the old name */
 			free(g->name);
 			/* Assign the new one */
-			g->name = reset ? NULL : stredup(text);
+			g->name = reset ? nullptr : stredup(text);
 		}
 	} else {
 		/* Set group parent */
 		const Group *pg = Group::GetIfValid(GB(p2, 0, 16));
 
-		if (pg != NULL) {
-			if (pg->owner != _current_company) return CMD_ERROR;
-			if (pg->vehicle_type != g->vehicle_type) return CMD_ERROR;
+		if (pg != nullptr) {
+			if (pg->owner != _current_company) return CommandError();
+			if (pg->vehicle_type != g->vehicle_type) return CommandError();
 
 			/* Ensure request parent isn't child of group.
 			 * This is the only place that infinite loops are prevented. */
-			if (GroupIsInGroup(pg->index, g->index)) return CMD_ERROR;
+			if (GroupIsInGroup(pg->index, g->index)) return CommandError();
 		}
 
 		if (flags & DC_EXEC) {
-			g->parent = (pg == NULL) ? INVALID_GROUP : pg->index;
+			g->parent = (pg == nullptr) ? INVALID_GROUP : pg->index;
 		}
 	}
 
@@ -488,18 +488,18 @@ CommandCost CmdAddVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 	Vehicle *v = Vehicle::GetIfValid(GB(p2, 0, 20));
 	GroupID new_g = p1;
 
-	if (v == NULL || (!Group::IsValidID(new_g) && !IsDefaultGroupID(new_g) && new_g != NEW_GROUP)) return CMD_ERROR;
+	if (v == nullptr || (!Group::IsValidID(new_g) && !IsDefaultGroupID(new_g) && new_g != NEW_GROUP)) return CommandError();
 
 	if (Group::IsValidID(new_g)) {
 		Group *g = Group::Get(new_g);
-		if (g->owner != _current_company || g->vehicle_type != v->type) return CMD_ERROR;
+		if (g->owner != _current_company || g->vehicle_type != v->type) return CommandError();
 	}
 
-	if (v->owner != _current_company || !v->IsPrimaryVehicle()) return CMD_ERROR;
+	if (v->owner != _current_company || !v->IsPrimaryVehicle()) return CommandError();
 
 	if (new_g == NEW_GROUP) {
 		/* Create new group. */
-		CommandCost ret = CmdCreateGroup(0, flags, v->type, 0, NULL);
+		CommandCost ret = CmdCreateGroup(0, flags, v->type, 0, nullptr);
 		if (ret.Failed()) return ret;
 
 		new_g = _new_group_id;
@@ -510,7 +510,7 @@ CommandCost CmdAddVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 
 		if (HasBit(p2, 31)) {
 			/* Add vehicles in the shared order list as well. */
-			for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
+			for (Vehicle *v2 = v->FirstShared(); v2 != nullptr; v2 = v2->NextShared()) {
 				if (v2->group_id != new_g) AddVehicleToGroup(v2, new_g);
 			}
 		}
@@ -543,19 +543,19 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 {
 	Vehicle *v = Vehicle::GetIfValid(GB(p1, 0, 20));
 
-	if (v == NULL) return CMD_ERROR;
+	if (v == nullptr) return CommandError();
 
-	if (v->owner != _current_company || !v->IsPrimaryVehicle()) return CMD_ERROR;
+	if (v->owner != _current_company || !v->IsPrimaryVehicle()) return CommandError();
 
 	/* Get the essential orders */
 	VehicleOrderID start = 0;
 
-	Order *first = NULL;
-	Order *last = NULL;
+	Order *first = nullptr;
+	Order *last = nullptr;
 	Order *order = v->GetOrder(start);
 	std::vector<Order*> unique_orders;
 
-	if (order == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+	if (order == nullptr) return CommandError(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 	VehicleOrderID oid = start;
 
@@ -568,13 +568,13 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 
 		oid++;
 		order = order->next;
-		if (order == NULL) {
+		if (order == nullptr) {
 			order = v->GetFirstOrder();
 			oid = 0;
 		}
 	} while (oid != start);
 
-	if (unique_orders.empty()) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+	if (unique_orders.empty()) return CommandError(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 	/* Create the name */
 
@@ -588,9 +588,9 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 
 		cargo_abbreviation = CargoSpec::Get(temp_v->cargo_type)->abbrev;
 		break;
-	} while ((temp_v = temp_v->Next()) != NULL);
+	} while ((temp_v = temp_v->Next()) != nullptr);
 
-	if(cargo_abbreviation == INVALID_STRING_ID) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+	if(cargo_abbreviation == INVALID_STRING_ID) return CommandError(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 	if(_settings_client.gui.specific_group_name == 1) { // Use station names
 
@@ -619,7 +619,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 		Station *station_first = Station::GetIfValid(unique_orders.front()->GetDestination());
 		Station *station_last = Station::GetIfValid(unique_orders.back()->GetDestination());
 				
-		if(station_last == NULL || station_first == NULL) return_cmd_error(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
+		if(station_last == nullptr || station_first == nullptr) return CommandError(STR_ERROR_GROUP_CAN_T_CREATE_NAME);
 
 		Town *town_first = station_first->town;
 		Town *town_last = station_last->town;
@@ -657,11 +657,11 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 	s = s.erase(1, 3);
 	strecpy(&str[0], s.c_str(), lastof(str));
 	
-	if (!IsUniqueGroupNameForVehicleType(str, v->type)) return_cmd_error(STR_ERROR_NAME_MUST_BE_UNIQUE);
+	if (!IsUniqueGroupNameForVehicleType(str, v->type)) return CommandError(STR_ERROR_NAME_MUST_BE_UNIQUE);
 
-	if (Utf8StringLength(str) >= MAX_LENGTH_GROUP_NAME_CHARS) return CMD_ERROR;
+	if (Utf8StringLength(str) >= MAX_LENGTH_GROUP_NAME_CHARS) return CommandError();
 
-	CommandCost ret = CmdCreateGroup(0, flags, v->type, 0, NULL);
+	CommandCost ret = CmdCreateGroup(0, flags, v->type, 0, nullptr);
 	if (ret.Failed()) return ret;
 
 	GroupID new_g = _new_group_id;
@@ -672,7 +672,7 @@ CommandCost CmdCreateGroupSpecificName(TileIndex tile, DoCommandFlag flags, uint
 
 		if (HasBit(p1, 31)) {
 			/* Add vehicles in the shared order list as well. */
-			for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
+			for (Vehicle *v2 = v->FirstShared(); v2 != nullptr; v2 = v2->NextShared()) {
 				if (v2->group_id != new_g) {
 					AddVehicleToGroup(v2, new_g);
 				}
@@ -704,7 +704,7 @@ CommandCost CmdAddSharedVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32
 {
 	VehicleType type = Extract<VehicleType, 0, 3>(p2);
 	GroupID id_g = p1;
-	if (!Group::IsValidID(id_g) || !IsCompanyBuildableVehicleType(type)) return CMD_ERROR;
+	if (!Group::IsValidID(id_g) || !IsCompanyBuildableVehicleType(type)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Vehicle *v;
@@ -716,7 +716,7 @@ CommandCost CmdAddSharedVehicleGroup(TileIndex tile, DoCommandFlag flags, uint32
 				if (v->group_id != id_g) continue;
 
 				/* For each shared vehicles add it to the group */
-				for (Vehicle *v2 = v->FirstShared(); v2 != NULL; v2 = v2->NextShared()) {
+				for (Vehicle *v2 = v->FirstShared(); v2 != nullptr; v2 = v2->NextShared()) {
 					if (v2->group_id != id_g) {
 						DoCommand(tile, id_g, v2->index, flags, CMD_ADD_VEHICLE_GROUP, text);
 					}
@@ -747,7 +747,7 @@ CommandCost CmdRemoveAllVehiclesGroup(TileIndex tile, DoCommandFlag flags, uint3
 	GroupID old_g = p1;
 	Group *g = Group::GetIfValid(old_g);
 
-	if (g == NULL || g->owner != _current_company) return CMD_ERROR;
+	if (g == nullptr || g->owner != _current_company) return CommandError();
 
 	if (flags & DC_EXEC) {
 		Vehicle *v;
@@ -837,7 +837,7 @@ static void SetGroupReplaceProtection(Group *g, bool protect)
 CommandCost CmdSetGroupReplaceProtection(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	Group *g = Group::GetIfValid(p1);
-	if (g == NULL || g->owner != _current_company) return CMD_ERROR;
+	if (g == nullptr || g->owner != _current_company) return CommandError();
 
 	if (flags & DC_EXEC) {
 		if (HasBit(p2, 1)) {
@@ -878,7 +878,7 @@ void SetTrainGroupID(Train *v, GroupID new_g)
 
 	assert(v->IsFrontEngine() || IsDefaultGroupID(new_g));
 
-	for (Vehicle *u = v; u != NULL; u = u->Next()) {
+	for (Vehicle *u = v; u != nullptr; u = u->Next()) {
 		if (u->IsEngineCountable()) UpdateNumEngineGroup(u, u->group_id, new_g);
 
 		u->group_id = new_g;
@@ -902,7 +902,7 @@ void UpdateTrainGroupID(Train *v)
 	assert(v->IsFrontEngine() || v->IsFreeWagon());
 
 	GroupID new_g = v->IsFrontEngine() ? v->group_id : (GroupID)DEFAULT_GROUP;
-	for (Vehicle *u = v; u != NULL; u = u->Next()) {
+	for (Vehicle *u = v; u != nullptr; u = u->Next()) {
 		if (u->IsEngineCountable()) UpdateNumEngineGroup(u, u->group_id, new_g);
 
 		u->group_id = new_g;

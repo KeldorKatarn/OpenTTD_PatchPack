@@ -96,7 +96,7 @@ static bool CanDetermineTimeTaken(const Order *order, bool travelling)
  */
 static void FillTimetableArrivalDepartureTable(const Vehicle *v, VehicleOrderID start, bool travelling, TimetableArrivalDeparture *table, Ticks offset)
 {
-	assert(table != NULL);
+	assert(table != nullptr);
 	assert(v->GetNumOrders() >= 2);
 	assert(start < v->GetNumOrders());
 
@@ -131,7 +131,7 @@ static void FillTimetableArrivalDepartureTable(const Vehicle *v, VehicleOrderID 
 		order = order->next;
 		if (i >= v->GetNumOrders()) {
 			i = 0;
-			assert(order == NULL);
+			assert(order == nullptr);
 			order = v->GetFirstOrder();
 		}
 	} while (i != start);
@@ -472,7 +472,7 @@ struct TimetableWindow : Window {
 				int middle = rtl ? r.right - WD_FRAMERECT_RIGHT - index_column_width : r.left + WD_FRAMERECT_LEFT + index_column_width;
 
 				const Order *order = v->GetOrder(order_id);
-				while (order != NULL) {
+				while (order != nullptr) {
 					/* Don't draw anything if it extends past the end of the window. */
 					if (!this->vscroll->IsVisible(i)) break;
 
@@ -721,10 +721,10 @@ struct TimetableWindow : Window {
 		if (selected != -1) {
 			const Order *order = v->GetOrder(((selected + 1) / 2) % v->GetNumOrders());
 			if (selected % 2 == 1) {
-				disabled = order != NULL && (order->IsType(OT_CONDITIONAL) || order->IsType(OT_IMPLICIT));
+				disabled = order != nullptr && (order->IsType(OT_CONDITIONAL) || order->IsType(OT_IMPLICIT));
 			}
 			else {
-				disabled = order == NULL || ((!(order->IsType(OT_GOTO_STATION) || (order->IsType(OT_GOTO_DEPOT) && !(order->GetDepotActionType() & ODATFB_HALT))) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION)) && !order->IsType(OT_CONDITIONAL));
+				disabled = order == nullptr || ((!(order->IsType(OT_GOTO_STATION) || (order->IsType(OT_GOTO_DEPOT) && !(order->GetDepotActionType() & ODATFB_HALT))) || (order->GetNonStopType() & ONSF_NO_STOP_AT_DESTINATION_STATION)) && !order->IsType(OT_CONDITIONAL));
 			}
 		}
 		return disabled;
@@ -771,7 +771,7 @@ struct TimetableWindow : Window {
 				const Order *order = v->GetOrder(real);
 				StringID current = STR_EMPTY;
 
-				if (order != NULL) {
+				if (order != nullptr) {
 					uint time = (selected % 2 == 1) ? order->GetTravelTime() : order->GetWaitTime();
 
 					if (time != 0) {
@@ -795,7 +795,7 @@ struct TimetableWindow : Window {
 
 				StringID current = STR_EMPTY;
 				const Order *order = v->GetOrder(real);
-				if (order != NULL) {
+				if (order != nullptr) {
 					if (order->GetMaxSpeed() != UINT16_MAX) {
 						SetDParam(0, ConvertKmhishSpeedToDisplaySpeed(order->GetMaxSpeed()));
 						current = STR_JUST_INT;
@@ -870,7 +870,7 @@ struct TimetableWindow : Window {
 
 	virtual void OnQueryTextFinished(char *str)
 	{
-		if (str == NULL || StrEmpty(str))
+		if (str == nullptr || StrEmpty(str))
 			return;
 
 		switch (this->query_widget) {
@@ -880,7 +880,7 @@ struct TimetableWindow : Window {
 
 			uint32 p1 = PackTimetableArgs(v, this->sel_index, this->query_is_speed_query);
 
-			uint64 val = StrEmpty(str) ? 0 : strtoul(str, NULL, 10);
+			uint64 val = StrEmpty(str) ? 0 : strtoul(str, nullptr, 10);
 			if (this->query_is_speed_query) {
 				val = ConvertDisplaySpeedToKmhishSpeed(val);
 			}

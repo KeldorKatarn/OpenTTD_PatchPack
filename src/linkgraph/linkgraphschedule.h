@@ -86,7 +86,7 @@ class LinkGraphJobGroup : public std::enable_shared_from_this<LinkGraphJobGroup>
 
 private:
 	bool joined_thread = false;              ///< True if thread has already been joined
-	std::unique_ptr<ThreadObject> thread;    ///< Thread the job group is running in or NULL if it's running in the main thread.
+	std::unique_ptr<ThreadObject> thread;    ///< Thread the job group is running in or nullptr if it's running in the main thread.
 	const std::vector<LinkGraphJob *> jobs;  ///< The set of jobs in this job set
 
 private:

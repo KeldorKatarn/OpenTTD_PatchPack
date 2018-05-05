@@ -44,12 +44,12 @@ CommandCost CmdIncreaseLoan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 
 	if (c->current_loan >= _economy.max_loan) {
 		SetDParam(0, _economy.max_loan);
-		return_cmd_error(STR_ERROR_MAXIMUM_PERMITTED_LOAN);
+		return CommandError(STR_ERROR_MAXIMUM_PERMITTED_LOAN);
 	}
 
 	Money loan;
 	switch (p2) {
-		default: return CMD_ERROR; // Invalid method
+		default: return CommandError(); // Invalid method
 		case 0: // Take some extra loan
 			loan = LOAN_INTERVAL;
 			break;
@@ -57,13 +57,13 @@ CommandCost CmdIncreaseLoan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 			loan = _economy.max_loan - c->current_loan;
 			break;
 		case 2: // Take the given amount of loan
-			if ((int32)p1 < LOAN_INTERVAL || c->current_loan + (int32)p1 > _economy.max_loan || p1 % LOAN_INTERVAL != 0) return CMD_ERROR;
+			if ((int32)p1 < LOAN_INTERVAL || c->current_loan + (int32)p1 > _economy.max_loan || p1 % LOAN_INTERVAL != 0) return CommandError();
 			loan = p1;
 			break;
 	}
 
 	/* Overflow protection */
-	if (c->money + c->current_loan + loan < c->money) return CMD_ERROR;
+	if (c->money + c->current_loan + loan < c->money) return CommandError();
 
 	if (flags & DC_EXEC) {
 		c->money        += loan;
@@ -89,11 +89,11 @@ CommandCost CmdDecreaseLoan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 {
 	Company *c = Company::Get(_current_company);
 
-	if (c->current_loan == 0) return_cmd_error(STR_ERROR_LOAN_ALREADY_REPAYED);
+	if (c->current_loan == 0) return CommandError(STR_ERROR_LOAN_ALREADY_REPAYED);
 
 	Money loan;
 	switch (p2) {
-		default: return CMD_ERROR; // Invalid method
+		default: return CommandError(); // Invalid method
 		case 0: // Pay back one step
 			loan = min(c->current_loan, (Money)LOAN_INTERVAL);
 			break;
@@ -102,14 +102,14 @@ CommandCost CmdDecreaseLoan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 			loan -= loan % LOAN_INTERVAL;
 			break;
 		case 2: // Repay the given amount of loan
-			if (p1 % LOAN_INTERVAL != 0 || (int32)p1 < LOAN_INTERVAL || p1 > c->current_loan) return CMD_ERROR; // Invalid amount to loan
+			if (p1 % LOAN_INTERVAL != 0 || (int32)p1 < LOAN_INTERVAL || p1 > c->current_loan) return CommandError(); // Invalid amount to loan
 			loan = p1;
 			break;
 	}
 
 	if (c->money < loan) {
 		SetDParam(0, loan);
-		return_cmd_error(STR_ERROR_CURRENCY_REQUIRED);
+		return CommandError(STR_ERROR_CURRENCY_REQUIRED);
 	}
 
 	if (flags & DC_EXEC) {
@@ -158,18 +158,18 @@ CommandCost CmdPause(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, 
 #ifdef ENABLE_NETWORK
 		case PM_PAUSED_JOIN:
 		case PM_PAUSED_ACTIVE_CLIENTS:
-			if (!_networking) return CMD_ERROR;
+			if (!_networking) return CommandError();
 			break;
 #endif /* ENABLE_NETWORK */
 
-		default: return CMD_ERROR;
+		default: return CommandError();
 	}
 	if (flags & DC_EXEC) {
 		if (p1 == PM_PAUSED_NORMAL && _pause_mode & PM_PAUSED_ERROR) {
 			ShowQuery(
 				STR_NEWGRF_UNPAUSE_WARNING_TITLE,
 				STR_NEWGRF_UNPAUSE_WARNING,
-				NULL,
+				nullptr,
 				AskUnsafeUnpauseCallback
 			);
 		} else {
@@ -224,9 +224,9 @@ CommandCost CmdChangeBankBalance(TileIndex tile, DoCommandFlag flags, uint32 p1,
 	CompanyID company = (CompanyID) GB(p2, 0, 8);
 	ExpensesType expenses_type = Extract<ExpensesType, 8, 8>(p2);
 
-	if (!Company::IsValidID(company)) return CMD_ERROR;
-	if (expenses_type >= EXPENSES_END) return CMD_ERROR;
-	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	if (!Company::IsValidID(company)) return CommandError();
+	if (expenses_type >= EXPENSES_END) return CommandError();
+	if (_current_company != OWNER_DEITY) return CommandError();
 
 	if (flags & DC_EXEC) {
 		/* Change company bank balance of company. */
@@ -254,15 +254,15 @@ CommandCost CmdChangeBankBalance(TileIndex tile, DoCommandFlag flags, uint32 p1,
  */
 CommandCost CmdGiveMoney(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (!_settings_game.economy.give_money) return CMD_ERROR;
+	if (!_settings_game.economy.give_money) return CommandError();
 
 	const Company *c = Company::Get(_current_company);
 	CommandCost amount(EXPENSES_OTHER, min((Money)p1, (Money)20000000LL));
 	CompanyID dest_company = (CompanyID)p2;
 
 	/* You can only transfer funds that is in excess of your loan */
-	if (c->money - c->current_loan < amount.GetCost() || amount.GetCost() < 0) return CMD_ERROR;
-	if (!_networking || !Company::IsValidID(dest_company)) return CMD_ERROR;
+	if (c->money - c->current_loan < amount.GetCost() || amount.GetCost() < 0) return CommandError();
+	if (!_networking || !Company::IsValidID(dest_company)) return CommandError();
 
 	if (flags & DC_EXEC) {
 		/* Add money to company */

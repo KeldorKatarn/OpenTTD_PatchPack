@@ -66,7 +66,8 @@ struct SignalProgramWindow : Window
 	 */
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		uint32 p1 = 0, p2 = 0;
+		uint32 p1 = 0;
+		const uint32 p2 = 0;
 		bool changed = false;
 
 		SB(p1, 0, 3, program->track);
@@ -255,7 +256,7 @@ static const NWidgetPart _nested_program_widgets[] = {
 };
 
 static WindowDesc _signal_program_desc (
-	WDP_AUTO, NULL, 0, 0,
+	WDP_AUTO, nullptr, 0, 0,
 	WC_SIGNAL_PROGRAM, WC_NONE,
 	WDF_CONSTRUCTION,
 	_nested_program_widgets, lengthof(_nested_program_widgets)
@@ -269,7 +270,7 @@ void ShowSignalProgramWindow(SignalProgram *program)
 {
 	WindowNumber wnum = GetSignalReference(program->tile, program->track);
 
-	if (BringWindowToFrontById(WC_SIGNAL_PROGRAM, wnum) != NULL) return;
+	if (BringWindowToFrontById(WC_SIGNAL_PROGRAM, wnum) != nullptr) return;
 
 	new SignalProgramWindow(&_signal_program_desc, wnum, program);
 }

@@ -89,13 +89,13 @@ void AfterLoadTemplateVehicles()
 
 	FOR_ALL_TEMPLATES(tv) {
 		/* Reinstate the previous pointer */
-		if (tv->next != NULL) tv->next->previous = tv;
-		tv->first = NULL;
+		if (tv->next != nullptr) tv->next->previous = tv;
+		tv->first = nullptr;
 	}
 	FOR_ALL_TEMPLATES(tv) {
 		/* Fill the first pointers */
-		if (tv->previous == NULL) {
-			for (TemplateVehicle *u = tv; u != NULL; u = u->Next()) {
+		if (tv->previous == nullptr) {
+			for (TemplateVehicle *u = tv; u != nullptr; u = u->Next()) {
 				u->first = tv;
 			}
 		}
@@ -111,7 +111,7 @@ void AfterLoadTemplateVehiclesUpdateImage()
  
 	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_19)) {
 		FOR_ALL_TEMPLATES(tv) {
-			if (tv->Prev() == NULL && !Company::IsValidID(tv->owner)) {
+			if (tv->Prev() == nullptr && !Company::IsValidID(tv->owner)) {
 				// clean up leftover template vehicles which no longer have a valid owner
 				delete tv;
 			}
@@ -119,22 +119,22 @@ void AfterLoadTemplateVehiclesUpdateImage()
 	}
 
 	FOR_ALL_TEMPLATES(tv) {
-		if (tv->Prev() == NULL) {
+		if (tv->Prev() == nullptr) {
 			Backup<CompanyByte> cur_company(_current_company, tv->owner, FILE_LINE);
 			StringID err;
 			Train* t = VirtualTrainFromTemplateVehicle(tv, err);
-			if (t != NULL) {
+			if (t != nullptr) {
 				int tv_len = 0;
-				for (TemplateVehicle *u = tv; u != NULL; u = u->Next()) {
+				for (TemplateVehicle *u = tv; u != nullptr; u = u->Next()) {
 					tv_len++;
 				}
 				int t_len = 0;
-				for (Train *u = t; u != NULL; u = u->Next()) {
+				for (Train *u = t; u != nullptr; u = u->Next()) {
 					t_len++;
 				}
 				if (t_len == tv_len) {
 					Train *v = t;
-					for (TemplateVehicle *u = tv; u != NULL; u = u->Next(), v = v->Next()) {
+					for (TemplateVehicle *u = tv; u != nullptr; u = u->Next(), v = v->Next()) {
 						u->spritenum = v->spritenum;
 						v->GetImage(DIR_W, EIT_PURCHASE, &u->sprite_seq);
 						u->image_width = v->GetDisplayImageWidth(&u->image_offset);
@@ -150,5 +150,5 @@ void AfterLoadTemplateVehiclesUpdateImage()
 }
 
 extern const ChunkHandler _template_vehicle_chunk_handlers[] = {
-	{'TMPL', Save_TMPLS, Load_TMPLS, Ptrs_TMPLS, NULL, CH_ARRAY | CH_LAST},
+	{'TMPL', Save_TMPLS, Load_TMPLS, Ptrs_TMPLS, nullptr, CH_ARRAY | CH_LAST},
 };

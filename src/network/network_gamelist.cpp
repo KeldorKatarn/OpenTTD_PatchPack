@@ -24,12 +24,12 @@
 
 #include "../safeguards.h"
 
-NetworkGameList *_network_game_list = NULL;
+NetworkGameList *_network_game_list = nullptr;
 
 /** Mutex for handling delayed insertion/querying of servers. */
 static ThreadMutex *_network_game_list_mutex = ThreadMutex::New();
 /** The games to insert when the GUI thread has time for us. */
-static NetworkGameList *_network_game_delayed_insertion_list = NULL;
+static NetworkGameList *_network_game_delayed_insertion_list = nullptr;
 
 /**
  * Add a new item to the linked gamelist, but do it delayed in the next tick
@@ -48,13 +48,13 @@ void NetworkGameListAddItemDelayed(NetworkGameList *item)
 static void NetworkGameListHandleDelayedInsert()
 {
 	_network_game_list_mutex->BeginCritical();
-	while (_network_game_delayed_insertion_list != NULL) {
+	while (_network_game_delayed_insertion_list != nullptr) {
 		NetworkGameList *ins_item = _network_game_delayed_insertion_list;
 		_network_game_delayed_insertion_list = ins_item->next;
 
 		NetworkGameList *item = NetworkGameListAddItem(ins_item->address);
 
-		if (item != NULL) {
+		if (item != nullptr) {
 			if (StrEmpty(item->info.server_name)) {
 				ClearGRFConfigList(&item->info.grfconfig);
 				memset(&item->info, 0, sizeof(item->info));
@@ -85,22 +85,22 @@ NetworkGameList *NetworkGameListAddItem(NetworkAddress address)
 	if (StrEmpty(hostname) ||
 			strcmp(hostname, "0.0.0.0") == 0 ||
 			strcmp(hostname, "::") == 0) {
-		return NULL;
+		return nullptr;
 	}
 
 	NetworkGameList *item, *prev_item;
 
-	prev_item = NULL;
-	for (item = _network_game_list; item != NULL; item = item->next) {
+	prev_item = nullptr;
+	for (item = _network_game_list; item != nullptr; item = item->next) {
 		if (item->address == address) return item;
 		prev_item = item;
 	}
 
 	item = CallocT<NetworkGameList>(1);
-	item->next = NULL;
+	item->next = nullptr;
 	item->address = address;
 
-	if (prev_item == NULL) {
+	if (prev_item == nullptr) {
 		_network_game_list = item;
 	} else {
 		prev_item->next = item;
@@ -118,10 +118,10 @@ NetworkGameList *NetworkGameListAddItem(NetworkAddress address)
  */
 void NetworkGameListRemoveItem(NetworkGameList *remove)
 {
-	NetworkGameList *prev_item = NULL;
-	for (NetworkGameList *item = _network_game_list; item != NULL; item = item->next) {
+	NetworkGameList *prev_item = nullptr;
+	for (NetworkGameList *item = _network_game_list; item != nullptr; item = item->next) {
 		if (remove == item) {
-			if (prev_item == NULL) {
+			if (prev_item == nullptr) {
 				_network_game_list = remove->next;
 			} else {
 				prev_item->next = remove->next;
@@ -130,7 +130,7 @@ void NetworkGameListRemoveItem(NetworkGameList *remove)
 			/* Remove GRFConfig information */
 			ClearGRFConfigList(&remove->info.grfconfig);
 			free(remove);
-			remove = NULL;
+			remove = nullptr;
 
 			DEBUG(net, 4, "[gamelist] removed server from list");
 			NetworkRebuildHostList();
@@ -155,7 +155,7 @@ void NetworkGameListRequery()
 	if (++requery_cnt < REQUERY_EVERY_X_GAMELOOPS) return;
 	requery_cnt = 0;
 
-	for (NetworkGameList *item = _network_game_list; item != NULL; item = item->next) {
+	for (NetworkGameList *item = _network_game_list; item != nullptr; item = item->next) {
 		item->retries++;
 		if (item->retries < REFRESH_GAMEINFO_X_REQUERIES && (item->online || item->retries >= MAX_GAME_LIST_REQUERY_COUNT)) continue;
 
@@ -172,15 +172,15 @@ void NetworkGameListRequery()
  */
 void NetworkAfterNewGRFScan()
 {
-	for (NetworkGameList *item = _network_game_list; item != NULL; item = item->next) {
+	for (NetworkGameList *item = _network_game_list; item != nullptr; item = item->next) {
 		/* Reset compatibility state */
 		item->info.compatible = item->info.version_compatible;
 
-		for (GRFConfig *c = item->info.grfconfig; c != NULL; c = c->next) {
+		for (GRFConfig *c = item->info.grfconfig; c != nullptr; c = c->next) {
 			assert(HasBit(c->flags, GCF_COPY));
 
 			const GRFConfig *f = FindGRFConfig(c->ident.grfid, FGCM_EXACT, c->ident.md5sum);
-			if (f == NULL) {
+			if (f == nullptr) {
 				/* Don't know the GRF, so mark game incompatible and the (possibly)
 				 * already resolved name for this GRF (another server has sent the
 				 * name of the GRF already. */

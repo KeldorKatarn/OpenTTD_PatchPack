@@ -31,15 +31,14 @@ struct BuildingCounts {
 
 typedef TileMatrix<uint32, 4> AcceptanceMatrix;
 
-static const uint CUSTOM_TOWN_NUMBER_DIFFICULTY  = 4; ///< value for custom town number in difficulty settings
-static const uint CUSTOM_TOWN_MAX_NUMBER = 5000;  ///< this is the maximum number of towns a user can specify in customisation
+static const uint CUSTOM_TOWN_NUMBER_DIFFICULTY  = 4; //!< value for custom town number in difficulty settings
+static const uint CUSTOM_TOWN_MAX_NUMBER = 5000;      //!< this is the maximum number of towns a user can specify in customisation
 
 static const uint INVALID_TOWN = 0xFFFF;
 
-static const uint TOWN_GROWTH_WINTER = 0xFFFFFFFE; ///< The town only needs this cargo in the winter (any amount)
-static const uint TOWN_GROWTH_DESERT = 0xFFFFFFFF; ///< The town needs the cargo for growth when on desert (any amount)
-static const uint16 TOWN_GROWTH_RATE_NONE = 0xFFFF; ///< Special value for Town::growth_rate to disable town growth.
-static const uint16 MAX_TOWN_GROWTH_TICKS = 930; ///< Max amount of original town ticks that still fit into uint16, about equal to UINT16_MAX / TOWN_GROWTH_TICKS but sligtly less to simplify calculations
+static const uint TOWN_GROWTH_WINTER = 0xFFFFFFFE;        //!< The town only needs this cargo in the winter (any amount)
+static const uint TOWN_GROWTH_DESERT = 0xFFFFFFFF;        //!< The town needs the cargo for growth when on desert (any amount)
+static const Ticks TOWN_GROWTH_RATE_NONE = INVALID_TICKS; //!< Special value for Town::growth_rate to disable town growth.
 
 typedef Pool<Town, TownID, 64, 64000> TownPool;
 extern TownPool _town_pool;
@@ -119,10 +118,10 @@ struct Town : TownPool::PoolItem<&_town_pool> {
 	AcceptanceMatrix cargo_accepted; ///< Bitmap of cargoes accepted by houses for each 4*4 map square of the town.
 	uint32 cargo_accepted_total;     ///< NOSAVE: Bitmap of all cargoes accepted by houses in this town.
 
-	int32 time_until_rebuild;      ///< date at which we we rebuild a house
+	int32 time_until_rebuild;        ///< date at which we we rebuild a house
 
-	uint16 grow_counter;           ///< counter to count when to grow, value is smaller than or equal to growth_rate
-	uint16 growth_rate;            ///< town growth rate
+	Ticks grow_counter;            ///< counter to count when to grow, value is smaller than or equal to growth_rate
+	Ticks growth_rate;             ///< town growth rate
 
 	byte fund_buildings_months;    ///< fund buildings program in action?
 	byte road_build_months;        ///< fund road reconstruction in action?
@@ -195,7 +194,7 @@ struct Town : TownPool::PoolItem<&_town_pool> {
 		return HasBit(this->flags, TOWN_IS_GROWING);
 	}
 
-	uint16 GetGrowthRateInDays() const
+	int32 GetGrowthRateInDays() const
 	{
 		return IsGrowing() ? RoundDivSU(this->growth_rate + 1, DAY_TICKS) : 0;
 	}
@@ -329,8 +328,8 @@ void MakeDefaultName(T *obj)
  * Converts original town ticks counters to plain game ticks. Note that
  * tick 0 is a valid tick so actual amount is one more than the counter value.
  */
-static inline uint16 TownTicksToGameTicks(uint16 ticks) {
-	return (min(ticks, MAX_TOWN_GROWTH_TICKS) + 1) * TOWN_GROWTH_TICKS - 1;
+static inline Ticks TownTicksToGameTicks(Ticks ticks) {
+	return (ticks + 1) * TOWN_GROWTH_TICKS - 1;
 }
 
 

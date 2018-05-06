@@ -1,6 +1,10 @@
-## Joker's Patchpack Changelog v1.25.0
+## Joker's Patchpack Changelog v1.26.0
 
 * * *
+
+### v1.26.0 (2018-05-06)
+* The game now asks before allowing to bulldoze rail stations or industries (the latter with the magic bulldozer)
+* Bufix: Towngrowth was completely bugged in v1.25.0.
 
 ### v1.25.0 (2018-05-05)
 * Replace Win32 music driver.

@@ -1,6 +1,17 @@
-## Joker's Patchpack Changelog v1.25.0
+## Joker's Patchpack Changelog v1.26.1
 
 * * *
+
+### v1.26.1 (2018-05-07)
+* Improve the way separation settings are displayed.
+* Make sure the UI properly updates when changing separation settings.
+* Bugfix: Fix crash when setting separation mode for vehicles with no orders list.
+* Bugfix: Zoning didn't render some slope types (halftile foundations). Current result for inner highlight is not optimal but works.
+* Bugfix: Fix crash when removing a logic signal.
+
+### v1.26.0 (2018-05-06)
+* The game now asks before allowing to bulldoze rail stations or industries (the latter with the magic bulldozer)
+* Bufix: Towngrowth was completely bugged in v1.25.0.
 
 ### v1.25.0 (2018-05-05)
 * Replace Win32 music driver.

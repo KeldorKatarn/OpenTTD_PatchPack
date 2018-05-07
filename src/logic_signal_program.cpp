@@ -102,7 +102,7 @@ void SignalProgram::ClearAllLinks()
 	_signal_link_list.erase(std::remove_if(_signal_link_list.begin(), _signal_link_list.end(), [&](std::pair<SignalReference, SignalReference> link)
 	{
 		return link.second == this_signal;
-	}));
+	}), _signal_link_list.end());
 
 	this->linked_signals.clear();
 }

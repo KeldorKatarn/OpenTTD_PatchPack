@@ -14,6 +14,7 @@
 #include "landscape.h"
 #include "error.h"
 #include "gui.h"
+#include <utility>
 #include "command_func.h"
 #include "company_func.h"
 #include "town.h"
@@ -1293,19 +1294,19 @@ void ShowQueryString(StringID str, StringID caption, uint maxsize, Window *paren
  * Window used for asking the user a YES/NO question.
  */
 struct QueryWindow : public Window {
-	QueryCallbackProc *proc; ///< callback function executed on closing of popup. Window* points to parent, bool is true if 'yes' clicked, false otherwise
-	uint64 params[10];       ///< local copy of _decode_parameters
-	StringID message;        ///< message shown for query window
-	StringID caption;        ///< title of window
+	QueryCallback proc; ///< callback function executed on closing of popup. Window* points to parent, bool is true if 'yes' clicked, false otherwise
+	uint64 params[10];  ///< local copy of _decode_parameters
+	StringID message;   ///< message shown for query window
+	StringID caption;   ///< title of window
 
-	QueryWindow(WindowDesc *desc, StringID caption, StringID message, Window *parent, QueryCallbackProc *callback) : Window(desc)
+	QueryWindow(WindowDesc *desc, StringID caption, StringID message, Window *parent, QueryCallback callback) :
+		Window(desc), proc(std::move(callback))
 	{
 		/* Create a backup of the variadic arguments to strings because it will be
 		 * overridden pretty often. We will copy these back for drawing */
 		CopyOutDParam(this->params, 0, lengthof(this->params));
 		this->caption = caption;
 		this->message = message;
-		this->proc    = callback;
 
 		this->InitNested(WN_CONFIRM_POPUP_QUERY);
 
@@ -1357,7 +1358,7 @@ struct QueryWindow : public Window {
 			case WID_Q_YES: {
 				/* in the Generate New World window, clicking 'Yes' causes
 				 * DeleteNonVitalWindows() to be called - we shouldn't be in a window then */
-				QueryCallbackProc *proc = this->proc;
+				auto proc = this->proc;
 				Window *parent = this->parent;
 				/* Prevent the destructor calling the callback function */
 				this->proc = nullptr;
@@ -1424,18 +1425,19 @@ static WindowDesc _query_desc(
  * the main window WC_MAIN_WINDOW
  * @param callback callback function pointer to set in the window descriptor
  */
-void ShowQuery(StringID caption, StringID message, Window *parent, QueryCallbackProc *callback)
+void ShowQuery(StringID caption, StringID message, Window *parent, QueryCallback callback)
 {
 	if (parent == nullptr) parent = FindWindowById(WC_MAIN_WINDOW, 0);
 
-	const Window *w;
-	FOR_ALL_WINDOWS_FROM_BACK(w) {
-		if (w->window_class != WC_CONFIRM_POPUP_QUERY) continue;
+	const Window* window;
+	FOR_ALL_WINDOWS_FROM_BACK(window) {
+		if (window->window_class != WC_CONFIRM_POPUP_QUERY) continue;
 
-		const QueryWindow *qw = (const QueryWindow *)w;
-		if (qw->parent != parent || qw->proc != callback) continue;
+		const auto query_window = dynamic_cast<const QueryWindow*>(window);
 
-		delete qw;
+		if (query_window->parent != parent) continue;
+
+		delete query_window;
 		break;
 	}
 

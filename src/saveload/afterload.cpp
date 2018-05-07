@@ -3115,19 +3115,23 @@ bool AfterLoadGame()
 #endif
 	}
 
-	if (IsSavegameVersionBefore(198)) {
-		/* Convert towns growth_rate and grow_counter to ticks */
+	if (IsSavegameVersionBefore(198) || IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_26)) {
+		// Convert towns growth_rate and grow_counter to ticks.
 		Town *t;
 		FOR_ALL_TOWNS(t) {
-			/* 0x8000 = TOWN_GROWTH_RATE_CUSTOM previously */
+			// 0x8000 = TOWN_GROWTH_RATE_CUSTOM previously.
+			// 0xFFFF = TOWN_GROWTH_RATE_NONE previously.
 			if (t->growth_rate & 0x8000) SetBit(t->flags, TOWN_CUSTOM_GROWTH);
-			if (t->growth_rate != TOWN_GROWTH_RATE_NONE) {
+			if (t->growth_rate == 0xFFFF) {
+				t->growth_rate = TOWN_GROWTH_RATE_NONE;
+			} else { 
 				t->growth_rate = TownTicksToGameTicks(t->growth_rate & ~0x8000);
 			}
-			/* Add t->index % TOWN_GROWTH_TICKS to spread growth across ticks. */
+			// Add t->index % TOWN_GROWTH_TICKS to spread growth across ticks.
 			t->grow_counter = TownTicksToGameTicks(t->grow_counter) + t->index % TOWN_GROWTH_TICKS;
 		}
 	}
+
 	if (IsPatchPackSavegameVersionBefore(SL_PATCH_PACK_1_16)) {
 		/* red/green signal state bit for tunnel entrances moved
 		 * to no longer re-use signalled tunnel exit bit

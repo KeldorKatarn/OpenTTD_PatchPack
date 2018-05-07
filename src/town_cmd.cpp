@@ -853,7 +853,8 @@ static bool GrowTown(Town *t);
 static void TownTickHandler(Town *t)
 {
 	if (t->IsGrowing()) {
-		int i = (int)t->grow_counter - 1;
+		auto i = t->grow_counter - 1;
+
 		if (i < 0) {
 			if (GrowTown(t)) {
 				i = t->growth_rate;
@@ -862,6 +863,7 @@ static void TownTickHandler(Town *t)
 				i = min(t->growth_rate, TOWN_GROWTH_TICKS - 1);
 			}
 		}
+
 		t->grow_counter = i;
 	}
 }
@@ -2718,7 +2720,6 @@ CommandCost CmdTownSetText(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 CommandCost CmdTownGrowthRate(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
 	if (_current_company != OWNER_DEITY) return CommandError();
-	if (GB(p2, 16, 16) != 0) return CommandError();
 
 	Town *t = Town::GetIfValid(p1);
 	if (t == nullptr) return CommandError();
@@ -2728,7 +2729,8 @@ CommandCost CmdTownGrowthRate(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 			/* Just clear the flag, UpdateTownGrowRate will determine a proper growth rate */
 			ClrBit(t->flags, TOWN_CUSTOM_GROWTH);
 		} else {
-			uint old_rate = t->growth_rate;
+			const Ticks old_rate = t->growth_rate;
+
 			if (t->grow_counter >= old_rate) {
 				/* This also catches old_rate == 0 */
 				t->grow_counter = p2;

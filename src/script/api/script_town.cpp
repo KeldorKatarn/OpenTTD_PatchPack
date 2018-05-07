@@ -159,7 +159,7 @@
 /* static */ bool ScriptTown::SetGrowthRate(TownID town_id, uint32 days_between_town_growth)
 {
 	EnforcePrecondition(false, IsValidTown(town_id));
-	uint16 growth_rate;
+	Ticks growth_rate;
 	switch (days_between_town_growth) {
 		case TOWN_GROWTH_NORMAL:
 			growth_rate = 0;
@@ -170,7 +170,7 @@
 			break;
 
 		default:
-			EnforcePrecondition(false, days_between_town_growth <= MAX_TOWN_GROWTH_TICKS);
+			EnforcePrecondition(false, days_between_town_growth <= uint(INT32_MAX / DAY_TICKS));
 			/* Don't use growth_rate 0 as it means GROWTH_NORMAL */
 			growth_rate = max(days_between_town_growth * DAY_TICKS, 2u) - 1;
 			break;

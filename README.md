@@ -1,4 +1,4 @@
-## Joker's Patchpack version v1.25.0
+## Joker's Patchpack version v1.26.1
 
 This is a collection of patches applied to [OpenTTD](http://www.openttd.org/)
 This patch pack is a collection of features created by various developers.
@@ -147,6 +147,7 @@ See [joker-changelog.md](joker-changelog.md) for changelog.
 * Station ratings now ignore time between vehicle arrival, so people playing with fewer longer trains are not punished more than people playing with more, shorter trains.
 
 * Miscellaneous  
+  * The game now asks before allowing to bulldoze rail stations or industries (the latter with the magic bulldozer)
   * Unused tracks are overgrown by grass (purely visual, can be deactivated in settings)
   * Make 'cargo payment rates' graph more useful by basing it on vehicle speed
   * Increase maximum setting limits for per-company vehicle-type limits.

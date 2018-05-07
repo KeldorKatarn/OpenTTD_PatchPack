@@ -556,7 +556,7 @@ public:
 		  timetable_duration(0), total_duration(0),
 		  last_timetable_init(INVALID_TICKS), separation_counter(0),
 		  is_separation_valid(false), current_separation(INVALID_TICKS), current_sep_mode(TTS_MODE_OFF),
-		  num_sep_vehicles(0) { }
+		  num_sep_vehicles(1) { }
 
 	/**
 	 * Create an order list with the given order chain for the given vehicle.

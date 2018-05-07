@@ -787,7 +787,7 @@ void OrderList::UpdateSeparationTime()
 	// Calculate separation amount depending on mode of operation.
 	switch (current_sep_mode) {
 	case TTS_MODE_AUTO: {
-		int num_running_vehicles = this->GetNumRunningVehicles();
+		const int num_running_vehicles = this->GetNumRunningVehicles();
 		assert(num_running_vehicles > 0);
 
 		this->current_separation = this->GetTimetableTotalDuration() / num_running_vehicles;
@@ -795,6 +795,7 @@ void OrderList::UpdateSeparationTime()
 	}
 
 	case TTS_MODE_MAN_N:
+		assert(this->num_sep_vehicles > 0);
 		this->current_separation = this->GetTimetableTotalDuration() / this->num_sep_vehicles;
 		break;
 
@@ -808,7 +809,7 @@ void OrderList::UpdateSeparationTime()
 
 		if (num_running_vehicles > 1)
 			num_running_vehicles--;
-
+		
 		this->current_separation = this->GetTimetableTotalDuration() / num_running_vehicles;
 		break;
 	}
@@ -867,12 +868,14 @@ void OrderList::SetSepSettings(TTSepMode mode, uint32 parameter)
 	switch (this->current_sep_mode)
 	{
 	case TTS_MODE_MAN_N:
+		assert(parameter > 0);
 		this->current_separation = this->GetTimetableTotalDuration() / parameter;
 		this->num_sep_vehicles = parameter;
 		break;
 
 	case TTS_MODE_MAN_T:
 		this->current_separation = parameter;
+		assert(this->current_separation > 0);
 		this->num_sep_vehicles = this->GetTimetableTotalDuration() / this->current_separation;
 		break;
 

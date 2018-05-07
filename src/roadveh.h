@@ -261,7 +261,7 @@ protected: // These functions should not be called outside acceleration code.
 		 * 0.002 for track to wheel friction or
 		 * 0.008 for truck wheels on asphalt
 		 */
-		uint32 coeff = (this->roadtype == ROADTYPE_TRAM) ? 17 : 78;
+		uint32 coeff = this->rtid.IsTram() ? 17 : 78;
 
 		return coeff;
 	}

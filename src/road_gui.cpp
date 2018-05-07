@@ -714,22 +714,23 @@ static EventState RoadTramToolbarGlobalHotkeys(int hotkey, RoadTypeIdentifier la
 {
 	if (last_build.basetype == ROADTYPE_TRAM && (_game_mode != GM_NORMAL || !CanBuildRoadTypeInfrastructure(last_build, _local_company))) return ES_NOT_HANDLED;
 
+	Window* window = nullptr;
+
 	switch (_game_mode) {
 		case GM_NORMAL: {
-			w = ShowBuildRoadToolbar(last_build);
+			window = ShowBuildRoadToolbar(last_build);
 			break;
 		}
 
 		case GM_EDITOR:
-			w = ShowBuildRoadScenToolbar(last_build);
+			window = ShowBuildRoadScenToolbar(last_build);
 			break;
 
 		default:
 			break;
 	}
 
-	if (w == nullptr) return ES_NOT_HANDLED;
-	return w->OnHotkey(hotkey);
+	return (window == nullptr) ? ES_NOT_HANDLED : window->OnHotkey(hotkey);
 }
 
 static EventState RoadToolbarGlobalHotkeys(int hotkey)

@@ -213,8 +213,13 @@ bool Vehicle::NeedsServicing() const
 	uint rail_pices = 0;
 	uint road_pieces = 0;
 
-	for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pices += c->infrastructure.rail[i];
-	for (uint i = 0; i < lengthof(c->infrastructure.road); i++) road_pieces += c->infrastructure.road[i];
+	for (unsigned int i : c->infrastructure.rail) rail_pices += i;
+
+	for (uint i = 0; i < ROADSUBTYPE_END; i++) {
+		for (uint j = 0; j < ROADTYPE_END; ++j) {
+			road_pieces += c->infrastructure.road[j][i];
+		}
+	}
 
 	if ((this->type == VEH_TRAIN && rail_pices == 0) ||
 		(this->type == VEH_ROAD && road_pieces == 0) ||

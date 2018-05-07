@@ -96,8 +96,8 @@ CompanyManagerFace ConvertFromOldCompanyManagerFace(uint32 face)
 void AfterLoadCompanyStats()
 {
 	/* Reset infrastructure statistics to zero. */
-	Company *c;
-	FOR_ALL_COMPANIES(c) MemSetT(&c->infrastructure, 0);
+	Company *company;
+	FOR_ALL_COMPANIES(company) MemSetT(&company->infrastructure, 0);
 
 	/* Collect airport count. */
 	Station *st;
@@ -110,45 +110,45 @@ void AfterLoadCompanyStats()
 	for (TileIndex tile = 0; tile < MapSize(); tile++) {
 		switch (GetTileType(tile)) {
 			case MP_RAILWAY:
-				c = Company::GetIfValid(GetTileOwner(tile));
-				if (c != nullptr) {
+				company = Company::GetIfValid(GetTileOwner(tile));
+				if (company != nullptr) {
 					uint pieces = 1;
 					if (IsPlainRail(tile)) {
 						TrackBits bits = GetTrackBits(tile);
 						pieces = CountBits(bits);
 						if (TracksOverlap(bits)) pieces *= pieces;
 					}
-					c->infrastructure.rail[GetRailType(tile)] += pieces;
+					company->infrastructure.rail[GetRailType(tile)] += pieces;
 
-					if (HasSignals(tile)) c->infrastructure.signal += CountBits(GetPresentSignals(tile));
+					if (HasSignals(tile)) company->infrastructure.signal += CountBits(GetPresentSignals(tile));
 				}
 				break;
 
 			case MP_ROAD: {
 				if (IsLevelCrossing(tile)) {
-					c = Company::GetIfValid(GetTileOwner(tile));
-					if (c != nullptr) c->infrastructure.rail[GetRailType(tile)] += LEVELCROSSING_TRACKBIT_FACTOR;
+					company = Company::GetIfValid(GetTileOwner(tile));
+					if (company != nullptr) company->infrastructure.rail[GetRailType(tile)] += LEVELCROSSING_TRACKBIT_FACTOR;
 				}
 
 				/* Iterate all present road types as each can have a different owner. */
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 				RoadTypeIdentifier rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-					c = Company::GetIfValid(IsRoadDepot(tile) ? GetTileOwner(tile) : GetRoadOwner(tile, rtid.basetype));
+					company = Company::GetIfValid(IsRoadDepot(tile) ? GetTileOwner(tile) : GetRoadOwner(tile, rtid.basetype));
 					/* A level crossings and depots have two road bits. */
-					if (c != nullptr) c->infrastructure.road[rtid.basetype][rtid.subtype] += IsNormalRoad(tile) ? CountBits(GetRoadBits(tile, rtid.basetype)) : 2;
+					if (company != nullptr) company->infrastructure.road[rtid.basetype][rtid.subtype] += IsNormalRoad(tile) ? CountBits(GetRoadBits(tile, rtid.basetype)) : 2;
 				}
 				break;
 			}
 
 			case MP_STATION:
-				c = Company::GetIfValid(GetTileOwner(tile));
-				if (c != nullptr && GetStationType(tile) != STATION_AIRPORT && !IsBuoy(tile)) c->infrastructure.station++;
+				company = Company::GetIfValid(GetTileOwner(tile));
+				if (company != nullptr && GetStationType(tile) != STATION_AIRPORT && !IsBuoy(tile)) company->infrastructure.station++;
 
 				switch (GetStationType(tile)) {
 					case STATION_RAIL:
 					case STATION_WAYPOINT:
-						if (c != nullptr && !IsStationTileBlocked(tile)) c->infrastructure.rail[GetRailType(tile)]++;
+						if (company != nullptr && !IsStationTileBlocked(tile)) company->infrastructure.rail[GetRailType(tile)]++;
 						break;
 
 					case STATION_BUS:
@@ -157,8 +157,8 @@ void AfterLoadCompanyStats()
 						RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 						RoadTypeIdentifier rtid;
 						FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-							c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
-							if (c != nullptr) c->infrastructure.road[rtid.basetype][rtid.subtype] += 2; // A road stop has two road bits.
+							company = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
+							if (company != nullptr) company->infrastructure.road[rtid.basetype][rtid.subtype] += 2; // A road stop has two road bits.
 						}
 						break;
 					}
@@ -166,7 +166,7 @@ void AfterLoadCompanyStats()
 					case STATION_DOCK:
 					case STATION_BUOY:
 						if (GetWaterClass(tile) == WATER_CLASS_CANAL) {
-							if (c != nullptr) c->infrastructure.water++;
+							if (company != nullptr) company->infrastructure.water++;
 						}
 						break;
 
@@ -177,12 +177,12 @@ void AfterLoadCompanyStats()
 
 			case MP_WATER:
 				if (IsShipDepot(tile) || IsLock(tile)) {
-					c = Company::GetIfValid(GetTileOwner(tile));
-					if (c != nullptr) {
-						if (IsShipDepot(tile)) c->infrastructure.water += LOCK_DEPOT_TILE_FACTOR;
+					company = Company::GetIfValid(GetTileOwner(tile));
+					if (company != nullptr) {
+						if (IsShipDepot(tile)) company->infrastructure.water += LOCK_DEPOT_TILE_FACTOR;
 						if (IsLock(tile) && GetLockPart(tile) == LOCK_PART_MIDDLE) {
 							/* The middle tile specifies the owner of the lock. */
-							c->infrastructure.water += 3 * LOCK_DEPOT_TILE_FACTOR; // the middle tile specifies the owner of the
+							company->infrastructure.water += 3 * LOCK_DEPOT_TILE_FACTOR; // the middle tile specifies the owner of the
 							break; // do not count the middle tile as canal
 						}
 					}
@@ -191,8 +191,8 @@ void AfterLoadCompanyStats()
 
 			case MP_OBJECT:
 				if (GetWaterClass(tile) == WATER_CLASS_CANAL) {
-					c = Company::GetIfValid(GetTileOwner(tile));
-					if (c != nullptr) c->infrastructure.water++;
+					company = Company::GetIfValid(GetTileOwner(tile));
+					if (company != nullptr) company->infrastructure.water++;
 				}
 				break;
 
@@ -207,24 +207,33 @@ void AfterLoadCompanyStats()
 
 					switch (GetTunnelBridgeTransportType(tile)) {
 						case TRANSPORT_RAIL:
-							c = Company::GetIfValid(GetTileOwner(tile));
-							if (c != nullptr) {
-								c->infrastructure.rail[GetRailType(tile)] += len;
+							company = Company::GetIfValid(GetTileOwner(tile));
+							if (company != nullptr) {
+								company->infrastructure.rail[GetRailType(tile)] += len;
 								if (IsTunnelBridgeWithSignalSimulation(tile)) {
-									c->infrastructure.signal += GetTunnelBridgeSignalSimulationSignalCount(tile, other_end);
+									company->infrastructure.signal += GetTunnelBridgeSignalSimulationSignalCount(tile, other_end);
 								}
 							}
 							break;
 
 						case TRANSPORT_ROAD: {
-							AddRoadTunnelBridgeInfrastructure(tile, other_end);
-								if (c != NULL) c->infrastructure.road[rtid.basetype][rtid.subtype] += len * 2; // A full diagonal road has two road bits.
+							// Iterate all present road types as each can have a different owner.
+							RoadTypeIdentifiers road_type_ids = RoadTypeIdentifiers::FromTile(tile);
+							RoadTypeIdentifier road_type_id;
+							FOR_EACH_SET_ROADTYPEIDENTIFIER(road_type_id, road_type_ids) {
+								company = Company::GetIfValid(GetRoadOwner(tile, road_type_id.basetype));
+
+								if (company != nullptr) {
+									// A full diagonal road has two road bits.
+									company->infrastructure.road[road_type_id.basetype][road_type_id.subtype] += len * 2;
+								}
+							}
 							break;
 						}
 
 						case TRANSPORT_WATER:
-							c = Company::GetIfValid(GetTileOwner(tile));
-							if (c != nullptr) c->infrastructure.water += len;
+							company = Company::GetIfValid(GetTileOwner(tile));
+							if (company != nullptr) company->infrastructure.water += len;
 							break;
 
 						default:

@@ -570,7 +570,7 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-					if (RoadNoLevelCrossing(rtid)) return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+					if (RoadNoLevelCrossing(rtid)) return CommandError(STR_ERROR_CROSSING_DISALLOWED_ROAD);
 				}
 
 				RoadBits road = GetRoadBits(tile, ROADTYPE_ROAD);

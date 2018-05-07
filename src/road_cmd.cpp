@@ -305,15 +305,15 @@ CommandCost CheckAllowRemoveRoad(TileIndex tile, RoadBits remove, Owner owner, R
  * @param tile tile where to remove road from
  * @param flags operation to perform
  * @param pieces roadbits to remove
- * @param rt roadtype to remove
- * @param crossing_check should we check if there is a tram track when we are removing road from crossing?
+ * @param rtid identifyer describing the roadtype to remove
  * @param town_check should we check if the town allows removal?
  */
-static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits pieces, RoadTypeIdentifier rtid, bool crossing_check, bool town_check = true)
+static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits pieces, RoadTypeIdentifier rtid, bool town_check = true)
 {
-	RoadType rt = rtid.basetype;
-	RoadTypes rts = GetRoadTypes(tile);
-	/* The tile doesn't have the given road type */
+	const RoadType rt = rtid.basetype;
+	const RoadTypes rts = GetRoadTypes(tile);
+
+	// The tile doesn't have the given road type.
 	if (!HasBit(rts, rtid.basetype)) return CommandError(rt == ROADTYPE_TRAM ? STR_ERROR_THERE_IS_NO_TRAMWAY : STR_ERROR_THERE_IS_NO_ROAD);
 
 	switch (GetTileType(tile)) {
@@ -350,7 +350,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				HasBridgeFlatRamp(GetTileSlope(tile), DiagDirToAxis(GetTunnelBridgeDirection(tile))) &&
 				(_settings_game.construction.road_custom_bridge_heads || IsRoadCustomBridgeHead(tile));
 
-		/* If it's the last roadtype, just clear the whole tile */
+		// If it's the last roadtype, just clear the whole tile.
 		if (!custom_bridge_head && rts == RoadTypeToRoadTypes(rt)) return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 
 		CommandCost cost(EXPENSES_CONSTRUCTION);
@@ -360,7 +360,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 			const RoadBits existing = IsBridge(tile) ? GetCustomBridgeHeadRoadBits(tile, rt) : axial_pieces;
 			const RoadType other_rt = (rt == ROADTYPE_ROAD) ? ROADTYPE_TRAM : ROADTYPE_ROAD;
 
-			/* handle case where we would otherwise leave a single bridge entrance piece */
+			// Handle case where we would otherwise leave a single bridge entrance piece.
 			if ((existing & ~pieces) == entrance_piece) {
 				pieces |= entrance_piece;
 			}
@@ -378,29 +378,30 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 			RoadBits other_end_pieces = ROAD_NONE;
 			if (pieces & entrance_piece) {
 				other_end_pieces |= MirrorRoadBits(entrance_piece);
-				/* if removing the other end entrance would only leave one piece, remove that too */
+				// If removing the other end entrance would only leave one piece, remove that too.
 				if (CountBits(other_end_existing & ~other_end_pieces) == 1) {
 					other_end_pieces |= other_end_existing;
 				}
 				pieces_count += middle_len * 2;
 				if (custom_bridge_head && ((GetCustomBridgeHeadRoadBits(tile, other_rt) & entrance_piece) == ROAD_NONE)) {
-					/* can't leave no entrance pieces for any road type */
+					// Can't leave no entrance pieces for any road type.
 					return DoCommand(tile, 0, 0, flags, CMD_LANDSCAPE_CLEAR);
 				}
 			}
 			pieces_count += CountBits(pieces & existing);
 			pieces_count += CountBits(other_end_pieces & other_end_existing);
-
 			cost.AddCost(pieces_count * _price[PR_CLEAR_ROAD]);
+
 			if (flags & DC_EXEC) {
 				SubtractRoadTunnelBridgeInfrastructure(tile, other_end);
-				SetRoadTypes(tile, rtids);
 
 				const RoadBits bits = existing & ~pieces;
 				const RoadBits other_bits = other_end_existing & ~other_end_pieces;
 
-				if (bits == ROAD_NONE) SetRoadTypes(tile, GetRoadTypes(tile) & ~RoadTypeToRoadTypes(rt));
-				if (other_bits == ROAD_NONE) SetRoadTypes(other_end, GetRoadTypes(other_end) & ~RoadTypeToRoadTypes(rt));
+				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				rtids.ClearRoadType(rt);
+				if (bits == ROAD_NONE) SetRoadTypes(tile, rtids);
+				if (other_bits == ROAD_NONE) SetRoadTypes(other_end, rtids);
 
 				if (IsBridge(tile)) {
 					SetCustomBridgeHeadRoadBits(tile, rt, bits);
@@ -431,6 +432,7 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 		} else {
 			assert(IsDriveThroughStopTile(tile));
 			cost.AddCost(_price[PR_CLEAR_ROAD] * 2);
+
 			if (flags & DC_EXEC) {
 				Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 				if (c != nullptr) {
@@ -689,7 +691,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p1, 4, 5))) return CommandError();
-	if (!ValParamRoadType(rtid)) return CMD_ERROR;
+	if (!ValParamRoadType(rtid)) return CommandError();
 
 	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 9, 2>(p1);
 
@@ -759,7 +761,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 				case ROAD_TILE_CROSSING:
 					if (RoadNoLevelCrossing(rtid)) {
-						return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+						return CommandError(STR_ERROR_CROSSING_DISALLOWED_ROAD);
 					}
 
 					other_bits = GetCrossingRoadBits(tile);
@@ -790,7 +792,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 			if (GetRailTileType(tile) != RAIL_TILE_NORMAL) goto do_clear;
 
 			if (RoadNoLevelCrossing(rtid)) {
-				return_cmd_error(STR_ERROR_CROSSING_DISALLOWED_ROAD);
+				return CommandError(STR_ERROR_CROSSING_DISALLOWED_ROAD);
 			}
 
 			if (RailNoLevelCrossings(GetRailType(tile))) {
@@ -863,7 +865,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				const DiagDirection entrance_dir = GetTunnelBridgeDirection(tile);
 				const RoadBits entrance_piece = DiagDirToRoadBits(entrance_dir);
 				const RoadBits axial_pieces = AxisToRoadBits(DiagDirToAxis(entrance_dir));
-				existing = GetCustomBridgeHeadRoadBits(tile, rt);
+				existing = GetCustomBridgeHeadRoadBits(tile, rtid.basetype);
 
 				if (!(_settings_game.construction.road_custom_bridge_heads && HasBridgeFlatRamp(tileh, DiagDirToAxis(entrance_dir))) || disable_custom_bridge_heads) {
 					/* Ordinary bridge heads only */
@@ -906,7 +908,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					other_end_added_pieces = MirrorRoadBits(entrance_piece);
 					added_pieces_count += 1 + (GetTunnelBridgeLength(tile, other_end) * 2);
 
-					other_end_existing = GetCustomBridgeHeadRoadBits(other_end, rt);
+					other_end_existing = GetCustomBridgeHeadRoadBits(other_end, rtid.basetype);
 					assert((other_end_added_pieces & other_end_existing) == ROAD_NONE);
 
 					if (other_end_existing == ROAD_NONE) {
@@ -924,13 +926,27 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				if (flags & DC_EXEC) {
 					SubtractRoadTunnelBridgeInfrastructure(tile, other_end);
 
-					SetRoadTypes(tile, GetRoadTypes(tile) | RoadTypeToRoadTypes(rt));
-					if (!existing) SetRoadOwner(tile, rt, company);
-					SetCustomBridgeHeadRoadBits(tile, rt, existing | pieces);
+					auto tile_rtids = RoadTypeIdentifiers::FromTile(tile);
+					tile_rtids.MergeRoadType(rtid);
+					SetRoadTypes(tile, tile_rtids);
+
+					if (!existing) {
+						SetRoadOwner(tile, rtid.basetype, company);
+					}
+
+					SetCustomBridgeHeadRoadBits(tile, rtid.basetype, existing | pieces);
+
 					if (other_end_added_pieces) {
-						SetRoadTypes(other_end, GetRoadTypes(other_end) | RoadTypeToRoadTypes(rt));
-						if (!other_end_existing) SetRoadOwner(other_end, rt, company);
-						SetCustomBridgeHeadRoadBits(other_end, rt, other_end_existing | other_end_added_pieces);
+
+						auto other_rtids = RoadTypeIdentifiers::FromTile(other_end);
+						other_rtids.MergeRoadType(rtid);
+						SetRoadTypes(other_end, other_rtids);
+
+						if (!other_end_existing) {
+							SetRoadOwner(other_end, rtid.basetype, company);
+						}
+
+						SetCustomBridgeHeadRoadBits(other_end, rtid.basetype, other_end_existing | other_end_added_pieces);
 					}
 
 					MarkBridgeDirty(tile);
@@ -1014,7 +1030,7 @@ do_clear:;
 					if (ret.Failed()) return ret;
 					cost.AddCost(ret);
 				} else {
-					return CMD_ERROR;
+					return CommandError();
 				}
 			}
 		}
@@ -1136,7 +1152,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	TileIndex end_tile = p1;
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CommandError();
-	if (!ValParamRoadType(rtid)) return CMD_ERROR;
+	if (!ValParamRoadType(rtid)) return CommandError();
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
 	/* Only drag in X or Y direction dictated by the direction variable */
@@ -1263,7 +1279,7 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 
 		/* try to remove the halves. */
 		if (bits != 0) {
-			CommandCost ret = RemoveRoad(tile, flags & ~DC_EXEC, bits, rtid, true);
+			CommandCost ret = RemoveRoad(tile, flags & ~DC_EXEC, bits, rtid);
 			if (ret.Succeeded()) {
 				if (flags & DC_EXEC) {
 					money -= ret.GetCost();
@@ -1271,7 +1287,7 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 						_additional_cash_required = DoCommand(start_tile, end_tile, p2, flags & ~DC_EXEC, CMD_REMOVE_LONG_ROAD).GetCost();
 						return cost;
 					}
-					RemoveRoad(tile, flags, bits, rtid, true, false);
+					RemoveRoad(tile, flags, bits, rtid, false);
 				}
 				cost.AddCost(ret);
 				had_success = true;
@@ -1380,7 +1396,7 @@ static CommandCost ClearTile_Road(TileIndex tile, DoCommandFlag flags)
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 				RoadTypeIdentifier rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-					CommandCost tmp_ret = RemoveRoad(tile, flags, GetRoadBits(tile, rtid.basetype), rtid, true);
+					CommandCost tmp_ret = RemoveRoad(tile, flags, GetRoadBits(tile, rtid.basetype), rtid);
 					if (tmp_ret.Failed()) return tmp_ret;
 					ret.AddCost(tmp_ret);
 				}
@@ -1402,7 +1418,7 @@ static CommandCost ClearTile_Road(TileIndex tile, DoCommandFlag flags)
 			do {
 				if (HasBit(rts, rt)) {
 					rtid.basetype = rt;
-					CommandCost tmp_ret = RemoveRoad(tile, flags, GetCrossingRoadBits(tile), rtid, false);
+					CommandCost tmp_ret = RemoveRoad(tile, flags, GetCrossingRoadBits(tile), rtid);
 					if (tmp_ret.Failed()) return tmp_ret;
 					ret.AddCost(tmp_ret);
 				}
@@ -1684,7 +1700,7 @@ void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Draw road overlay */
-	if (road_rti != NULL) {
+	if (road_rti != nullptr) {
 		if (road_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(road_rti, ti->tile, ROTSG_OVERLAY);
 			if (ground != 0) DrawGroundSprite(ground + road_offset, PAL_NONE);
@@ -1692,17 +1708,17 @@ void DrawRoadBits(TileInfo *ti)
 	}
 
 	/* Draw tram overlay */
-	if (tram_rti != NULL) {
+	if (tram_rti != nullptr) {
 		if (tram_rti->UsesOverlay()) {
 			SpriteID ground = GetCustomRoadSprite(tram_rti, ti->tile, ROTSG_OVERLAY);
 			if (ground != 0) DrawGroundSprite(ground + tram_offset, PAL_NONE);
-		} else if (road_rti != NULL) {
+		} else if (road_rti != nullptr) {
 			DrawGroundSprite(SPR_TRAMWAY_OVERLAY + tram_offset, PAL_NONE);
 		}
 	}
 
 	/* Draw one way */
-	if (road_rti != NULL) {
+	if (!is_bridge && road_rti != nullptr) {
 		DisallowedRoadDirections drd = GetDisallowedRoadDirections(ti->tile);
 		if (drd != DRD_NONE) {
 			DrawGroundSpriteAt(SPR_ONEWAY_BASE + drd - 1 + ((road == ROAD_X) ? 0 : 3), PAL_NONE, 8, 8, GetPartialPixelZ(8, 8, ti->tileh));
@@ -2083,7 +2099,7 @@ static void TileLoop_Road(TileIndex tile)
 			const RoadBits new_rb = CleanUpRoadBits(tile, old_rb);
 
 			if (old_rb != new_rb) {
-				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL), true);
+				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL));
 			}
 		}
 
@@ -2457,13 +2473,13 @@ static void ConvertRoadTypeOwner(TileIndex tile, uint num_pieces, Owner owner, R
 CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2,  const char *text)
 {
 	RoadTypeIdentifier to_type;
-	if (!to_type.UnpackIfValid(GB(p2, 0, 5))) return CMD_ERROR;
+	if (!to_type.UnpackIfValid(GB(p2, 0, 5))) return CommandError();
 
 	TileIndex area_start = p1;
 	TileIndex area_end = tile;
 
-	if (!ValParamRoadType(to_type)) return CMD_ERROR;
-	if (area_start >= MapSize()) return CMD_ERROR;
+	if (!ValParamRoadType(to_type)) return CommandError();
+	if (area_start >= MapSize()) return CommandError();
 
 	RoadVehicleList affected_rvs;
 

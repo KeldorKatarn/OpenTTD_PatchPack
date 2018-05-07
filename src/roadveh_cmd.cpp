@@ -260,7 +260,7 @@ CommandCost CmdBuildRoadVehicle(TileIndex tile, DoCommandFlag flags, const Engin
 	/* Check that the vehicle can drive on the road in question */
 	RoadTypeIdentifier rtid = e->GetRoadType();
 	const RoadtypeInfo *rti = GetRoadTypeInfo(rtid);
-	if (!HasTileAnyRoadSubType(tile, rtid.basetype, rti->powered_roadtypes)) return_cmd_error(STR_ERROR_DEPOT_WRONG_DEPOT_TYPE);
+	if (!HasTileAnyRoadSubType(tile, rtid.basetype, rti->powered_roadtypes)) return CommandError(STR_ERROR_DEPOT_WRONG_DEPOT_TYPE);
 
 	if (flags & DC_EXEC) {
 		const RoadVehicleInfo *rvi = &e->u.road;

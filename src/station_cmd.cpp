@@ -1052,7 +1052,7 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (HasPowerOnRoad(rtids.road_identifier, rtid)) {
 							cost.AddCost(num_pieces * RoadConvertCost(rtids.road_identifier, rtid));
 						} else {
-							return_cmd_error(STR_ERROR_NO_SUITABLE_ROAD);
+							return CommandError(STR_ERROR_NO_SUITABLE_ROAD);
 						}
 						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
 					} else {
@@ -1078,7 +1078,7 @@ static CommandCost CheckFlatLandRoadStop(TileArea tile_area, DoCommandFlag flags
 						if (HasPowerOnRoad(rtids.tram_identifier, rtid)) {
 							cost.AddCost(num_pieces * RoadConvertCost(rtids.tram_identifier, rtid));
 						} else {
-							return_cmd_error(STR_ERROR_NO_SUITABLE_TRAMWAY);
+							return CommandError(STR_ERROR_NO_SUITABLE_TRAMWAY);
 						}
 						cost.AddCost(RoadBuildCost(rtid) * (2 - num_pieces));
 					} else {
@@ -1922,8 +1922,8 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	bool type = HasBit(p2, 0);
 	bool is_drive_through = HasBit(p2, 1);
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p2, 5, 5))) return CMD_ERROR;
-	if (!ValParamRoadType(rtid)) return CMD_ERROR;
+	if (!rtid.UnpackIfValid(GB(p2, 5, 5))) return CommandError();
+	if (!ValParamRoadType(rtid)) return CommandError();
 	StationID station_to_join = GB(p2, 16, 16);
 	bool reuse = (station_to_join != NEW_STATION);
 	if (!reuse) station_to_join = INVALID_STATION;
@@ -2090,22 +2090,22 @@ static Vehicle *ClearRoadStopStatusEnum(Vehicle *v, void *)
  */
 static CommandCost RemoveRoadStop(TileIndex tile, DoCommandFlag flags)
 {
-	Station *st = Station::GetByTile(tile);
+	Station* station = Station::GetByTile(tile);
 
 	if (_current_company != OWNER_WATER) {
-		CommandCost ret = CheckOwnership(st->owner);
+		CommandCost ret = CheckOwnership(station->owner);
 		if (ret.Failed()) return ret;
 	}
 
-	bool is_truck = IsTruckStop(tile);
+	const bool is_truck = IsTruckStop(tile);
 
-	RoadStop **primary_stop;
-	RoadStop *cur_stop;
-	if (is_truck) { // truck stop
-		primary_stop = &st->truck_stops;
+	RoadStop** primary_stop;
+	RoadStop* cur_stop;
+	if (is_truck) {
+		primary_stop = &station->truck_stops;
 		cur_stop = RoadStop::GetByTile(tile, ROADSTOP_TRUCK);
 	} else {
-		primary_stop = &st->bus_stops;
+		primary_stop = &station->bus_stops;
 		cur_stop = RoadStop::GetByTile(tile, ROADSTOP_BUS);
 	}
 
@@ -2113,75 +2113,84 @@ static CommandCost RemoveRoadStop(TileIndex tile, DoCommandFlag flags)
 
 	/* don't do the check for drive-through road stops when company bankrupts */
 	if (IsDriveThroughStopTile(tile) && (flags & DC_BANKRUPT)) {
-		/* remove the 'going through road stop' status from all vehicles on that tile */
-		if (flags & DC_EXEC) FindVehicleOnPos(tile, nullptr, &ClearRoadStopStatusEnum);
+		// remove the 'going through road stop' status from all vehicles on that tile.
+		if (flags & DC_EXEC) {
+			FindVehicleOnPos(tile, nullptr, &ClearRoadStopStatusEnum);
+		}
 	} else {
 		CommandCost ret = EnsureNoVehicleOnGround(tile);
 		if (ret.Failed()) return ret;
 	}
 
 	if (flags & DC_EXEC) {
-		ZoningMarkDirtyStationCoverageArea(st);
+		ZoningMarkDirtyStationCoverageArea(station);
+
 		if (*primary_stop == cur_stop) {
-			/* removed the first stop in the list */
+			// Removed the first stop in the list.
 			*primary_stop = cur_stop->next;
-			/* removed the only stop? */
+
+			// removed the only stop?
 			if (*primary_stop == nullptr) {
-				st->facilities &= (is_truck ? ~FACIL_TRUCK_STOP : ~FACIL_BUS_STOP);
+				station->facilities &= (is_truck ? ~FACIL_TRUCK_STOP : ~FACIL_BUS_STOP);
 			}
 		} else {
-			/* tell the predecessor in the list to skip this stop */
-			RoadStop *pred = *primary_stop;
+			// Tell the predecessor in the list to skip this stop.
+			RoadStop* pred = *primary_stop;
+
 			while (pred->next != cur_stop) pred = pred->next;
+
 			pred->next = cur_stop->next;
 		}
 
 		/* Update company infrastructure counts. */
-		RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
-		RoadTypeIdentifier rtid;
-		FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
-			Company *c = Company::GetIfValid(GetRoadOwner(tile, rtid.basetype));
-				c->infrastructure.road[rtid.basetype][rtid.subtype] -= 2;
-				DirtyCompanyInfrastructureWindows(c->index);
+		RoadTypeIdentifiers road_type_ids = RoadTypeIdentifiers::FromTile(tile);
+
+		RoadTypeIdentifier road_type_id;
+		FOR_EACH_SET_ROADTYPEIDENTIFIER(road_type_id, road_type_ids) {
+			Company* company = Company::GetIfValid(GetRoadOwner(tile, road_type_id.basetype));
+			if (company != nullptr) {
+				company->infrastructure.road[road_type_id.basetype][road_type_id.subtype] -= 2;
+				DirtyCompanyInfrastructureWindows(company->index);
 			}
 		}
-		Company::Get(st->owner)->infrastructure.station--;
-		DirtyCompanyInfrastructureWindows(st->owner);
+
+		Company::Get(station->owner)->infrastructure.station--;
+		DirtyCompanyInfrastructureWindows(station->owner);
 
 		if (IsDriveThroughStopTile(tile)) {
-			/* Clears the tile for us */
+			// Clears the tile for us.
 			cur_stop->ClearDriveThrough();
 		} else {
 			DoClearSquare(tile);
 		}
 
-		if (Overlays::Instance()->HasStation(st)) st->MarkAcceptanceTilesDirty();
-		SetWindowWidgetDirty(WC_STATION_VIEW, st->index, WID_SV_ROADVEHS);
+		if (Overlays::Instance()->HasStation(station)) station->MarkAcceptanceTilesDirty();
+		SetWindowWidgetDirty(WC_STATION_VIEW, station->index, WID_SV_ROADVEHS);
 		delete cur_stop;
 
-		/* Make sure no vehicle is going to the old roadstop */
-		RoadVehicle *v;
-		FOR_ALL_ROADVEHICLES(v) {
-			if (v->First() == v && v->current_order.IsType(OT_GOTO_STATION) &&
-					v->dest_tile == tile) {
-				v->dest_tile = v->GetOrderStationLocation(st->index);
+		// Make sure no vehicle is going to the old roadstop.
+		RoadVehicle* road_vehicle;
+		FOR_ALL_ROADVEHICLES(road_vehicle) {
+			if (road_vehicle->First() == road_vehicle && road_vehicle->current_order.IsType(OT_GOTO_STATION) &&
+			    road_vehicle->dest_tile == tile) {
+				road_vehicle->dest_tile = road_vehicle->GetOrderStationLocation(station->index);
 			}
 		}
 
-		st->rect.AfterRemoveTile(st, tile);
-		st->catchment.AfterRemoveTile(tile, is_truck ? CA_TRUCK : CA_BUS);
+		station->rect.AfterRemoveTile(station, tile);
+		station->catchment.AfterRemoveTile(tile, is_truck ? CA_TRUCK : CA_BUS);
 
-		st->UpdateVirtCoord();
-		st->RecomputeIndustriesNear();
-		DeleteStationIfEmpty(st);
+		station->UpdateVirtCoord();
+		station->RecomputeIndustriesNear();
+		DeleteStationIfEmpty(station);
 
-		/* Update the tile area of the truck/bus stop */
+		// Update the tile area of the truck/bus stop.
 		if (is_truck) {
-			st->truck_station.Clear();
-			for (const RoadStop *rs = st->truck_stops; rs != nullptr; rs = rs->next) st->truck_station.Add(rs->xy);
+			station->truck_station.Clear();
+			for (const RoadStop* road_stop = station->truck_stops; road_stop != nullptr; road_stop = road_stop->next) station->truck_station.Add(road_stop->xy);
 		} else {
-			st->bus_station.Clear();
-			for (const RoadStop *rs = st->bus_stops; rs != nullptr; rs = rs->next) st->bus_station.Add(rs->xy);
+			station->bus_station.Clear();
+			for (const RoadStop* road_stop = station->bus_stops; road_stop != nullptr; road_stop = road_stop->next) station->bus_station.Add(road_stop->xy);
 		}
 	}
 

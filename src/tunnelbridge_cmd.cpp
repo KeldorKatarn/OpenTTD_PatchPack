@@ -360,6 +360,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	Owner owner;
 	bool is_new_owner;
+	bool is_upgrade = false;
 	RoadTypeIdentifiers rtids;
 	if (IsBridgeTile(tile_start) && IsBridgeTile(tile_end) &&
 			GetOtherBridgeEnd(tile_start) == tile_end &&
@@ -387,7 +388,7 @@ CommandCost CmdBuildBridge(TileIndex end_tile, DoCommandFlag flags, uint32 p1, u
 
 		/* If this is a road bridge, make sure the roadtype matches. */
 		if (transport_type == TRANSPORT_ROAD && rtids.HasType(rtid.basetype) && rtids.GetType(rtid.basetype) != rtid) {
-			return_cmd_error(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
+			return CommandError(STR_ERROR_MUST_DEMOLISH_BRIDGE_FIRST);
 		}
 
 		/* Do not replace town bridges with lower speed bridges, unless in scenario editor. */
@@ -888,24 +889,25 @@ CommandCost CmdBuildTunnel(TileIndex start_tile, DoCommandFlag flags, uint32 p1,
 		if(start_tile > end_tile) Swap(tn, ts);
 
 		if (!Tunnel::CanAllocateItem()) return CommandError(STR_ERROR_TUNNEL_TOO_MANY);
-		const Tunnel *t = new Tunnel(tn, ts, TileHeight(tn), is_chunnel);
+		const Tunnel* tunnel = new Tunnel(tn, ts, TileHeight(tn), is_chunnel);
 
 		if (transport_type == TRANSPORT_RAIL) {
 			if (c != nullptr) c->infrastructure.rail[railtype] += num_pieces;
-			MakeRailTunnel(start_tile, company, t->index, direction, railtype);
-			MakeRailTunnel(end_tile, company, t->index, ReverseDiagDir(direction), railtype);
+			MakeRailTunnel(start_tile, company, tunnel->index, direction, railtype);
+			MakeRailTunnel(end_tile, company, tunnel->index, ReverseDiagDir(direction), railtype);
 			AddSideToSignalBuffer(start_tile, INVALID_DIAGDIR, company);
 			YapfNotifyTrackLayoutChange(start_tile, DiagDirToDiagTrack(direction));
 		} else {
 			RoadTypeIdentifiers rtids;
 			rtids.MergeRoadType(rtid);
+			if (c != nullptr) {
 				RoadTypeIdentifier new_rtid;
 				FOR_EACH_SET_ROADTYPEIDENTIFIER(new_rtid, rtids) {
 					c->infrastructure.road[new_rtid.basetype][new_rtid.subtype] += num_pieces * 2; // A full diagonal road has two road bits.
 				}
 			}
-			MakeRoadTunnel(start_tile, company, direction,                 rtids);
-			MakeRoadTunnel(end_tile,   company, ReverseDiagDir(direction), rtids);
+			MakeRoadTunnel(start_tile, company, tunnel->index, direction, rtids);
+			MakeRoadTunnel(end_tile,   company, tunnel->index, ReverseDiagDir(direction), rtids);
 		}
 		DirtyCompanyInfrastructureWindows(company);
 	}
@@ -2070,22 +2072,23 @@ extern const TrackBits _road_trackbits[16];
 
 static TrackStatus GetTileTrackStatus_TunnelBridge(TileIndex tile, TransportType mode, uint sub_mode, DiagDirection side)
 {
-	TransportType transport_type = GetTunnelBridgeTransportType(tile);
-	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && !HasTileRoadType(tile, (RoadType)sub_mode))) return 0;
+	const TransportType transport_type = GetTunnelBridgeTransportType(tile);
 
-	DiagDirection dir = GetTunnelBridgeDirection(tile);
+	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && !HasTileRoadType(tile, RoadType(sub_mode)))) return 0;
+
+	const DiagDirection diag_direction = GetTunnelBridgeDirection(tile);
 
 	if (mode == TRANSPORT_ROAD && IsRoadCustomBridgeHeadTile(tile)) {
-		if (side != INVALID_DIAGDIR && side == dir) return 0;
+		if (side != INVALID_DIAGDIR && side == diag_direction) return 0;
 		TrackBits bits = TRACK_BIT_NONE;
 		if (sub_mode & ROADTYPES_TRAM) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_TRAM)];
 		if (sub_mode & ROADTYPES_ROAD) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_ROAD)];
 		return CombineTrackStatus(TrackBitsToTrackdirBits(bits), TRACKDIR_BIT_NONE);
 	}
 
-	if (side != INVALID_DIAGDIR && side != ReverseDiagDir(dir)) return 0;
+	if (side != INVALID_DIAGDIR && side != ReverseDiagDir(diag_direction)) return 0;
 
-	return CombineTrackStatus(TrackBitsToTrackdirBits(DiagDirToDiagTrackBits(dir)), TRACKDIR_BIT_NONE);
+	return CombineTrackStatus(TrackBitsToTrackdirBits(DiagDirToDiagTrackBits(diag_direction)), TRACKDIR_BIT_NONE);
 }
  
 static void UpdateRoadTunnelBridgeInfrastructure(TileIndex begin, TileIndex end, bool add) {
@@ -2094,13 +2097,14 @@ static void UpdateRoadTunnelBridgeInfrastructure(TileIndex begin, TileIndex end,
 	const uint len = middle_len + (4 * TUNNELBRIDGE_TRACKBIT_FACTOR);
 
 	/* Iterate all present road types as each can have a different owner. */
-	RoadType rt;
-	FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(begin)) {
-		Company * const c = Company::GetIfValid(GetRoadOwner(begin, rt));
+	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(begin);
+	RoadTypeIdentifier rtid;
+	FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+		Company * const c = Company::GetIfValid(GetRoadOwner(begin, rtid.basetype));
 		if (c != nullptr) {
 			uint infra = 0;
 			if (IsBridge(begin)) {
-				const RoadBits bits = GetCustomBridgeHeadRoadBits(begin, rt);
+				const RoadBits bits = GetCustomBridgeHeadRoadBits(begin, rtid.basetype);
 				infra += CountBits(bits) * TUNNELBRIDGE_TRACKBIT_FACTOR;
 				if (bits & DiagDirToRoadBits(GetTunnelBridgeDirection(begin))) {
 					infra += middle_len;
@@ -2109,24 +2113,25 @@ static void UpdateRoadTunnelBridgeInfrastructure(TileIndex begin, TileIndex end,
 				infra += len;
 			}
 			if (add) {
-				c->infrastructure.road[rt] += infra;
+				c->infrastructure.road[rtid.basetype][rtid.subtype] += infra;
 			} else {
-				c->infrastructure.road[rt] -= infra;
+				c->infrastructure.road[rtid.basetype][rtid.subtype] -= infra;
 			}
 		}
 	}
-	FOR_EACH_SET_ROADTYPE(rt, GetRoadTypes(end)) {
-		Company * const c = Company::GetIfValid(GetRoadOwner(end, rt));
+	rtids = RoadTypeIdentifiers::FromTile(end);
+	FOR_EACH_SET_ROADTYPEIDENTIFIER(rtid, rtids) {
+		Company * const c = Company::GetIfValid(GetRoadOwner(end, rtid.basetype));
 		if (c != nullptr) {
 			uint infra = 0;
 			if (IsBridge(end)) {
-				const RoadBits bits = GetCustomBridgeHeadRoadBits(end, rt);
+				const RoadBits bits = GetCustomBridgeHeadRoadBits(end, rtid.basetype);
 				infra += CountBits(bits) * TUNNELBRIDGE_TRACKBIT_FACTOR;
 			}
 			if (add) {
-				c->infrastructure.road[rt] += infra;
+				c->infrastructure.road[rtid.basetype][rtid.subtype] += infra;
 			} else {
-				c->infrastructure.road[rt] -= infra;
+				c->infrastructure.road[rtid.basetype][rtid.subtype] -= infra;
 			}
 		}
 	}
@@ -2312,8 +2317,8 @@ static VehicleEnterTileStatus VehicleEnter_TunnelBridge(Vehicle *v, TileIndex ti
 					RoadVehicle *rv = RoadVehicle::From(v);
 					if (IsRoadCustomBridgeHeadTile(tile)) {
 						RoadBits bits = ROAD_NONE;
-						if (rv->compatible_roadtypes & ROADTYPES_TRAM) bits |= GetCustomBridgeHeadRoadBits(tile, ROADTYPE_TRAM);
-						if (rv->compatible_roadtypes & ROADTYPES_ROAD) bits |= GetCustomBridgeHeadRoadBits(tile, ROADTYPE_ROAD);
+						if (rv->compatible_subtypes & ROADTYPES_TRAM) bits |= GetCustomBridgeHeadRoadBits(tile, ROADTYPE_TRAM);
+						if (rv->compatible_subtypes & ROADTYPES_ROAD) bits |= GetCustomBridgeHeadRoadBits(tile, ROADTYPE_ROAD);
 						if (!(bits & DiagDirToRoadBits(GetTunnelBridgeDirection(tile)))) return VETSB_CONTINUE;
 					}
 					rv->state = RVSB_WORMHOLE;

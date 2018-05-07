@@ -1015,7 +1015,7 @@ static void AddStringToDraw(int x, int y, StringID string, uint64 params_1, uint
  * @param z_offset Z offset relative to the groundsprite. Only used for the sprite position, not for sprite sorting.
  * @param foundation_part Foundation part the sprite belongs to.
  */
-static void DrawSelectionSprite(SpriteID image, PaletteID pal, const TileInfo *ti, int z_offset, FoundationPart foundation_part)
+void DrawSelectionSprite(SpriteID image, PaletteID pal, const TileInfo *ti, int z_offset, FoundationPart foundation_part)
 {
 	/* FIXME: This is not totally valid for some autorail highlights that extend over the edges of the tile. */
 	if (_vd.foundation[foundation_part] == -1) {
@@ -1033,7 +1033,7 @@ static void DrawSelectionSprite(SpriteID image, PaletteID pal, const TileInfo *t
  * @param ti TileInfo Tile that is being drawn
  * @param pal Palette to apply.
  */
-static void DrawTileSelectionRect(const TileInfo *ti, PaletteID pal)
+void DrawTileSelectionRect(const TileInfo *ti, PaletteID pal)
 {
 	if (!IsValidTile(ti->tile)) return;
 

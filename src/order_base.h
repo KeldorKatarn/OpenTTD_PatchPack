@@ -556,7 +556,7 @@ public:
 		  timetable_duration(0), total_duration(0),
 		  last_timetable_init(INVALID_TICKS), separation_counter(0),
 		  is_separation_valid(false), current_separation(INVALID_TICKS), current_sep_mode(TTS_MODE_OFF),
-		  num_sep_vehicles(0) { }
+		  num_sep_vehicles(1) { }
 
 	/**
 	 * Create an order list with the given order chain for the given vehicle.
@@ -637,20 +637,19 @@ public:
 	*/
 	inline uint GetSepTime() const
 	{
-		if (this->is_separation_valid) {
+		if (this->is_separation_valid || this->current_sep_mode == TTS_MODE_MAN_T) {
 			return this->current_separation;
 		}
-		else if (this->IsCompleteTimetable()) {
+		
+		if (this->IsCompleteTimetable()) {
 			return this->GetTimetableTotalDuration() / this->GetNumVehicles();
 		}
-		else {
-			return 1;
-		}
+		
+		return 1;
 	}
 
 	TTSepSettings GetSepSettings();
 
-	void SetSepSettings(TTSepSettings s);
 	void SetSepSettings(TTSepMode Mode, uint Parameter);
 
 	bool IsVehicleInSharedOrdersList(const Vehicle *v) const;

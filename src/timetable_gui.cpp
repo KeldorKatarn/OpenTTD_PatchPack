@@ -335,6 +335,7 @@ struct TimetableWindow : Window {
 			this->SetWidgetDisabledState(WID_VT_CLEAR_SPEED, disable_speed);
 			this->SetWidgetDisabledState(WID_VT_SHARED_ORDER_LIST, !v->HasSharedOrdersList());
 
+			this->SetWidgetDisabledState(WID_VT_TTSEP_MODE_DROPDOWN, !v->HasOrdersList());
 			this->SetWidgetDisabledState(WID_VT_CONFIRM_ALL, !v->HasOrdersList());
 			this->SetWidgetDisabledState(WID_VT_RESET_LATENESS, !v->HasOrdersList());
 			this->SetWidgetDisabledState(WID_VT_AUTOMATE, !v->HasOrdersList());

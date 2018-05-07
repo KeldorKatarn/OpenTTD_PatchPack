@@ -1078,7 +1078,7 @@ public:
 
 	/**
 	* Prepares command to set new separation settings.
-	* @param s Contains the new settings to be used for separation.
+	* @param settings Contains the new settings to be used for separation.
 	*/
 	inline void SetTimetableSeparationSettings(TTSepSettings settings) const
 	{

@@ -1077,17 +1077,6 @@ public:
 	}
 
 	/**
-	* Prepares command to set new separation settings.
-	* @param settings Contains the new settings to be used for separation.
-	*/
-	inline void SetTimetableSeparationSettings(TTSepSettings settings) const
-	{
-		assert(this->orders.list != nullptr);
-
-		this->orders.list->SetSepSettings(settings);
-	}
-
-	/**
 	* Get the next order which will make the given vehicle stop at a station
 	* or refit at a depot or evaluate a non-trivial condition.
 	* @param next The order to start looking at.

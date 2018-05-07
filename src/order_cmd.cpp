@@ -855,18 +855,6 @@ TTSepSettings OrderList::GetSepSettings()
 }
 
 /**
-* Prepares command to set new separation settings.
-* @param s Contains the new settings to be used for separation.
-* @todo Clean this up (e.g. via union type)
-*/
-void OrderList::SetSepSettings(TTSepSettings s)
-{
-	uint32 p2 = GB<uint32>(s.mode, 0, 3);
-	AB<uint32, uint>(p2, 3, 29, (s.mode == TTS_MODE_MAN_N) ? s.num_veh : s.sep_ticks);
-	DoCommandP(0, this->first_shared->index, p2, CMD_REINIT_SEPARATION);
-}
-
-/**
 * Sets new separation settings.
 * @param mode      Contains the operation mode that is to be used for separation.
 * @param parameter Depending on the operation mode this contains either the number of vehicles (#TTS_MODE_MAN_N)

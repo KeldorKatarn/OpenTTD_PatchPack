@@ -650,7 +650,6 @@ public:
 
 	TTSepSettings GetSepSettings();
 
-	void SetSepSettings(TTSepSettings s);
 	void SetSepSettings(TTSepMode Mode, uint Parameter);
 
 	bool IsVehicleInSharedOrdersList(const Vehicle *v) const;

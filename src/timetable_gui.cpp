@@ -248,8 +248,6 @@ struct TimetableWindow : Window {
 	 */
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
-		this->new_sep_settings = vehicle->GetTimetableSeparationSettings();
-
 		switch (data) {
 			case VIWD_AUTOREPLACE:
 				/* Autoreplace replaced the vehicle */
@@ -858,18 +856,27 @@ struct TimetableWindow : Window {
 		this->SetDirty();
 	}
 
-	virtual void OnDropdownSelect(int widget, int index)
+	void UpdateVehicleSeparationSettings() {
+		uint32 p2 = GB<uint32>(this->new_sep_settings.mode, 0, 3);
+		AB<uint32, uint>(p2, 3, 29, (this->new_sep_settings.mode == TTS_MODE_MAN_N) ?
+										this->new_sep_settings.num_veh :
+										this->new_sep_settings.sep_ticks);
+		DoCommandP(0, this->vehicle->FirstShared()->index, p2, CMD_REINIT_SEPARATION);
+	}
+
+	void OnDropdownSelect(int widget, int index) override
 	{
 		assert(widget == WID_VT_TTSEP_MODE_DROPDOWN);
 
 		this->new_sep_settings = this->vehicle->GetTimetableSeparationSettings();
-		this->new_sep_settings.mode = (TTSepMode)index;
-		this->vehicle->SetTimetableSeparationSettings(this->new_sep_settings);
+		this->new_sep_settings.mode = static_cast<TTSepMode>(index);
+		
+		UpdateVehicleSeparationSettings();
+
 		this->InvalidateData();
 	}
 
-
-	virtual void OnQueryTextFinished(char *str)
+	void OnQueryTextFinished(char *str) override
 	{
 		if (str == nullptr || StrEmpty(str))
 			return;
@@ -892,7 +899,7 @@ struct TimetableWindow : Window {
 			break;
 		}
 		case WID_VT_TTSEP_SET_PARAMETER: {
-			int value = atoi(str);
+			const int value = strtol(str, nullptr, 10);
 
 			switch (this->new_sep_settings.mode)
 			{
@@ -914,7 +921,7 @@ struct TimetableWindow : Window {
 				break;
 			}
 
-			this->vehicle->SetTimetableSeparationSettings(this->new_sep_settings);
+			UpdateVehicleSeparationSettings();
 			this->InvalidateData();
 			break;
 		}
@@ -924,7 +931,7 @@ struct TimetableWindow : Window {
 		}
 	}
 
-	virtual void OnResize()
+	void OnResize() override
 	{
 		/* Update the scroll bar */
 		this->vscroll->SetCapacityFromWidget(this, WID_VT_TIMETABLE_PANEL, WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM);
@@ -939,7 +946,7 @@ struct TimetableWindow : Window {
 		this->GetWidget<NWidgetStacked>(WID_VT_EXPECTED_SELECTION)->SetDisplayedPlane(_settings_client.gui.timetable_arrival_departure ? 0 : 1);
 	}
 
-	virtual void OnFocus(Window *previously_focused_window)
+	void OnFocus(Window *previously_focused_window) override
 	{
 		if (HasFocusedVehicleChanged(this->window_number, previously_focused_window)) {
 			MarkAllRoutePathsDirty(this->vehicle);
@@ -947,7 +954,7 @@ struct TimetableWindow : Window {
 		}
 	}
 
-	virtual void OnFocusLost(Window *newly_focused_window)
+	void OnFocusLost(Window *newly_focused_window) override
 	{
 		if (HasFocusedVehicleChanged(this->window_number, newly_focused_window)) {
 			MarkAllRoutePathsDirty(this->vehicle);
@@ -955,7 +962,7 @@ struct TimetableWindow : Window {
 		}
 	}
 
-	const Vehicle *GetVehicle()
+	const Vehicle* GetVehicle() const
 	{
 		return this->vehicle;
 	}

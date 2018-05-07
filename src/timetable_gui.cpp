@@ -269,6 +269,8 @@ struct TimetableWindow : Window
 			default: {
 				if (gui_scope) break; // Only do this once; from command scope
 
+				this->new_sep_settings = this->vehicle->GetTimetableSeparationSettings();
+
 				// Moving an order. If one of these is INVALID_VEH_ORDER_ID, then
 				// the order is being created / removed.
 				if (this->sel_index == -1) break;

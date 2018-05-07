@@ -479,16 +479,18 @@ CommandCost CmdConfirmAll(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 * @param text  Not used.
 * @return      The error or cost of the operation.
 */
-CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+CommandCost CmdReinitSeparation(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char* text)
 {
-	Vehicle *v = Vehicle::GetIfValid(p1);
-	if (v == nullptr || !v->IsPrimaryVehicle()) return CommandError();
+	Vehicle* vehicle = Vehicle::GetIfValid(p1);
+	if (vehicle == nullptr || !vehicle->IsPrimaryVehicle()) return CommandError();
 
-	CommandCost ret = CheckOwnership(v->owner);
+	CommandCost ret = CheckOwnership(vehicle->owner);
 	if (ret.Failed()) return ret;
 
 	if (flags & DC_EXEC) {
-		v->SetSepSettings((TTSepMode)GB(p2, 0, 3), GB(p2, 3, 29));
+		vehicle->SetSepSettings(static_cast<TTSepMode>(GB(p2, 0, 3)), GB(p2, 3, 29));
+
+		InvalidateWindowData(WC_VEHICLE_TIMETABLE, vehicle->index);
 	}
 
 	return CommandCost();

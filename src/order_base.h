@@ -637,15 +637,15 @@ public:
 	*/
 	inline uint GetSepTime() const
 	{
-		if (this->is_separation_valid) {
+		if (this->is_separation_valid || this->current_sep_mode == TTS_MODE_MAN_T) {
 			return this->current_separation;
 		}
-		else if (this->IsCompleteTimetable()) {
+		
+		if (this->IsCompleteTimetable()) {
 			return this->GetTimetableTotalDuration() / this->GetNumVehicles();
 		}
-		else {
-			return 1;
-		}
+		
+		return 1;
 	}
 
 	TTSepSettings GetSepSettings();

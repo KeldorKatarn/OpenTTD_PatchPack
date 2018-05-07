@@ -651,58 +651,51 @@ struct TimetableWindow : Window
 				// If separation is inactive, we can stop here.
 				if (!_settings_game.order.automatic_timetable_separation || !this->vehicle->HasOrdersList()) break;
 
-				if (this->new_sep_settings.mode != TTS_MODE_OFF &&
-					this->vehicle->HasCompleteTimetable() &&
-					this->vehicle->IsTimetableSeparationValid()) {
+				const bool is_off = this->new_sep_settings.mode == TTS_MODE_OFF;
+				const bool is_auto = this->new_sep_settings.mode == TTS_MODE_AUTO ||
+									 this->new_sep_settings.mode == TTS_MODE_BUFFERED_AUTO;
+				const bool is_manual_number = this->new_sep_settings.mode == TTS_MODE_MAN_N;
+				const bool is_manual_time = this->new_sep_settings.mode == TTS_MODE_MAN_T;
+
+				const bool is_complete = this->vehicle->HasCompleteTimetable();
+				const bool is_valid = this->vehicle->IsTimetableSeparationValid();
+
+				if (!is_off && (!is_auto || (is_complete && is_valid))) {
 					uint64 par;
 
 					// If separation hasn't just been switched off, we need to draw various description lines.
 					// The first line is the amount of separation which is either saved in the struct or must
 					// be calculated on the fly.
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_T ||
-						this->new_sep_settings.mode == TTS_MODE_AUTO ||
-						this->new_sep_settings.mode == TTS_MODE_BUFFERED_AUTO) {
+					if (is_manual_time || is_auto) {
 						par = this->new_sep_settings.sep_ticks;
 					} else {
 						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.num_veh);
 					}
 
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_T ||
-						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
-
+					if (!is_manual_number && (is_manual_time || (is_auto && (is_complete && is_valid)))) {
 						SetDParam(0, par);
 						SetDParam(1, par);
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_TIME_DESC, TC_BLACK);
 						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
+					}
 
+					if (!is_off && is_auto && (is_complete && is_valid)) {
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_BETWEEN, TC_BLACK);
 						y += GetStringBoundingBox(STR_TTSEPARATION_BETWEEN).height;
-					} else {
-						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_TIME_DESC).height;
 					}
 
-					// Print either the chosen amount of vehicles (when in MAN_N mode) or the calculated result...
-					// Do not print anything at all if we do not have a valid timetable yet.					
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_N ||
-						this->new_sep_settings.mode == TTS_MODE_AUTO ||
-						this->new_sep_settings.mode == TTS_MODE_BUFFERED_AUTO) {
-						par = this->new_sep_settings.num_veh;
-					} else {
-						par = this->vehicle->GetTimetableTotalDuration() / max(1u, this->new_sep_settings.sep_ticks);
-					}
+					par = this->new_sep_settings.num_veh;
 
-					if (this->new_sep_settings.mode == TTS_MODE_MAN_N ||
-						(this->vehicle->HasCompleteTimetable() && this->vehicle->IsTimetableSeparationValid())) {
+					if (is_manual_number || (is_auto && (is_complete && is_valid))) {
 						SetDParam(0, par);
 						DrawString(left_border, right_border, y, STR_TTSEPARATION_REQ_NUM_DESC, TC_BLACK);
+						y += GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height;
 					}
-
-					y += GetStringBoundingBox(STR_TTSEPARATION_REQ_NUM_DESC).height;
 				}
 
 				// If separation is switched on at all...
 				if (this->vehicle->IsTimetableSeparationOn()) {
-					if (!this->vehicle->HasCompleteTimetable()) {
+					if (!is_complete) {
 						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_TIMETABLE);
 					} else if (!this->vehicle->HasSharedOrdersList()) {
 						SetDParam(0, STR_TTSEPARATION_STATUS_WAITING_FOR_VEHICLES);

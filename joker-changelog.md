@@ -1,6 +1,10 @@
-## Joker's Patchpack Changelog v1.26.1
+## Joker's Patchpack Changelog v1.27.0
 
 * * *
+
+### v1.27.0 (2018-05-11)
+* Add road and tram types.
+* Increase number of possible road and tram types to 31.
 
 ### v1.26.1 (2018-05-07)
 * Improve the way separation settings are displayed.

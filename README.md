@@ -1,4 +1,4 @@
-## Joker's Patchpack version v1.26.1
+## Joker's Patchpack version v1.27.0
 
 This is a collection of patches applied to [OpenTTD](http://www.openttd.org/)
 This patch pack is a collection of features created by various developers.
@@ -35,6 +35,8 @@ See [joker-changelog.md](joker-changelog.md) for changelog.
 * 255 GRFs in single AND multiplayer mode
 
 * Increase number of available rail track types from 16 to 32
+
+* Introduce road and tramp types and increase number of possible types for each to 31
 
 * Automated timetables and separation with several different separation modes.
 

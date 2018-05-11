@@ -213,8 +213,13 @@ bool Vehicle::NeedsServicing() const
 	uint rail_pices = 0;
 	uint road_pieces = 0;
 
-	for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pices += c->infrastructure.rail[i];
-	for (uint i = 0; i < lengthof(c->infrastructure.road); i++) road_pieces += c->infrastructure.road[i];
+	for (unsigned int i : c->infrastructure.rail) rail_pices += i;
+
+	for (uint i = 0; i < ROADSUBTYPE_END; i++) {
+		for (uint j = 0; j < ROADTYPE_END; ++j) {
+			road_pieces += c->infrastructure.road[j][i];
+		}
+	}
 
 	if ((this->type == VEH_TRAIN && rail_pices == 0) ||
 		(this->type == VEH_ROAD && road_pieces == 0) ||
@@ -2035,6 +2040,7 @@ UnitID GetFreeUnitNumber(VehicleType type)
  */
 bool CanBuildVehicleInfrastructure(VehicleType type)
 {
+	assert(type != VEH_ROAD);
 	assert(IsCompanyBuildableVehicleType(type));
 
 	if (!Company::IsValidID(_local_company)) return false;
@@ -2043,9 +2049,9 @@ bool CanBuildVehicleInfrastructure(VehicleType type)
 	UnitID max;
 	switch (type) {
 		case VEH_TRAIN:    max = _settings_game.vehicle.max_trains; break;
-		case VEH_ROAD:     max = _settings_game.vehicle.max_roadveh; break;
 		case VEH_SHIP:     max = _settings_game.vehicle.max_ships; break;
 		case VEH_AIRCRAFT: max = _settings_game.vehicle.max_aircraft; break;
+		/* VEH_ROAD is not handled here, see CanBuildRoadTypeInfrastructure() */
 		default: NOT_REACHED();
 	}
 
@@ -2062,12 +2068,11 @@ bool CanBuildVehicleInfrastructure(VehicleType type)
 	/* We should be able to build infrastructure when we have the actual vehicle type */
 	const Vehicle *v;
 	FOR_ALL_VEHICLES(v) {
-		if (v->owner == _local_company && v->type == type) return true;
+		if (v->type == type && v->owner == _local_company) return true;
 	}
 
 	return false;
 }
-
 
 /**
  * Determines the #LiveryScheme for a vehicle.

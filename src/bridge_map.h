@@ -138,7 +138,7 @@ static inline void MakeBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, D
 	else {
 		_m[t].m3 = rt;
 	}
-	_m[t].m4 = 0;
+	_m[t].m4 = INVALID_ROADTYPES;
 	_m[t].m5 = 1 << 7 | tt << 2 | d;
 	SB(_me[t].m6, 2, 4, bridgetype);
 	_me[t].m7 = 0;
@@ -155,7 +155,7 @@ static inline void MakeBridgeRamp(TileIndex t, Owner o, BridgeType bridgetype, D
  * @param r          the road type of the bridge
  * @param upgrade    whether the bridge is an upgrade instead of a totally new bridge
  */
-static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypes r, bool upgrade)
+static inline void MakeRoadBridgeRamp(TileIndex t, Owner o, Owner owner_road, Owner owner_tram, BridgeType bridgetype, DiagDirection d, RoadTypeIdentifiers r, bool upgrade)
 {
 	// Backup custom bridgehead data.
 	auto m2_backup = _m[t].m2;

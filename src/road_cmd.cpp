@@ -651,15 +651,15 @@ static CommandCost CheckRoadSlope(Slope tileh, RoadBits *pieces, RoadBits existi
  * Build a piece of road.
  * @param tile tile where to build road
  * @param flags operation to perform
- * @param p1 bit 0..3 road pieces to build (RoadBits)
- *           bit 4..8 road type
- *           bit 9..10 disallowed directions to toggle
- *           bit 8    disable custom bridge heads
+ * @param p1 bit  0.. 3 road pieces to build (RoadBits)
+ *           bit  4.. 9 road type
+ *           bit 10..11 disallowed directions to toggle
+ *           bit 12     disable custom bridge heads
  * @param p2 the town that is building the road (0 if not applicable)
  * @param text unused
  * @return the cost of this operation or an error
  */
-CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char* text)
 {
 	CompanyID company = _current_company;
 	CommandCost cost(EXPENSES_CONSTRUCTION);
@@ -667,37 +667,36 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	RoadBits existing = ROAD_NONE;
 	RoadBits other_bits = ROAD_NONE;
 
-	/* Road pieces are max 4 bitset values (NE, NW, SE, SW) and town can only be non-zero
-	 * if a non-company is building the road */
+	// Road pieces are max 4 bitset values (NE, NW, SE, SW) and town can only be non-zero
+	// if a non-company is building the road.
 	if ((Company::IsValidID(company) && p2 != 0) || (company == OWNER_TOWN && !Town::IsValidID(p2)) || (company == OWNER_DEITY && p2 != 0)) return CommandError();
 	if (company != OWNER_TOWN) {
-		const Town *town = CalcClosestTownFromTile(tile);
-		p2 = (town != nullptr) ? town->index : (TownID)INVALID_TOWN;
+		const Town* town = CalcClosestTownFromTile(tile);
+		p2 = (town != nullptr) ? town->index : static_cast<TownID>(INVALID_TOWN);
 
 		if (company == OWNER_DEITY) {
 			company = OWNER_TOWN;
 
-			/* If we are not within a town, we are not owned by the town */
+			// If we are not within a town, we are not owned by the town.
 			if (town == nullptr || DistanceSquare(tile, town->xy) > town->cache.squared_town_zone_radius[HZB_TOWN_EDGE]) {
 				company = OWNER_NONE;
 			}
 		}
 	}
 
-	RoadBits pieces = Extract<RoadBits, 0, 4>(p1);
+	auto pieces = Extract<RoadBits, 0, 4>(p1);
 
-	/* do not allow building 'zero' road bits, code wouldn't handle it */
+	// Do not allow building 'zero' road bits, code wouldn't handle it.
 	if (pieces == ROAD_NONE) return CommandError();
 
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p1, 4, 5))) return CommandError();
+	if (!rtid.UnpackIfValid(GB(p1, 4, 6))) return CommandError();
 	if (!ValParamRoadType(rtid)) return CommandError();
 
-	DisallowedRoadDirections toggle_drd = Extract<DisallowedRoadDirections, 9, 2>(p1);
+	const auto disallowed_road_directions = Extract<DisallowedRoadDirections, 10, 2>(p1);
+	const bool disable_custom_bridge_heads = HasBit(p1, 12);
 
-	bool disable_custom_bridge_heads = HasBit(p1, 8);
-
-	Slope tileh = GetTileSlope(tile);
+	const Slope slope = GetTileSlope(tile);
 
 	bool need_to_clear = false;
 	switch (GetTileType(tile)) {
@@ -707,50 +706,58 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					if (HasRoadWorks(tile)) return CommandError(STR_ERROR_ROAD_WORKS_IN_PROGRESS);
 
 					other_bits = GetOtherRoadBits(tile, rtid.basetype);
+
 					if (!HasTileRoadType(tile, rtid.basetype)) break;
 
 					existing = GetRoadBits(tile, rtid.basetype);
-					bool crossing = !IsStraightRoad(existing | pieces);
-					if (rtid.IsRoad() && (GetDisallowedRoadDirections(tile) != DRD_NONE || toggle_drd != DRD_NONE) && crossing) {
-						/* Junctions cannot be one-way */
+					const bool crossing = !IsStraightRoad(existing | pieces);
+
+					if (rtid.IsRoad() && (GetDisallowedRoadDirections(tile) != DRD_NONE || disallowed_road_directions != DRD_NONE) && crossing) {
+						// Junctions cannot be one-way.
 						return CommandError(STR_ERROR_ONEWAY_ROADS_CAN_T_HAVE_JUNCTION);
 					}
+
 					if ((existing & pieces) == pieces) {
-						/* We only want to set the (dis)allowed road directions */
-						if (toggle_drd != DRD_NONE && rtid.IsRoad()) {
+						// We only want to set the (dis)allowed road directions.
+						if (disallowed_road_directions != DRD_NONE && rtid.IsRoad()) {
 							if (crossing) return CommandError(STR_ERROR_ONEWAY_ROADS_CAN_T_HAVE_JUNCTION);
 
-							Owner owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+							const Owner owner = GetRoadOwner(tile, ROADTYPE_ROAD);
+
 							if (owner != OWNER_NONE) {
 								CommandCost ret = CheckOwnership(owner, tile);
 								if (ret.Failed()) return ret;
 							}
 
-							DisallowedRoadDirections dis_existing = GetDisallowedRoadDirections(tile);
-							DisallowedRoadDirections dis_new      = dis_existing ^ toggle_drd;
+							const DisallowedRoadDirections dis_existing = GetDisallowedRoadDirections(tile);
+							const DisallowedRoadDirections dis_new      = dis_existing ^ disallowed_road_directions;
 
-							/* We allow removing disallowed directions to break up
-							 * deadlocks, but adding them can break articulated
-							 * vehicles. As such, only when less is disallowed,
-							 * i.e. bits are removed, we skip the vehicle check. */
+							// We allow removing disallowed directions to break up
+							// deadlocks, but adding them can break articulated
+							// vehicles. As such, only when less is disallowed,
+							// i.e. bits are removed, we skip the vehicle check.
 							if (CountBits(dis_existing) <= CountBits(dis_new)) {
 								CommandCost ret = EnsureNoVehicleOnGround(tile);
 								if (ret.Failed()) return ret;
 							}
 
-							/* Ignore half built tiles */
+							// Ignore half built tiles.
 							if ((flags & DC_EXEC) && rtid.IsRoad() && IsStraightRoad(existing)) {
 								SetDisallowedRoadDirections(tile, dis_new);
 								MarkTileDirtyByTile(tile);
 							}
+
 							return CommandCost();
 						}
+
 						return CommandError(STR_ERROR_ALREADY_BUILT);
 					}
-					/* Disallow breaking end-of-line of someone else
-					 * so trams can still reverse on this tile. */
+
+					// Disallow breaking end-of-line of someone else
+					// so trams can still reverse on this tile.
 					if (rtid.IsTram() && HasExactlyOneBit(existing)) {
-						Owner owner = GetRoadOwner(tile, rtid.basetype);
+						const Owner owner = GetRoadOwner(tile, rtid.basetype);
+
 						if (Company::IsValidID(owner)) {
 							CommandCost ret = CheckOwnership(owner);
 							if (ret.Failed()) return ret;
@@ -766,7 +773,9 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 					other_bits = GetCrossingRoadBits(tile);
 					if (pieces & ComplementRoadBits(other_bits)) goto do_clear;
-					pieces = other_bits; // we need to pay for both roadbits
+
+					// We need to pay for both roadbits.
+					pieces = other_bits; 
 
 					if (HasTileRoadType(tile, rtid.basetype)) return CommandError(STR_ERROR_ALREADY_BUILT);
 					break;
@@ -780,12 +789,12 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 			break;
 
 		case MP_RAILWAY: {
-			if (IsSteepSlope(tileh)) {
+			if (IsSteepSlope(slope)) {
 				return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 			}
 
 			/* Level crossings may only be built on these slopes */
-			if (!HasBit(VALID_LEVEL_CROSSING_SLOPES, tileh)) {
+			if (!HasBit(VALID_LEVEL_CROSSING_SLOPES, slope)) {
 				return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 			}
 
@@ -867,7 +876,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				const RoadBits axial_pieces = AxisToRoadBits(DiagDirToAxis(entrance_dir));
 				existing = GetCustomBridgeHeadRoadBits(tile, rtid.basetype);
 
-				if (!(_settings_game.construction.road_custom_bridge_heads && HasBridgeFlatRamp(tileh, DiagDirToAxis(entrance_dir))) || disable_custom_bridge_heads) {
+				if (!(_settings_game.construction.road_custom_bridge_heads && HasBridgeFlatRamp(slope, DiagDirToAxis(entrance_dir))) || disable_custom_bridge_heads) {
 					/* Ordinary bridge heads only */
 					/* Only allow building the outer roadbit, so building long roads stops at existing bridges */
 					if (MirrorRoadBits(entrance_piece) != pieces) goto do_clear;
@@ -879,7 +888,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				}
 
 				/* Steep slopes behave the same as slopes with one corner raised. */
-				const Slope normalised_tileh = IsSteepSlope(tileh) ? SlopeWithOneCornerRaised(GetHighestSlopeCorner(tileh)) : tileh;
+				const Slope normalised_tileh = IsSteepSlope(slope) ? SlopeWithOneCornerRaised(GetHighestSlopeCorner(slope)) : slope;
 
 				if ((_invalid_tileh_slopes_road[0][normalised_tileh & SLOPE_ELEVATED] & (pieces & ~entrance_piece)) != ROAD_NONE) {
  					return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
@@ -982,7 +991,7 @@ do_clear:;
 
 	if (other_bits != pieces) {
 		/* Check the foundation/slopes when adding road/tram bits */
-		CommandCost ret = CheckRoadSlope(tileh, &pieces, existing, other_bits);
+		CommandCost ret = CheckRoadSlope(slope, &pieces, existing, other_bits);
 		/* Return an error if we need to build a foundation (ret != 0) but the
 		 * current setting is turned off */
 		if (ret.Failed() || (ret.GetCost() != 0 && !_settings_game.construction.build_on_slopes)) {
@@ -1105,7 +1114,7 @@ do_clear:;
 		if (rtid.IsRoad() && IsNormalRoadTile(tile)) {
 			existing |= pieces;
 			SetDisallowedRoadDirections(tile, IsStraightRoad(existing) ?
-					GetDisallowedRoadDirections(tile) ^ toggle_drd : DRD_NONE);
+					GetDisallowedRoadDirections(tile) ^ disallowed_road_directions : DRD_NONE);
 		}
 
 		MarkTileDirtyByTile(tile);
@@ -1135,9 +1144,9 @@ static bool CanConnectToRoad(TileIndex tile, RoadType rt, DiagDirection dir)
  * - p2 = (bit 0) - start tile starts in the 2nd half of tile (p2 & 1). Only used if bit 6 is set or if we are building a single tile
  * - p2 = (bit 1) - end tile starts in the 2nd half of tile (p2 & 2). Only used if bit 6 is set or if we are building a single tile
  * - p2 = (bit 2) - direction: 0 = along x-axis, 1 = along y-axis (p2 & 4)
- * - p2 = (bit 3..7) - road type identifier
- * - p2 = (bit 8) - set road direction
- * - p2 = (bit 9) - defines two different behaviors for this command:
+ * - p2 = (bit 3..8) - road type identifier
+ * - p2 = (bit 9) - set road direction
+ * - p2 = (bit 10) - defines two different behaviors for this command:
  *      - 0 = Build up to an obstacle. Do not build the first and last roadbits unless they can be connected to something, or if we are building a single tile
  *      - 1 = Fail if an obstacle is found. Always take into account bit 0 and 1. Disable custom bridge heads. This behavior is used for scripts
  * @param text unused
@@ -1151,7 +1160,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 
 	TileIndex end_tile = p1;
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CommandError();
+	if (!rtid.UnpackIfValid(GB(p2, 3, 6))) return CommandError();
 	if (!ValParamRoadType(rtid)) return CommandError();
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
@@ -1173,13 +1182,13 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 	 * when you just 'click' on one tile to build them. */
 	if ((axis == AXIS_Y) == (start_tile == end_tile && HasBit(p2, 0) == HasBit(p2, 1))) drd ^= DRD_BOTH;
 	/* No disallowed direction bits have to be toggled */
-	if (!HasBit(p2, 8)) drd = DRD_NONE;
+	if (!HasBit(p2, 9)) drd = DRD_NONE;
 
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	CommandCost last_error = CommandError();
 	TileIndex tile = start_tile;
 	bool had_success = false;
-	bool is_ai = HasBit(p2, 9);
+	bool is_ai = HasBit(p2, 10);
 
 	/* Start tile is the first tile clicked by the user. */
 	for (;;) {
@@ -1199,7 +1208,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
 			if (tile == start_tile && HasBit(p2, 0)) bits &= DiagDirToRoadBits(dir);
 		}
 
-		CommandCost ret = DoCommand(tile, drd << 9 | rtid.Pack() << 4 | bits | (is_ai ? 1 << 8 : 0), 0, flags, CMD_BUILD_ROAD);
+		CommandCost ret = DoCommand(tile, (is_ai ? 1 << 12 : 0) | drd << 10 | rtid.Pack() << 4 | bits, 0, flags, CMD_BUILD_ROAD);
 		if (ret.Failed()) {
 			last_error = ret;
 			if (last_error.GetErrorMessage() != STR_ERROR_ALREADY_BUILT) {
@@ -1239,7 +1248,7 @@ CommandCost CmdBuildLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 p
  * - p2 = (bit 0) - start tile starts in the 2nd half of tile (p2 & 1)
  * - p2 = (bit 1) - end tile starts in the 2nd half of tile (p2 & 2)
  * - p2 = (bit 2) - direction: 0 = along x-axis, 1 = along y-axis (p2 & 4)
- * - p2 = (bit 3 - 7) - road type
+ * - p2 = (bit 3 - 8) - road type
  * @param text unused
  * @return the cost of this operation or an error
  */
@@ -1251,7 +1260,7 @@ CommandCost CmdRemoveLongRoad(TileIndex start_tile, DoCommandFlag flags, uint32 
 
 	TileIndex end_tile = p1;
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p2, 3, 5))) return CommandError();
+	if (!rtid.UnpackIfValid(GB(p2, 3, 6))) return CommandError();
 
 	Axis axis = Extract<Axis, 2, 1>(p2);
 	/* Only drag in X or Y direction dictated by the direction variable */
@@ -1323,7 +1332,7 @@ CommandCost CmdBuildRoadDepot(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
 	DiagDirection dir = Extract<DiagDirection, 0, 2>(p1);
 
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p1, 2, 5))) return CommandError();
+	if (!rtid.UnpackIfValid(GB(p1, 2, 6))) return CommandError();
 	if (!ValParamRoadType(rtid)) return CommandError();
 
 	Slope tileh = GetTileSlope(tile);
@@ -2466,14 +2475,14 @@ static void ConvertRoadTypeOwner(TileIndex tile, uint num_pieces, Owner owner, R
  * @param flags operation to perform
  * @param p1 start tile of drag
  * @param p2 various bitstuffed elements:
- * - p2 = (bit  0..4) new roadtype to convert to.
+ * - p2 = (bit  0..5) new roadtype to convert to.
  * @param text unused
  * @return the cost of this operation or an error
  */
 CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2,  const char *text)
 {
 	RoadTypeIdentifier to_type;
-	if (!to_type.UnpackIfValid(GB(p2, 0, 5))) return CommandError();
+	if (!to_type.UnpackIfValid(GB(p2, 0, 6))) return CommandError();
 
 	TileIndex area_start = p1;
 	TileIndex area_end = tile;

@@ -34,11 +34,11 @@ template <> struct EnumPropsT<RoadType> : MakeEnumPropsT<RoadType, byte, ROADTYP
 typedef TinyEnumT<RoadType> RoadTypeByte;
 
 enum RoadSubType {
-	ROADSUBTYPE_BEGIN    = 0,   ///< Used for iterations
-	ROADSUBTYPE_NORMAL   = 0,   ///< Plain road/tram
-	ROADSUBTYPE_ELECTRIC = 1,   ///< Electrified road/tram
-	ROADSUBTYPE_END      = 15,  ///< Used for iterations
-	INVALID_ROADSUBTYPE  = 0xF, ///< flag for invalid roadsubtype
+	ROADSUBTYPE_BEGIN    = 0,    ///< Used for iterations
+	ROADSUBTYPE_NORMAL   = 0,    ///< Plain road/tram
+	ROADSUBTYPE_ELECTRIC = 1,    ///< Electrified road/tram
+	ROADSUBTYPE_END      = 31,   ///< Used for iterations
+	INVALID_ROADSUBTYPE  = 0x1F, ///< flag for invalid roadsubtype
 };
 DECLARE_POSTFIX_INCREMENT(RoadSubType);
 

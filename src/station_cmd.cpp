@@ -1912,7 +1912,7 @@ static CommandCost FindJoiningRoadStop(StationID existing_stop, StationID statio
  *           bit 2: Allow stations directly adjacent to other stations.
  *           bit 3..4: Entrance direction (#DiagDirection) for normal stops.
  *           bit 3: #Axis of the road for drive-through stops.
- *           bit 5..9: The roadtype.
+ *           bit 5..10: The roadtype.
  *           bit 16..31: Station ID to join (NEW_STATION if build new one).
  * @param text Unused.
  * @return The cost of this operation or an error.
@@ -1922,7 +1922,7 @@ CommandCost CmdBuildRoadStop(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 	bool type = HasBit(p2, 0);
 	bool is_drive_through = HasBit(p2, 1);
 	RoadTypeIdentifier rtid;
-	if (!rtid.UnpackIfValid(GB(p2, 5, 5))) return CommandError();
+	if (!rtid.UnpackIfValid(GB(p2, 5, 6))) return CommandError();
 	if (!ValParamRoadType(rtid)) return CommandError();
 	StationID station_to_join = GB(p2, 16, 16);
 	bool reuse = (station_to_join != NEW_STATION);

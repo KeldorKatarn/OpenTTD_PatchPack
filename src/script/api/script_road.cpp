@@ -464,7 +464,7 @@ static bool NeighbourHasReachableRoad(::RoadTypes rts, TileIndex start_tile, Dia
 	EnforcePrecondition(false, !one_way || ScriptObject::GetRoadType().IsRoad());
 	EnforcePrecondition(false, IsRoadTypeAvailable(GetCurrentRoadType()));
 
-	return ScriptObject::DoCommand(start, end, (::TileY(start) != ::TileY(end) ? 4 : 0) | (((start < end) == !full) ? 1 : 2) | (ScriptObject::GetRoadType().Pack() << 3) | ((one_way ? 1 : 0) << 8) | 1 << 9, CMD_BUILD_LONG_ROAD);
+	return ScriptObject::DoCommand(start, end, (::TileY(start) != ::TileY(end) ? 4 : 0) | (((start < end) == !full) ? 1 : 2) | (ScriptObject::GetRoadType().Pack() << 3) | ((one_way ? 1 : 0) << 9) | 1 << 10, CMD_BUILD_LONG_ROAD);
 }
 
 /* static */ bool ScriptRoad::BuildRoad(TileIndex start, TileIndex end)

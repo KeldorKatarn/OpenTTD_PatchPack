@@ -1313,8 +1313,8 @@ bool AfterLoadGame()
 				if (HasBit(_me[t].m7, 6)) rtids.road_identifier = RoadTypeIdentifier(ROADTYPE_ROAD, ROADSUBTYPE_NORMAL);
 				if (HasBit(_me[t].m7, 7)) rtids.tram_identifier = RoadTypeIdentifier(ROADTYPE_TRAM, ROADSUBTYPE_ELECTRIC);
 				assert(rtids.PresentRoadTypes() != ROADTYPES_NONE);
+				SB(_me[t].m7, 6, 2, 0); // We'll use these two bits to increase road/tram types to 32
 				SetRoadTypes(t, rtids);
-				SB(_me[t].m7, 6, 2, 0);
 			}
 		}
 	}

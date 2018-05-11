@@ -179,13 +179,15 @@ static inline void SetRoadBits(TileIndex t, RoadBits r, RoadType rt)
 static inline RoadSubType GetRoadSubTypeRoad(TileIndex t)
 {
 	assert(MayHaveRoad(t));
-	return (RoadSubType)GB(_m[t].m4, 0, 4);
+
+	return static_cast<RoadSubType>((GB(_me[t].m7, 6, 1) << 4) | GB(_m[t].m4, 0, 4));
 }
 
 static inline RoadSubType GetRoadSubTypeTram(TileIndex t)
 {
 	assert(MayHaveRoad(t));
-	return (RoadSubType)GB(_m[t].m4, 4, 4);
+
+	return static_cast<RoadSubType>((GB(_me[t].m7, 7, 1) << 4) | GB(_m[t].m4, 4, 4));
 }
 
 static inline RoadSubType GetRoadSubType(TileIndex t, RoadType rt)
@@ -770,8 +772,12 @@ struct RoadTypeIdentifiers {
 static inline void SetRoadTypes(TileIndex t, RoadTypeIdentifiers rtids)
 {
 	assert(MayHaveRoad(t));
-	SB(_m[t].m4, 0, 4, rtids.road_identifier.subtype);
-	SB(_m[t].m4, 4, 4, rtids.tram_identifier.subtype);
+
+	SB(_m[t].m4, 0, 4, GB(rtids.road_identifier.subtype, 0, 4));
+	SB(_me[t].m7, 6, 1, GB(rtids.road_identifier.subtype, 4, 1));
+
+	SB(_m[t].m4, 4, 4, GB(rtids.tram_identifier.subtype, 0, 4));
+	SB(_me[t].m7, 7, 1, GB(rtids.tram_identifier.subtype, 4, 1));
 }
 
 /**
@@ -830,7 +836,7 @@ static inline void MakeRoadCrossing(TileIndex t, Owner road, Owner tram, Owner r
  * @param owner New owner of the depot.
  * @param did   New depot ID.
  * @param dir   Direction of the depot exit.
- * @param rt    Road type of the depot.
+ * @param rtid  Road type of the depot.
  */
 static inline void MakeRoadDepot(TileIndex t, Owner owner, DepotID did, DiagDirection dir, RoadTypeIdentifier rtid)
 {

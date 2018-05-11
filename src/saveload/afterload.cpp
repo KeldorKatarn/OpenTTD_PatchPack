@@ -1290,9 +1290,8 @@ bool AfterLoadGame()
 		}
 	}
 
-	extern const uint16 NRT_SAVEGAME_VERSION;
-	if (IsSavegameVersionBefore(NRT_SAVEGAME_VERSION)) {
-		/* Add road subtypes */
+	if (IsSavegameVersionBefore(SL_PATCH_PACK_1_27)) {
+		// Add road subtypes.
 		for (TileIndex t = 0; t < map_size; t++) {
 			bool has_road = false;
 			switch (GetTileType(t)) {

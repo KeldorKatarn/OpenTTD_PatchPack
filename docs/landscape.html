@@ -223,6 +223,7 @@
    <td valign=top nowrap>&nbsp;</td>
    <td>
     <ul>
+     <li style="color: blue">m1 bit 7: bit 4 of track type (more rail types patch)</li>
      <li>m1 bits 4..0: <a href="#OwnershipInfo">owner</a> of the tile</li>
      <li>m2: see signals</li>
      <li>m3 bits 7..4: see signals</li>
@@ -588,6 +589,7 @@
        </li>
        <li>m5 bit 6 clear: road
         <ul>
+		 <li style="color: blue">m1 bit 7: bit 4 of track type (more rail types patch)</li>
          <li>m1 bits 4..0: <a href="#OwnershipInfo">owner</a> of the road type 0 (normal road)</li>
          <li>m7 bits 3..0: counter for the roadworks</li>
          <li>m5 bits 3..0: road layout road type 0 (normal road): bit set = road piece present:
@@ -857,6 +859,7 @@
    <td valign=top nowrap>&nbsp;</td>
    <td>
     <ul>
+     <li style="color: blue">m1 bit 7: bit 4 of track type (more rail types patch)</li>
      <li>m1 bits 6..5: water class for buoys, water part of docks and for airport tiles</li>
      <li>m1 bits 4..0: <a href="#OwnershipInfo">owner</a> of the station</li>
      <li>m2: index into the array of stations</li>
@@ -1444,7 +1447,9 @@
    <td valign=top nowrap>&nbsp;</td>
    <td>
     <ul>
+     <li style="color: blue">m1 bit 7: bit 4 of track type (more rail types patch)</li>
      <li>m1 bits 4..0: <a href="#OwnershipInfo">owner</a></li>
+     <li style="color: blue">m2 bits 15..0: tunnel ID lookup (tunnel entrances only)<br>
      <li style="color: blue">m2 bits 7..0: custom road bridge heads (flat bridge heads only)<br>
       Road/tram bits below are XORed with the axial bridge direction road bits.<br>
       A non-custom bridge head configuration will have a value of 0.

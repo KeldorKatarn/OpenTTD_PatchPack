@@ -399,9 +399,11 @@ static CommandCost RemoveRoad(TileIndex tile, DoCommandFlag flags, RoadBits piec
 				const RoadBits other_bits = other_end_existing & ~other_end_pieces;
 
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
+				RoadTypeIdentifiers other_rtids = RoadTypeIdentifiers::FromTile(other_end);
 				rtids.ClearRoadType(rt);
+				other_rtids.ClearRoadType(rt);
 				if (bits == ROAD_NONE) SetRoadTypes(tile, rtids);
-				if (other_bits == ROAD_NONE) SetRoadTypes(other_end, rtids);
+				if (other_bits == ROAD_NONE) SetRoadTypes(other_end, other_rtids);
 
 				if (IsBridge(tile)) {
 					SetCustomBridgeHeadRoadBits(tile, rt, bits);
@@ -664,7 +666,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	CompanyID company = _current_company;
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 
-	RoadBits existing = ROAD_NONE;
+	RoadBits existing_bits = ROAD_NONE;
 	RoadBits other_bits = ROAD_NONE;
 
 	// Road pieces are max 4 bitset values (NE, NW, SE, SW) and town can only be non-zero
@@ -684,10 +686,10 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		}
 	}
 
-	auto pieces = Extract<RoadBits, 0, 4>(p1);
+	auto bits_to_build = Extract<RoadBits, 0, 4>(p1);
 
 	// Do not allow building 'zero' road bits, code wouldn't handle it.
-	if (pieces == ROAD_NONE) return CommandError();
+	if (bits_to_build == ROAD_NONE) return CommandError();
 
 	RoadTypeIdentifier rtid;
 	if (!rtid.UnpackIfValid(GB(p1, 4, 6))) return CommandError();
@@ -709,15 +711,15 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 					if (!HasTileRoadType(tile, rtid.basetype)) break;
 
-					existing = GetRoadBits(tile, rtid.basetype);
-					const bool crossing = !IsStraightRoad(existing | pieces);
+					existing_bits = GetRoadBits(tile, rtid.basetype);
+					const bool crossing = !IsStraightRoad(existing_bits | bits_to_build);
 
 					if (rtid.IsRoad() && (GetDisallowedRoadDirections(tile) != DRD_NONE || disallowed_road_directions != DRD_NONE) && crossing) {
 						// Junctions cannot be one-way.
 						return CommandError(STR_ERROR_ONEWAY_ROADS_CAN_T_HAVE_JUNCTION);
 					}
 
-					if ((existing & pieces) == pieces) {
+					if ((existing_bits & bits_to_build) == bits_to_build) {
 						// We only want to set the (dis)allowed road directions.
 						if (disallowed_road_directions != DRD_NONE && rtid.IsRoad()) {
 							if (crossing) return CommandError(STR_ERROR_ONEWAY_ROADS_CAN_T_HAVE_JUNCTION);
@@ -742,7 +744,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 							}
 
 							// Ignore half built tiles.
-							if ((flags & DC_EXEC) && rtid.IsRoad() && IsStraightRoad(existing)) {
+							if ((flags & DC_EXEC) && rtid.IsRoad() && IsStraightRoad(existing_bits)) {
 								SetDisallowedRoadDirections(tile, dis_new);
 								MarkTileDirtyByTile(tile);
 							}
@@ -755,7 +757,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 
 					// Disallow breaking end-of-line of someone else
 					// so trams can still reverse on this tile.
-					if (rtid.IsTram() && HasExactlyOneBit(existing)) {
+					if (rtid.IsTram() && HasExactlyOneBit(existing_bits)) {
 						const Owner owner = GetRoadOwner(tile, rtid.basetype);
 
 						if (Company::IsValidID(owner)) {
@@ -772,16 +774,16 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					}
 
 					other_bits = GetCrossingRoadBits(tile);
-					if (pieces & ComplementRoadBits(other_bits)) goto do_clear;
+					if (bits_to_build & ComplementRoadBits(other_bits)) goto do_clear;
 
 					// We need to pay for both roadbits.
-					pieces = other_bits; 
+					bits_to_build = other_bits; 
 
 					if (HasTileRoadType(tile, rtid.basetype)) return CommandError(STR_ERROR_ALREADY_BUILT);
 					break;
 
 				case ROAD_TILE_DEPOT:
-					if ((GetAnyRoadBits(tile, rtid.basetype) & pieces) == pieces) return CommandError(STR_ERROR_ALREADY_BUILT);
+					if ((GetAnyRoadBits(tile, rtid.basetype) & bits_to_build) == bits_to_build) return CommandError(STR_ERROR_ALREADY_BUILT);
 					goto do_clear;
 
 				default: NOT_REACHED();
@@ -811,12 +813,12 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 			Axis roaddir;
 			switch (GetTrackBits(tile)) {
 				case TRACK_BIT_X:
-					if (pieces & ROAD_X) goto do_clear;
+					if (bits_to_build & ROAD_X) goto do_clear;
 					roaddir = AXIS_Y;
 					break;
 
 				case TRACK_BIT_Y:
-					if (pieces & ROAD_Y) goto do_clear;
+					if (bits_to_build & ROAD_Y) goto do_clear;
 					roaddir = AXIS_X;
 					break;
 
@@ -854,12 +856,12 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		}
 
 		case MP_STATION: {
-			if ((GetAnyRoadBits(tile, rtid.basetype) & pieces) == pieces) return CommandError(STR_ERROR_ALREADY_BUILT);
+			if ((GetAnyRoadBits(tile, rtid.basetype) & bits_to_build) == bits_to_build) return CommandError(STR_ERROR_ALREADY_BUILT);
 			if (!IsDriveThroughStopTile(tile)) goto do_clear;
 
 			RoadBits curbits = AxisToRoadBits(DiagDirToAxis(GetRoadStopDir(tile)));
-			if (pieces & ~curbits) goto do_clear;
-			pieces = curbits; // we need to pay for both roadbits
+			if (bits_to_build & ~curbits) goto do_clear;
+			bits_to_build = curbits; // we need to pay for both roadbits
 
 			if (HasTileRoadType(tile, rtid.basetype)) return CommandError(STR_ERROR_ALREADY_BUILT);
 			break;
@@ -874,45 +876,45 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				const DiagDirection entrance_dir = GetTunnelBridgeDirection(tile);
 				const RoadBits entrance_piece = DiagDirToRoadBits(entrance_dir);
 				const RoadBits axial_pieces = AxisToRoadBits(DiagDirToAxis(entrance_dir));
-				existing = GetCustomBridgeHeadRoadBits(tile, rtid.basetype);
+				existing_bits = GetCustomBridgeHeadRoadBits(tile, rtid.basetype);
 
 				if (!(_settings_game.construction.road_custom_bridge_heads && HasBridgeFlatRamp(slope, DiagDirToAxis(entrance_dir))) || disable_custom_bridge_heads) {
-					/* Ordinary bridge heads only */
-					/* Only allow building the outer roadbit, so building long roads stops at existing bridges */
-					if (MirrorRoadBits(entrance_piece) != pieces) goto do_clear;
-					pieces = axial_pieces;
+					// Ordinary bridge heads only
+					// Only allow building the outer roadbit, so building long roads stops at existing bridges.
+					if (MirrorRoadBits(entrance_piece) != bits_to_build) goto do_clear;
+					bits_to_build = axial_pieces;
 				}
-				if ((existing & pieces) == pieces) return CommandError(STR_ERROR_ALREADY_BUILT);
-				if ((pieces & ~axial_pieces) && !_settings_game.construction.build_on_slopes) {
+
+				if ((existing_bits & bits_to_build) == bits_to_build) return CommandError(STR_ERROR_ALREADY_BUILT);
+
+				if ((bits_to_build & ~axial_pieces) && !_settings_game.construction.build_on_slopes) {
 					return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 				}
 
-				/* Steep slopes behave the same as slopes with one corner raised. */
+				// Steep slopes behave the same as slopes with one corner raised.
 				const Slope normalised_tileh = IsSteepSlope(slope) ? SlopeWithOneCornerRaised(GetHighestSlopeCorner(slope)) : slope;
 
-				if ((_invalid_tileh_slopes_road[0][normalised_tileh & SLOPE_ELEVATED] & (pieces & ~entrance_piece)) != ROAD_NONE) {
+				if ((_invalid_tileh_slopes_road[0][normalised_tileh & SLOPE_ELEVATED] & (bits_to_build & ~entrance_piece)) != ROAD_NONE) {
  					return CommandError(STR_ERROR_LAND_SLOPED_IN_WRONG_DIRECTION);
 				}
 
-				/* Don't allow adding roadtype to the bridge/tunnel when vehicles are already driving on it */
+				// Don't allow adding roadtype to the bridge/tunnel when vehicles are already driving on it.
 				CommandCost ret = TunnelBridgeIsFree(tile, other_end);
 				if (ret.Failed()) return ret;
 
-				if ((existing | pieces) == entrance_piece) {
-					/*
-					 * Don't allow the custom bridge head bits to be only the entrance piece
-					 * as this makes road vehicles go haywire
-					 */
-					pieces = axial_pieces;
+				if ((existing_bits | bits_to_build) == entrance_piece) {
+					// Don't allow the custom bridge head bits to be only the entrance piece
+					// as this makes road vehicles go haywire
+					bits_to_build = axial_pieces;
 				}
 
-				RoadBits added_pieces = (existing | pieces) & ~existing;
+				const RoadBits added_pieces = (existing_bits | bits_to_build) & ~existing_bits;
 				uint added_pieces_count = CountBits(added_pieces);
 				RoadBits other_end_added_pieces = ROAD_NONE;
 				RoadBits other_end_existing = ROAD_NONE;
 
 				if (added_pieces & entrance_piece) {
-					/* adding road to whole bridge */
+					// adding road to whole bridge.
 
 					other_end_added_pieces = MirrorRoadBits(entrance_piece);
 					added_pieces_count += 1 + (GetTunnelBridgeLength(tile, other_end) * 2);
@@ -921,10 +923,8 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					assert((other_end_added_pieces & other_end_existing) == ROAD_NONE);
 
 					if (other_end_existing == ROAD_NONE) {
-						/*
-						 * Don't allow the other end custom bridge head bits to be only the entrance piece
-						 * as this makes road vehicles go haywire
-						 */
+						// Don't allow the other end custom bridge head bits to be only the entrance piece
+						// as this makes road vehicles go haywire
 						other_end_added_pieces = axial_pieces;
 						added_pieces_count++;
 					}
@@ -939,11 +939,11 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					tile_rtids.MergeRoadType(rtid);
 					SetRoadTypes(tile, tile_rtids);
 
-					if (!existing) {
+					if (!existing_bits) {
 						SetRoadOwner(tile, rtid.basetype, company);
 					}
 
-					SetCustomBridgeHeadRoadBits(tile, rtid.basetype, existing | pieces);
+					SetCustomBridgeHeadRoadBits(tile, rtid.basetype, existing_bits | bits_to_build);
 
 					if (other_end_added_pieces) {
 
@@ -967,7 +967,7 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 				return cost;
 			} else { // IsTunnel(tile)
 				/* Only allow building the outer roadbit, so building long roads stops at existing bridges */
-				if (MirrorRoadBits(DiagDirToRoadBits(GetTunnelBridgeDirection(tile))) != pieces) goto do_clear;
+				if (MirrorRoadBits(DiagDirToRoadBits(GetTunnelBridgeDirection(tile))) != bits_to_build) goto do_clear;
 				if (HasTileRoadType(tile, rtid.basetype)) return CommandError(STR_ERROR_ALREADY_BUILT);
 				/* Don't allow adding roadtype to the bridge/tunnel when vehicles are already driving on it */
 				CommandCost ret = TunnelBridgeIsFree(tile, other_end);
@@ -989,9 +989,9 @@ do_clear:;
 		cost.AddCost(ret);
 	}
 
-	if (other_bits != pieces) {
+	if (other_bits != bits_to_build) {
 		/* Check the foundation/slopes when adding road/tram bits */
-		CommandCost ret = CheckRoadSlope(slope, &pieces, existing, other_bits);
+		CommandCost ret = CheckRoadSlope(slope, &bits_to_build, existing_bits, other_bits);
 		/* Return an error if we need to build a foundation (ret != 0) but the
 		 * current setting is turned off */
 		if (ret.Failed() || (ret.GetCost() != 0 && !_settings_game.construction.build_on_slopes)) {
@@ -1003,12 +1003,12 @@ do_clear:;
 	if (!need_to_clear) {
 		if (IsTileType(tile, MP_ROAD)) {
 			/* Don't put the pieces that already exist */
-			pieces &= ComplementRoadBits(existing);
+			bits_to_build &= ComplementRoadBits(existing_bits);
 
 			/* Check if new road bits will have the same foundation as other existing road types */
 			if (IsNormalRoad(tile)) {
 				Slope slope = GetTileSlope(tile);
-				Foundation found_new = GetRoadFoundation(slope, pieces | existing);
+				Foundation found_new = GetRoadFoundation(slope, bits_to_build | existing_bits);
 
 				/* Test if all other roadtypes can be built at that foundation */
 				for (RoadType rtest = ROADTYPE_ROAD; rtest < ROADTYPE_END; rtest++) {
@@ -1049,7 +1049,7 @@ do_clear:;
 			/* There are 2 pieces on *every* tile of the bridge or tunnel */
 			2 * (GetTunnelBridgeLength(GetOtherTunnelBridgeEnd(tile), tile) + 2) :
 			/* Count pieces */
-			CountBits(pieces);
+			CountBits(bits_to_build);
 
 	cost.AddCost(num_pieces * RoadBuildCost(rtid));
 
@@ -1057,7 +1057,7 @@ do_clear:;
 		switch (GetTileType(tile)) {
 			case MP_ROAD: {
 				RoadTileType rtt = GetRoadTileType(tile);
-				if (existing == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
+				if (existing_bits == ROAD_NONE || rtt == ROAD_TILE_CROSSING) {
 					RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 					rtids.MergeRoadType(rtid);
 					SetRoadTypes(tile, rtids);
@@ -1065,16 +1065,18 @@ do_clear:;
 					SetRoadOwner(tile, rtid.basetype, company);
 					if (rtid.IsRoad()) SetTownIndex(tile, p2);
 				}
-				if (rtt != ROAD_TILE_CROSSING) SetRoadBits(tile, existing | pieces, rtid.basetype);
+				if (rtt != ROAD_TILE_CROSSING) SetRoadBits(tile, existing_bits | bits_to_build, rtid.basetype);
 				break;
 			}
 
 			case MP_TUNNELBRIDGE: {
 				TileIndex other_end = GetOtherTunnelBridgeEnd(tile);
-
+				
+				RoadTypeIdentifiers other_rtids = RoadTypeIdentifiers::FromTile(other_end);
+				other_rtids.MergeRoadType(rtid);
 				RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(tile);
 				rtids.MergeRoadType(rtid);
-				SetRoadTypes(other_end, rtids);
+				SetRoadTypes(other_end, other_rtids);
 				SetRoadTypes(tile, rtids);
 				SetRoadOwner(other_end, rtid.basetype, company);
 				SetRoadOwner(tile, rtid.basetype, company);
@@ -1099,7 +1101,7 @@ do_clear:;
 			}
 
 			default:
-				MakeRoadNormal(tile, pieces, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid), p2, company, company);
+				MakeRoadNormal(tile, bits_to_build, RoadTypeIdentifiers::FromRoadTypeIdentifier(rtid), p2, company, company);
 				break;
 		}
 
@@ -1112,8 +1114,8 @@ do_clear:;
 		}
 
 		if (rtid.IsRoad() && IsNormalRoadTile(tile)) {
-			existing |= pieces;
-			SetDisallowedRoadDirections(tile, IsStraightRoad(existing) ?
+			existing_bits |= bits_to_build;
+			SetDisallowedRoadDirections(tile, IsStraightRoad(existing_bits) ?
 					GetDisallowedRoadDirections(tile) ^ disallowed_road_directions : DRD_NONE);
 		}
 
@@ -1679,7 +1681,8 @@ void DrawRoadBits(TileInfo *ti)
 	SpriteID image = SPR_ROAD_Y + (road_rti != NULL ? road_offset : tram_offset);
 	PaletteID pal = PAL_NONE;
 
-	Roadside roadside = GetRoadside(ti->tile);
+	Roadside roadside = is_bridge ? ROADSIDE_PAVED : GetRoadside(ti->tile);
+
 	if (DrawRoadAsSnowDesert(ti->tile, roadside)) {
 		image += 19;
 	} else {

@@ -1230,21 +1230,21 @@ bool IndividualRoadVehicleController(RoadVehicle *v, const RoadVehicle *prev)
 
 	if (rd.x & RDE_NEXT_TILE) {
 		TileIndex tile = v->tile;
-		if (!no_advance_tile) tile += TileOffsByDiagDir((DiagDirection)(rd.x & 3));
+		if (!no_advance_tile) tile += TileOffsByDiagDir(static_cast<DiagDirection>(rd.x & 3));
 		Trackdir dir;
 
 		if (v->IsFrontEngine()) {
 			/* If this is the front engine, look for the right path. */
 			if (HasTileAnyRoadSubType(tile, v->rtid.basetype, v->compatible_subtypes)) {
-				dir = RoadFindPathToDest(v, tile, (DiagDirection)(rd.x & 3));
-		} else if (no_advance_tile) {
-			/* Follow previous vehicle out of custom bridge wormhole */
-			dir = (Trackdir) prev->state;
+				dir = RoadFindPathToDest(v, tile, static_cast<DiagDirection>(rd.x & 3));
 			} else {
 				dir = _road_reverse_table[(DiagDirection)(rd.x & 3)];
 			}
+		} else if (no_advance_tile) {
+			/* Follow previous vehicle out of custom bridge wormhole */
+			dir = static_cast<Trackdir>(prev->state);
 		} else {
-			dir = FollowPreviousRoadVehicle(v, prev, tile, (DiagDirection)(rd.x & 3), false);
+			dir = FollowPreviousRoadVehicle(v, prev, tile, static_cast<DiagDirection>(rd.x & 3), false);
 		}
 
 		if (dir == INVALID_TRACKDIR) {

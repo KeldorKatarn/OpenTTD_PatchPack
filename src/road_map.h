@@ -247,7 +247,9 @@ static inline bool HasRoadTypeTram(TileIndex t)
  */
 static inline bool HasTileRoadType(TileIndex t, RoadType rt)
 {
-	return GetRoadSubType(t, rt) != INVALID_ROADSUBTYPE;
+	const RoadSubType sub_type = GetRoadSubType(t, rt);
+
+	return sub_type != INVALID_ROADSUBTYPE;
 }
 
 /**

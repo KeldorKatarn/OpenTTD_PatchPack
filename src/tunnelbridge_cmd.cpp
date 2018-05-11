@@ -1277,8 +1277,18 @@ static void DrawBridgePillars(const PalSpriteID *psid, const TileInfo *ti, Axis 
 static void DrawBridgeRoadBits(TileIndex head_tile, int x, int y, int z, int offset, bool head)
 {
 	RoadTypeIdentifiers rtids = RoadTypeIdentifiers::FromTile(head_tile);
-	const RoadtypeInfo* road_rti = rtids.HasRoad() ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
-	const RoadtypeInfo* tram_rti = rtids.HasTram() ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
+
+	bool has_tram = rtids.HasTram();
+	bool has_road = rtids.HasRoad();
+
+	if (IsRoadCustomBridgeHeadTile(head_tile)) {
+		const RoadBits entrance_bit = DiagDirToRoadBits(GetTunnelBridgeDirection(head_tile));
+		has_tram = has_tram && (GetCustomBridgeHeadRoadBits(head_tile, ROADTYPE_TRAM) & entrance_bit);
+		has_road = has_road && (GetCustomBridgeHeadRoadBits(head_tile, ROADTYPE_ROAD) & entrance_bit);
+	}
+
+	const RoadtypeInfo* road_rti = has_road ? GetRoadTypeInfo(rtids.road_identifier) : NULL;
+	const RoadtypeInfo* tram_rti = has_tram ? GetRoadTypeInfo(rtids.tram_identifier) : NULL;
 
 	SpriteID seq_back[4] = { 0 };
 	bool trans_back[4] = { false };
@@ -2074,15 +2084,19 @@ static TrackStatus GetTileTrackStatus_TunnelBridge(TileIndex tile, TransportType
 {
 	const TransportType transport_type = GetTunnelBridgeTransportType(tile);
 
-	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && !HasTileRoadType(tile, RoadType(sub_mode)))) return 0;
+	const auto road_type = static_cast<RoadType>(sub_mode);
+	const bool has_tile_road_type = HasTileRoadType(tile, road_type);
+
+	if (transport_type != mode || (transport_type == TRANSPORT_ROAD && !has_tile_road_type)) return 0;
 
 	const DiagDirection diag_direction = GetTunnelBridgeDirection(tile);
 
 	if (mode == TRANSPORT_ROAD && IsRoadCustomBridgeHeadTile(tile)) {
 		if (side != INVALID_DIAGDIR && side == diag_direction) return 0;
 		TrackBits bits = TRACK_BIT_NONE;
-		if (sub_mode & ROADTYPES_TRAM) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_TRAM)];
-		if (sub_mode & ROADTYPES_ROAD) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_ROAD)];
+		if (road_type == ROADTYPE_TRAM) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_TRAM)];
+		if (road_type == ROADTYPE_ROAD) bits |= _road_trackbits[GetCustomBridgeHeadRoadBits(tile, ROADTYPE_ROAD)];
+
 		return CombineTrackStatus(TrackBitsToTrackdirBits(bits), TRACKDIR_BIT_NONE);
 	}
 

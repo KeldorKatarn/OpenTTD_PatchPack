@@ -46,7 +46,7 @@ static inline bool IsValidRoadBits(RoadBits r)
 static inline RoadTypes RoadTypeToRoadTypes(RoadType rt)
 {
 	assert(IsValidRoadType(rt));
-	return (RoadTypes)(1 << rt);
+	return static_cast<RoadTypes>(1 << rt);
 }
 
 /**

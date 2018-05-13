@@ -71,7 +71,7 @@ int32 TripHistory::UpdateCalculated(bool update_entries)
 	auto valid_tbt_entries = std::count_if(std::begin(this->entries) + 1, std::end(this->entries),
 		[](TripHistoryEntry entry) { return entry.time_between_trips != 0; });
 
-	this->avg_profit = (valid_entries > 1) ? (total_profit / (Money)(valid_entries - 1)) : 0;
+	this->avg_profit = (valid_entries > 1) ? (total_profit / Money(valid_entries - 1)) : Money(0);
 	this->avg_time_between_trips = (valid_tbt_entries > 0) ? (total_time_between_trips / valid_tbt_entries) : 0;
 
 	return (int32)valid_entries;

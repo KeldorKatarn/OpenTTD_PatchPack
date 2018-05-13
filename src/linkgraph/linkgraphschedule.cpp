@@ -9,10 +9,10 @@
 
 /** @file linkgraphschedule.cpp Definition of link graph schedule used for cargo distribution. */
 
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "linkgraphschedule.h"
 
-#include "../command_func.h"
+#include "command_func.h"
 #include "demands.h"
 #include "flowmapper.h"
 #include "init.h"

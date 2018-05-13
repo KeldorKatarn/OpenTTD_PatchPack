@@ -7,7 +7,7 @@
 
 /** @file logic_signals_sl.cpp Implementation of saving and loading of signal programs. */
 
-#include "logic_signals.h"
+#include "../logic_signals.h"
 #include "saveload.h"
 
 struct TempStorage

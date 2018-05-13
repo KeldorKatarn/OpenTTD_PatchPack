@@ -1445,7 +1445,7 @@ make_compiler_cflags() {
 		if [ $cc_version -ge 600 ]; then
 			# -flifetime-dse=2 (default since GCC 6) doesn't play
 			# well with our custom pool item allocator
-			cxxflags="$cxxflags -flifetime-dse=1 -std=gnu++14"
+			cxxflags="$cxxflags -flifetime-dse=1 -std=gnu++17"
 		fi
 
 		if [ "$enable_lto" != "0" ]; then

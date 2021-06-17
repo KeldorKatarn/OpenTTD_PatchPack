@@ -6,6 +6,13 @@ I added my own features to the collection and make the rest work together.
 But the credits for features or improvements not created by me 
 goes to the original developers.
 
+# This repository is no longer maintained
+
+Almost every single features included in this is now part of JGR's patch pack
+or soon will be. That patchpack is also savegame compatible with this one.
+Therefore I recommend downloading that version instead if you want to
+stay up to date: https://github.com/JGRennison/OpenTTD-patches
+
 * * *
 
 OpenTTD is a transport simulation game based upon the popular game Transport

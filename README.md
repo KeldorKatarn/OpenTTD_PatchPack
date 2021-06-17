@@ -8,8 +8,8 @@ goes to the original developers.
 
 # This repository is no longer maintained
 
-Almost every single features included in this is now part of JGR's patch pack
-or soon will be. That patchpack is also savegame compatible with this one.
+Almost every single feature included in this is now part of JGR's patch pack
+or soon will be. That patch pack is also savegame compatible with this one.
 Therefore I recommend downloading that version instead if you want to
 stay up to date: https://github.com/JGRennison/OpenTTD-patches
 
